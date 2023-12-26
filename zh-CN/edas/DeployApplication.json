@@ -1,0 +1,114 @@
+{
+  "name": "DeployApplication",
+  "deprecated": false,
+  "protocol": "HTTP|HTTPS",
+  "method": "POST",
+  "pathPattern": "/pop/v5/changeorder/co_deploy",
+  "parameters": [
+    {
+      "name": "AppEnv",
+      "description": "部署环境变量，格式必须符合`{\"name\":\"x\",\"value\":\"y\"},{\"name\":\"x2\",\"value\":\"y2\"} `，`key`固定为`name`和`value`。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "AppId",
+      "description": "应用ID。可通过查询ListApplication接口获取，请参见[ListApplication](~~423162~~)。",
+      "position": "Query",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "Batch",
+      "description": "每组批次。\n\n- 当指定了应用分组的GroupId为具体的某个应用分组ID时，表示向指定应用分组部署。此时可指定的最小批次数为1，最大批次数为该应用分组下正常状态的ECS实例数最大值，实际分批数结果范围：\\[1，指定的分批数\\] （指定的分批数=指定的分组下面ECS总数）。\n- 当指定了应用分组的GroupId为all时，表示向所有应用分组部署，此时可指定的最小批次数为1，最大批次数为正常状态的ECS数量最多的分组下的ECS实例数。",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "BatchWaitTime",
+      "description": "分批等待时间，单位：分钟。\n- 默认为0，表示不等待。\n- 最大为5。\n\n当实际批次数较多时，需要设置一个合理值，否则会导致本次应用部署的变更持续时间比较长。",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "BuildPackId",
+      "description": "EDAS-Container构建包号。\n\n- 如果部署时不需要更改EDAS-Container版本，则该参数可不设置。\n- 如果需要在本次部署时，更新目标应用的EDAS-Container版本，则需要设置。\n\n有以下两种获取方式：\n\n- 可通过查询容器版本列表接口ListBuildPack获取，请参见[ListBuildPack](~~149391~~)。\n- 在[容器版本说明](~~92614~~)表格中的**构建包序号**列获取。例如`59`表示`EDAS-Container 3.5.8 版本`。",
+      "position": "Query",
+      "type": "Long",
+      "required": false
+    },
+    {
+      "name": "ComponentIds",
+      "description": "应用组件ID，参数不适用于HSF应用。可通过查询组件列表接口ListComponents接口获取，请参见[ListComponents](~~423223~~)。\n\n- 当创建应用时已经设置，则本次部署不需要再设置。\n- 如果在本次部署时需要更新目标应用的应用组件版本则需要设置。\n\n常用的应用组件ID及含义如下：\n\n- 4：表示Apache Tomcat 7.0.91\n- 7：表示Apache Tomcat 8.5.42\n- 5：表示OpenJDK 1.8.x\n- 6：表示OpenJDK 1.7.x \n\n更多信息，请参见[InsertApplication](~~423185~~)接口的常见应用的主要参数说明。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "DeployType",
+      "description": "部署类型。包含`URL`和`image`（废弃参数值），其中只有Swarm集群应用支持镜像（`image`）部署。",
+      "position": "Query",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "Desc",
+      "description": "应用部署描述信息。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "Gray",
+      "description": "是否为金丝雀发布。\n\n- true：金丝雀发布。\n\n    - 灰度发布时，必须指定灰度发布的分组ID，即GroupId。\n\n    - 灰度发布作为一个批次发布。\n\n    - 灰度结束后，正常发布，分组批次由Batch控制。\n\n- false：非金丝雀发布（单批或分批发布）。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
+      "name": "GroupId",
+      "description": "部署分组ID。可通过查询ListDeployGroup接口获取，请参见[ListDeployGroup](~~423184~~)。\n\n<note>如果要部署到所有分组，参数设置为`all`。</note>",
+      "position": "Query",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "ImageUrl",
+      "description": "**（废弃参数）**Swarm集群应用部署时可指定的应用镜像URL，推荐使用阿里云镜像仓库地址。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "PackageVersion",
+      "description": "部署的应用部署包版本，最长64个字符，建议使用时间戳。",
+      "position": "Query",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "ReleaseType",
+      "description": "分批方式。\n- 0为自动。\n- 1为各批次间需要手动确认。可在控制台目标应用的变更流程详情中单击**继续下一批**，也可通过调用ContinuePipeline继续下一批（由于使用API部署，建议使用自动分批），请参见[ContinuePipeline](~~126990~~)。",
+      "position": "Query",
+      "type": "Long",
+      "required": false
+    },
+    {
+      "name": "TrafficControlStrategy",
+      "description": "灰度发布策略内容，请参见[DeployK8sApplication](~~423212~~)。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "WarUrl",
+      "description": "应用部署包（WAR或JAR）的URL地址。**DeployType**为`url`时必填，建议使用OSS存储的应用部署包路径。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    }
+  ]
+}
