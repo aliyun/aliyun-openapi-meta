@@ -1,0 +1,65 @@
+{
+  "name": "CreateApplicationScalingRule",
+  "deprecated": false,
+  "protocol": "HTTP|HTTPS",
+  "method": "POST",
+  "pathPattern": "/pop/v1/sam/scale/applicationScalingRule",
+  "parameters": [
+    {
+      "name": "AppId",
+      "description": "应用ID。",
+      "position": "Query",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "MinReadyInstanceRatio",
+      "description": "最小存活实例数百分比。取值说明如下：\n\n- **-1**：初始化值，表示不采用百分比。\n- **0~100**：单位为百分比，向上取整。例如设置为50%，如果当前为5个实例，则最小存活实例数为3。\n\n> 当**MinReadyInstance**和**MinReadyInstanceRatio**同时传递时，且**MinReadyInstanceRatio**的取值非**-1**时，以**MinReadyInstanceRatio**参数为准。假设**MinReadyInstances**取值为**5**，**MinReadyInstanceRatio**取值为**50**，则会用**50**来计算最小存活实例数。",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "MinReadyInstances",
+      "description": "最小存活实例数。取值说明如下：\n\n- 如果设置为**0**，应用在升级过程中将会中断业务。\n- 如果设置为**-1**，最小存活实例数将使用系统推荐值，即取现有实例数的25%。如果当前为5个实例，5×25%=1.25，向上取整后，最小存活实例数为2。\n\n> 每次滚动部署最小存活的实例数建议≥1，保证业务不中断。",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "ScalingRuleEnable",
+      "description": "是否启用弹性伸缩策略。取值说明如下：\n\n- **true**：启用状态。\n- **false**：禁用状态。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
+      "name": "ScalingRuleMetric",
+      "description": "监控指标弹性策略的配置。当您选择监控指标弹性策略设置时，该参数必选。\n\n参数说明如下：\n\n- **maxReplicas**：应用最大实例数。\n- **minReplicas**：应用最小实例数。\n- **metricType**：监控指标触发条件。\n    - **CPU**：CPU使用率。\n    - **MEMORY**：内存使用率。\n    - **QPS**：JAVA应用1分钟内单个实例的平均QPS。\n    - **RT**：JAVA应用1分钟内应用所有服务接口平均RT值。\n    - **tcpActiveConn**：30秒内单个实例的平均TCP活跃连接数。\n    - **SLB\\_QPS**：15秒内单个实例的平均公网SLB QPS。\n    - **SLB\\_RT**：15秒内公网SLB平均响应时间。\n    - **INTRANET\\_SLB\\_QPS**：15秒内单个实例的平均私网SLB QPS。\n    - **INTRANET\\_SLB\\_RT**：15秒内私网SLB平均响应时间。\n- **metricTargetAverageUtilization**：根据不同的**metricType**，设置对应的监控指标的目标值。\n    - CPU使用率目标值，单位为百分比。\n    - 内存使用率目标值，单位为百分比。\n    - QPS，单位为秒。\n    - 响应时间，单位为毫秒。\n    - TCP活跃连接数平均值，单位为个/秒。\n    - 公网SLB QPS，单位为秒。\n    - 公网SLB响应时间，单位为毫秒。\n    - 私网SLB QPS，单位为秒。\n    - 私网SLB响应时间，单位为毫秒。\n- **slbId**：SLB ID。\n- **slbProject**：日志服务Project。\n- **slbLogstore**：日志服务Logstore。\n- **vport**：SLB监听端口，支持HTTP协议和HTTPS协议。\n- **scaleUpRules**：应用扩容规则。\n- **scaleDownRules**：应用缩容规则。\n- **step**：弹性扩容或缩容步长。单位时间内最多扩容或缩容的实例数。\n- **disabled**：是否禁止缩容。开启后将永远不会缩容该应用的实例，能有效防止在流量高峰期缩容造成业务风险。\n    - **true**：开启。\n    - **false**：关闭。默认值。\n- **stabilizationWindowSeconds**：扩容或缩容的冷却时间。取值范围\\[0, 3600\\]，单位为秒。默认为0秒。\n\n> 您可以选择设置一个或多个监控指标。当设置多个监控指标时，只要任何一个指标大于或者等于目标值，则应用进行扩容，扩容后实例数不高于应用最大实例数；如果所有指标均小于目标值，则应用进行缩容，缩容后实例数不低于应用最小实例数。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "ScalingRuleName",
+      "description": "自定义的弹性伸缩策略名。应用内，策略名称不可重复，必须以小写字母开头，仅可包含小写字母、数字及短划线（-），不超过32个字符。\n> 弹性伸缩策略创建成功后，不可修改策略名。",
+      "position": "Query",
+      "type": "String",
+      "required": true
+    },
+    {
+      "name": "ScalingRuleTimer",
+      "description": "定时弹性策略的配置。当您选择定时弹性策略或使用SDK设置时，该参数必选。\n\n参数说明如下：\n- **beginDate**和**endDate**：**beginDate**为起始日期，**endDate**为结束日期，用于配置定时弹性伸缩策略的时间。取值说明如下：\n\n    - 当取值均为**null**时，表示长期执行，为默认值。\n    - 当取值为具体日期时，例如**beginDate**为**2021-03-25**，**endDate**为**2021-04-25**，表示执行有效期为1个月。\n\n- **period**：执行定时弹性伸缩策略的周期。取值说明如下：\n    - **\\* \\* \\***：每天指定时间执行定时策略。\n    - **\\* \\* Fri,Mon**：每周指定天数的指定时间执行定时策略，支持多选，GMT+8时区。取值说明如下： \n        - **Sun**：星期日\n        - **Mon**：星期一\n        - **Tue**：星期二\n        - **Wed**：星期三\n        - **Thu**：星期四\n        - **Fri**：星期五\n        - **Sat**：星期六\n    - **1,2,3,28,31 \\* \\***：每月指定日期的指定时间执行定时策略，支持多选。取值范围\\[1,31\\]。若当月无31日，则跳过该日期执行定时策略。\n- **schedules**：弹性伸缩策略触发的时间，以及该时间段内需要保持的应用实例数。最多支持20个时间点。参数说明如下：\n    - **atTime**：触发时间点。支持格式**时:分**，例如**08:00**。\n    - **targetReplicas**：该参数可以指定应用的实例数，也可以是每次部署最小存活的实例数。取值范围\\[1,50\\]。\n        > 每次滚动部署最小存活的实例数建议大于等于**1**，保证业务不中断。如果设置为**0**，应用在升级过程中将会中断业务。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "ScalingRuleType",
+      "description": "弹性伸缩策略类型。取值说明如下：\n\n- **timing**：定时弹性。\n- **metric**：监控指标弹性。",
+      "position": "Query",
+      "type": "String",
+      "required": true
+    }
+  ]
+}
