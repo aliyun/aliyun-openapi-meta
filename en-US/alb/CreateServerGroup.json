@@ -1,18 +1,29 @@
 {
   "name": "CreateServerGroup",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
       "name": "ClientToken",
-      "description": "The client token that is used to ensure the idempotence of the request.\n\nYou can use the client to generate the token, but you must make sure that the token is unique among different requests. The token can contain only ASCII characters.\n\n> If you do not specify this parameter, the system automatically uses the **request ID** as the **client token**. The **request ID** may be different for each request.",
+      "description": "The client token that is used to ensure the idempotence of the request.\n\nYou can use the client to generate the token, but you must make sure that the token is unique among different requests. The token can contain only ASCII characters.\n\n>  If you do not specify this parameter, the system automatically uses the **request ID** as the **client token**. The **request ID** may be different for each request.",
       "position": "Query",
       "type": "String",
+      "required": false
+    },
+    {
+      "name": "ConnectionDrainConfig",
+      "description": "The configurations of connection draining.\n\nAfter connection draining is enabled, ALB maintains data transmission for a period of time after the backend server is removed or declared unhealthy.\n\n\n>*   Basic ALB instances do not support connection draining. Standard and WAF-enabled ALB instances support connection draining.\n>*   Server groups of the instance and IP types support connection draining. Server groups of the Function Compute type do not support connection draining.",
+      "position": "Query",
+      "type": "Struct",
+      "required": false
+    },
+    {
+      "name": "CrossZoneEnabled",
+      "description": "Specifies whether to enable cross-zone load balancing. Valid values:\n\n*   **true** (default)\n*   **false**\n\n> *   Basic ALB instances do not support server groups that have cross-zone load balancing disabled. Only Standard and WAF-enabled ALB instances support server groups that have cross-zone load balancing.\n> *   Cross-zone load balancing can be disabled for server groups of the server and IP type, but not for server groups of the Function Compute type.\n> *   When cross-zone load balancing is disabled, session persistence cannot be enabled.",
+      "position": "Query",
+      "type": "Boolean",
       "required": false
     },
     {
@@ -24,14 +35,21 @@
     },
     {
       "name": "HealthCheckConfig",
-      "description": "The configuration of health checks.",
+      "description": "The configuration of the health check feature.",
       "position": "Query",
       "type": "Struct",
       "required": true
     },
     {
+      "name": "Ipv6Enabled",
+      "description": "Specifies whether to enable Ipv6.",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
       "name": "Protocol",
-      "description": "The backend protocol. Valid values:\n\n*   **HTTP** (default): The server group can be associated with HTTPS, HTTP, and QUIC listeners.\n*   **HTTPS**: The server group can be associated with HTTPS listeners.\n*   **gRPC**: The server group can be associated with HTTPS and QUIC listeners.\n\n> If the **ServerGroupType** parameter is set to **Fc**, you can set Protocol only to **HTTP**.",
+      "description": "The backend protocol. Valid values:\n\n*   **HTTP**: allows you to associate an HTTPS, HTTP, or QUIC listener with the server group. This is the default value.\n*   **HTTPS**: allows you to associate HTTPS listeners with backend servers.\n*   **gRPC**: allows you to associate an HTTPS or QUIC listener with the server group.\n\n>  You do not need to specify a backend protocol if you set **ServerGroupType** to **Fc**.",
       "position": "Query",
       "type": "String",
       "required": false
@@ -72,8 +90,15 @@
       "required": false
     },
     {
+      "name": "SlowStartConfig",
+      "description": "The configurations of slow starts.\nAfter slow starts are enabled, SLB prefetches data to newly added backend servers. Requests distributed to the backend servers gradually increase.\n\n> - Basic SLB instances do not support slow starts. Standard and WAF-enabled SLB instances support slow starts. \n>* Server groups of the server and IP types support slow starts. Server groups of the Function Compute type do not support slow starts.\n>* Slow start is supported only by the weighted round-robin scheduling algorithm.",
+      "position": "Query",
+      "type": "Struct",
+      "required": false
+    },
+    {
       "name": "StickySessionConfig",
-      "description": "The configuration of session persistence.\n\n> This parameter takes effect when the **ServerGroupType** parameter is set to **Instance** or **Ip**.",
+      "description": "The configuration of session persistence.\n\n>  This parameter takes effect when the **ServerGroupType** parameter is set to **Instance** or **Ip**.",
       "position": "Query",
       "type": "Struct",
       "required": false
@@ -101,7 +126,7 @@
     },
     {
       "name": "VpcId",
-      "description": "The ID of the virtual private cloud (VPC). You can add only backend servers that are deployed in the specified VPC to the server group.\n\n> This parameter takes effect when the **ServerGroupType** parameter is set to **Instance** or **Ip**.",
+      "description": "The ID of the virtual private cloud (VPC). You can add only servers that are deployed in the specified VPC to the server group.\n\n>  This parameter takes effect when the **ServerGroupType** parameter is set to **Instance** or **Ip**.",
       "position": "Query",
       "type": "String",
       "required": false
