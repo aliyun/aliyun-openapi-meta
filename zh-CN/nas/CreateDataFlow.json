@@ -1,30 +1,27 @@
 {
   "name": "CreateDataFlow",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
       "name": "AutoRefreshInterval",
-      "description": "自动更新间隔时间，每隔该时间间隔，CPFS检查目录内是否存在数据更新，如果有数据更新，启动自动更新任务，单位：分钟。\n\n取值范围：5~525600，默认值：10。",
+      "description": "自动更新间隔时间，每隔该时间间隔，CPFS检查目录内是否存在数据更新，如果有数据更新，启动自动更新任务，单位：分钟。\n\n取值范围：10~525600，默认值：10。\n> 当文件系统类型为CPFS时，本参数生效。",
       "position": "Query",
       "type": "Long",
       "required": false
     },
     {
       "name": "AutoRefreshPolicy",
-      "description": "自动更新策略，源端数据更新以后，数据更新导入到CPFS的策略。\n\n- None（默认值）：源端的数据更新不自动导入CPFS，用户可通过数据流动任务导入源端的数据更新。\n- ImportChanged：源端的数据更新自动导入CPFS。",
+      "description": "自动更新策略，源端数据更新以后，数据更新导入到CPFS的策略。\n\n- None（默认值）：源端的数据更新不自动导入CPFS，用户可通过数据流动任务导入源端的数据更新。\n- ImportChanged：源端的数据更新自动导入CPFS。\n> 当文件系统类型为CPFS时，本参数生效。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "AutoRefreshs",
-      "description": "自动更新配置信息集合。",
+      "description": "自动更新配置信息集合。\n> 当文件系统类型为CPFS时，本参数生效。",
       "position": "Query",
       "type": "RepeatList",
       "required": false,
@@ -60,17 +57,24 @@
     },
     {
       "name": "FileSystemId",
-      "description": "文件系统ID。",
+      "description": "文件系统ID。\n\n- CPFS：必须以`cpfs-`开头，例如cpfs-125487\\*\\*\\*\\*。\n\n- CPFS智算版：必须以`bmcpfs-`开头，例如bmcpfs-0015\\*\\*\\*\\*。",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
-      "name": "FsetId",
-      "description": "Fileset ID。",
+      "name": "FileSystemPath",
+      "description": "CPFS智算版文件系统内的目录。限制如下。\n- 必须以/开头和结尾。\n\n- 该目录必须是CPFS智算版上的已有目录。\n\n- 长度为1~1023个字符之间。\n\n- 使用UTF-8编码。\n\n> 当文件系统类型为CPFS智算版时，本参数必填。",
       "position": "Query",
       "type": "String",
-      "required": true
+      "required": false
+    },
+    {
+      "name": "FsetId",
+      "description": "Fileset ID。\n> 当文件系统类型为CPFS时，该参数必填。",
+      "position": "Query",
+      "type": "String",
+      "required": false
     },
     {
       "name": "SourceSecurityType",
@@ -81,17 +85,24 @@
     },
     {
       "name": "SourceStorage",
-      "description": "源端存储的访问路径。格式：`<storage type>://<path>`。\n\n其中：\n\n- storage type：目前只支持OSS。\n- path：OSS的Bucket名称。限制如下。\n\n    - 仅支持小写字母、数字和短划线（-）且必须以小写字母或者数字开头和结尾。\n\n    - 长度为8~128个英文字符。\n\n    - 使用UTF-8编码。\n\n    - 不能以`http://`和`https://`开头。\n\n> OSS Bucket必须为在该地域已存在的Bucket。",
+      "description": "源端存储的访问地址。格式：`<storage type>://[<account id>:]<path>`。\n\n其中：\n\n- storage type：目前只支持oss。\n- account id：可选参数，源端存储所属账号的UID。使用跨账号的OSS时，该参数必填。\n- path：OSS的Bucket名称。限制如下。\n\n    - 仅支持小写字母、数字和短划线（-）且必须以小写字母或者数字开头和结尾。\n\n    - 最长为128个字符。\n\n    - 使用UTF-8编码。\n\n> - OSS Bucket必须为在该地域已存在的Bucket。\n> - 仅CPFS智算版2.6.0及以上版本支持 account id 参数。",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
+      "name": "SourceStoragePath",
+      "description": "源端存储Bucket内的访问路径。限制如下。\n\n   - 必须以/开头和结尾。\n\n- 区分大小写。\n\n- 长度为1~1023个字符之间。\n\n- 使用UTF-8编码。\n\n> 当文件系统类型为CPFS智算版时，本参数必填。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "Throughput",
-      "description": "数据流动的传输带宽上限，单位：MB/s 。取值： \n\n- 600\n- 1200\n- 1500\n\n> 数据流动的传输带宽必须小于文件系统的IO带宽。",
+      "description": "数据流动的传输带宽上限，单位：MB/s 。取值： \n\n- 600\n- 1200\n- 1500\n\n> 数据流动的传输带宽必须小于文件系统的IO带宽。\n> 当文件系统类型为CPFS时，该参数必填。",
       "position": "Query",
       "type": "Long",
-      "required": true
+      "required": false
     }
   ]
 }

@@ -1,44 +1,41 @@
 {
   "name": "ConfigureDtsJob",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
       "name": "Checkpoint",
-      "description": "增量数据迁移的启动位点或者同步位点，格式为Unix时间戳，单位为秒。",
+      "description": "增量数据迁移的启动位点或者同步位点，格式为Unix时间戳，单位为秒。\n\n> 若需传入**Checkpoint**参数，必须确保不存在与目标DTS实例相同源库的其他正在运行的DTS实例。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "DataCheckConfigure",
-      "description": "迁移或同步实例的数据校验任务，格式为JSON字符串，如参数限制或告警配置等信息。更多信息请参见[DataCheckConfigure参数说明](~~459023~~)。",
+      "description": "数据校验任务的参数，格式为JSON字符串，如参数限制或告警配置等信息。更多信息请参见[DataCheckConfigure参数说明](~~459023~~)。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "DataInitialization",
-      "description": "是否执行全量数据迁移或全量数据初始化，取值：\n\n- **true**：是，为默认值。\n- **false**：否。",
+      "description": "是否执行全量数据迁移或全量数据初始化，取值：\n\n- **true**：是，为默认值。\n- **false**：否。\n\n> 若**JobType**取值为**CHECK**，只能取值为**false**。",
       "position": "Query",
       "type": "Boolean",
       "required": true
     },
     {
       "name": "DataSynchronization",
-      "description": "是否执行增量数据迁移或同步，取值：\n\n- **false**：否，为默认值。\n- **true**：是。",
+      "description": "是否执行增量数据迁移或同步，取值：\n\n- **false**：否，为默认值。\n- **true**：是。\n\n> 若**JobType**取值为**CHECK**，只能取值为**false**。",
       "position": "Query",
       "type": "Boolean",
       "required": true
     },
     {
       "name": "DbList",
-      "description": "待迁移或同步的对象，格式为JSON串。详细定义说明，请参见[迁移、同步或订阅对象说明](~~209545~~)。",
+      "description": "待迁移或同步的对象，格式为JSON串。详细定义说明，请参见[迁移、同步或订阅对象说明](~~209545~~)。\n\n- DbList最多支持传入1 MB的数据。\n- 若DbList中包含过滤条件，则DbList整体（含过滤条件）的长度最大支持1 MB。\n- 分布式任务（例如源端为PolarDB-X 1.0的迁移或同任务）的DbList会根据物理分表进行拆分并生成多个子任务，子任务的DbList最多支持1 MB的数据。",
       "position": "Body",
       "type": "String",
       "required": false
@@ -86,6 +83,41 @@
       "required": false
     },
     {
+      "name": "DestClientCertOssUrl",
+      "description": "目标库通过SSL安全连接时，客户端证书的路径。\n\n> 当前暂不支持此功能，请勿传入此参数。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "DestClientKeyOssUrl",
+      "description": "目标库通过SSL安全连接时，客户端证书私钥的路径。\n\n> 当前暂不支持此功能，请勿传入此参数。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "DestClientPassword",
+      "description": "目标库通过SSL安全连接时，客户端证书私钥的密码。\n\n> 当前暂不支持此功能，请勿传入此参数。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "DestPrimaryVswId",
+      "description": "VPCNAT目标端主交换机。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "DestSecondaryVswId",
+      "description": "VPCNAT目标端备交换机。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "DestinationEndpointDataBaseName",
       "description": "目标实例中迁移对象所属的数据库名称。\n> - 当目标实例或目标数据库的类型为PolarDB PostgreSQL版（兼容Oracle）、AnalyticDB PostgreSQL、PostgreSQL、MaxCompute、MongoDB数据库时，本参数才可用且必须传入。\n- 若目标库为MaxCompute，您需要填写为MaxCompute实例的Project。",
       "position": "Query",
@@ -94,7 +126,7 @@
     },
     {
       "name": "DestinationEndpointEngineName",
-      "description": "目标实例的数据库类型。\n- **MYSQL**：MySQL数据库（包括RDS MySQL和自建MySQL）。\n- **MARIADB**：RDS MariaDB。\n- **PolarDB**：PolarDB MySQL版。\n- **POLARDB_O**：PolarDB PostgreSQL版（兼容Oracle）。\n- **POLARDBX10**：PolarDB-X 1.0（原DRDS）。\n- **POLARDBX20**：云原生分布式数据库PolarDB-X 2.0。\n- **ORACLE**：自建Oracle。\n- **PostgreSQL**：PostgreSQL数据库（包括RDS PostgreSQL、自建PostgreSQL）。\n- **MSSQL**：SQL Server数据库（包括RDS SQL Server和自建SQL Server）。\n- **ADS**：AnalyticDB MySQL 2.0。\n- **ADB30**：AnalyticDB MySQL 3.0。\n- **MONGODB**：MongoDB数据库（包括自建MongoDB和云数据库MongoDB）。\n- **GREENPLUM**：AnalyticDB PostgreSQL。\n- **KAFKA**：Kafka数据库（包括消息队列Kafka版和自建Kafka）。\n- **DATAHUB**：阿里云流式数据服务DataHub。\n- **DB2**：自建DB2 LUW。\n- **AS400**：Db2 for i。\n- **ODPS**：MaxCompute。\n- **Tablestore**：表格存储Tablestore。\n- **ELK**：阿里云检索分析服务Elasticsearch。\n- **REDIS**：Redis数据库（包括自建Redis和云数据库Redis）。\n\n> - 默认取值为**MYSQL**。\n- 当目标实例的数据库类型取值为**KAFKA**、**MONGODB**、**PolarDB**时，您还需要在预留参数Reserve中传入部分信息。配置方式，请参见[Reserve参数说明](~~273111~~)。",
+      "description": "目标实例的数据库类型。\n- **MYSQL**：MySQL数据库（包括RDS MySQL和自建MySQL）。\n- **MARIADB**：RDS MariaDB。\n- **PolarDB**：PolarDB MySQL版。\n- **POLARDB_O**：PolarDB PostgreSQL版（兼容Oracle）。\n- **POLARDBX10**：PolarDB-X 1.0（原DRDS）。\n- **POLARDBX20**：云原生分布式数据库PolarDB-X 2.0。\n- **ORACLE**：自建Oracle。\n- **PostgreSQL**：PostgreSQL数据库（包括RDS PostgreSQL、自建PostgreSQL）。\n- **MSSQL**：SQL Server数据库（包括RDS SQL Server和自建SQL Server）。\n- **ADS**：AnalyticDB MySQL 2.0。\n- **ADB30**：AnalyticDB MySQL 3.0。\n- **MONGODB**：MongoDB数据库（包括自建MongoDB和云数据库MongoDB）。\n- **ROCKETMQ**：云消息队列RocketMQ。\n- **GREENPLUM**：AnalyticDB PostgreSQL。\n- **KAFKA**：Kafka数据库（包括消息队列Kafka版和自建Kafka）。\n- **DATAHUB**：阿里云流式数据服务DataHub。\n- **DB2**：自建DB2 LUW。\n- **AS400**：Db2 for i。\n- **ODPS**：MaxCompute。\n- **Tablestore**：表格存储Tablestore。\n- **ELK**：阿里云检索分析服务Elasticsearch。\n- **REDIS**：Redis数据库，包括自建Redis和云数据库Tair（兼容Redis）。\n- **LINDORM**：云原生多模数据库Lindorm。\n\n> - 默认取值为**MYSQL**。\n- 当目标实例的数据库类型取值为**KAFKA**、**MONGODB**、**PolarDB**时，您还需要在预留参数Reserve中传入部分信息。配置方式，请参见[Reserve参数说明](~~273111~~)。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -115,7 +147,7 @@
     },
     {
       "name": "DestinationEndpointInstanceType",
-      "description": "目标实例类型，取值：\n\n**阿里云数据库**\n- **RDS**：RDS MySQL、RDS SQLServer、RDS PostgreSQL、RDS MariaDB。\n- **PolarDB**：PolarDB MySQL版。\n- **DISTRIBUTED_POLARDBX10**：PolarDB-X 1.0（原DRDS）。\n- **POLARDBX20**：PolarDB-X 2.0。\n- **REDIS**：云数据库Redis。\n- **ADS**：AnalyticDB MySQL 2.0、3.0。\n- **MONGODB**：云数据库MongoDB。\n- **GREENPLUM**：AnalyticDB PostgreSQL。\n- **DATAHUB**：阿里云流数据处理平台DataHub。\n- **ELK**：阿里云检索分析服务Elasticsearch。\n- **Tablestore**：表格存储Tablestore。\n- **ODPS**：MaxCompute。\n\n**自建数据库**\n- **OTHER**：有公网IP的自建数据库。\n- **ECS**：ECS上的自建数据库。\n- **EXPRESS**：通过专线接入的自建数据库。\n- **CEN**：通过云企业网CEN接入的自建数据库。\n- **DG**：通过数据库网关接入的自建数据库。\n\n> - 如目标实例为PolarDB PostgreSQL版（兼容Oracle）集群，则目标实例类型需选择**OTHER**或者**EXPRESS**，作为自建数据库，且通过公网IP或者专线的方式接入。\n- 目标实例为消息队列Kafka版，则目标实例类型需选择**ECS**或者**EXPRESS**，作为自建数据库，且通过ECS或者专线的方式接入。\n- 关于支持的源库和目标库对应情况，请参见<props=\"china\">[支持的数据库](~~131497~~)</props><props=\"intl\">[支持的源和目标数据库](~~176064~~)</props>。\n- 当目标实例为自建数据库时，您还需要执行相应的准备工作，请参见[准备工作概览](~~146958~~)。",
+      "description": "目标实例类型，取值：\n\n**阿里云数据库**\n- **RDS**：RDS MySQL、RDS SQLServer、RDS PostgreSQL、RDS MariaDB。\n- **PolarDB**：PolarDB MySQL版。\n- **DISTRIBUTED_POLARDBX10**：PolarDB-X 1.0（原DRDS）。\n- **POLARDBX20**：PolarDB-X 2.0。\n- **REDIS**：云数据库Tair（兼容Redis）。\n- **ADS**：AnalyticDB MySQL 2.0、3.0。\n- **MONGODB**：云数据库MongoDB。\n- **ROCKETMQ**：云数据库RocketMQ。\n- **GREENPLUM**：AnalyticDB PostgreSQL。\n- **DATAHUB**：阿里云流数据处理平台DataHub。\n- **ELK**：阿里云检索分析服务Elasticsearch。\n- **Tablestore**：表格存储Tablestore。\n- **ODPS**：MaxCompute。\n- **LINDORM**：云原生多模数据库Lindorm。\n\n**自建数据库**\n- **OTHER**：有公网IP的自建数据库。\n- **ECS**：ECS上的自建数据库。\n- **EXPRESS**：通过专线接入的自建数据库。\n- **CEN**：通过云企业网CEN接入的自建数据库。\n- **DG**：通过数据库网关接入的自建数据库。\n\n> - 如目标实例为PolarDB PostgreSQL版（兼容Oracle）集群，则目标实例类型需选择**OTHER**或者**EXPRESS**，作为自建数据库，且通过公网IP或者专线的方式接入。\n- 目标实例为消息队列Kafka版，则目标实例类型需选择**ECS**或者**EXPRESS**，作为自建数据库，且通过ECS或者专线的方式接入。\n- 关于支持的源库和目标库对应情况，请参见<props=\"china\">[支持的数据库](~~131497~~)</props><props=\"intl\">[支持的源和目标数据库](~~176064~~)</props>。\n- 当目标实例为自建数据库时，您还需要执行相应的准备工作，请参见[准备工作概览](~~146958~~)。",
       "position": "Query",
       "type": "String",
       "required": true
@@ -227,21 +259,21 @@
     },
     {
       "name": "JobType",
-      "description": "任务类型，取值为：\n\n- **MIGRATION**：迁移。\n- **SYNC**：同步。",
+      "description": "任务类型，取值为：\n\n- **MIGRATION**：数据迁移。\n- **SYNC**：数据同步。\n- **CHECK**：数据校验（单独购买）。\n\n> - 若取值为**MIGRATION**或**SYNC**，您也可以在迁移或同步实例中配置数据校验任务。\n- 若需要配置数据校验任务，还需配置**DataCheckConfigure**参数。",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
       "name": "MaxDu",
-      "description": "",
+      "description": "DU上限。\n\n> 仅Serverless实例支持。",
       "position": "Query",
       "type": "Double",
       "required": false
     },
     {
       "name": "MinDu",
-      "description": "",
+      "description": "DU下限。\n\n> 仅Serverless实例支持。",
       "position": "Query",
       "type": "Double",
       "required": false
@@ -255,8 +287,15 @@
     },
     {
       "name": "Reserve",
-      "description": "DTS预留参数，格式为JSON字符串，您可以传入本参数完善源目库信息（如目标Kafka数据库的数据存储格式、云企业网CEN的实例ID）。更多信息，请参见[Reserve参数说明](~~273111~~)。",
+      "description": "DTS预留参数，格式为JSON字符串，您可以传入本参数完善源目库信息（如目标Kafka数据库的数据存储格式、云企业网CEN的实例ID、配置ETL功能）。更多信息，请参见[Reserve参数说明](~~273111~~)。",
       "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "ResourceGroupId",
+      "description": "资源组ID。",
+      "position": "Query",
       "type": "String",
       "required": false
     },
@@ -269,7 +308,7 @@
     },
     {
       "name": "SourceEndpointEngineName",
-      "description": "源实例的数据库类型。\n- **MYSQL**：MySQL数据库（包括RDS MySQL和自建MySQL）。\n- **MARIADB**：RDS MariaDB。\n- **PolarDB**：PolarDB MySQL版。\n- **POLARDB_O**：PolarDB PostgreSQL版（兼容Oracle）。\n- **POLARDBX10**：PolarDB-X 1.0（原DRDS）。\n- **POLARDBX20**：云原生分布式数据库PolarDB-X 2.0。\n- **ORACLE**：自建Oracle。\n- **POSTGRESQL**：PostgreSQL数据库（包括RDS PostgreSQL和自建PostgreSQL）。\n- **MSSQL**：SQL Server数据库（包括RDS SQL Server和自建SQL Server）。\n- **MONGODB**：MongoDB数据库（包括自建MongoDB和云数据库MongoDB）。\n- **DB2**：自建DB2 LUW。\n- **AS400**：自建Db2 for i。\n- **DMSPOLARDB**：数据管理DMS逻辑库。\n- **HBASE**：自建HBase数据库。\n- **TERADATA**：Teradata数据库。\n- **TiDB**：TiDB数据库。\n- **REDIS**：Redis数据库（包括自建Redis和云数据库Redis）。\n\n\n> - 默认取值为**MYSQL**。\n-  当源实例的数据库类型取值为**MONGODB**时，您还需要在预留参数Reserve中传入部分信息。配置方式，请参见[Reserve参数说明](~~273111~~)。",
+      "description": "源实例的数据库类型。\n- **MYSQL**：MySQL数据库（包括RDS MySQL和自建MySQL）。\n- **MARIADB**：RDS MariaDB。\n- **PolarDB**：PolarDB MySQL版。\n- **POLARDB_O**：PolarDB PostgreSQL版（兼容Oracle）。\n- **POLARDBX10**：PolarDB-X 1.0（原DRDS）。\n- **POLARDBX20**：云原生分布式数据库PolarDB-X 2.0。\n- **ADB30**：AnalyticDB MySQL版 3.0。\n- **ORACLE**：自建Oracle。\n- **POSTGRESQL**：PostgreSQL数据库（包括RDS PostgreSQL和自建PostgreSQL）。\n- **MSSQL**：SQL Server数据库（包括RDS SQL Server和自建SQL Server）。\n- **MONGODB**：MongoDB数据库（包括自建MongoDB和云数据库MongoDB）。\n- **DB2**：自建DB2 LUW。\n- **AS400**：自建Db2 for i。\n- **DMSPOLARDB**：数据管理DMS逻辑库。\n- **HBASE**：自建HBase数据库。\n- **TERADATA**：Teradata数据库。\n- **TiDB**：TiDB数据库。\n- **REDIS**：Redis数据库，包括自建Redis和云数据库Tair（兼容Redis）。\n- **LINDORM**：云原生多模数据库Lindorm。\n\n\n>- 默认取值为**MYSQL**。\n - 当源实例的数据库类型取值为**MONGODB**时，您还需要在预留参数Reserve中传入部分信息。配置方式，请参见[Reserve参数说明](~~273111~~)。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -290,7 +329,7 @@
     },
     {
       "name": "SourceEndpointInstanceType",
-      "description": "源实例类型，取值：\n\n**阿里云数据库**\n\n- **RDS**：RDS MySQL、RDS SQL Server、RDS PostgreSQL、RDS MariaDB。\n- **PolarDB**：PolarDB MySQL版。\n- **REDIS**：云数据库Redis。\n- **DISTRIBUTED_POLARDBX10**：PolarDB-X 1.0（原DRDS）。\n- **POLARDBX20**：PolarDB-X 2.0。\n- **MONGODB**：云数据库MongoDB。\n- **DISTRIBUTED_DMSLOGICDB**：数据管理DMS逻辑库。\n\n**自建数据库**\n- **OTHER**：有公网IP的自建数据库。\n- **ECS**：ECS上的自建数据库。\n- **EXPRESS**：通过专线接入的自建数据库。\n- **CEN**：通过云企业网CEN接入的自建数据库。\n- **DG**：通过数据库网关接入的自建数据库。\n\n\n> - 如源实例为PolarDB PostgreSQL版（兼容Oracle）集群，则源实例类型需选择**OTHER**或者**EXPRESS**，作为自建数据库，且通过公网IP或者专线的方式接入。\n- 关于支持的源库和目标库对应情况，请参见<props=\"china\">[支持的数据库](~~131497~~)</props><props=\"intl\">[支持的源和目标数据库](~~176064~~)</props>。\n- 当源实例为自建数据库时，您还需要执行相应的准备工作，请参见[准备工作概览](~~146958~~)。",
+      "description": "源实例类型，取值：\n\n**阿里云数据库**\n\n- **RDS**：RDS MySQL、RDS SQL Server、RDS PostgreSQL、RDS MariaDB。\n- **PolarDB**：PolarDB MySQL版。\n- **ADS**：AnalyticDB MySQL版。\n- **REDIS**：云数据库Tair（兼容Redis）。\n- **DISTRIBUTED_POLARDBX10**：PolarDB-X 1.0（原DRDS）。\n- **POLARDBX20**：PolarDB-X 2.0。\n- **MONGODB**：云数据库MongoDB。\n- **DISTRIBUTED_DMSLOGICDB**：数据管理DMS逻辑库。\n- **LINDORM**：云原生多模数据库Lindorm。\n\n**自建数据库**\n- **OTHER**：有公网IP的自建数据库。\n- **ECS**：ECS上的自建数据库。\n- **EXPRESS**：通过专线接入的自建数据库。\n- **CEN**：通过云企业网CEN接入的自建数据库。\n- **DG**：通过数据库网关接入的自建数据库。\n\n\n> - 如源实例为PolarDB PostgreSQL版（兼容Oracle）集群，则源实例类型需选择**OTHER**或者**EXPRESS**，作为自建数据库，且通过公网IP或者专线的方式接入。\n- 关于支持的源库和目标库对应情况，请参见[支持的数据库](~~131497~~)。\n- 当源实例为自建数据库时，您还需要执行相应的准备工作，请参见[准备工作概览](~~130607~~)。",
       "position": "Query",
       "type": "String",
       "required": true
@@ -366,8 +405,43 @@
       "required": false
     },
     {
+      "name": "SrcClientCertOssUrl",
+      "description": "源库通过SSL安全连接时，客户端证书的路径。\n\n> 当前暂不支持此功能，请勿传入此参数。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "SrcClientKeyOssUrl",
+      "description": "源库通过SSL安全连接时，客户端证书私钥的路径。\n\n> 当前暂不支持此功能，请勿传入此参数。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "SrcClientPassword",
+      "description": "源库通过SSL安全连接时，客户端证书私钥的密码。\n\n> 当前暂不支持此功能，请勿传入此参数。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "SrcPrimaryVswId",
+      "description": "VPCNAT源端主交换机。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "SrcSecondaryVswId",
+      "description": "VPCNAT源端备交换机。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "StructureInitialization",
-      "description": "是否执行库表结构迁移或初始化，取值：\n\n- **true**：是，为默认值。\n- **false**：否。",
+      "description": "是否执行库表结构迁移或初始化，取值：\n\n- **true**：是，为默认值。\n- **false**：否。\n\n> 若**JobType**取值为**CHECK**，只能取值为**false**。",
       "position": "Query",
       "type": "Boolean",
       "required": true

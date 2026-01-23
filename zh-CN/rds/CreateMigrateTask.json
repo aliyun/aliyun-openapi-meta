@@ -1,23 +1,20 @@
 {
   "name": "CreateMigrateTask",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
       "name": "BackupMode",
-      "description": "迁移上云任务类型，取值：\n* **FULL**：通过全量备份文件去执行还原操作。\n* **UPDF**：通过增量文件或者日志文件去还原增量部分的数据。",
+      "description": "迁移上云任务类型，取值：\n* **FULL**：通过全量备份文件执行还原操作，适用于首次迁移或完整数据恢复的场景。\n* **UPDF**：通过增量备份文件或日志文件还原增量数据，适用于已有全量备份的基础上进行增量同步的场景。",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
       "name": "CheckDBMode",
-      "description": "打开数据库后一致性检查方法，取值：\n* **SyncExecuteDBCheck**：同步执行DB检查。\n* **AsyncExecuteDBCheck**：异步执行DB检查。\n\n默认值为**AsyncExecuteDBCheck**（兼容SQL Server 2008 R2）。\n> 当**IsOnlineDB**=**True**时，该值有效。",
+      "description": "打开数据库后的一致性检查方法，仅当IsOnlineDB=True时生效。取值：\n\n- **SyncExecuteDBCheck**：同步执行DB检查，适用于对数据一致性要求较高的场景。\n- **AsyncExecuteDBCheck**：异步执行DB检查，性能更高，但可能延迟发现潜在问题。\n\n默认值为**AsyncExecuteDBCheck**（兼容SQL Server 2008 R2）。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -38,28 +35,28 @@
     },
     {
       "name": "IsOnlineDB",
-      "description": "是否将还原后的数据库带上线，便于用户访问，取值：\n\n* **True**：将数据库带上线。\n* **False**：不将数据库带上线。\n\n>目前SQL Server 2008 R2版本该值恒定为**True**。",
+      "description": "是否将还原后的数据库带上线，便于用户访问，取值：\n\n* **True**：将数据库带上线。\n* **False**：不将数据库带上线。\n\n> * SQL Server 2008 R2版本该值恒定为True。\n> * **IsOnlineDB**=**True**时，**BackupMode**必须为**FULL**。\n> * **IsOnlineDB**=**False**时，**BackupMode**必须为**UPDF**。",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
       "name": "MigrateTaskId",
-      "description": "迁移任务ID：\n\n* **BackupMode**=**FULL**时，该值为空。（兼容SQL Server 2008 R2）。\n* **BackupMode**=**UPDF**时，该值为对应FULL任务的ID。\n\n> * **IsOnlineDB**=**True**时，**BackupMode**必须取值为**FULL**。\n> * **IsOnlineDB**=**False**时，**BackupMode**必须为**UPDF**。",
+      "description": "迁移任务ID，取值：\n\n- **BackupMode**=**FULL**时，该值为空，无需填写。（兼容SQL Server 2008 R2）。\n- **BackupMode**=**UPDF**时，该值为对应FULL任务的ID，可调用DescribeMigrateTasks获取。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "OSSUrls",
-      "description": "备份文件所在OSS共享URL地址（Encode编码后的URL）。\n\n有多个地址时，先使用“|”隔开，再编码后传入参数。\n\n> SQL Server 2008 R2必须传入该参数。",
+      "description": "备份文件所在OSS的共享URL地址（Encode编码后的URL）。当存在多个地址时，先使用“|”隔开，再编码后传入参数。\n\n> SQL Server 2008 R2必须传入该参数。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "OssObjectPositions",
-      "description": "OSS的组成部分。取值由3段组成，用英文冒号（:）分隔： \n* OSS Endpoint地址：oss-ap-southeast-1.aliyuncs.com。\n* OSS Bucket名字：rdsmssqlsingapore。\n* OSS上的备份文件Key：autotest_2008R2_TestMigration_FULL.bak。\n\n> * 该参数对于SQL Server 2008 R2版本实例是可选参数。\n> * 该参数对于SQL Server 2008 R2以上版本实例是必传参数。",
+      "description": "OSS文件的组成部分，由以下三部分组成，并用英文冒号（:）分隔：\n- **OSS Endpoint地址**：oss-ap-southeast-1.aliyuncs.com。\n- **OSS Bucket名称**：rdsmssqlsingapore。\n- **OSS上的备份文件名**：autotest_2008R2_TestMigration_FULL.bak。\n\n> 对于SQL Server 2008 R2以上版本，必须传入该参数。",
       "position": "Query",
       "type": "String",
       "required": false

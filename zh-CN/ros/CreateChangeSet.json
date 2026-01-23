@@ -1,9 +1,6 @@
 {
   "name": "CreateChangeSet",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -17,7 +14,7 @@
     },
     {
       "name": "ChangeSetType",
-      "description": "更改集的类型。取值：\n- CREATE：为新资源栈创建更改集。\n- UPDATE（默认值）：为现有资源栈创建更改集。\n- IMPORT：为新资源栈或现有资源栈创建更改集导入非ROS托管资源。\n\n当为新资源栈创建更改集时，ROS会创建具有唯一资源栈ID的资源栈，资源栈将处于REVIEW_IN_PROGRESS状态，直到您执行更改集。  \n禁止使用UPDATE类型为新资源栈创建更改集，或使用CREATE类型为现有资源栈创建更改集。",
+      "description": "更改集的类型。取值：\n- CREATE：为新资源栈创建更改集。\n- UPDATE（默认值）：为现有资源栈创建更改集。\n- IMPORT：为新资源栈或现有资源栈创建更改集导入非ROS托管资源。\n\n当您选择更改集类型为CREATE时，ROS会为您创建新的资源栈。此时资源栈将处于`REVIEW_IN_PROGRESS`状态，直到您执行更改集。\n\n> - 禁止使用UPDATE类型为新资源栈创建更改集，或使用CREATE类型为现有资源栈创建更改集。\n> - IMPORT类型的更改集不支持设置资源栈策略，请在创建或更新资源栈时设置相关参数。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -80,14 +77,14 @@
     },
     {
       "name": "RamRoleName",
-      "description": "RAM角色名称。ROS会扮演该角色创建资源栈，使用角色的凭证代表用户进行接口调用。  \nROS始终将此角色用于资源栈上将进行的操作。只要用户有权在资源栈上进行操作，即使用户无权使用角色，ROS也会使用此角色，确保角色授予最少的权限。   \n如果用户未指定该值，ROS将使用以前与资源栈关联的角色。如果没有可用角色，ROS将使用从您的用户凭证中生成的临时凭证。   \nRAM角色名称最大长度为64个字节。",
+      "description": "RAM角色名称。ROS会扮演该角色创建资源栈，使用角色的凭证代表用户进行接口调用。  \nROS始终将此角色用于资源栈上将进行的操作。只要用户有权在资源栈上进行操作，即使用户无权使用角色，ROS也会使用此角色，确保角色授予最少的权限。   \n如果用户未指定该值，ROS将使用以前与资源栈关联的角色。如果没有可用角色，ROS将使用从您的用户凭证中生成的临时凭证。   \nRAM角色名称最大长度为64个字节。\n\nRAM角色的更多信息，请参见[资源栈角色](~~2568025~~)。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "RegionId",
-      "description": "更改集所属的地域ID。您可以调用[DescribeRegions](~~131035~~)查看最新的阿里云地域列表。",
+      "description": "更改集所属的地域ID。\n\n您可以调用[DescribeRegions](~~131035~~)查看最新的阿里云地域列表。",
       "position": "Query",
       "type": "String",
       "required": true
@@ -95,6 +92,13 @@
     {
       "name": "ReplacementOption",
       "description": "如果资源的属性发生了变化，且变化的属性不支持修改更新（资源物理ID不变），是否使用替换更新（删除资源，重新创建，资源物理ID会发生变化）。取值：\n- Enabled：允许替换更新。\n- Disabled（默认）：不允许替换更新。\n\n> 修改更新的优先级高于替换更新。该参数仅在更改集类型为UPDATE时生效。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "ResourceGroupId",
+      "description": "资源组ID。如果不指定该参数，更改集对应的资源栈将加入默认资源组。  \n关于资源组的更多信息，请参见[什么是资源组](~~94475~~)。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -128,7 +132,7 @@
     },
     {
       "name": "StackId",
-      "description": "创建更改集的资源栈的ID。ROS通过将此资源栈的信息与您提交的信息（例如：修改后的模板或不同的参数输入值）进行比较来生成更改集。  \n> 该参数仅在更改集类型为UPDATE或IMPORT时生效。",
+      "description": "创建更改集的资源栈的ID。ROS通过将此资源栈的信息与您提交的信息（例如：修改后的模板或不同的参数输入值）进行比较来生成更改集。  \n您可以通过调用[ListStacks - 查询资源栈列表](~~610818~~)接口获取资源栈ID。\n> 该参数仅在更改集类型为UPDATE或IMPORT时生效。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -142,7 +146,7 @@
     },
     {
       "name": "StackPolicyBody",
-      "description": "资源栈策略的结构，长度为1~16,384个字节。当更改集类型为CREATE时，您仅能指定StackPolicyBody或StackPolicyURL其中一个参数。 当更改集类型为UPDATE时，您仅能指定以下参数之一：\n\n- StackPolicyBody\n- StackPolicyURL\n- StackPolicyDuringUpdateBody\n- StackPolicyDuringUpdateURL",
+      "description": "资源栈策略的结构，长度为1~16,384个字节。\n\n当更改集类型为**CREATE**时，您仅能指定StackPolicyBody或StackPolicyURL其中一个参数。 \n\n当更改集类型为**UPDATE**时，您仅能指定以下参数之一：\n\n- StackPolicyBody\n- StackPolicyURL\n- StackPolicyDuringUpdateBody\n- StackPolicyDuringUpdateURL",
       "position": "Query",
       "type": "String",
       "required": false
@@ -163,28 +167,56 @@
     },
     {
       "name": "StackPolicyURL",
-      "description": "包含资源栈策略的文件的位置。URL必须指向位于Web服务器（HTTP或HTTPS）或阿里云OSS存储空间（例如：oss://ros/stack-policy/demo、oss://ros/stack-policy/demo?RegionId=cn-hangzhou）的策略，策略文件长为16384个字节。   \n\n> OSS地域如未指定，默认与接口参数RegionId相同。\n\n您仅能指定StackPolicyBody或StackPolicyURL其中一个参数。  \nURL的最大长度为1350个字节。    \n\n当更改集类型为CREATE时，您可以指定StackPolicyBody或StackPolicyURL参数，但不能同时指定。当更改集类型为UPDATE时，您仅能指定以下参数之一：\n\n- StackPolicyBody\n- StackPolicyURL\n- StackPolicyDuringUpdateBody\n- StackPolicyDuringUpdateURL",
+      "description": "包含资源栈策略的文件的位置。URL必须指向位于Web服务器（HTTP或HTTPS）或阿里云OSS存储空间（例如：oss://ros/stack-policy/demo、oss://ros/stack-policy/demo?RegionId=cn-hangzhou）的策略，策略文件长为16384个字节。\n\nURL的最大长度为1350个字节。       \n\n> OSS地域如未指定，默认与接口参数RegionId相同。\n\n当更改集类型为**CREATE**时，您仅能指定StackPolicyBody或StackPolicyURL参数之一。\n\n当更改集类型为**UPDATE**时，您仅能指定以下参数之一：\n\n- StackPolicyBody\n- StackPolicyURL\n- StackPolicyDuringUpdateBody\n- StackPolicyDuringUpdateURL",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
+      "name": "Tags",
+      "description": "更改集的标签。",
+      "position": "Query",
+      "type": "RepeatList",
+      "required": false,
+      "sub_parameters": [
+        {
+          "name": "Key",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "Value",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "TaintResources",
+      "description": "标记为脏资源的列表。",
+      "position": "Query",
+      "type": "RepeatList",
+      "required": false
+    },
+    {
       "name": "TemplateBody",
-      "description": "",
+      "description": "模板主体的结构。长度为1~524,288个字节。如果长度较大，则建议通过HTTP POST+Body Param的方式，将参数放在请求体中进行传递，避免因URL过长而导致请求失败。                                                             \n>  您必须且仅能指定TemplateBody、TemplateURL或TemplateId其中一个参数。",
       "position": "Body",
       "type": "String",
       "required": false
     },
     {
       "name": "TemplateId",
-      "description": "模板ID。支持共享模板和私有模板。\n\n您仅能指定TemplateBody、TemplateURL或TemplateId其中一个参数。",
+      "description": "模板ID。支持共享模板和私有模板。\n\n您可以通过调用[ListTemplates - 查询模板列表](~~610842~~)接口查看模板ID。\n\n> 您仅能指定TemplateBody、TemplateURL或TemplateId其中一个参数。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "TemplateScratchId",
-      "description": "场景模板ID。",
+      "description": "资源场景ID，即资源纳管场景ID。\n\n当ChangeSetType取值为IMPORT时，该参数才有效，该参数仅支持创建新的资源栈导入。\n\n如果您想通过资源纳管场景导入资源时，请只设置该参数，而不是模板相关参数。\n\n您可以通过调用[ListTemplateScratches - 查询资源场景列表](~~610832~~)查看资源纳管场景ID。",
       "position": "Query",
       "type": "String",
       "required": false

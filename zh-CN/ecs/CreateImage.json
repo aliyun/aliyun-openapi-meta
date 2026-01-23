@@ -1,23 +1,20 @@
 {
   "name": "CreateImage",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
       "name": "Architecture",
-      "description": "指定数据盘快照做镜像的系统盘后，需要通过Architecture确定系统盘的系统架构。取值范围：\n\n- i386。\n- x86_64。\n- arm64。\n\n默认值为x86_64。",
+      "description": "系统架构，指定数据盘快照做镜像的系统盘后，需要通过Architecture确定系统盘的系统架构。取值范围：\n\n- i386。\n- x86_64。\n- arm64。\n\n默认值：x86_64。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "BootMode",
-      "description": "修改镜像的启动模式。取值范围：\n\n- BIOS：BIOS启动模式。\n- UEFI：UEFI启动模式。\n\n> 您需要了解指定的镜像支持的启动模式，当通过该参数修改启动模式后，必须与镜像本身支持的启动模式匹配，实例才能正常启动。",
+      "description": "修改镜像的启动模式。取值范围：\n\n- BIOS：BIOS启动模式。\n- UEFI：UEFI启动模式。\n- （默认）UEFI-Preferred：双启动模式。  \n\n<notice>\n\n为了避免使用镜像不支持的启动模式导致实例无法正常启动，请您务必在选择该参数之前了解目标镜像支持的启动模式。镜像启动模式详情，请参见[镜像启动模式](~~2244655#b9caa9b8bb1wf~~)。\n\n</notice>",
       "position": "Query",
       "type": "String",
       "required": false
@@ -45,7 +42,7 @@
     },
     {
       "name": "DiskDeviceMapping",
-      "description": "创建的自定义镜像信息列表。",
+      "description": "创建自定义镜像使用的云盘和快照信息集合。如果需要根据系统盘快照和数据盘快照创建自定义镜像，请使用该参数指定快照。",
       "position": "Query",
       "type": "RepeatList",
       "required": false,
@@ -77,6 +74,20 @@
       ]
     },
     {
+      "name": "DryRun",
+      "description": "",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
+      "name": "Features",
+      "description": "镜像特性相关属性。",
+      "position": "Query",
+      "type": "Struct",
+      "required": false
+    },
+    {
       "name": "ImageFamily",
       "description": "镜像族系名称。长度为2~128个英文或中文字符。必须以大小写字母或中文开头，不能以aliyun和acs:开头，不能包含http://或者https://。可以包含数字、半角冒号（:）、下划线（_）或者短划线（-）。",
       "position": "Query",
@@ -92,21 +103,21 @@
     },
     {
       "name": "ImageVersion",
-      "description": "镜像版本。\n\n> 当您指定了实例ID（`InstanceId`），并且该实例的镜像是云市场镜像或者来自云市场镜像创建的自定义镜像时。该参数必须和当前实例的镜像的ImageVersion相同或置为空。",
+      "description": "镜像版本。\n\n> 当您指定了实例ID（`InstanceId`），并且该实例的镜像是云市场镜像或者来自云市场镜像创建的自定义镜像时，该参数必须和当前实例镜像的`ImageVersion`相同或置为空。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "InstanceId",
-      "description": "实例ID。",
+      "description": "实例ID。根据实例创建自定义镜像时，必须指定该参数。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "Platform",
-      "description": "指定数据盘快照做镜像的系统盘后，需要通过Platform确定系统盘的操作系统发行版。取值范围：\n\n- Aliyun\n- Anolis\n- CentOS\n- Ubuntu\n- CoreOS\n- SUSE\n- Debian\n- OpenSUSE\n- FreeBSD\n- RedHat\n- Kylin\n- UOS\n- Fedora\n- Fedora CoreOS\n- CentOS Stream\n- AlmaLinux\n- Rocky Linux\n- Gentoo\n- Customized Linux\n- Others Linux\n- Windows Server 2022\n- Windows Server 2019\n- Windows Server 2016\n- Windows Server 2012\n- Windows Server 2008\n- Windows Server 2003\n\n默认值：Others Linux。",
+      "description": "操作系统，指定数据盘快照做镜像的系统盘后，需要通过Platform确定系统盘的操作系统发行版。取值范围：\n\n- Aliyun\n- Anolis\n- CentOS\n- Ubuntu\n- CoreOS\n- SUSE\n- Debian\n- OpenSUSE\n- FreeBSD\n- RedHat\n- Kylin\n- UOS\n- Fedora\n- Fedora CoreOS\n- CentOS Stream\n- AlmaLinux\n- Rocky Linux\n- Gentoo\n- Customized Linux\n- Others Linux\n- Windows Server 2022\n- Windows Server 2019\n- Windows Server 2016\n- Windows Server 2012\n- Windows Server 2008\n- Windows Server 2003\n\n默认值：Others Linux。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -120,14 +131,14 @@
     },
     {
       "name": "ResourceGroupId",
-      "description": "自定义镜像所在的资源组ID。如果不设置该参数值，创建的镜像属于默认资源组。\n\n> 如果您当前使用的是RAM用户调用该接口，且`ResourceGroupId`取值为空，您需要注意，当RAM用户没有默认资源组权限时，调用接口会返回报错信息`Forbidden: User not authorized to operate on the specified resource`。请您设置RAM用户支持的资源组ID或者通过相应阿里云账号为该RAM用户授予默认资源组权限后，再次调用该接口。",
+      "description": "自定义镜像所在的资源组ID。如果不设置该参数值，创建的镜像属于默认资源组。\n\n> 如果您使用RAM用户调用该接口，且`ResourceGroupId`取值为空，您需要注意，当RAM用户没有默认资源组权限时，调用接口会返回报错信息`Forbidden: User not authorized to operate on the specified resource`。请设置RAM用户支持的资源组ID或者通过相应阿里云账号为该RAM用户授予默认资源组权限后，再次调用该接口。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "SnapshotId",
-      "description": "用于创建自定义镜像的快照ID。",
+      "description": "用于创建自定义镜像的快照ID。\n\n> 如果仅使用实例的系统盘快照创建自定义镜像时，您可以使用该参数，也可以选用参数`DiskDeviceMapping.N.SnapshotId`。如果增加数据盘快照，只能使用`DiskDeviceMapping.N.SnapshotId`参数指定快照。",
       "position": "Query",
       "type": "String",
       "required": false

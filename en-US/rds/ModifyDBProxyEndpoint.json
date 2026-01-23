@@ -1,16 +1,20 @@
 {
   "name": "ModifyDBProxyEndpoint",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
+      "name": "CausalConsistReadTimeout",
+      "description": "The consistency read timeout period. Unit: milliseconds. Default value: **10** Unit: milliseconds. Valid values: **0 to 60000**",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "ConfigDBProxyFeatures",
-      "description": "The features that you want to enable for the proxy endpoint. If you specify more than one feature, separate the features with semicolons (;). Format: `Feature 1:Status;Feature 2:Status;...`. Do not add a semicolon (;) at the end of the last value.\n\nValid feature values:\n\n*   **ReadWriteSpliting**: read/write splitting\n*   **ConnectionPersist**: connection pooling\n*   **TransactionReadSqlRouteOptimizeStatus**: transaction splitting\n\nValid status values:\n\n*   **1**: enabled\n*   **0**: disabled\n\n> If the instance runs PostgreSQL, you can enable only the read/write splitting feature, which is specified by **ReadWriteSpliting**.",
+      "description": "The capabilities that you want to enable for the proxy endpoint. If you specify more than one capability, separate the capabilities with semicolons (;). Format: `Capability 1:Status;Capability 2:Status;...`. Do not add a semicolon (;) at the end of the value.\n\nValid capability values:\n\n*   **ReadWriteSpliting**: read/write splitting\n*   **ConnectionPersist**: connection pooling\n*   **TransactionReadSqlRouteOptimizeStatus**: transaction splitting\n*   **AZProximityAccess**: nearest access\n*   **CausalConsistRead**: read consistency\n\nValid status values:\n\n*   **1**: enabled\n*   **0**: disabled\n\n> \n\n*   If the instance runs PostgreSQL, you can enable only read/write splitting, which is specified by **ReadWriteSpliting**.\n\n*   Nearest access is supported only by dedicated database proxies for RDS instances that run MySQL.",
       "position": "Query",
       "type": "String",
       "required": false
@@ -24,14 +28,14 @@
     },
     {
       "name": "DBProxyEndpointId",
-      "description": "The proxy endpoint ID. You can call the DescribeDBProxyEndpoint operation to query the proxy endpoint ID.\n\n> *   If the instance runs MySQL and you set **DbEndpointOperator** to **Delete** or **Modify**, you must specify DBProxyEndpointId.\n> *   If the instance runs PostgreSQL and you set **DbEndpointOperator** to **Delete**, **Modify**, or **Create**, you must specify DBProxyEndpointId.",
+      "description": "The ID of the proxy endpoint. You can call the DescribeDBProxyEndpoint operation to query the proxy endpoint ID.\n\n> *   If the instance runs MySQL and you set **DbEndpointOperator** to **Delete** or **Modify**, you must specify DBProxyEndpointId.\n> *   If the instance runs PostgreSQL and you set **DbEndpointOperator** to **Delete**, **Modify**, or **Create**, you must specify DBProxyEndpointId.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "DBProxyEngineType",
-      "description": "A reserved parameter. You do not need to specify this parameter.",
+      "description": "A deprecated parameter. You do not need to specify this parameter.",
       "position": "Query",
       "type": "String",
       "required": false
@@ -39,6 +43,13 @@
     {
       "name": "DbEndpointAliases",
       "description": "The description of the proxy terminal.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "DbEndpointMinSlaveCount",
+      "description": "The minimum number of reserved instances.",
       "position": "Query",
       "type": "String",
       "required": false
@@ -65,15 +76,29 @@
       "required": false
     },
     {
+      "name": "EffectiveSpecificTime",
+      "description": "The point in time that you want to specify. Specify the time in the ISO 8601 standard in the *yyyy-MM-dd*T*HH:mm:ss*Z format. The time must be in UTC.\n\n>  If **EffectiveTime** is set to **SpecificTime**, you must specify this parameter.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "EffectiveTime",
+      "description": "The effective time. Valid values:\n\n*   **Immediate**: The effective time is immediate.\n*   **MaintainTime**: The effective time is within the maintenance window. For more information, see ModifyDBInstanceMaintainTime.\n*   **SpecificTime**: The effective time is a specified point in time.\n\nDefault value: **MaintainTime**.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "ReadOnlyInstanceDistributionType",
-      "description": "The policy that is used to allocate read weights. Valid values:\n\n*   **Standard**: The system automatically allocates read weights to the instance and its read-only instances based on the specifications of the instances.\n*   **Custom**: You must manually allocate read weights to the instance and its read-only instances.\n\n> You must specify this parameter only when the read/write splitting feature is enabled. For more information about the permission allocation policy, see [Modify the latency threshold and read weights of ApsaraDB RDS for MySQL instances](~~96076~~) and [Enable and configure the database proxy feature for an ApsaraDB RDS for PostgreSQL instance](~~418272~~).",
+      "description": "The policy that is used to allocate read weights. Valid values:\n\n*   **Standard** (default): The system automatically assigns read weights to the primary and read-only instances based on the specifications of these instances.\n*   **Custom**: You must manually allocate read weights to the primary and read-only instances.\n\n>  You must specify this parameter when read/write splitting is enabled. For more information about the permission allocation policy, see [Modify the latency threshold and read weights of ApsaraDB RDS for MySQL instances](~~96076~~) and [Enable and configure the database proxy feature for an ApsaraDB RDS for PostgreSQL instance](~~418272~~).",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "ReadOnlyInstanceMaxDelayTime",
-      "description": "The latency threshold that is allowed for read/write splitting. If the latency on a read-only instance exceeds the threshold that you specified, the system no longer forwards read requests to the read-only instance. Unit: seconds If you do not specify this parameter, the original value of this parameter is retained. Valid values: **0** to **3600**. Default value: **30**.\n\n> You must specify this parameter only when the read/write splitting feature is enabled.",
+      "description": "The maximum latency threshold that is allowed for read/write splitting. If the latency on a read-only instance exceeds the threshold that you specified, the system no longer forwards read requests to the read-only instance. If you do not specify this parameter, the original value of this parameter is retained. Valid values: **0** to **3600**.\n\n> \n\n*   You must specify this parameter only when read/write splitting is enabled.\n\n*   If the database proxy endpoint has the read and write attributes, the default value of this parameter is **30** and read/write splitting is supported. If the database proxy endpoint has the read-only attribute, the default value of this parameter is **-1** and read/write splitting is not supported. Unit: seconds.",
       "position": "Query",
       "type": "String",
       "required": false
@@ -88,6 +113,20 @@
     {
       "name": "RegionId",
       "description": "The region ID. You can call the DescribeRegions operation to query the most recent region list.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "VSwitchId",
+      "description": "The ID of the vSwitch in the zone in which the proxy endpoint is specified. The default value is the ID of the vSwitch that corresponds to the default terminal of the database proxy. You can call the DescribeVSwitches operation to query existing vSwitches.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "VpcId",
+      "description": "The VPC ID of the zone in which the proxy endpoint is specified. The default value is the VPC ID that corresponds to the default terminal of the database proxy. You can call the DescribeDBInstanceAttribute operation to query the default VPC of an instance.",
       "position": "Query",
       "type": "String",
       "required": false

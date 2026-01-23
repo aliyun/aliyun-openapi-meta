@@ -1,9 +1,6 @@
 {
   "name": "CreateKey",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -31,7 +28,14 @@
     },
     {
       "name": "KeySpec",
-      "description": "密钥规格。不同密钥管理类型的取值不同，具体取值，请参见[密钥管理概述](~~480159~~)。\n\n> 不输入参数值时，密钥规格默认为Aliyun\\_AES_256。</props>",
+      "description": "密钥规格，不同密钥管理类型的取值不同。关于密钥规格、遵循的标准、密钥算法的详细介绍，请参见[密钥管理类型和密钥规格](~~480161~~)。\n\n> 不输入参数值时，密钥规格默认为Aliyun\\_AES_256。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "KeyStorageMechanism",
+      "description": "密钥存储位置，仅当DKMSInstanceId输入的是KMS硬件密钥管理实例时生效。取值：\n- HsmInternal（默认）：密钥存储在密码机中，不支持轮转。\n- HsmEncryptedDatabase：密钥存储在数据库中。\n  - 对称密钥：支持轮转。\n  - 非对称密钥：不支持轮转。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -45,14 +49,21 @@
     },
     {
       "name": "Origin",
-      "description": "密钥材料来源。取值：  \n- Aliyun_KMS（默认值）：密钥材料由阿里云KMS生成。\n- EXTERNAL：密钥材料由您自行导入。\n\n\n> - 请注意区分大小写。\n- 默认密钥（主密钥）支持选择Aliyun_KMS或EXTERNAL；软件密钥管理实例中的密钥仅支持选择Aliyun_KMS；硬件密钥管理实例中的密钥支持选择Aliyun_KMS或EXTERNAL。\n- 如果选择EXTERNAL，您需要自行导入密钥材料。具体操作，请参见[导入对称密钥材料](~~607841~~)或[导入非对称密钥材料](~~608827~~)。",
+      "description": "密钥材料来源。取值：  \n- Aliyun_KMS（默认值）：密钥材料由阿里云KMS生成。\n- EXTERNAL：密钥材料由您自行导入。\n\n\n> - 请注意区分大小写。\n- 如果选择EXTERNAL，您需要自行导入密钥材料。具体操作，请参见[导入对称密钥材料](~~607841~~)或[导入非对称密钥材料](~~608827~~)。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "Policy",
+      "description": "密钥策略的具体内容，JSON格式。最大长度为32768个字节。\n关于密钥策略的详细介绍，请参见[密钥策略概述](~~2716468~~)。不输入该参数时，使用默认凭据策略。\n\n密钥策略内容包含：\n\n- Version：密钥策略的版本，目前版本仅支持设置为1。\n- Statement：密钥策略的语句，每个密钥策略包含一个或多个语句。\n\n密钥策略格式为：\n\n```\n{\n  \"Version\": \"1\",\n  \"Statement\": [\n    {\n      \"Sid\": \"Enable RAM User Permissions\",\n      \"Effect\": \"Allow\",\n      \"Principal\": {\n        \"RAM\": [\"acs:ram::112890462****:root\"]\n      },\n      \"Action\": [\n        \"kms:*\"\n      ],\n      \"Resource\": [\n        \"*\"\n      ],\n      \"Condition\": {\n        \"condition operator\": {\n          \"condition key\": \"condition value\"\n        }\n      }\n    }\n  ]\n}\n```\n\nStatement详细介绍：\n- Sid：可选，表示自定义的语句标识符。内容长度小于等于128字符，支持的字符为：大写英文字母（A-Z）、小写英文字母（a-z）、数字（0-9），特殊字符（ _/+=.@-）。\n- Effect：必选，表示是允许还是拒绝该策略语句中的权限。取值为：Allow或Deny。\n\n- Principal：必选，表示权限策略的授权主体，支持设置为当前阿里云账号（即密钥所属的阿里云账号），当前阿里云账号下的RAM用户、RAM角色，其他阿里云账号下的RAM用户、RAM角色。\n\n- Action：必选，表示要允许或拒绝的API操作，内容必须以\"kms:\"开头。操作权限列表的范围，请参见[密钥策略概述](~~2716468~~)。如果您设置了列表外的操作，设置后也不会生效。\n\n- Resource：必选，取值只能是*，表示本KMS密钥。\n\n- Condition：可选，表示授权生效的限制条件。通过使用条件可以评估API请求的上下文，以确定策略语句是否适用。格式为`\"Condition\": {\"condition operator\": {\"condition key\": \"condition value\"}}`。详细介绍，请参见[密钥策略概述](~~2716468~~)。\n\n>授权给其他阿里云账号下的RAM用户、RAM角色后，您仍需在访问控制RAM侧，使用该RAM用户、RAM角色的阿里云账号为其授权使用该密钥，RAM用户、RAM角色才能使用该密钥。集体操作，请参见[密钥管理服务自定义权限策略参考](~~480682~~)、[为RAM用户授权](~~116146~~)、[为RAM角色授权](~~116147~~)。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "ProtectionLevel",
-      "description": "您无需输入本参数，KMS会为您的密钥设置合适的保护级别。\n\n密钥的保护级别，取值：  \n- SOFTWARE\n- HSM\n\n> \n> - 如果指定了KMSInstanceId：本参数输入后不生效。当实例为KMS软件密钥管理实例时，密钥保护级别为SOFTWARE；当实例为KMS硬件密钥管理实例时，密钥保护级别为HSM。\n> - 如果未指定KMSInstanceId：建议您不输入，由KMS设置。当KMS在该地域有托管密码机时，本参数将设置HSM，否则为SOFTWARE。更多信息，请参见[托管密码机概述](~~125803~~)。",
+      "description": "您无需输入本参数，KMS会为您的密钥设置合适的保护级别。\n\n密钥的保护级别，取值：  \n- SOFTWARE\n- HSM\n\n>- 如果指定了DKMSInstanceId：本参数输入后不生效。当实例为KMS软件密钥管理实例时，密钥保护级别为SOFTWARE；当实例为KMS硬件密钥管理实例时，密钥保护级别为HSM。\n- 如果未指定DKMSInstanceId：建议您不输入，由KMS设置。当KMS在该地域有托管密码机时，本参数将设置HSM，否则为SOFTWARE。更多信息，请参见[托管密码机概述](~~125803~~)。",
       "position": "Query",
       "type": "String",
       "required": false

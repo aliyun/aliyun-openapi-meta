@@ -1,8 +1,5 @@
 {
   "name": "CreateImagePipeline",
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -15,22 +12,29 @@
       "required": false
     },
     {
+      "name": "AdvancedOptions",
+      "description": "高级设置。",
+      "position": "Query",
+      "type": "Struct",
+      "required": false
+    },
+    {
       "name": "BaseImage",
-      "description": "源镜像。\n- 当`BaseImageType=IMAGE`时，该参数取值为镜像ID。\n- 当`BaseImageType=IMAGE_FAMILY`时，该参数取值为镜像族系名称。",
+      "description": "源镜像。\n- 当`BaseImageType=IMAGE`时，该参数取值为镜像ID。\n- 当`BaseImageType=IMAGE_FAMILY`时，该参数取值为镜像族系名称。\n- 当`BaseImageType=OSS`时，无需设置该参数。",
       "position": "Query",
       "type": "String",
-      "required": true
+      "required": false
     },
     {
       "name": "BaseImageType",
-      "description": "源镜像类型。取值范围：\n\n- IMAGE：镜像。\n- IMAGE_FAMILY：镜像族系。",
+      "description": "源镜像类型。取值范围：\n\n- IMAGE：镜像。\n- IMAGE_FAMILY：镜像族系。\n- OSS：OSS对象。",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
       "name": "BuildContent",
-      "description": "镜像模板内容。内容大小不能超过16 KB，最大支持127个命令。具体支持的命令请参见接口说明。",
+      "description": "镜像构建模板内容。内容大小不能超过16 KB，具体支持的命令请参见[镜像构建服务支持的命令说明](~~200206~~)。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -57,10 +61,31 @@
       "required": false
     },
     {
-      "name": "ImageName",
-      "description": "目标镜像名称前缀。长度为2~64个字符，必须以大小字母或中文开头，不能以`http://`和`https://`开头。可以包含中文、英文、数字、半角冒号（:）、下划线（_）、半角句号（.）或者短划线（-）。\n\n最终完整的镜像名称由系统自动拼接名称前缀与构建任务ID（`ExecutionId`），格式为`{ImageName}_{ExecutionId}`。",
+      "name": "ImageFamily",
+      "description": "目标镜像族系。\n<notice>\n该参数已弃用。请使用ImageOptions.ImageFamily。\n</notice>",
       "position": "Query",
       "type": "String",
+      "required": false
+    },
+    {
+      "name": "ImageName",
+      "description": "目标镜像名称前缀。\n<notice>\n该参数已弃用。请使用ImageOptions.ImageName。\n</notice>",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "ImageOptions",
+      "description": "目标镜像属性。",
+      "position": "Query",
+      "type": "Struct",
+      "required": false
+    },
+    {
+      "name": "ImportImageOptions",
+      "description": "导入镜像的属性和设置。当`BaseImageType=OSS`时，需要设置。",
+      "position": "Query",
+      "type": "Struct",
       "required": false
     },
     {
@@ -79,7 +104,14 @@
     },
     {
       "name": "Name",
-      "description": "模板名称。长度为2~128个字符，必须以大小字母或中文开头，不能以`http://`和`https://`开头。可以包含中文、英文、数字、半角冒号（:）、下划线（_）、半角句号（.）或者短划线（-）。\n\n>不设置`Name`时，默认使用`ImagePipelineId`返回值。",
+      "description": "模板名称。长度为2~128个字符，必须以大小写字母或中文开头，不能以`http://`和`https://`开头。可以包含中文、英文、数字、半角冒号（:）、下划线（_）、半角句号（.）或者短划线（-）。\n\n>不设置`Name`时，默认使用`ImagePipelineId`返回值。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "NvmeSupport",
+      "description": "构建的目标镜像是否支持 NVMe。\n<notice>\n该参数已弃用。请使用ImageOptions. ImageFeatures.NvmeSupport。\n</notice>",
       "position": "Query",
       "type": "String",
       "required": false
@@ -90,6 +122,13 @@
       "position": "Query",
       "type": "String",
       "required": true
+    },
+    {
+      "name": "RepairMode",
+      "description": "镜像模版中的修复选项。\n\n取值范围：\n- Standard：标准模式。\n\n  当前Linux系统的检测项包含\n  - GUESTOS.CloudInit\n  - GUESTOS.Dhcp\n  - GUESTOS.Virtio\n  - GUESTOS.OnlineResizeFS\n  - GUESTOS.Grub\n  - GUESTOS.Fstab\n\n  Windows系统的检测项包含\n  - GUESTOS.Virtio\n  - GUESTOS.Update\n  - GUESTOS.Hotfix\n  - GUESTOS.Server\n>随着检测修复能力的不断提升，包含的修复项可能会增加。修复项具体含义，请参见[镜像检测概述](~~439819~~)。",
+      "position": "Query",
+      "type": "String",
+      "required": false
     },
     {
       "name": "ResourceGroupId",
@@ -125,6 +164,13 @@
           "required": false
         }
       ]
+    },
+    {
+      "name": "TestContent",
+      "description": "镜像测试模板内容。内容大小不能超过16 KB，具体支持的命令请参见[镜像构建服务支持的命令说明](~~200206~~)。",
+      "position": "Query",
+      "type": "String",
+      "required": false
     },
     {
       "name": "ToRegionId",

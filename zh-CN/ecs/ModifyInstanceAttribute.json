@@ -1,16 +1,27 @@
 {
   "name": "ModifyInstanceAttribute",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
+      "name": "CpuOptions.Core",
+      "description": "CPU核心数。该参数不支持自定义设置，只能采用默认值。\n\n<props=\"china\">默认值：请参见[自定义CPU选项](~~145895~~)。</props>",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "CpuOptions.ThreadsPerCore",
+      "description": "CPU线程数。ECS实例的vCPU数=`CpuOptions.Core`取值*`CpuOptions.ThreadsPerCore`取值。\n\n- `CpuOptions.ThreadsPerCore=1`表示关闭CPU超线程。\n\n- 仅部分实例规格支持设置CPU线程数。\n\n<props=\"china\">取值范围和默认值：请参见[自定义CPU选项](~~145895~~)。</props>",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
       "name": "CpuOptions.TopologyType",
-      "description": "实例的Cpu拓扑类型。取值范围：\n\n- ContinuousCoreToHTMapping：当选择`ContinuousCoreToHTMapping`时，实例的Cpu拓扑中，实例的同一个Core的HT是连续的。\n- DiscreteCoreToHTMapping：当选择`DiscreteCoreToHTMapping`时，实例的同一个Core的HT是离散的。\n\n默认值：无。\n\n>- 仅部分实例规格族支持使用本参数，具体支持实例规格族请参见[查看和修改CPU拓扑结构](~~2636059~~)。\n>- 使用该参数时实例必须为已停止（`Stopped`）状态。",
+      "description": "实例的Cpu拓扑类型。取值范围：\n\n- ContinuousCoreToHTMapping：实例的Cpu拓扑中，实例的同一个Core的HT是连续的。\n- DiscreteCoreToHTMapping：实例的同一个Core的HT是离散的。\n\n默认值：无。\n\n使用该参数时请注意：\n- 实例必须为已停止（`Stopped`）状态。\n\n> 仅部分实例规格族支持使用本参数，具体支持实例规格族请参见[查看和修改CPU拓扑结构](~~2636059~~)。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -38,14 +49,21 @@
     },
     {
       "name": "EnableJumboFrame",
-      "description": "实例MTU是否开启Jumbo frame通信模式，取值范围：\n\n-true：开启。\n\n-false：不开启。\n\n目前仅部分规格支持开启Jumbo frame。更多信息，请参见[ECS实例MTU](~~200512~~)。",
+      "description": "实例MTU是否开启Jumbo frame通信模式，取值范围：\n\n- true：开启。\n- false：不开启。\n\n使用该参数时请注意：\n- 实例必须处于运行中（`Running`）或者已停止（`Stopped`）状态。\n- 实例必须为虚拟专有网络（Virtual Private Cloud, VPC）下的ECS实例。\n- 开启Jumbo Frame特性后，实例的MTU值将变为8500，关闭后则回退为1500 。\n目前仅部分规格支持开启Jumbo frame。更多信息，请参见[ECS实例MTU](~~200512~~)。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
+      "name": "EnableNetworkEncryption",
+      "description": "开启/关闭VPC网络流量加密，可能值：\n\n- true：开启。\n- false：关闭。\n> 该参数正在邀测中，暂未开放使用。",
       "position": "Query",
       "type": "Boolean",
       "required": false
     },
     {
       "name": "HostName",
-      "description": "操作系统的主机名。您需要注意：\n\n- 修改主机名时，实例不能处于创建中（`Pending`）或启动中（`Starting`）的状态，否则可能出现主机名以及`/etc/hosts`配置失效等情况。您可以调用[DescribeInstances](~~25506~~)查询实例当前的状态信息。\n\n- 修改主机名后，请调用[RebootInstance](~~25502~~)重启实例，使修改生效。\n\n\n不同操作系统主机名存在以下限制：\n\n- Windows Server系统：长度为2-15个字符，允许使用大小写字母、数字或短划线（-）。不能以短划线（-）开头或结尾，不能连续使用短划线（-），也不能仅使用数字。\n\n- 其他类型实例（Linux等）：长度为2-64个字符，允许使用半角句号（.）分隔字符成多段，每段允许使用大小写字母、数字或连字符（-），但不能连续使用半角句号（.）或短划线（-）。不能以半角句号（.）或短划线（-）开头或结尾。",
+      "description": "操作系统的主机名。使用该参数时请注意：\n\n- 实例不能处于创建中（`Pending`）或启动中（`Starting`）的状态，否则可能出现主机名以及`/etc/hosts`配置失效等情况。您可以调用[DescribeInstances](~~25506~~)查询实例当前的状态信息。\n\n- 重启实例后生效。您可以在ECS控制台重启（具体操作，请参见[重启实例](~~25440~~)）或者调用[RebootInstance](~~25502~~)重启，在操作系统内部重启不能生效。\n\n\n不同操作系统主机名存在以下限制：\n\n- Windows Server系统：长度为2-15个字符，允许使用大小写字母、数字或短划线（-）。不能以短划线（-）开头或结尾，不能连续使用短划线（-），也不能仅使用数字。\n\n- 其他类型实例（Linux等）：长度为2-64个字符，允许使用半角句号（.）分隔字符成多段，每段允许使用大小写字母、数字或连字符（-），但不能连续使用半角句号（.）或短划线（-）。不能以半角句号（.）或短划线（-）开头或结尾。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -66,16 +84,23 @@
     },
     {
       "name": "NetworkInterfaceQueueNumber",
-      "description": "主网卡队列数。",
+      "description": "主网卡队列数。使用该参数时请注意：\n- 实例必须为已停止（`Stopped`）状态。\n- 不能超过实例规格允许的单块网卡最大队列数，实例的所有网卡累加队列数不能超过实例规格允许的队列数总配额。实例规格的单块网卡最大队列数和总配额可以通过[DescribeInstanceTypes](~~25620~~)查询。\n- 当取值为-1时，将重置主网卡队列数为对应实例规格的默认值。实例规格的弹性网卡默认队列数可以通过[DescribeInstanceTypes](~~25620~~)查询。",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
       "name": "Password",
-      "description": "实例的密码。支持长度为8~30个字符，必须同时包含大小写英文字母、数字和特殊符号中的三类字符。特殊符号可以是：\n\n```\n()`~!@#$%^&*-_+=|{}[]:;'<>,.?/\n```\n\n其中，Windows实例不能以斜线号（/）为密码首字符。\n\n> 如果传入`Password`参数，建议您使用HTTPS协议发送请求，避免密码泄露。",
+      "description": "实例的密码。支持长度为8~30个字符，必须同时包含大小写英文字母、数字和特殊符号中的三类字符。特殊符号可以是：**()`~!@#$%^&*-_+=|{}[]:;'<>,.?/**\n。Windows实例不能以斜线号（/）为密码首字符。使用该参数时请注意：\n\n- 实例不能处于启动中（`Starting`）状态。\n- 重启实例后生效。您可以在ECS控制台重启（具体操作，请参见[重启实例](~~25440~~)）或者调用[RebootInstance](~~25502~~)重启，在操作系统内部重启不能生效。\n\n> 如果传入`Password`参数，建议您使用HTTPS协议发送请求，避免密码泄露。",
       "position": "Query",
       "type": "String",
+      "required": false
+    },
+    {
+      "name": "PrivateDnsNameOptions",
+      "description": "实例的私网域名配置信息集合。\n\n\n关于私网域名解析，请参见[ECS私网域名解析\n](~~2844797~~)。",
+      "position": "Query",
+      "type": "Struct",
       "required": false
     },
     {
@@ -94,14 +119,14 @@
     },
     {
       "name": "SecurityGroupIds",
-      "description": "实例重新加入的安全组列表。\n\n- 安全组ID不能重复。\n- 实例会离开当前的安全组，如需保留设置，您需要在列表中添加当前的安全组ID。\n- 支持切换安全组类型，但设置的安全组列表中不能同时包含普通安全组和企业安全组。\n- 安全组必须和实例属于同一个VPC。\n- N的取值范围与实例能够加入安全组配额有关。更多信息，请参见[使用限制](~~25412#SecurityGroupQuota1~~)。\n- 修改安全组后很快会生效于对应的实例，但可能有较小的延迟。",
+      "description": "实例重新加入的安全组ID数组。使用该参数时请注意：\n\n- 数组内的安全组ID不能重复，数组长度与实例能够加入安全组配额有关。更多信息，请参见[使用限制](~~25412#SecurityGroupQuota1~~)。\n- 实例会离开当前的安全组，如需保留设置，您需要在数组中添加当前的安全组ID。\n- 支持切换安全组类型，但设置的安全组列表中不能同时包含普通安全组和企业安全组。\n- 安全组必须和实例属于同一个VPC。\n- 不支持经典网络类型实例。\n\n> 修改安全组后很快会生效于对应的实例，但可能有较小的延迟。",
       "position": "Query",
       "type": "RepeatList",
       "required": false
     },
     {
       "name": "UserData",
-      "description": "实例自定义数据，需要以Base64编码。\n\n编码前，原始数据不能超过16KB。建议不要明文传入敏感信息，例如密码和私钥等。如果必须传入敏感信息，建议您加密后再以Base64编码传入，在实例内部以同样的方式解密。",
+      "description": "实例自定义数据，建议Base64编码后传入。使用该参数时请注意：\n\n- 实例必须满足自定义数据使用限制。更多信息，请参见[生成实例自定义数据](~~49121~~)。\n- 重启实例后，实例上将展示新的自定义数据，但不会运行数据。\n\n> 编码前，原始数据不能超过32 KB。建议不要明文传入敏感信息，例如密码和私钥等。如果必须传入敏感信息，建议您加密后再以Base64编码传入，在实例内部以同样的方式解密。",
       "position": "Query",
       "type": "String",
       "required": false

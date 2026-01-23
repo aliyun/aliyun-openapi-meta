@@ -1,9 +1,6 @@
 {
   "name": "ModifySslVpnServer",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -17,7 +14,7 @@
     },
     {
       "name": "ClientIpPool",
-      "description": "客户端IP地址池。",
+      "description": "客户端网段。\n\n是给客户端虚拟网卡分配访问地址的地址段，不是指客户端已有的内网网段。\n\n当客户端通过SSL-VPN连接访问本端时，VPN网关会从指定的客户端网段中分配一个IP地址给客户端使用，客户端将会使用分配的IP地址访问云上资源。\n\n在您指定客户端网段时需保证客户端网段所包含的IP地址个数是当前VPN网关SSL连接数的4倍及以上。\n<details>\n<summary>单击查看原因。</summary>\n例如您指定的客户端网段为192.168.0.0/24，系统在为客户端分配IP地址时，会先从192.168.0.0/24网段中划分出一个子网掩码为30的子网段，例如192.168.0.4/30，然后从192.168.0.4/30中分配一个IP地址供客户端使用，剩余三个IP地址会被系统占用以保证网络通信，此时一个客户端会耗费4个IP地址。因此，为保证您的客户端均能分配到IP地址，请确保您指定的客户端网段所包含的IP地址个数是VPN网关SSL连接数的4倍及以上。\n</details>\n\n<details>\n<summary>单击查看不支持配置的网段。</summary>\n\n- 100.64.0.0~100.127.255.255\n- 127.0.0.0~127.255.255.255\n- 169.254.0.0~169.254.255.255\n- 224.0.0.0~239.255.255.255\n- 255.0.0.0~255.255.255.255\n\n</details>\n\n<details>\n<summary>单击查看每个SSL连接数建议的客户端网段。</summary>\n\n- 若SSL连接数为5，则客户端网段的子网掩码位数建议小于或等于27。例如：10.0.0.0/27、10.0.0.0/26。\n- 若SSL连接数为10，则客户端网段的子网掩码位数建议小于或等于26。例如：10.0.0.0/26、10.0.0.0/25。\n- 若SSL连接数为20，则客户端网段的子网掩码位数建议小于或等于25。例如：10.0.0.0/25、10.0.0.0/24。\n- 若SSL连接数为50，则客户端网段的子网掩码位数建议小于或等于24。例如：10.0.0.0/24、10.0.0.0/23。\n- 若SSL连接数为100，则客户端网段的子网掩码位数建议小于或等于23。例如：10.0.0.0/23、10.0.0.0/22。\n- 若SSL连接数为200，则客户端网段的子网掩码位数建议小于或等于22。例如：10.0.0.0/22、10.0.0.0/21。\n- 若SSL连接数为500，则客户端网段的子网掩码位数建议小于或等于21。例如：10.0.0.0/21、10.0.0.0/20。\n- 若SSL连接数为1000，则客户端网段的子网掩码位数建议小于或等于20。例如：10.0.0.0/20、10.0.0.0/19。\n\n</details>\n\n> - 客户端网段的子网掩码位数在16至29位之间。\n> - 请确保客户端网段与本端网段、VPC网段以及与客户端终端关联的任何路由网段均没有重叠。\n> - 在指定客户端网段时，建议您使用10.0.0.0/8、172.16.0.0/12和192.168.0.0/16网段及其子网网段。如果您的客户端网段需要指定为公网网段，您需要将公网网段设置为VPC的用户网段，以确保VPC可以访问到该公网网段。关于用户网段的更多信息，请参见[专有网络FAQ](~~185311~~)。\n> - 创建SSL服务端后，系统后台会自动将客户端网段的路由添加在VPC实例的路由表中，请勿再手动将客户端网段的路由添加到VPC实例的路由表，否则会导致SSL-VPN连接流量传输异常。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -37,29 +34,43 @@
       "required": false
     },
     {
-      "name": "EnableMultiFactorAuth",
-      "description": "是否开启双因子认证。如果您选择开启双因子认证功能，您还需要输入IDaaS实例ID。取值：\n\n- **true**：开启。\n\n- **false**：不开启。\n\n<props=\"intl\">\n\n>- VPN网关的双因子认证功能仅支持旧版IDaaS实例。如果您没有旧版IDaaS实例，则不再支持新建旧版IDaaS实例，也不再支持开启双因子认证功能。\n>- 对于已经创建的SSL服务端，如果已开启双因子认证功能，则不受影响，可继续使用。\n\n</props>\n\n<props=\"china\">\n\n>- 仅2020年03月05日00时00分00秒之后创建的VPN网关支持开启双因子认证。如果您的VPN网关是2020年03月05日之前创建的，您可以通过自助升级方式将VPN网关升级至最新版，体验双因子认证功能。具体操作，请参见[升级VPN网关](~~303968~~)。\n>- VPN网关的双因子认证功能仅支持旧版IDaaS实例。关于旧版IDaaS实例的更多说明，请参见[1.x 旧版实例变更方案](~~408888~~)。\n>- 如果您是首次使用双因子认证功能，请先完成[授权](https://ram.console.aliyun.com/role/authorization?request=%7B%22Services%22%3A%5B%7B%22Service%22%3A%22VPN%22%2C%22Roles%22%3A%5B%7B%22RoleName%22%3A%22AliyunVpnAccessingIdaasRole%22%2C%22TemplateId%22%3A%22IdaasRole%22%7D%5D%7D%5D%2C%22ReturnUrl%22%3A%22https%3A%2F%2Fvpc.console.aliyun.com%2Fsslvpn%2Fcn-shanghai%2Fvpn-servers%22%7D)后再创建SSL服务端。\n\n</props>",
+      "name": "DryRun",
+      "description": "",
       "position": "Query",
       "type": "Boolean",
       "required": false
     },
     {
+      "name": "EnableMultiFactorAuth",
+      "description": "是否开启双因子认证。如果您选择开启双因子认证功能，您还需要配置**IDaaSInstanceId**、**IDaaSRegionId**和**IDaaSApplicationId**。取值：\n\n- **true**：开启。\n\n- **false**：不开启。\n\n>- 如果您是首次使用双因子认证功能，请先完成[授权](https://ram.console.aliyun.com/role/authorization?request=%7B%22Services%22%3A%5B%7B%22Service%22%3A%22VPN%22%2C%22Roles%22%3A%5B%7B%22RoleName%22%3A%22AliyunVpnAccessingIdaasRole%22%2C%22TemplateId%22%3A%22IdaasRole%22%7D%5D%7D%5D%2C%22ReturnUrl%22%3A%22https%3A%2F%2Fvpc.console.aliyun.com%2Fsslvpn%2Fcn-shanghai%2Fvpn-servers%22%7D)后再创建SSL服务端。\n>- 在阿联酋（迪拜）地域创建SSL服务端时，推荐您绑定新加坡地域的IDaaS EIAM 2.0实例，以减少跨地域时延。\n>- IDaaS EIAM 1.0实例不再支持新购。如果您的阿里云账号下存在IDaaS EIAM 1.0实例，开启双因子认证功能后，依旧支持绑定IDaaS EIAM 1.0实例。如果您的阿里云账号下不存在IDaaS EIAM 1.0实例，开启双因子认证功能后，仅支持绑定IDaaS EIAM 2.0实例。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
+      "name": "IDaaSApplicationId",
+      "description": "IDaaS应用ID。\n\n- 如果您绑定的是IDaaS EIAM 2.0实例，需输入IDaaS应用ID。\n- 如果您绑定的是IDaaS EIAM 1.0实例，无需输入IDaaS应用ID。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "IDaaSInstanceId",
-      "description": "IDaaS实例ID。",
+      "description": "IDaaS EIAM实例ID。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "IDaaSRegionId",
-      "description": "IDaaS实例所属地域ID。",
+      "description": "IDaaS EIAM实例所属地域ID。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "LocalSubnet",
-      "description": "本地客户端的网段。",
+      "description": "本端网段。\n\n是客户端通过SSL-VPN连接要访问的地址段。\n\n本端网段可以是VPC的网段、交换机的网段、通过专线和VPC互连的IDC的网段、云服务如对象存储服务OSS（Object Storage Service）等的网段。\n\n本端网段的子网掩码位数在8至32位之间。以下网段不支持指定为本端网段：\n\n- 127.0.0.0~127.255.255.255\n- 169.254.0.0~169.254.255.255\n- 224.0.0.0~239.255.255.255\n- 255.0.0.0~255.255.255.255",
       "position": "Query",
       "type": "String",
       "required": false

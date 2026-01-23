@@ -1,8 +1,5 @@
 {
   "name": "CreateSnatEntry",
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -15,10 +12,24 @@
       "required": false
     },
     {
+      "name": "DryRun",
+      "description": "是否只预检此次请求，取值：\n\n- **true**：发送检查请求，不会创建SNAT条目。检查项包括AccessKey是否有效、RAM用户的授权情况和是否填写了必需参数。如果检查不通过，则返回对应错误。如果检查通过，会返回错误码`DryRunOperation`。\n\n- **false**（默认值）：发送正常请求，通过检查后返回2xx HTTP状态码并创建SNAT条目。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
       "name": "EipAffinity",
-      "description": "是否打开EIP亲和性，取值：\n\n* **0**：关闭EIP亲和性。\n\n* **1**：打开EIP亲和性。\n\n> 打开EIP亲和性开关后，如果SNAT绑定多个EIP，同一个客户端将使用相同的EIP访问公网，否则客户端将从绑定的EIP中随机选取EIP访问公网。",
+      "description": "是否打开IP亲和性。取值：\n\n- **0**（默认值）：关闭IP亲和性。\n\n- **1**：打开IP亲和性。\n\n> 打开IP亲和性开关后，如果SNAT条目绑定多个EIP或NAT IP，同一个客户端访问同一目的IP时将使用相同的EIP或NAT IP进行访问，否则客户端将从绑定的EIP或NAT IP中随机选取进行访问。",
       "position": "Query",
       "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "NetworkInterfaceId",
+      "description": "弹性网卡ID。\n\n> 会将弹性网卡的IPv4地址集作为SNAT地址。",
+      "position": "Query",
+      "type": "String",
       "required": false
     },
     {
@@ -37,10 +48,10 @@
     },
     {
       "name": "SnatIp",
-      "description": "* 为公网NAT网关添加SNAT条目时，该参数为SNAT条目中的EIP，多个EIP之间用半角逗号（,）隔开。\n\n>指定多个EIP配置SNAT IP地址池时，业务连接会通过哈希算法分配到多个EIP，由于每个连接的流量不同，可能会出现多EIP业务流量不均匀的情况，建议您将每个EIP都加入到同一个共享带宽中以避免单EIP带宽达到上限导致业务受损。\n\n* 为VPC NAT网关添加SNAT条目时，该参数为SNAT条目中的NAT IP地址，多个NAT IP地址之间用半角逗号（,）隔开。",
+      "description": "为公网NAT网关添加SNAT条目时 ：\n* 参数SnatIp必填。\n\n* 该参数为SNAT条目中的EIP，多个EIP之间用半角逗号（,）隔开。\n\n* 如果 SnatIp 仅指定了一个公网 IP，ECS 实例使用指定的公网 IP 访问互联网。\n\n* 如果 SnatIp 指定了多个公网 IP，ECS 实例随机使用 SnatIp 中的公网 IP 访问互联网。\n\n>指定多个EIP配置SNAT IP地址池时，业务连接会通过哈希算法分配到多个EIP，由于每个连接的流量不同，可能会出现多EIP业务流量不均匀的情况，建议您将每个EIP都加入到同一个共享带宽中以避免单EIP带宽达到上限导致业务受损。\n\n为VPC NAT网关添加SNAT条目时：\n\n* 该参数为SNAT条目中的NAT IP地址，多个NAT IP地址之间用半角逗号（,）隔开。\n\n* 参数 SnatIp 和参数 NetworkInterfaceId 必须输入一个且不能都输入。",
       "position": "Query",
       "type": "String",
-      "required": true
+      "required": false
     },
     {
       "name": "SnatTableId",
@@ -51,14 +62,14 @@
     },
     {
       "name": "SourceCIDR",
-      "description": "输入VPC、交换机或ECS实例的网段，还可以输入任意网段。\n\nSNAT条目有以下几种粒度： \n\n- VPC粒度：NAT网关所在VPC的网段，该VPC下的所有ECS实例均可以通过SNAT规则访问互联网或者外部网络。\n\n- 交换机粒度：指定交换机的网段（如192.168.1.0/24），该交换机下的ECS实例均可以通过SNAT规则访问互联网或者外部网络。\n\n- ECS粒度：指定ECS实例的地址（如192.168.1.1/32），该ECS实例可以通过SNAT规则访问互联网或者外部网络。\n\n- 输入任意网段，该网段下的所有ECS实例均可以通过SNAT服务访问互联网或者外部网络。\n\n当为公网NAT网关添加SNAT条目时，如果**SnatIp**仅指定了一个公网IP，ECS实例使用指定的公网IP访问互联网；\n\n如果**SnatIp**指定了多个公网IP，ECS实例随机使用**SnatIp**中的公网IP访问互联网。\n\n此参数和**SourceVSwtichId**参数互斥，不能同时配置。如果指定了**SourceVSwitchId**，则不能指定**SourceCIDR**参数。如果指定了**SourceCIDR**参数，则不能指定**SourceVSwitchId**参数。",
+      "description": "输入VPC、交换机或ECS实例的网段，还可以输入任意网段。\n\nSNAT条目有以下几种粒度： \n\n- VPC粒度：NAT网关所在VPC的网段，该VPC下的所有ECS实例均可以通过SNAT规则访问互联网或者外部网络。\n\n- 交换机粒度：指定交换机的网段（如192.168.1.0/24），该交换机下的ECS实例均可以通过SNAT规则访问互联网或者外部网络。\n\n- ECS粒度：指定ECS实例的地址（如192.168.1.1/32），该ECS实例可以通过SNAT规则访问互联网或者外部网络。\n\n- 输入任意网段，该网段下的所有ECS实例均可以通过SNAT服务访问互联网或者外部网络。\n\n> 参数**SourceCIDR**和参数**SourceVSwtichId**必须输入一个且不能都输入。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "SourceVSwitchId",
-      "description": "交换机的ID。\n\n* 当为公网NAT网关添加SNAT条目时，该参数表示该交换机内的ECS实例均可以通过SNAT规则访问公网。指定多个EIP配置SNAT IP地址池时，业务连接会通过哈希算法分配到多个EIP，由于每个连接的流量不同，可能会出现多EIP业务流量不均匀的情况，建议您将每个EIP都加入到同一个共享带宽中以避免单EIP带宽达到上限导致业务受损。\n\n* 当为VPC NAT网关添加SNAT条目时，该参数表示该交换机内的ECS实例均可以通过SNAT规则访问外部网络。",
+      "description": "交换机的ID。\n\n* 当为公网NAT网关添加SNAT条目时，该参数表示该交换机内的ECS实例均可以通过SNAT规则访问公网。指定多个EIP配置SNAT IP地址池时，业务连接会通过哈希算法分配到多个EIP，由于每个连接的流量不同，可能会出现多EIP业务流量不均匀的情况，建议您将每个EIP都加入到同一个共享带宽中以避免单EIP带宽达到上限导致业务受损。\n\n* 当为VPC NAT网关添加SNAT条目时，该参数表示该交换机内的ECS实例均可以通过SNAT规则访问外部网络。\n\n> 参数**SourceCIDR**和参数**SourceVSwtichId**必须输入一个且不能都输入。",
       "position": "Query",
       "type": "String",
       "required": false
