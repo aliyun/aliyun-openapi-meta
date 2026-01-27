@@ -1,9 +1,6 @@
 {
   "name": "CreateDataFlowTask",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -13,6 +10,20 @@
       "description": "保证请求幂等性，从您的客户端生成一个参数值，确保不同请求间该参数值唯一。\n\nClientToken只支持ASCII字符，且不能超过64个字符。更多信息，请参见[如何保证幂等性](~~25693~~)。\n\n> 若您未指定，则系统自动使用API请求的RequestId作为ClientToken标识。每次API请求的RequestId可能不一样。",
       "position": "Query",
       "type": "String",
+      "required": false
+    },
+    {
+      "name": "ConflictPolicy",
+      "description": "同名文件冲突策略。\n取值：\n\n- SKIP_THE_FILE：跳过同名文件。\n- KEEP_LATEST：比较更新时间，保留最新版本。\n- OVERWRITE_EXISTING：强制覆盖同名文件。\n> 当文件系统类型为cpfs智算版时，该参数必填。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CreateDirIfNotExist",
+      "description": "目录不存在时，自动创建目录。\n取值：\n\n- true：自动创建目录。\n- false（默认值）：不自动创建目录。\n\n> - TaskAction = Import时，该参数生效。\n> - 仅CPFS智算版2.6.0版本及以上版本支持。",
+      "position": "Query",
+      "type": "Boolean",
       "required": false
     },
     {
@@ -31,42 +42,63 @@
     },
     {
       "name": "Directory",
-      "description": "数据流动任务执行的目录。\n\n限制：\n\n- 长度为2~1024个字符。\n- 使用UTF-8编码。\n- 必须以/开头和结尾。\n- 一次只能列举一个目录。\n- 该目录必须是CPFS上的已有目录，且必须位于该数据流动的Fileset中。",
+      "description": "数据的源目录。\n\n限制：\n- 长度为1~1023个字符。\n- 使用UTF-8编码。\n- 必须以正斜线（/）开头和结尾。\n- 一次只能列举一个目录。\n- 当TaskAction为Export时，该目录必须是FileSystemPath内的相对路径。\n- 当TaskAction为Import时，该目录必须是SourceStoragePath内的相对路径。\n- 当TaskAction为StreamExport时，该目录必须是FileSystemPath内的相对路径。\n- 当TaskAction为StreamImport时，该目录必须是SourceStoragePath内的相对路径。\n> StreamImport和StreamExport仅CPFS智算版2.6.0版本及以上版本支持。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "DryRun",
-      "description": "是否对此次创建请求执行预检。\n\n预检操作会帮助您检查参数有效性、校验库存等，并不会实际创建实例，也不会产生费用。\n\n取值：\n\n- true：发送检查请求，不会创建实例。检查项包括是否填写了必需参数、请求格式、业务限制和NAS库存。如果检查不通过，则返回对应错误。如果检查通过，则返回200 HttpCode，但FileSystemId为空。\n- false（默认值）：发送正常请求，通过检查后直接创建实例。",
+      "description": "是否对此次创建请求执行预检。\n\n预检操作会帮助您检查参数有效性、校验库存等，并不会实际创建实例，也不会产生费用。\n\n取值：\n\n- true：发送检查请求，不会创建实例。检查项包括是否填写了必需参数、请求格式、业务限制和NAS库存。如果检查不通过，则返回对应错误。如果检查通过，则返回200 HttpCode，但TaskId为空。\n- false（默认值）：发送正常请求，通过检查后直接创建实例。",
       "position": "Query",
       "type": "Boolean",
       "required": false
     },
     {
+      "name": "DstDirectory",
+      "description": "数据流动任务映射目标目录。\n限制：\n - 必须以正斜线（/）开头和结尾，不支持/../。\n -  长度为 1~1023 个字符。\n - 使用 UTF-8 编码。\n -  一次只能列举一个目录。\n - 当 TaskAction 为 Export 时，该目录必须是 SourceStoragePath 内的相对路径。\n - 当 TaskAction 为 Import 时，该目录必须是 FileSystemPath 内的相对路径。\n -  当 TaskAction 为 StreamExport 时，该目录必须是 SourceStoragePath 内的相对路径。\n - 当 TaskAction 为 StreamImport 时，该目录必须是 FileSystemPath 内的相对路径。\n> StreamImport和StreamExport仅CPFS智算版2.6.0版本及以上版本支持。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "EntryList",
-      "description": "数据流动任务执行的文件列表。\n\n限制：\n\n- 使用UTF-8编码。\n- 文件列表采用JSON格式。\n- 如果源端存储是OSS，必须符合OSS Object的命名规范。",
+      "description": "数据流动任务执行的文件列表。\n\n限制：\n\n- 使用UTF-8编码。\n- 文件列表总长度小于64KB。\n- 文件列表采用JSON格式。\n- 单个文件路径长度为 1~1023 个字符，且必须以正斜线（/）开头。\n- 当TaskAction为Import时，列表中每个元素代表一个OSS Object名称。\n- 当TaskAction为Export时，列表中每个元素代表一个CPFS文件路径。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "FileSystemId",
-      "description": "文件系统ID。",
+      "description": "文件系统ID。\n\n- CPFS：必须以`cpfs-`开头，例如cpfs-125487\\*\\*\\*\\*。\n\n- CPFS智算版：必须以`bmcpfs-`开头，例如bmcpfs-0015\\*\\*\\*\\*。",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
+      "name": "Includes",
+      "description": "过滤directory下目录，传输过滤目录内包含的文件夹内容。\n\n> - 仅在指定了Directory参数时，该参数生效。\n> - 单个文件夹路径长度为1~1023个字符，且必须以正斜线（/）开头与结尾，总长度限制不超过3000字符。\n> - 仅CPFS智算版支持该功能。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "SrcTaskId",
-      "description": "当指定SrcTaskId时，会从目标数据流动任务拷贝TaskAction、DataType和EntryList参数信息，您无需再单独指定。",
+      "description": "当指定SrcTaskId时，需填写数据流动任务ID。系统将从目标数据流动任务中复制TaskAction、DataType和EntryList参数信息，您无需单独指定这些内容。\n> 不支持数据流动流式任务。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "TaskAction",
-      "description": "数据流动任务类型。\n\n取值：\n\n- Import：从源端存储将指定的数据导入至CPFS。\n- Export：将CPFS上指定的数据导出至源端存储。\n- Evict：释放CPFS上文件的数据块，释放后文件在CPFS上只保留元数据，您仍能查询该文件，但文件数据块已清除，不占用CPFS上的存储容量。当访问该文件数据时，将再从源端存储按需加载。\n- Inventory：获取CPFS上数据流动管理的文件清单，可提供文件在数据流动中的缓存状态。",
+      "description": "数据流动任务类型。\n\n取值：\n\n- Import：从源端存储将指定的数据导入至CPFS。\n- Export：将CPFS上指定的数据导出至源端存储。\n- StreamImport：从源端存储将指定的数据批量导入至CPFS。\n- StreamExport：将CPFS上指定的数据批量导出至源端存储。\n- Evict：释放CPFS上文件的数据块，释放后文件在CPFS上只保留元数据，您仍能查询该文件，但文件数据块已清除，不占用CPFS上的存储容量。当访问该文件数据时，将再从源端存储按需加载。\n- Inventory：获取CPFS上数据流动管理的文件清单，可提供文件在数据流动中的缓存状态。\n> CPFS智算版仅支持Import、Export、StreamImport和StreamExport。StreamImport和StreamExport仅CPFS智算版2.6.0版本及以上版本支持。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "TransferFileListPath",
+      "description": "指定oss目录，根据oss目录中的csv文件的内容同步数据。限制如下。\n- 必须以/开头和结尾。\n\n- 区分大小写。\n\n- 长度为 1~1023 个字符之间。\n\n- 使用 UTF-8 编码。\n\n\n>- TransferFileListPath，Directory和EntryList为互斥参数，只能三者选一。\n>- 该参数为oss下真实存在路径。路径下*.csv文件存储在oss中。\n> - TransferFileListPath仅支持Import、Export功能。\n> - Import的场景，会将csv文件中指定的文件或者目录，从oss导入到cpfs。\n> - Export的场景，会将csv文件中指定的文件或者目录，从cpfs导出到oss\n> - csv文件格式中应该包含Name、Type列，Name为相对路径，Type支持dir和file两种值；如果type为dir，name后缀必须以/结尾。\n>- 仅CPFS智算版支持该功能。",
       "position": "Query",
       "type": "String",
       "required": false

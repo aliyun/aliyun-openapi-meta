@@ -1,16 +1,20 @@
 {
   "name": "ModifyDBProxyEndpoint",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
+      "name": "CausalConsistReadTimeout",
+      "description": "一致性读超时时间，单位：毫秒。默认为**10**毫秒，取值：**0～60000**",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "ConfigDBProxyFeatures",
-      "description": "设置代理连接地址想要开通的代理功能，各功能之间以英文分号（;）隔开。格式：`功能1:开通情况;功能2:开通情况;... `，末尾不加英文分号（;）。\n\n功能取值：\n* **ReadWriteSpliting**：读写分离\n* **ConnectionPersist**：连接池\n* **TransactionReadSqlRouteOptimizeStatus**：事务拆分\n\n开通情况取值：\n* **1**：功能已开通\n* **0**：功能未开通\n\n> RDS PostgreSQL仅支持设置**ReadWriteSpliting**。",
+      "description": "设置代理连接地址想要开通的代理功能，各功能之间以英文分号（;）隔开。格式：`功能1:开通情况;功能2:开通情况;... `，末尾不加英文分号（;）。\n\n功能取值：\n* **ReadWriteSpliting**：读写分离\n* **ConnectionPersist**：连接池\n* **TransactionReadSqlRouteOptimizeStatus**：事务拆分\n* **AZProximityAccess**：就近访问\n* **CausalConsistRead**：读一致性\n* **HtapFilter**：HTAP行列自动分流\n\n开通情况取值：\n* **1**：功能已开通\n* **0**：功能未开通\n\n> - RDS PostgreSQL仅支持设置**ReadWriteSpliting**。\n> - 就近访问功能仅支持MySQL独享型代理。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -44,6 +48,13 @@
       "required": false
     },
     {
+      "name": "DbEndpointMinSlaveCount",
+      "description": "最小保留实例数。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "DbEndpointOperator",
       "description": "操作类型，取值：\n* **Modify**：默认值，修改代理终端。\n* **Create**：新建代理终端。\n* **Delete**：删除代理终端。",
       "position": "Query",
@@ -65,15 +76,29 @@
       "required": false
     },
     {
+      "name": "EffectiveSpecificTime",
+      "description": "指定时间生效。格式：<i>yyyy-MM-dd</i>T<i>HH:mm:ss</i>Z（UTC时间）。\n>**EffectiveTime**为**SpecificTime**时，该参数必传。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "EffectiveTime",
+      "description": "生效时间，取值：\n\n* **Immediate**：立即生效。\n* **MaintainTime**：在可运维时间段内生效，请参见ModifyDBInstanceMaintainTime。\n* **SpecificTime**：指定时间生效。\n\n默认值：**MaintainTime**。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "ReadOnlyInstanceDistributionType",
-      "description": "读权重分配模式。取值：\n\n* **Standard**：按规格权重自动分配。\n* **Custom**：自定义分配权重。\n\n> 开通读写分离时才需要传入该参数。权限分配模式的详细信息，MySQL请参见[读权重分配](~~96076~~)，PostgreSQL请参见[开通并配置数据库代理服务](~~418272~~)。",
+      "description": "读权重分配模式。取值：\n\n* **Standard**：默认值，按规格权重自动分配。\n* **Custom**：自定义分配权重。\n\n> 开通读写分离时才需要传入该参数。权限分配模式的详细信息，MySQL请参见[读权重分配](~~96076~~)，PostgreSQL请参见[开通并配置数据库代理服务](~~418272~~)。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "ReadOnlyInstanceMaxDelayTime",
-      "description": "读写分离中只读实例的最大延迟阈值，当只读实例延迟时间超过该值时，读取流量不发往该实例，单位：秒。不传该参数则保持原值。取值：**0**~**3600**。默认值：**30**。\n>开通读写分离时才需要传入该参数。",
+      "description": "读写分离中只读实例的最大延迟阈值，当只读实例延迟时间超过该值时，读取流量不发往该实例，单位：秒。不传该参数则保持原值。取值：**0**~**3600**。\n\n>- 开通读写分离时才需要传入该参数。\n>- 默认值：读写属性为读写（读写分离）时默认**30**秒，读写属性为只读时默认 **-1** (关闭)。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -88,6 +113,20 @@
     {
       "name": "RegionId",
       "description": "地域ID。可调用DescribeRegions获取。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "VSwitchId",
+      "description": "指定代理连接地址的可用区对应的交换机 ID。默认为代理实例默认终端对应的交换机 ID。可通过调用 DescribeVSwitches 接口查询已创建的交换机。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "VpcId",
+      "description": "指定代理连接地址的可用区对应的VPC ID。默认为代理实例默认终端对应的VPC ID。可通过调用 DescribeDBInstanceAttribute  接口查询实例默认VPC。",
       "position": "Query",
       "type": "String",
       "required": false

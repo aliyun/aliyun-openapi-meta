@@ -1,8 +1,5 @@
 {
   "name": "ModifySnatEntry",
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -10,6 +7,27 @@
     {
       "name": "ClientToken",
       "description": "客户端Token，用于保证请求的幂等性。\n\n从您的客户端生成一个参数值，确保不同请求间该参数值唯一。ClientToken只支持ASCII字符。\n\n> 若您未指定，则系统自动使用API请求的**RequestId**作为**ClientToken**标识。每次API请求的**RequestId**可能不一样。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "DryRun",
+      "description": "是否只预检此次请求，取值：\n\n- **true**：发送检查请求，不会修改SNAT条目。检查项包括是否填写了必需参数、请求格式、业务限制。如果检查不通过，则返回对应错误。如果检查通过，会返回错误码`DryRunOperation`。\n\n- **false**（默认值）：发送正常请求，通过检查后返回2xx HTTP状态码并修改SNAT条目。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
+      "name": "EipAffinity",
+      "description": "是否打开IP亲和性。取值：\n\n- **0**：关闭IP亲和性。\n\n- **1**：打开IP亲和性。\n\n> 打开IP亲和性开关后，如果SNAT条目绑定多个EIP或NAT IP，同一个客户端将使用相同的EIP或NAT IP进行访问，否则客户端将从绑定的EIP或NAT IP中随机选取进行访问。",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "NetworkInterfaceId",
+      "description": "弹性网卡ID。\n\n> 会将弹性网卡的 IPv4 地址集作为 SNAT 地址。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -37,7 +55,7 @@
     },
     {
       "name": "SnatIp",
-      "description": "- 为公网NAT网关修改SNAT条目时，该参数为SNAT条目中的EIP，多个EIP之间用半角逗号（,）隔开。\n \n    指定多个EIP配置SNAT IP地址池时，业务连接会通过哈希算法分配到多个EIP，由于每个连接的流量不同，可能会出现多EIP业务流量不均匀的情况，建议您将每个EIP都加入到同一个共享带宽中以避免单EIP带宽达到上限导致业务受损。\n\n- 为VPC NAT网关修改SNAT条目时，该参数为SNAT条目中的NAT IP地址。",
+      "description": "- 为公网NAT网关修改SNAT条目时，该参数为SNAT条目中的EIP，多个EIP之间用半角逗号（,）隔开。\n \n> 指定多个EIP配置SNAT IP地址池时，业务连接会通过哈希算法分配到多个EIP，由于每个连接的流量不同，可能会出现多EIP业务流量不均匀的情况，建议您将每个EIP都加入到同一个共享带宽中以避免单EIP带宽达到上限导致业务受损。\n\n- 为VPC NAT网关修改SNAT条目时，该参数为SNAT条目中的NAT IP地址,多个NAT IP地址之间用半角逗号（,）隔开。\n\n- 参数 SnatIp 和参数 NetworkInterfaceId 不能都输入。",
       "position": "Query",
       "type": "String",
       "required": false

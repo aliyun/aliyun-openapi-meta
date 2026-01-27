@@ -1,16 +1,20 @@
 {
   "name": "CreateReadOnlyDBInstance",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
+      "name": "AutoCreateProxy",
+      "description": "是否自动创建代理。取值：\n\n- **true**：开启自动创建，默认为通用代理。\n\n- **false**：不开启自动创建。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
       "name": "AutoPay",
-      "description": "是否自动支付。\n取值范围：\n\n1. **true**：自动支付。您需要确保账户余额充足。\n\n1. **false**：只生成订单不扣费。\n\n\n\n\n> 默认值为true。如果您的支付方式余额不足，可以将参数AutoPay设置为false，此时会生成未支付订单，您可以登录RDS管理控制台自行支付。\n>",
+      "description": "是否自动支付。取值：\n\n- **true**：自动支付。您需要确保账户余额充足。\n- **false**：只生成订单不扣费。\n\n\n\n\n> 默认值为true。如果您的支付方式余额不足，可以将参数AutoPay设置为false，此时会生成未支付订单，您可以登录RDS管理控制台自行支付。\n>",
       "position": "Query",
       "type": "Boolean",
       "required": false
@@ -23,6 +27,13 @@
       "required": false
     },
     {
+      "name": "AutoUseCoupon",
+      "description": "是否使用代金券。取值：\n* **true**：使用代金券。\n* **false**（默认）：不使用代金券。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
       "name": "BpeEnabled",
       "description": "弃用参数，无需配置。",
       "position": "Query",
@@ -31,14 +42,14 @@
     },
     {
       "name": "BurstingEnabled",
-      "description": "<props=\"intl\">无效参数，无需配置。</props>\n<props=\"china\">通用云盘IO突发功能开关。</props>\n<props=\"china\">* true：开启IO突发功能。</props>\n<props=\"china\">* false：关闭IO突发功能。</props>\n<props=\"china\">> 了解通用云盘的IO突发功能的更多信息，请参见[什么是通用云盘](~~2340501~~)。</props>",
+      "description": "[高性能云盘](~~2340501~~)的IO性能突发功能开关。取值：\n* **true**：开启\n* **false**：关闭",
       "position": "Query",
       "type": "Boolean",
       "required": false
     },
     {
       "name": "Category",
-      "description": "实例系列，取值：\n\n* **Basic**：基础系列\n* **HighAvailability**：高可用系列（默认值）\n* **AlwaysOn**：集群系列\n\n<props=\"china\">* **Finance**：金融版</props>\n\n>PostgreSQL云盘实例的只读实例为基础系列，因此必须传入**Basic**。",
+      "description": "实例系列。取值：\n\n* **Basic**：基础系列\n* **HighAvailability**：高可用系列（默认值）\n* **AlwaysOn**：集群系列\n\n<props=\"china\">* **Finance**：金融版</props>\n\n>PostgreSQL云盘实例的只读实例为基础系列，因此必须传入**Basic**。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -46,6 +57,13 @@
     {
       "name": "ClientToken",
       "description": "用于保证请求的幂等性，防止重复提交请求。由客户端生成该参数值，要保证在不同请求间唯一，最大值不超过64个ASCII字符，且该参数值中不能包含非ASCII字符。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CustomExtraInfo",
+      "description": "备用参数，无需配置。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -80,7 +98,7 @@
     },
     {
       "name": "DBInstanceStorageType",
-      "description": "实例储存类型，取值：\n* **local_ssd**：本地SSD盘\n* **cloud_ssd**：SSD云盘\n* **cloud_essd**：ESSD PL1云盘\n* **cloud_essd2**：ESSD PL2云盘\n* **cloud_essd3**：ESSD PL3云盘\n\n> * RDS MySQL主实例为本地SSD盘，则仅支持传入**local_ssd**；RDS MySQL主实例为云盘，则仅支持传入云盘存储类型。\n> * SQL Server仅支持传入云盘存储类型。",
+      "description": "实例储存类型。取值：\n* **local_ssd**：高性能本地盘\n* **cloud_ssd**：SSD云盘\n* **cloud_essd**：ESSD PL1云盘\n* **cloud_essd2**：ESSD PL2云盘\n* **cloud_essd3**：ESSD PL3云盘\n* **general_essd**：高性能云盘\n\n\n> * RDS MySQL主实例为高性能本地盘，则仅支持传入**local_ssd**；RDS MySQL主实例为云盘，则仅支持传入云盘存储类型。\n> * SQL Server仅支持传入云盘存储类型。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -108,35 +126,42 @@
     },
     {
       "name": "GdnInstanceName",
-      "description": "备用参数。",
+      "description": "备用参数，无需配置。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "InstanceNetworkType",
-      "description": "只读实例的网络类型，取值：\n\n* **VPC**：专有网络\n* **Classic**：经典网络\n\n默认创建专有网络实例，需要传入**VPCId**和**VSwitchId**。\n>只读实例的网络类型可以和主实例不同。",
+      "description": "只读实例的网络类型。取值：\n\n* **VPC**：专有网络\n* **Classic**：经典网络\n\n默认创建专有网络实例，需要传入**VPCId**和**VSwitchId**。\n>只读实例的网络类型可以和主实例不同。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "InstructionSetArch",
-      "description": "备用参数。",
+      "description": "备用参数，无需配置。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "IoAccelerationEnabled",
-      "description": "是否开启IO加速功能。各取值含义如下：\n- 1：开启\n- 0：不开启\n\n> 通用云盘的IO加速功能的更多信息，请参见[通用云盘IO加速功能技术介绍](~~2527067~~)。",
+      "description": "高性能云盘的[Buffer Pool Extension（BPE）](~~2527067~~)功能开关。取值：\n\n - **1**：开启\n - **0**：不开启",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
+      "name": "IsAnalyticReadOnlyIns",
+      "description": "是否创建DuckDB分析实例。取值：\n\n- **true**：开启\n- **false**：关闭\n\n> 当前仅RDS MySQL和RDS PostgreSQL支持创建DuckDB分析实例。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
       "name": "PayType",
-      "description": "付费类型，取值：\n* **Postpaid**：后付费（按量付费）\n* **Prepaid**：预付费（包年包月）",
+      "description": "付费类型。取值：\n* **Postpaid**：后付费（按量付费）\n* **Prepaid**：预付费（包年包月）",
       "position": "Query",
       "type": "String",
       "required": true
@@ -150,7 +175,7 @@
     },
     {
       "name": "Port",
-      "description": "支持在RDS MySQL主实例创建只读实例时初始化端口。\n\n取值范围：1000~65534",
+      "description": "支持在RDS MySQL主实例创建只读实例时初始化端口。\n\n取值范围：1000~65534。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -158,6 +183,13 @@
     {
       "name": "PrivateIpAddress",
       "description": "设置只读实例的内网IP，需要在指定交换机的IP地址范围内。系统默认通过**VPCId**和**VSwitchId**自动分配。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "PromotionCode",
+      "description": "优惠券code。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -185,14 +217,14 @@
     },
     {
       "name": "TddlBizType",
-      "description": "备用参数。",
+      "description": "备用参数，无需配置。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "TddlRegionConfig",
-      "description": "备用参数。",
+      "description": "备用参数，无需配置。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -206,7 +238,7 @@
     },
     {
       "name": "VPCId",
-      "description": "只读实例的专有网络VPC ID。当**InstanceNetworkType**配置为空或**VPC**时需要传入。\n\n> * 主实例的存储类型为本地SSD盘时，只读实例可以选择任意VPC网络。\n> * 主实例的存储类型为云盘时，只读实例VPC必须和主实例保持一致。",
+      "description": "只读实例的专有网络VPC ID。当**InstanceNetworkType**配置为空或**VPC**时需要传入。\n\n> * 主实例的存储类型为高性能本地盘时，只读实例可以选择任意VPC网络。\n> * 主实例的存储类型为云盘时，只读实例VPC必须和主实例保持一致。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -220,7 +252,7 @@
     },
     {
       "name": "ZoneId",
-      "description": "可用区ID。可调用DescribeRegions获取。",
+      "description": "可用区ID。可调用DescribeRegions获取。\n\n- 若选择部署单可用区，填入一个可用区即可，例如`cn-hangzhou-b`。\n- 若选择部署多可用区，填入多个可用区并用英文冒号（:）分隔，例如`cn-hangzhou-b:cn-hangzhou-c`。\n- 填入的可用区数量应小于或等于当前创建的只读实例内的节点数。基础系列只读实例内仅含1个节点，高可用系列只读实例内含有2个节点（1个主节点与1个备节点）。",
       "position": "Query",
       "type": "String",
       "required": true

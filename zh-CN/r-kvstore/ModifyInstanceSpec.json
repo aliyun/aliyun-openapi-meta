@@ -1,9 +1,6 @@
 {
   "name": "ModifyInstanceSpec",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -38,7 +35,7 @@
     },
     {
       "name": "EffectiveTime",
-      "description": "变更执行时间，取值：\n* **Immediately**：立即执行，默认值。\n* **MaintainTime**：在实例的可维护时间段执行，您可以调用[ModifyInstanceMaintainTime](~~61000~~)修改可维护时间段。",
+      "description": "变更执行时间，取值：\n* **Immediately**：立即执行，默认值。\n* **MaintainTime**：在实例的可维护时间段执行，您可以调用[ModifyInstanceMaintainTime](~~473775~~)修改可维护时间段。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -59,21 +56,28 @@
     },
     {
       "name": "InstanceClass",
-      "description": "变更后的实例规格代码，您可以调用[DescribeAvailableResource](~~120580~~)查询实例所属的可用区可以变配的规格。\n\n> 各规格的详情，请参见[规格查询导航](~~26350~~)。",
+      "description": "变更后的实例规格代码，您可以调用[DescribeAvailableResource](~~473765~~)查询实例所属的可用区可以变配的规格。\n\n> 各规格的详情，请参见[规格查询导航](~~26350~~)。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "InstanceId",
-      "description": "实例ID，可调用[DescribeInstances](~~60933~~)获取。",
+      "description": "实例ID，可调用[DescribeInstances](~~473778~~)获取。",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
       "name": "MajorVersion",
-      "description": "变更配置的同时，可升级实例的大版本，传入要升级到的大版本号，取值**4.0**或**5.0**。",
+      "description": "适用于经典版实例升级的实例大版本，取值：**2.8**、**4.0**或**5.0**。\n> 升级版本时**InstanceClass**参数为必填，表示本接口仅支持在更新实例规格时升级版本。若您仅需升级实例版本，请调用[ModifyInstanceMajorVersion](~~473776~~)。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "NodeType",
+      "description": "节点类型，取值：\n* **MASTER_SLAVE**：高可用（双副本）\n* **STAND_ALONE**：单副本\n* **double**：双副本\n* **single**：单副本\n> 云原生版实例请选择**MASTER_SLAVE**或**STAND_ALONE**，经典版实例请选择**double**或**single**。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -87,35 +91,42 @@
     },
     {
       "name": "ReadOnlyCount",
-      "description": "只读节点数，取值：0~5，本参数仅适用于如下情况：\n* 若实例为云盘版标准架构，您可以将该参数设置为大于0的值，开启读写分离架构。\n* 若实例为云盘版读写分离架构实例，您可以通过该参数实现自定义只读节点数量，也可以将该参数设置为0，关闭读写分离架构，将实例切换为标准架构。",
+      "description": "主可用区的只读节点数，本参数仅适用于创建云原生读写分离实例。\n* 若实例为标准架构，取值为0-9，0表示关闭读写分离，将实例切换为标准架构。\n* 若实例为集群架构，取值为1-4，表示每数据分片的只读节点数。\n> 若创建多可用区实例，您可以通过该参数和SlaveReadOnlyCount参数自定义主备可用区的只读节点数量。\n> * 若实例为标准架构，该参数与SlaveReadOnlyCount的总和不能大于9。\n> * 若实例为集群架构，该参数与SlaveReadOnlyCount的总和不能大于4。",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
       "name": "RegionId",
-      "description": "地域ID，可调用[DescribeRegions](~~61012~~)查询，使用此参数指定要变更实例的地域。",
+      "description": "地域ID，可调用[DescribeRegions](~~473763~~)查询，使用此参数指定要变更实例的地域。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
-      "name": "SecurityToken",
-      "description": "",
+      "name": "ReplicaCount",
+      "description": "主可用区的备节点数量，本参数仅适用于云原生版集群多副本实例，您可以通过该参数实现自定义备节点数量，取值：1~4。\n\n> 若实例为多可用区实例，您可以通过该参数与SlaveReplicaCount参数自定义主、备可用区的备节点数量。同时，该参数与SlaveReplicaCount参数的总和不能超过4。",
       "position": "Query",
-      "type": "String",
+      "type": "Integer",
       "required": false
     },
     {
       "name": "ShardCount",
-      "description": "分片数，本参数仅适用于云盘版集群架构实例，您可以通过该参数实现自定义分片数量。",
+      "description": "分片数，本参数仅适用于云原生版集群架构实例，您可以通过该参数实现自定义分片数量。\n\n> \n> - 如果要从云原生版集群架构实例变配到标准架构 ，ShardCount 需要显式传 1，并且规格传标准规格。\n> - 如果要从云原生版标准架构实例变配到集群架构，ShardCount 需要显式传大于1的值，并且规格传集群规格。",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
       "name": "SlaveReadOnlyCount",
-      "description": "",
+      "description": "备可用区的只读节点数量。",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "SlaveReplicaCount",
+      "description": "备可用区的备节点数量。",
       "position": "Query",
       "type": "Integer",
       "required": false
@@ -123,6 +134,20 @@
     {
       "name": "SourceBiz",
       "description": "调用来源，本参数仅用于内部维护使用，无需传入。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "Storage",
+      "description": "磁盘型实例的存储空间，不同的规格取值范围有所区别，详情请参见[磁盘型规格](~~2527111~~)。\n> 当**InstanceType**取值为**tair_essd**时，且创建Tair磁盘**ESSD**型时，才需要输入本参数。对于创建 Tair磁盘**SSD**型实例，容量字段按不同的规格定义为不同的固定值，无需指定该字段。",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "StorageType",
+      "description": "存储类型，取值为**essd_pl1**、**essd_pl2**、**essd_pl3**。\n> 当**InstanceType**取值为**tair_essd**时，且实例为Tair磁盘**ESSD**型时，才需要输入本参数。",
       "position": "Query",
       "type": "String",
       "required": false

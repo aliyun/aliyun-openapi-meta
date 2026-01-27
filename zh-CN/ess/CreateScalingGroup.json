@@ -1,16 +1,13 @@
 {
   "name": "CreateScalingGroup",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
       "name": "AlbServerGroup",
-      "description": "ALB服务器组列表。",
+      "description": "ALB服务器组的相关信息集合。",
       "position": "Query",
       "type": "RepeatList",
       "required": false,
@@ -43,6 +40,13 @@
       "required": false
     },
     {
+      "name": "AutoRebalance",
+      "description": "是否开启伸缩组自动均衡，仅当可用区均衡伸缩组开启了BalancedOnly才生效。取值范围：\n- false：不开启伸缩组自动均衡。\n- true：开启伸缩组自动均衡时，伸缩组会自动检测可用区见容量，当可用区容量不均衡时，会主动进行可用区扩缩，进行可用区容量再均衡。\n\n默认值: false。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
       "name": "AzBalance",
       "description": "伸缩组的容量是否在多个可用区间均衡分布（仅当`MultiAZPolicy`参数取值为`COMPOSABLE`策略时生效），取值范围：\n- true：伸缩组的容量在多个可用区间均衡分布。\n- false：伸缩组的容量不在多个可用区间均衡分布。\n\n默认值：false。",
       "position": "Query",
@@ -50,8 +54,22 @@
       "required": false
     },
     {
+      "name": "BalanceMode",
+      "description": "可用区均衡模式，仅当开启可用区均衡模式时生效。取值范围：\n \n- BalancedBestEffort：\n当某可用区资源创建失败时，会降级至其他可用区，保障资源的尽力交付。\n\n- BalancedOnly：\n当某可用区资源创建失败时，不会降级至其他可用区，扩容活动部分成功，避免资源在不同可用区过度不均衡。\n\n默认值：BalancedBestEffort。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CapacityOptions",
+      "description": "容量选项。",
+      "position": "Query",
+      "type": "Struct",
+      "required": false
+    },
+    {
       "name": "ClientToken",
-      "description": "保证请求幂等性。从您的客户端生成一个参数值，确保不同请求间该参数值唯一。只支持ASCII字符，且不能超过64个字符。更多详情，请参见[如何保证幂等性](~~25693~~)。",
+      "description": "保证请求幂等性。\n\n从您的客户端生成一个参数值，确保不同请求间该参数值唯一。只支持ASCII字符，且不能超过64个字符。更多信息，请参见[如何保证幂等性](~~25693~~)。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -78,6 +96,33 @@
       "required": false
     },
     {
+      "name": "DBInstance",
+      "description": "伸缩组关联的数据库列表。",
+      "position": "Query",
+      "type": "RepeatList",
+      "required": false,
+      "sub_parameters": [
+        {
+          "name": "AttachMode",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "DBInstanceId",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "Type",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        }
+      ]
+    },
+    {
       "name": "DBInstanceIds",
       "description": "RDS实例ID。取值可以是由多台RDS实例ID组成一个JSON数组，ID之间用半角逗号（,）隔开。 \n\n<props=\"china\">单个伸缩组可以关联的RDS实例总数和弹性伸缩使用情况有关，请前往[配额中心](https://quotas.console.aliyun.com/products/ess/quotas)查看**单个伸缩组可以关联的RDS实例总数**对应的配额值。</props>\n\n<props=\"intl\">单个伸缩组可以关联的RDS实例总数和弹性伸缩使用情况有关，请前往[配额中心](https://quotas.console.aliyun.com/products/ess/quotas)查看**单个伸缩组可以关联的RDS实例总数**对应的配额值。</props>\n\n<props=\"partner\">单个伸缩组可以关联的RDS实例总数和弹性伸缩使用情况有关，请前往配额中心查看**单个伸缩组可以关联的RDS实例总数**对应的配额值。</props>",
       "position": "Query",
@@ -86,7 +131,7 @@
     },
     {
       "name": "DefaultCooldown",
-      "description": "一次伸缩活动（添加或移出ECS实例）结束后的一段冷却时间。取值范围：0~86400，单位：秒。\n\n冷却时间内，该伸缩组不执行其它的伸缩活动，仅针对云监控报警任务触发的伸缩活动有效。  \n\n默认值：300。",
+      "description": "一次伸缩活动（添加或移出实例）结束后的一段冷却时间。取值范围：0~86400，单位：秒。\n\n冷却时间内，该伸缩组不执行其它的伸缩活动，仅针对云监控报警任务触发的伸缩活动有效。  \n\n默认值：300。",
       "position": "Query",
       "type": "Integer",
       "required": false
@@ -114,14 +159,21 @@
     },
     {
       "name": "HealthCheckType",
-      "description": "伸缩组的健康检查方式。取值范围：\n\n- NONE：不做健康检查。\n- ECS：对伸缩组内的ECS实例做健康检查。\n\n默认值：ECS。",
+      "description": "伸缩组的健康检查方式。取值范围：\n\n- NONE：不做健康检查。\n- ECS：对伸缩组内的实例做健康检查（ECS类型和ECI类型的伸缩组均使用本取值开启实例健康检查）。\n- LOAD_BALANCER: 根据负载均衡（暂不支持CLB负载均衡类型）健康检查结果判断实例健康状态。\n\n\n默认值：ECS。\n\n> 如果需要同时开启实例健康检查和负载均衡健康检查，请使用`HealthCheckTypes`参数。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
+      "name": "HealthCheckTypes",
+      "description": "伸缩组的健康检查方式。\n> 使用此参数可以设置多个值，开启多个健康检查选项。如果设置了`HealthCheckType`参数，则本参数将被忽略。",
+      "position": "Query",
+      "type": "RepeatList",
+      "required": false
+    },
+    {
       "name": "InstanceId",
-      "description": "ECS实例的ID。创建伸缩组时，将从指定的实例获取所需的配置信息，并自动创建伸缩配置。",
+      "description": "实例的ID。创建伸缩组时，将从指定的实例获取所需的配置信息，并自动创建伸缩配置。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -249,21 +301,21 @@
     },
     {
       "name": "MaxSize",
-      "description": "伸缩组内ECS实例台数的最大值，当伸缩组内ECS实例数大于`MaxSize`的值时，弹性伸缩会自动移出ECS实例。 \n\n<props=\"china\">MaxSize的取值范围和弹性伸缩使用情况有关，请前往[配额中心](https://quotas.console.aliyun.com/products/ess/quotas)查看**单个伸缩组可以设置的组内最大实例数**对应的配额值。</props>\n\n<props=\"intl\">MaxSize的取值范围和弹性伸缩使用情况有关，请前往[配额中心](https://quotas.console.aliyun.com/products/ess/quotas)查看**单个伸缩组可以设置的组内最大实例数**对应的配额值。</props>\n\n<props=\"partner\">MaxSize的取值范围和弹性伸缩使用情况有关，请前往配额中心查看**单个伸缩组可以设置的组内最大实例数**对应的配额值。</props>\n\n如果**单个伸缩组可以设置的组内最大实例数**对应的配额值为2000，则`MaxSize`的取值范围为0~2000。",
+      "description": "伸缩组内实例台数的最大值，当伸缩组内实数大于`MaxSize`的值时，弹性伸缩会自动移出实例。 \n\n<props=\"china\">MaxSize的取值范围和弹性伸缩使用情况有关，请前往[配额中心](https://quotas.console.aliyun.com/products/ess/quotas)查看**单个伸缩组可以设置的组内最大实例数**对应的配额值。</props>\n\n<props=\"intl\">MaxSize的取值范围和弹性伸缩使用情况有关，请前往[配额中心](https://quotas.console.aliyun.com/products/ess/quotas)查看**单个伸缩组可以设置的组内最大实例数**对应的配额值。</props>\n\n<props=\"partner\">MaxSize的取值范围和弹性伸缩使用情况有关，请前往配额中心查看**单个伸缩组可以设置的组内最大实例数**对应的配额值。</props>\n\n如果**单个伸缩组可以设置的组内最大实例数**对应的配额值为2000，则`MaxSize`的取值范围为0~2000。",
       "position": "Query",
       "type": "Integer",
       "required": true
     },
     {
       "name": "MinSize",
-      "description": "伸缩组内ECS实例台数的最小值，当伸缩组内ECS实例数小于`MinSize`的值时，弹性伸缩会自动创建ECS实例。 \n\n> `MinSize`的值必须小于或等于`MaxSize`的值。",
+      "description": "伸缩组内实例台数的最小值，当伸缩组内实例数小于`MinSize`的值时，弹性伸缩会自动创建实例。 \n\n> `MinSize`的值必须小于或等于`MaxSize`的值。",
       "position": "Query",
       "type": "Integer",
       "required": true
     },
     {
       "name": "MultiAZPolicy",
-      "description": "多可用区伸缩组ECS实例扩缩容策略。取值范围： \n         \n- PRIORITY：先指定的虚拟交换机（VSwitchIds.N）优先级最高。弹性伸缩优先在优先级最高的交换机所在可用区尝试扩缩容，如果无法扩缩容，则自动在下一优先级的交换机所在可用区进行扩缩容。  \n- COST_OPTIMIZED：扩容时弹性伸缩按vCPU单价从低到高尝试创建ECS实例，缩容时按vCPU单价从高到低尝试移出ECS实例。当伸缩配置设置了抢占式计费方式的多实例规格时，优先创建对应抢占式实例。您可以继续通过CompensateWithOnDemand参数指定当抢占式实例由于库存等原因无法创建时，是否自动尝试以按量付费的方式创建。 \n\n    > COST_OPTIMIZED仅在伸缩配置设置了多实例规格或者选用了抢占式实例的情况下生效。 \n- BALANCE：在伸缩组指定的多可用区之间均匀分配ECS实例。如果由于库存不足等原因可用区之间变得不平衡，您可以通过API [RebalanceInstance](~~71516~~)平衡资源。  \n- COMPOSABLE：是一种组合策略，您可以根据需要自主组合上述多可用区伸缩组ECS实例的扩缩容策略。\n\n默认值：PRIORITY。",
+      "description": "多可用区伸缩组ECS实例扩缩容策略。取值范围： \n         \n- PRIORITY：先指定的虚拟交换机（VSwitchIds.N）优先级最高。弹性伸缩优先在优先级最高的交换机所在可用区尝试扩缩容，如果无法扩缩容，则自动在下一优先级的交换机所在可用区进行扩缩容。  \n- COST_OPTIMIZED：扩容时弹性伸缩按vCPU单价从低到高尝试创建ECS实例，缩容时按vCPU单价从高到低尝试移出ECS实例。当伸缩配置设置了抢占式计费方式的多实例规格时，优先创建对应抢占式实例。您可以继续通过CompensateWithOnDemand参数指定当抢占式实例由于库存等原因无法创建时，是否自动尝试以按量付费的方式创建。 \n\n    > COST_OPTIMIZED仅在伸缩配置设置了多实例规格或者选用了抢占式实例的情况下生效。 \n- BALANCE：在伸缩组指定的多可用区之间均匀分配ECS实例。如果由于库存不足等原因可用区之间变得不平衡，您可以通过API [RebalanceInstance](~~71516~~)平衡资源。  \n- COMPOSABLE：是一种组合策略，您可以根据需要自主组合上述多可用区伸缩组ECS实例的扩缩容策略。或者进一步指定参数，对伸缩组的容量进行更精细地控制。\n\n默认值：PRIORITY。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -291,7 +343,7 @@
     },
     {
       "name": "RemovalPolicy.1",
-      "description": "指定实例移出策略的第一段筛选策略。不允许与RemovalPolicy.2和RemovalPolicy.3取值相同，取值范围：\n\n- OldestInstance：移出最早加入伸缩组的ECS实例。\n- NewestInstance：移出最新加入伸缩组的ECS实例。\n- OldestScalingConfiguration：移出最早伸缩配置创建的ECS实例。\n- CustomPolicy：基于自定义缩容策略Function函数移除ECS实例。\n\nOldestScalingConfiguration中提到的伸缩配置泛指组内实例配置信息来源，包括伸缩配置和启动模板。CustomPolicy仅支持设置为首位移出策略，当指定CustomPolicy需同时指定CustomPolicyARN参数。\n\n> 伸缩组移出ECS实例还受伸缩组的扩缩容策略（MultiAZPolicy）影响。更多信息，请参见[设置移出实例的组合策略](~~254822~~)。",
+      "description": "指定实例移出策略的第一段筛选策略。不允许与RemovalPolicy.2和RemovalPolicy.3取值相同。取值范围：\n\n- OldestInstance：移出最早加入伸缩组的ECS实例。\n- NewestInstance：移出最新加入伸缩组的ECS实例。\n- OldestScalingConfiguration：移出最早伸缩配置创建的ECS实例。\n- CustomPolicy：基于自定义缩容策略Function函数移除ECS实例。\n\nOldestScalingConfiguration中提到的伸缩配置泛指组内实例配置信息来源，包括伸缩配置和启动模板。CustomPolicy仅支持设置为首位移出策略，当指定CustomPolicy需同时指定CustomPolicyARN参数。\n\n> 伸缩组移出ECS实例还受伸缩组的扩缩容策略（MultiAZPolicy）影响。更多信息，请参见[设置移出实例的组合策略](~~254822~~)。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -319,7 +371,7 @@
     },
     {
       "name": "ScalingGroupName",
-      "description": "伸缩组的名称，同一地域下伸缩组名称唯一。长度为2~64个英文或中文字符，以数字、大小写英文字母或中文开头，可以包含数字、下划线（_）、短划线（-）和半角句号（.）。\n\n默认值为ScalingGroupId的值。",
+      "description": "伸缩组的名称，同一地域下伸缩组名称唯一。\n\n长度为2~64个英文或中文字符，以数字、大小写英文字母或中文开头，可以包含数字、下划线（_）、短划线（-）和半角句号（.）。\n\n默认值为ScalingGroupId的值。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -386,6 +438,13 @@
       "required": false
     },
     {
+      "name": "StopInstanceTimeout",
+      "description": "缩容流程中等待ECS实例停机成功的超时时间，单位为秒。\n取值范围：30~240。\n\n> - 该参数仅在 ScalingPolicy = release 模式下的缩容流程里生效。  \n- 如果设置了该参数，系统会最长等待StopInstanceTimeout时间将实例停机成功，超时后无论实例是否成功停机都会继续缩容。  \n- 如果没有设置该参数，系统会长时间等待实例停机成功，只有实例停机成功后才继续缩容，停机失败时，缩容流程会回滚，缩容失败。",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
       "name": "Tag",
       "description": "伸缩组的标签信息集合。",
       "position": "Query",
@@ -414,7 +473,7 @@
     },
     {
       "name": "VServerGroup",
-      "description": "虚拟服务器组信息。",
+      "description": "伸缩组关联虚拟服务器组的信息集合。",
       "position": "Query",
       "type": "RepeatList",
       "required": false,

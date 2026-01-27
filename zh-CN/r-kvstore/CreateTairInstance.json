@@ -1,9 +1,6 @@
 {
   "name": "CreateTairInstance",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -38,7 +35,7 @@
     },
     {
       "name": "BackupId",
-      "description": "源实例的备份集ID，可调用[DescribeBackups](~~61081~~)获取。\n> 如需基于某个实例的备份数据创建新实例，在通过**SrcDBInstanceId**指定源实例ID后，您还需传入本参数指定源实例的备份集ID，系统将使用该备份集中保存的数据创建新实例。",
+      "description": "您可在此参数中指定源实例的备份集ID，系统将使用该备份集中保存的数据创建新实例。通过调用[DescribeBackups](~~473823~~)可查询BackupId。如果源实例是集群实例，则此处需要填写源实例各个分片的备份集id，并且通过逗号隔开，例如\"10**,11**,15**\"。\n> 若您的实例是云原生架构实例，并且是集群实例，则建议您使用[DescribeClusterBackupList](~~2679168~~)查询出集群备份集id，例如\"cb-xx\"，然后填入ClusterBackupId请求参数来达到克隆集群实例的目的，免去您输入各个分片备份集id的烦恼。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -66,7 +63,14 @@
     },
     {
       "name": "ClusterBackupId",
-      "description": "集群备份集ID。",
+      "description": "部分新集群架构支持集群备份集ID，您可以通过[DescribeClusterBackupList](~~2679168~~)接口获取。\n* 若支持，可输入指定的集群备份集ID即可，无需再填写**BackupId**参数。\n* 若不支持，请在BackupId参数中填写为原实例各个分片下的备份集ID，通过逗号隔开，例如\"2158\\*\\*\\*\\*20,2158\\*\\*\\*\\*22\"等。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "ConnectionStringPrefix",
+      "description": "连接地址的前缀，需由小写英文字母与数字组成，以小写字母开头，长度为8~40个字符。\n\n> \n> 连接地址格式为：<前缀-实例ID>.redis.rds.aliyuncs.com。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -87,14 +91,14 @@
     },
     {
       "name": "EngineVersion",
-      "description": "数据库版本，默认取值：**1.0**，不同 Tair 产品类型传参规则：\n- Tair_rdb: Tair 内存型兼容 Redis 5.0 和 Redis 6.0 协议，传 5.0 或者 6.0。\n- Tair_scm: Tair 持久内存兼容 Redis 6.0 协议，传 1.0。\n- Tair_essd: Tair 磁盘（ESSD/SSD）兼容 Redis 4.0 和 Redis 6.0 协议，分别传 1.0 和 2.0。",
+      "description": "数据库版本，默认取值：**1.0**，不同 Tair 产品类型传参规则：\n- Tair_rdb: Tair 内存型兼容Redis 5.0、Redis 6.0和Redis 7.0协议，传**5.0**、**6.0**或**7.0**。\n- Tair_scm: Tair 持久内存兼容Redis 6.0协议，传**1.0**。\n- Tair_essd: Tair 磁盘（ESSD/SSD）兼容Redis 6.0协议。 创建ESSD型请传入**1.0**、创建SSD型请传入**2.0**。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "GlobalInstanceId",
-      "description": "分布式实例ID。",
+      "description": "是否将本次新建的实例作为分布式实例中的子实例，通过该方式可创建分布实例。\n* 若希望新建的实例作为第一个子实例，请输入**true**。\n* 若希望新建的实例作为第二、三个子实例，请输入分布式实例 ID，例如gr-bp14rkqrhac****。\n* 不作为分布式实例，您无需输入任何值。\n> 若希望作为分布式实例，本次新建的实例需为Tair内存型。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -108,7 +112,7 @@
     },
     {
       "name": "InstanceClass",
-      "description": "实例规格，更多信息，请参见：\n- [内存型规格](~~443844~~)。\n- [持久内存型规格](~~443845~~)。\n- [云盘（ESSD）型规格](~~443846~~)。",
+      "description": "实例规格，更多信息，请参见：\n- [内存型规格](~~2527112~~)。\n- [持久内存型规格](~~2527110~~)。\n- [磁盘型规格](~~2527111~~)。",
       "position": "Query",
       "type": "String",
       "required": true
@@ -122,7 +126,7 @@
     },
     {
       "name": "InstanceType",
-      "description": "存储介质，取值：\n* **tair_rdb**：内存型。\n* **tair_scm**：持久内存型。\n* **tair_essd**：云盘（ESSD）型。",
+      "description": "存储介质，取值：\n* **tair_rdb**：内存型。\n* **tair_scm**：持久内存型。\n* **tair_essd**：磁盘型。",
       "position": "Query",
       "type": "String",
       "required": true
@@ -150,7 +154,7 @@
     },
     {
       "name": "Port",
-      "description": "实例的服务端口，取值范围：1024~65535，默认值为6379。",
+      "description": "实例的服务端口，取值范围：1~65535，默认值为6379。",
       "position": "Query",
       "type": "Integer",
       "required": false
@@ -164,17 +168,31 @@
     },
     {
       "name": "ReadOnlyCount",
-      "description": "只读节点数，本参数仅适用于创建云盘版读写分离架构实例，您可以通过该参数实现自定义只读节点数量，取值：1~5。",
+      "description": "主可用区的只读节点数，本参数仅适用于创建云原生读写分离实例。\n* 若实例为标准架构，取值为1~9。\n* 若实例为集群架构，取值为1-4，表示每数据分片的只读节点数。\n> 若创建多可用区实例，您可以通过该参数和SlaveReadOnlyCount参数自定义主备可用区的只读节点数量。\n> * 若实例为标准架构，该参数与SlaveReadOnlyCount的总和不能大于9。\n> * 若实例为集群架构，该参数与SlaveReadOnlyCount的总和不能大于4。",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
+      "name": "RecoverConfigMode",
+      "description": "使用指定备份集创建实例时，是否从原备份集中恢复账号（account）、内核参数（config）、白名单（whitelist）信息。例如需恢复账号信息，则取值为`{\"account\":true}`。\n\n默认为空，表示不从原备份集中恢复账号、内核参数、白名单信息。\n> 本参数仅适用于云原生版实例，且需要原备份集中已保存了账号、内核参数、白名单信息。您可以通过[DescribeBackups](~~473823~~)接口查询指定备份集中的RecoverConfigMode参数是否包含上述信息。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "RegionId",
-      "description": "地域ID，可调用[DescribeRegions](~~61012~~)查询，使用此参数指定要创建实例的地域。",
+      "description": "地域ID，可调用[DescribeRegions](~~473763~~)查询，使用此参数指定要创建实例的地域。",
       "position": "Query",
       "type": "String",
       "required": true
+    },
+    {
+      "name": "ReplicaCount",
+      "description": "主可用区的备节点数，本参数仅适用于创建云原生版集群多副本实例，您可以通过该参数实现自定义备节点数量，取值：1~4。\n> 若创建多可用区实例，您可以通过该参数与SlaveReplicaCount参数自定义主、备可用区的备节点数量。同时，该参数与SlaveReplicaCount参数的总和不能超过4。",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
     },
     {
       "name": "ResourceGroupId",
@@ -184,57 +202,64 @@
       "required": false
     },
     {
-      "name": "SecondaryZoneId",
-      "description": "备可用区ID，可调用[DescribeRegions](~~61012~~)查询。\n\n> 本参数和ZoneId参数传入的值不能相同，且不可传入多可用区对应的ID。",
+      "name": "RestoreTime",
+      "description": "若源实例已开启数据闪回，您可在此参数中指定源实例备份保留周期内的任意时间点，系统将使用源实例在该时间点的备份数据创建新实例。格式为<i>yyyy-MM-dd</i>T<i>HH:mm:ss</i>Z（UTC时间）。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
-      "name": "SecurityToken",
-      "description": "",
+      "name": "SecondaryZoneId",
+      "description": "备可用区ID，可调用[DescribeRegions](~~473763~~)查询。\n\n> 本参数和ZoneId参数传入的值不能相同，且不可传入多可用区对应的ID。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "ShardCount",
-      "description": "实例中的数据节点个数，取值：\n* **1**：默认值，即表示创建的实例为[标准架构](~~52228~~)，仅拥有1个数据节点。\n* **2**~**32**：传入该范围的值，即表示创建的实例为[集群架构](~~52228~~)，拥有指定数量的数据节点。\n\n<props=\"china\">\n> 当**InstanceType**取值为**tair_rdb**或**tair_scm**时，本参数才可以传入**2**~**32**，即只有内存型和持久内存型支持集群架构。</props>\n\n<props=\"intl\">\n> 当**InstanceType**取值为**tair_scm**时，本参数才可以传入**2**~**32**，即只有持久内存型支持集群架构。</props>\n\n<props=\"partner\">\n> 当**InstanceType**取值为**tair_scm**时，本参数才可以传入**2**~**32**，即只有持久内存型支持集群架构。</props>",
+      "description": "实例中的数据节点个数，取值：\n* **1**：默认值，即表示创建的实例为[标准架构](~~52228~~)，仅拥有1个数据节点。\n* **2**~**32**：传入该范围的值，即表示创建的实例为[集群架构](~~52228~~)，拥有指定数量的数据节点。\n\n> 当**InstanceType**取值为**tair_rdb**或**tair_scm**时，本参数才可以传入**2**~**32**，即只有内存型和持久内存型支持集群架构。",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
       "name": "ShardType",
-      "description": "实例类型，取值：\n- **MASTER_SLAVE**（默认）：高可用，采用主从架构，可保障可用性。\n- **STAND_ALONE**：单副本，采用单节点架构。在节点故障后，数据会丢失，系统会自动拉起新的空实例。仅在**单可用区**时支持，且不支持创建集群与读写分离架构。",
+      "description": "实例类型，取值：\n- **MASTER_SLAVE**（默认）：高可用，采用主备架构，可保障可用性。\n- **STAND_ALONE**：单副本，采用单节点架构。在节点故障后，数据会丢失，系统会自动拉起新的空实例。仅在**单可用区**时支持，且不支持创建集群与读写分离架构。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "SlaveReadOnlyCount",
-      "description": "用于多可用区读写分离实例创建时，指定备可用区的只读节点数量。\n><notice>创建多可用区读写分离实例 SlaveReadOnlyCount  和 SecondaryZoneId 需要同时指定></notice>",
+      "description": "备可用区的只读节点数量。",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "SlaveReplicaCount",
+      "description": "备可用区的备节点数量。",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
       "name": "SrcDBInstanceId",
-      "description": "源实例ID。\n> 如需基于某个实例的备份集创建新实例，请先在此参数中指定源实例ID，然后通过**BackupId**参数指定需要使用的备份集。",
+      "description": "如需基于某个实例的备份集创建新实例，请先在此参数中指定源实例ID。\n> 然后通过**BackupId**、**ClusterBackupId**（云原生集群架构建议使用ClusterBackupId）或**RestoreTime**参数指定需要使用的备份集或指定时间点，本参数需要与上述3个中的任意一个参数组合使用。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "Storage",
-      "description": "云盘的存储空间，不同的规格取值范围有所区别，详情请参见[云盘（ESSD）型规格](~~443846~~)。\n> 当**InstanceType**取值为**tair_essd**时，本参数才可用且必须传入。",
+      "description": "磁盘型实例的存储空间，不同的规格取值范围有所区别，详情请参见[磁盘型规格](~~2527111~~)。\n> 当**InstanceType**取值为**tair_essd**时，且创建ESSD型时，才需要输入本参数。对于创建 Tair 磁盘**SSD**型实例，容量字段按不同的规格定义为不同的固定值，无需指定该字段。",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
       "name": "StorageType",
-      "description": "存储类型，取值固定为**essd_pl1**。\n> 当**InstanceType**取值为**tair_essd**时，本参数才可用。",
+      "description": "存储类型，取值为**essd_pl1**、**essd_pl2**、**essd_pl3**。\n> 当**InstanceType**取值为**tair_essd**时，且创建ESSD型时，才需要输入本参数。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -276,7 +301,7 @@
     },
     {
       "name": "ZoneId",
-      "description": "主可用区ID，可调用[DescribeRegions](~~61012~~)查询，使用此参数指定要创建实例的可用区。\n> 您也可以再传入SecondaryZoneId参数指定备可用区，主备节点将分别部署在指定的主可用区和备可用区，实现同城双中心主备架构。例如指定ZoneId参数为\"cn-hangzhou-h\"，指定SecondaryZoneId参数为\"cn-hangzhou-g\"。",
+      "description": "主可用区ID，可调用[DescribeRegions](~~473763~~)查询，使用此参数指定要创建实例的可用区。\n> 您也可以再传入SecondaryZoneId参数指定备可用区，主备节点将分别部署在指定的主可用区和备可用区，实现同城双中心主备架构。例如指定ZoneId参数为\"cn-hangzhou-h\"，指定SecondaryZoneId参数为\"cn-hangzhou-g\"。",
       "position": "Query",
       "type": "String",
       "required": false

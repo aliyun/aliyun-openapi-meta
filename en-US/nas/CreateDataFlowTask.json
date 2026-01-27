@@ -1,72 +1,104 @@
 {
   "name": "CreateDataFlowTask",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
       "name": "ClientToken",
-      "description": "The client token that is used to ensure the idempotence of the request. You can use the client to generate the token, but you must make sure that the token is unique among different requests.\n\nThe token can contain only ASCII characters and cannot exceed 64 characters in length. For more information, see [How do I ensure the idempotence?](~~25693~~)\n\n>  If you do not specify this parameter, the system automatically uses the request ID as the client token. The value of RequestId may be different for each API request.",
+      "description": "The client token that is used to ensure the idempotence of the request. You can use the client to generate the token, but you must make sure that the token is unique among different requests.\n\nThe token can contain only ASCII characters and cannot exceed 64 characters in length. For more information, see [How to ensure idempotence](~~25693~~).\n\n>  If you do not specify this parameter, the system automatically uses the request ID as the client token. The request ID may be different for each request.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
+      "name": "ConflictPolicy",
+      "description": "The conflict policy for files with the same name. Valid value:\n\n*   SKIP_THE_FILE: skips files with the same name.\n*   KEEP_LATEST: compares the update time and keeps the latest version.\n*   OVERWRITE_EXISTING: forcibly overwrites the existing file.\n\n>  This parameter is required for CPFS for Lingjun file systems.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CreateDirIfNotExist",
+      "description": "Specifies whether to automatically create a directory if no directory exists. Valid value:\n\n*   true: automatically creates a directory.\n*   false (default): does not automatically create a directory.\n\n> \n\n*   This parameter is required if the TaskAction parameter is set to Import.\n\n*   Only CPFS for Lingjun V2.6.0 and later support this parameter.",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
       "name": "DataFlowId",
-      "description": "The dataflow ID.",
+      "description": "The ID of the dataflow.",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
       "name": "DataType",
-      "description": "The type of data on which operations are performed by the dataflow task.\n\nValid values:\n\n*   Metadata: the metadata of a file, including the timestamp, ownership, and permission information of the file. If you select Metadata, only the metadata of the file is imported. You can only query the file. When you access the file data, the file is loaded from the source storage as required.\n*   Data: the data blocks of a file.\n*   MetaAndData: the metadata and data blocks of the file.",
+      "description": "The type of data on which operations are performed by the dataflow task.\n\nValid value:\n\n*   Metadata: the metadata of a file, including the timestamp, ownership, and permission information of the file. If you select Metadata, only the metadata of the file is imported. You can only query the file. When you access the file data, the file is loaded from the source storage as required.\n*   Data: the data blocks of a file.\n*   MetaAndData: the metadata and data blocks of the file.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "Directory",
-      "description": "The directory in which the dataflow task is executed.\n\nLimits:\n\n*   The directory must be 2 to 1,024 characters in length.\n*   The directory must be encoded in UTF-8.\n*   The directory must start and end with a forward slash (/).\n*   Only one directory can be listed at a time.\n*   The directory must be an existing directory in the CPFS file system and must be in a fileset where the dataflow is enabled.",
+      "description": "The source directory of the data.\n\nLimits:\n\n*   The directory must be 1 to 1,023 characters in length.\n*   Must be encoded in UTF-8.\n*   The directory must start and end with a forward slash (/).\n*   Only one directory can be listed at a time.\n*   If the TaskAction parameter is set to Export, the directory must be a relative path within the FileSystemPath.\n*   If the TaskAction parameter is set to Import, the directory must be a relative path within the SourceStoragePath.\n*   If the TaskAction parameter is set to StreamExport, the directory must be a relative path within the FileSystemPath.\n*   If the TaskAction parameter is set to StreamImport, the directory must be a relative path within the SourceStoragePath.\n\n>  Only CPFS for Lingjun V2.6.0 and later support StreamImport and StreamExport.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "DryRun",
-      "description": "Specifies whether to perform a dry run.\n\nDuring the dry run, the system checks whether the request parameters are valid and whether the requested resources are available. During the dry run, no file system is created and no fee is incurred.\n\nValid values:\n\n*   true: performs a dry run. The system checks the required parameters, request syntax, limits, and available NAS resources. If the request fails the dry run, an error message is returned. If the request passes the dry run, the HTTP status code 200 is returned. No value is returned for the FileSystemId parameter.\n*   false (default): performs a dry run and sends the request. If the request passes the dry run, a file system is created.",
+      "description": "Specifies whether to perform a dry run.\n\nDuring the dry run, the system checks whether the request parameters are valid and whether the requested resources are available. During the dry run, no dataflow task is created and no fee is incurred.\n\nValid value:\n\n*   true: performs a dry run. The system checks the required parameters, request syntax, service limits, and available Apsara File Storage NAS (NAS) resources. Otherwise, an error message is returned. If the request passes the dry run, the HTTP status code 200 is returned. No value is returned for the TaskId parameter.\n*   false (default): performs a dry run and sends the request. If the request passes the dry run, a dataflow task is created.",
       "position": "Query",
       "type": "Boolean",
       "required": false
     },
     {
+      "name": "DstDirectory",
+      "description": "The directory mapped to the dataflow task. Limits:\n\n*   The directory must start and end with a forward slash (/). The directory cannot be /../.\n*   The directory must be 1 to 1,023 characters in length.\n*   Must be encoded in UTF-8.\n*   Only one directory can be listed at a time.\n*   If the TaskAction parameter is set to Export, the directory must be a relative path within the SourceStoragePath.\n*   If the TaskAction parameter is set to Import, the directory must be a relative path within the FileSystemPath.\n*   If the TaskAction parameter is set to StreamExport, the directory must be a relative path within the SourceStoragePath.\n*   If the TaskAction parameter is set to StreamImport, the directory must be a relative path within the FileSystemPath.\n\n>  Only CPFS for Lingjun V2.6.0 and later support StreamImport and StreamExport.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "EntryList",
-      "description": "The list of files that are executed by the dataflow task.\n\nLimits:\n\n*   The list must be encoded in UTF-8.\n*   The file list is in JSON format.\n*   If the source storage is Object Storage Service (OSS), the list name must comply with the naming conventions of OSS objects.",
+      "description": "The list of files that are executed by the dataflow task.\n\nLimits:\n\n*   The list must be encoded in UTF-8.\n*   The total length of the file list cannot exceed 64 KB.\n*   The file list is in JSON format.\n*   The path of a single file must be 1 to 1,023 characters in length and must start with a forward slash (/).\n*   If the TaskAction parameter is set to Import, each element in the list represents an OSS object name.\n*   If the TaskAction parameter is set to Export, each element in the list represents a CPFS file path.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "FileSystemId",
-      "description": "The ID of the file system.",
+      "description": "The ID of the file system.\n\n*   The IDs of CPFS file systems must start with `cpfs-`. Example: cpfs-125487\\*\\*\\*\\*.\n*   The IDs of CPFS for Lingjun file systems must start with `bmcpfs-`. Example: bmcpfs-0015\\*\\*\\*\\*.",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
+      "name": "Includes",
+      "description": "Filters subdirectories and transfers their contents.\n\n> \n\n*   This parameter takes effect only when the Directory parameter is specified.\n\n*   The path length of a single folder must be 1 to 1023 characters, start and end with a forward slash (/), and the total length must not exceed 3000 characters.\n\n*   Only CPFS for Lingjun supports this parameter.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "SrcTaskId",
-      "description": "If you specify SrcTaskId, the configurations of the TaskAction, DataType, and EntryList parameters are copied from the desired dataflow task. You do not need to specify them.",
+      "description": "If you specify SrcTaskId, you must enter the ID of the dataflow task. The system copies the TaskAction, DataType, and EntryList parameters from the destination dataflow task. You do not need to specify them.\n\n>  Streaming dataflow tasks are not supported.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "TaskAction",
-      "description": "The type of the dataflow task.\n\nValid values:\n\n*   Import: imports data stored in the source storage to a CPFS file system.\n*   Export: exports specified data from a CPFS file system to the source storage.\n*   Evict: releases the data blocks of a file in a CPFS file system. After the eviction, only the metadata of the file is retained in the CPFS file system. You can still query the file. However, the data blocks of the file are cleared and do not occupy the storage space in the CPFS file system. When you access the file data, the file is loaded from the source storage as required.\n*   Inventory: obtains the inventory list managed by a dataflow from the CPFS file system, providing the cache status of inventories in the dataflow.",
+      "description": "Select the type of the dataflow task.\n\nValid value:\n\n*   Import: imports data stored in the source storage to a CPFS file system.\n*   Export: exports specified data from a CPFS file system to the source storage.\n*   StreamImport: batch imports the specified data from the source storage to a CPFS file system.\n*   StreamExport: batch exports specified data from a CPFS file system to the source storage.\n*   Evict: releases the data blocks of a file in a CPFS file system. After the eviction, only the metadata of the file is retained in the CPFS file system. You can still query the file. However, the data blocks of the file are cleared and do not occupy the storage space in the CPFS file system. When you access the file data, the file is loaded from the source storage as required.\n*   Inventory: obtains the inventory list managed by a dataflow from the CPFS file system, providing the cache status of inventories in the dataflow.\n\n>  CPFS for Lingjun supports only Import, Export, StreamImport, and StreamExport. Only CPFS for Lingjun V2.6.0 and later support StreamImport and StreamExport.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "TransferFileListPath",
+      "description": "Specify the OSS directory and synchronize data based on the content of the CSV file in the OSS directory. Requirements:\n\n*   Must start and end with a forward slash (/).\n*   Case-sensitive.\n*   Must be 1 to 1023 characters in length.\n*   Must be encoded in UTF-8.\n\n> \n\n*   TransferFileListPath,Directory, and EntryList are mutually exclusive, and only one of the three can be selected.\n\n*   This parameter is the actual path that exists in OSS. The \\*.csv file in the path is stored in OSS.\n\n*   TransferFileListPath only supports Import and Export functions.\n\n*   In the import scenario, the file or directory specified in the CSV file is imported from OSS to CPFS.\n\n*   In the export scenario, the file or directory specified in the CSV file is exported from CPFS to OSS.\n\n*   The CSV file format should include the columns Name and Type. Name refers to the relative path, while Type supports two values: dir and file. If Type is dir, the Name must end with a \"/\".\n\n*   Only CPFS for Lingjun supports this operation.",
       "position": "Query",
       "type": "String",
       "required": false

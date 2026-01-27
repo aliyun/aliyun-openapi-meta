@@ -1,9 +1,6 @@
 {
   "name": "RunInstances",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -13,7 +10,14 @@
       "description": "创建的实例数量。取值范围：1~100。",
       "position": "Query",
       "type": "Long",
-      "required": true
+      "required": false
+    },
+    {
+      "name": "AutoReleaseTime",
+      "description": "按量付费实例的自动释放时间。按照[ISO 8601](~~25696~~)标准表示，使用UTC+0时间。格式为：`yyyy-MM-ddTHH:mm:ssZ`。\n\n- 如果秒（`ss`）取值不是`00`，则自动取为当前分钟（`mm`）开始时。\n\n- 最短释放时间为当前时间一小时之后。",
+      "position": "Query",
+      "type": "String",
+      "required": false
     },
     {
       "name": "AutoRenew",
@@ -31,14 +35,14 @@
     },
     {
       "name": "BillingCycle",
-      "description": "实例计算资源计费周期，仅支持实例级后付费。\n取值\n\n- **Hour**：按小时计费。\n\n- **Day**：按天计费。\n\n- **Month**：按月计费。",
+      "description": "实例计算资源计费周期，仅支持实例级后付费。\n取值\n\n- **Day**：按天计费。\n\n- **Month**：按月计费。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "Carrier",
-      "description": "运营商。\n>区域级调度时必填，节点级调度时无效。",
+      "description": "运营商。\n>区域级调度时必填。</br>\n>在节点级调度时如果是节点存在多运营商场景时，如果不输入运营商则会按节点的运营商进行生产，如有移动、联通两个运营商，则生产出来的实例有两个ISP。</br>您可以通过[DescribeRegionIsps](~~2637461~~)获取节点运营商信息。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -77,6 +81,13 @@
       ]
     },
     {
+      "name": "DeletionProtection",
+      "description": "实例释放保护属性，指定是否支持通过控制台或API释放实例。取值范围： \n\n-  true：开启实例释放保护。\n-  false：关闭实例释放保护。\n\n默认值：false。\n\n> 该属性仅适用于按量付费实例，且只能限制手动释放操作，对系统释放操作不生效。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
       "name": "EnsRegionId",
       "description": "节点ID。\n\n> 节点级调度时必填，区域级调度时无效。",
       "position": "Query",
@@ -109,7 +120,7 @@
       "description": "实例付费方式。取值：\n- **PrePaid**：预付费，包年包月。\n- **PostPaid**：按量付费。",
       "position": "Query",
       "type": "String",
-      "required": true
+      "required": false
     },
     {
       "name": "InstanceName",
@@ -123,7 +134,7 @@
       "description": "实例规格。",
       "position": "Query",
       "type": "String",
-      "required": true
+      "required": false
     },
     {
       "name": "InternetChargeType",
@@ -137,13 +148,20 @@
       "description": "公网最大带宽，如果本参数的值大于0，则自动为实例分配公网IP。",
       "position": "Query",
       "type": "Long",
-      "required": true
+      "required": false
     },
     {
       "name": "IpType",
-      "description": "IP类型。取值：\n\n- **ipv4**（默认值）：IPv4。\n\n- **ipv6**：IPv6。\n\n- **ipv4Andipv6**：IPv4和IPv6。",
+      "description": "IP类型。取值：\n\n- **ipv4**（默认值）：IPv4。\n\n- **ipv6**：IPv6。\n\n- **ipv4Andipv6**：IPv4和IPv6(单栈)。\n- **ipv4Withipv6**：IPv4和IPv6(双栈)。",
       "position": "Query",
       "type": "String",
+      "required": false
+    },
+    {
+      "name": "Ipv6AddressCount",
+      "description": "为私网主网卡指定随机生成的ipv6地址数量。",
+      "position": "Query",
+      "type": "Long",
       "required": false
     },
     {
@@ -151,6 +169,27 @@
       "description": "密钥对名称。\n> **Password**、**KeyPairName**、**PasswordInherit**至少填入一个。",
       "position": "Query",
       "type": "String",
+      "required": false
+    },
+    {
+      "name": "LaunchTemplateId",
+      "description": "实例启动模板ID",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "LaunchTemplateName",
+      "description": "实例启动模板名称",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "LaunchTemplateVersion",
+      "description": "实例启动模板版本",
+      "position": "Query",
+      "type": "Integer",
       "required": false
     },
     {
@@ -162,7 +201,7 @@
     },
     {
       "name": "NetWorkId",
-      "description": "网络ID。\n\n>只能在节点级调度使用，区域级调度时配置该参数会报错。",
+      "description": "网络ID。\n\n>只能在节点级调度使用，区域级调度时配置该参数会报错。如果不指定交换机信息时，则只会校验网络ID是否合法，实际资源生产并不以此网络ID为准。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -204,7 +243,7 @@
     },
     {
       "name": "PublicIpIdentification",
-      "description": "是否启用公网ipidentification。取值：-true：启用。-false（默认值）：不启用。",
+      "description": "是否启用公网ipidentification。\n取值：\n\n- true：启用。\n\n- false：不启用\n\n默认值：true。",
       "position": "Query",
       "type": "Boolean",
       "required": false
@@ -214,7 +253,7 @@
       "description": "调度层级。通过该字段来执行节点级调度或者区域调度。取值：\n\n- **Big**：大区\n- **Middle**：省份\n- **Small**：城市\n- **Region**：节点",
       "position": "Query",
       "type": "String",
-      "required": true
+      "required": false
     },
     {
       "name": "SchedulingPriceStrategy",
@@ -238,6 +277,20 @@
       "required": false
     },
     {
+      "name": "SpotDuration",
+      "description": "抢占式实例保护期。\n\n单位：小时。",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "SpotStrategy",
+      "description": "按量付费实例的竞价策略。当参数`InstanceChargeType`取值为`PostPaid`时生效。取值范围：\n\n- NoSpot：正常按量付费实例。\n- SpotAsPriceGo：系统自动出价，跟随当前市场实际价格。\n\n默认值：NoSpot。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "SystemDisk",
       "description": "系统盘规格。",
       "position": "Query",
@@ -246,7 +299,7 @@
     },
     {
       "name": "Tag",
-      "description": "",
+      "description": "实例所绑定的标签",
       "position": "Query",
       "type": "RepeatList",
       "required": false,

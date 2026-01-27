@@ -1,9 +1,6 @@
 {
   "name": "CreateVpnConnection",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -17,7 +14,7 @@
     },
     {
       "name": "BgpConfig",
-      "description": "创建单隧道模式的IPsec-VPN连接时支持配置该参数。\n\nBGP的配置信息：\n\n- **BgpConfig.EnableBgp**：是否开启BGP功能。取值：**true**或**false**（默认值）。\n- **BgpConfig.LocalAsn**：阿里云侧的自治系统号。自治系统号取值范围：**1**~**4294967295**。默认值：**45104**。\n    \n    支持按照两段位的格式进行输入，即：前16位比特.后16位比特。每个段位使用十进制输入。\n    \n    例如输入123.456，则表示自治系统号：123*65536+456=8061384。\n- **BgpConfig.TunnelCidr**：IPsec隧道网段。该网段需是一个在169.254.0.0/16内的掩码长度为30的网段。\n    > 一个VPN网关实例下每个IPsec连接的IPsec隧道网段需保持唯一。\n- **LocalBgpIp**：阿里云侧的BGP地址。该地址为IPsec隧道网段内的一个IP地址。 \n\n>- 在添加BGP配置前，建议您先了解BGP动态路由功能的工作机制和使用限制。更多信息，请参见[VPN网关支持BGP动态路由公告](~~170235~~)。\n>- 建议您使用自治系统号的私有号码与阿里云建立BGP连接。自治系统号的私有号码范围请自行查阅文档。",
+      "description": "创建单隧道模式的IPsec-VPN连接时支持配置该参数。\n\nBGP的配置信息：\n\n- **BgpConfig.EnableBgp**：是否开启BGP功能。取值：**true**或**false**（默认值）。\n- **BgpConfig.LocalAsn**：阿里云侧的自治系统号。自治系统号取值范围：**1**~**4294967295**。默认值：**45104**。\n    \n    支持按照两段位的格式进行输入，即：前16位比特.后16位比特。每个段位使用十进制输入。\n    \n    例如输入123.456，则表示自治系统号：123*65536+456=8061384。\n- **BgpConfig.TunnelCidr**：IPsec隧道网段。该网段需是一个在169.254.0.0/16内的掩码长度为30的网段，且不能是169.254.0.0/30、169.254.1.0/30、169.254.2.0/30、169.254.3.0/30、169.254.4.0/30、169.254.5.0/30、169.254.6.0/30和169.254.169.252/30。\n    > 一个VPN网关实例下每个IPsec连接的IPsec隧道网段需保持唯一。\n- **LocalBgpIp**：阿里云侧的BGP地址。该地址为IPsec隧道网段内的一个IP地址。 \n\n>- 在添加BGP配置前，建议您先了解BGP动态路由功能的工作机制和使用限制。更多信息，请参见[配置BGP动态路由](~~2638220~~)。\n>- 建议您使用自治系统号的私有号码与阿里云建立BGP连接。自治系统号的私有号码范围请自行查阅文档。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -34,6 +31,13 @@
       "description": "创建单隧道模式的IPsec-VPN连接时支持配置该参数，且该参数必填。\n\n用户网关的ID。",
       "position": "Query",
       "type": "String",
+      "required": false
+    },
+    {
+      "name": "DryRun",
+      "description": "是否只预检此次请求。取值：\n\n- **true**：发送检查请求，不会创建 IPsec 连接。检查项包括是否填写了必需参数、请求格式、业务限制等。如果检查不通过，则返回对应错误。如果检查通过，则返回错误码`DryRunOperation`。\n- **false**（默认值）：发送正常请求，通过检查后直接创建 IPsec 连接。",
+      "position": "Query",
+      "type": "Boolean",
       "required": false
     },
     {
@@ -73,7 +77,7 @@
     },
     {
       "name": "IkeConfig",
-      "description": "创建单隧道模式的IPsec-VPN连接时支持配置该参数。\n\n第一阶段协商的配置信息：\n           \n- **IkeConfig.Psk**：预共享密钥，用于VPN网关与本地数据中心之间的身份认证。\n\n    - 密钥长度为1~100个字符，支持数字、大小写英文字母以及以下字符。```~!\\`@#$%^&*()_-+={}[]|;:',.<>/?```\n    - 若您未指定预共享密钥，系统会随机生成一个16位的字符串作为预共享密钥。您可以调用[DescribeVpnConnection](~~448847~~)接口查询系统自动生成的预共享密钥。     \n\n        > IPsec连接侧的预共享密钥需和本地数据中心侧的认证密钥一致，否则本地数据中心和VPN网关之间无法建立连接。\n\n- **IkeConfig.IkeVersion**：IKE协议的版本。取值：**ikev1**或**ikev2**。默认值：**ikev1**。  \n\n    相对于IKEv1版本，IKEv2版本简化了SA的协商过程并且对于多网段的场景提供了更好的支持。\n\n   <props=\"china\"><ph>如果VPN网关实例类型为国密型，则IKE版本仅支持**ikev1**。</ph></props>\n\n- **IkeConfig.IkeMode**：IKE版本的协商模式。取值：**main**或**aggressive**。默认值：**main**。   \n\n    - **main**：主模式，协商过程安全性高。\n    - **aggressive**：野蛮模式，协商快速且协商成功率高。\n\n   <props=\"china\"><ph>如果VPN网关实例类型为国密型，则协商模式仅支持**main**。</ph></props>\n\n- **IkeConfig.IkeEncAlg**：第一阶段协商的加密算法。\n\n   <props=\"intl\"><ph>取值：**aes**、**aes192**、**aes256**、**des**或**3des**。默认值：**aes**。 </ph></props>\n\n   <props=\"china\">如果VPN网关实例类型为普通型，则取值为**aes**、**aes192**、**aes256**、**des**或**3des**。默认值：**aes**。</props>\n\n   <props=\"china\"><ph>如果VPN网关实例类型为国密型，则取值为**sm4**（默认值）。</ph></props>\n\n- **IkeConfig.IkeAuthAlg**：第一阶段协商的认证算法。\n\n   <props=\"intl\"><ph>取值：**md5**、**sha1**、**sha256**、**sha384**、**sha512**。默认值：**md5**。</ph></props>\n\n   <props=\"china\"><ph>如果VPN网关实例类型为普通型，则取值：**md5**、**sha1**、**sha256**、**sha384**、**sha512**。默认值：**md5**。</ph></props>\n\n   <props=\"china\"><ph>如果VPN网关实例类型为国密型，则取值为**sm3**（默认值）。</ph></props>\n\n- **IkeConfig.IkePfs**：第一阶段协商使用的Diffie-Hellman密钥交换算法。取值：**group1**、**group2**、**group5**、**group14**。默认值：**group2**。   \n\n- **IkeConfig.IkeLifetime**：第一阶段协商出的SA的生存周期。单位：秒。取值范围：**0**~**86400**。默认值：**86400**。   \n\n- **IkeConfig.LocalId**：VPN网关的标识，长度限制为100个字符，默认值为VPN网关的IP地址。 \n\n- **IkeConfig.RemoteId**：用户网关的标识，长度限制为100个字符，默认值为用户网关的IP地址。",
+      "description": "创建单隧道模式的IPsec-VPN连接时支持配置该参数。\n\n第一阶段协商的配置信息：\n           \n- **IkeConfig.Psk**：预共享密钥，用于VPN网关与本地数据中心之间的身份认证。\n\n    - 密钥长度为1~100个字符，支持数字、大小写英文字母以及右侧字符，不能包含空格。```~!\\`@#$%^&*()_-+={}[]|;:',.<>/?```\n    - 若您未指定预共享密钥，系统会随机生成一个字符串作为预共享密钥。您可以调用[DescribeVpnConnection](~~2526951~~)接口查询系统自动生成的预共享密钥。     \n\n        > IPsec连接侧的预共享密钥需和本地数据中心侧的认证密钥一致，否则本地数据中心和VPN网关之间无法建立连接。\n\n- **IkeConfig.IkeVersion**：IKE协议的版本。取值：**ikev1**或**ikev2**。默认值：**ikev1**。  \n\n    相对于IKEv1版本，IKEv2版本简化了SA的协商过程并且对于多网段的场景提供了更好的支持。\n\n   <props=\"china\"><ph>如果VPN网关实例类型为国密型，则IKE版本仅支持**ikev1**。</ph></props>\n\n- **IkeConfig.IkeMode**：IKE版本的协商模式。取值：**main**或**aggressive**。默认值：**main**。   \n\n    - **main**：主模式，协商过程安全性高。\n    - **aggressive**：野蛮模式，协商快速且协商成功率高。\n\n   <props=\"china\"><ph>如果VPN网关实例类型为国密型，则协商模式仅支持**main**。</ph></props>\n\n- **IkeConfig.IkeEncAlg**：第一阶段协商的加密算法。\n\n   <props=\"intl\"><ph>取值：**aes**、**aes192**、**aes256**、**des**或**3des**。默认值：**aes**。 </ph></props>\n\n   <props=\"china\">如果VPN网关实例类型为普通型，则取值为**aes**、**aes192**、**aes256**、**des**或**3des**。默认值：**aes**。</props>\n\n   <props=\"china\"><ph>如果VPN网关实例类型为国密型，则取值为**sm4**（默认值）。</ph></props>\n\n- **IkeConfig.IkeAuthAlg**：第一阶段协商的认证算法。\n\n   <props=\"intl\"><ph>取值：**md5**、**sha1**、**sha256**、**sha384**、**sha512**。默认值：**md5**。</ph></props>\n\n   <props=\"china\"><ph>如果VPN网关实例类型为普通型，则取值：**md5**、**sha1**、**sha256**、**sha384**、**sha512**。默认值：**md5**。</ph></props>\n\n   <props=\"china\"><ph>如果VPN网关实例类型为国密型，则取值为**sm3**（默认值）。</ph></props>\n\n- **IkeConfig.IkePfs**：第一阶段协商使用的Diffie-Hellman密钥交换算法。取值：**group1**、**group2**、**group5**、**group14**。默认值：**group2**。   \n\n- **IkeConfig.IkeLifetime**：第一阶段协商出的SA的生存周期。单位：秒。取值范围：**0**~**86400**。默认值：**86400**。   \n\n- **IkeConfig.LocalId**：VPN网关的标识，长度限制为100个字符，不能包含空格。默认值为VPN网关的IP地址。 \n\n- **IkeConfig.RemoteId**：用户网关的标识，长度限制为100个字符，不能包含空格。默认值为用户网关的IP地址。",
       "position": "Query",
       "type": "String",
       "required": false

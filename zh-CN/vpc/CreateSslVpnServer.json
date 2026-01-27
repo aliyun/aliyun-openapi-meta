@@ -1,100 +1,111 @@
 {
   "name": "CreateSslVpnServer",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
       "name": "Cipher",
-      "description": "SSL-VPN使用的加密算法，取值： \n\n- **AES-128-CBC**（默认值）：AES-128-CBC算法。\n\n- **AES-192-CBC**：AES-192-CBC算法。\n\n- **AES-256-CBC**：AES-256-CBC算法。\n\n- **none**：不使用加密算法。",
+      "description": "The encryption algorithm that is used by the SSL-VPN connection.\n\n*   If the client uses Tunnelblick or OpenVPN 2.4.0 or later, the SSL server dynamically negotiates with the client about the encryption algorithm and uses the most secure encryption algorithm that is supported by the SSL server and the client. The encryption algorithm that you specify for the SSL server does not take effect.\n\n*   If the client uses OpenVPN of a version that is earlier than 2.4.0, the SSL server and the client use the encryption algorithm that you specify for the SSL server. You can specify one of the following encryption algorithms for the SSL server:\n\n    *   **AES-128-CBC** (default)\n    *   **AES-192-CBC**\n    *   **AES-256-CBC**\n    *   **none**",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "ClientIpPool",
-      "description": "客户端网段。\n\n是给客户端虚拟网卡分配访问地址的地址段，不是指客户端已有的内网网段。\n\n当客户端通过SSL-VPN连接访问本端时，VPN网关会从指定的客户端网段中分配一个IP地址给客户端使用。\n\n> 该网段不能与**LocalSubnet**地址段冲突。",
+      "description": "The client CIDR block.\n\nThe CIDR block from which an IP address is allocated to the virtual network interface controller (NIC) of the client, rather than the private CIDR block.\n\nIf the client accesses the SSL server over an SSL-VPN connection, the VPN gateway assigns an IP address from the specified client CIDR block for the client to access cloud resources.\n\nMake sure that the number of IP addresses in the client CIDR block is at least four times the maximum number of SSL-VPN connections supported by the VPN gateway.\n\n<details>\n<summary>Click to view the reason.</summary>\n\nFor example, if you specify 192.168.0.0/24 as the client CIDR block, the system first divides a subnet CIDR block with a subnet mask of 30 from 192.168.0.0/24, such as 192.168.0.4/30. This subnet provides up to four IP addresses. Then, the system allocates an IP address from 192.168.0.4/30 to the client and uses the other three IP addresses to ensure network communication. In this case, one client consumes four IP addresses. Therefore, to ensure that an IP address is assigned to your client, the number of IP addresses in the client CIDR block must be at least four times the maximum number of SSL-VPN connections supported by the VPN gateway with which the SSL server is associated.\n</details>\n\n<details>\n<summary>Click to view the CIDR blocks that are not supported.</summary>\n\n*   100.64.0.0~100.127.255.255\n*   127.0.0.0~127.255.255.255\n*   169.254.0.0~169.254.255.255\n*   224.0.0.0~239.255.255.255\n*   255.0.0.0~255.255.255.255\n</details>\n<details>\n<summary>Click to view the recommended client CIDR blocks for different numbers of SSL-VPN connections.</summary>\n\n\n*   If the number of SSL-VPN connections is 5, we recommend that you specify a client CIDR block with a subnet mask that is less than or equal to 27 bits in length. Examples: 10.0.0.0/27 and 10.0.0.0/26.\n*   If the number of SSL-VPN connections is 10, we recommend that you specify a client CIDR block with a subnet mask that is less than or equal to 26 bits in length. Examples: 10.0.0.0/26 and 10.0.0.0/25.\n*   If the number of SSL-VPN connections is 20, we recommend that you specify a client CIDR block with a subnet mask that is less than or equal to 25 bits in length. Examples: 10.0.0.0/25 and 10.0.0.0/24.\n*   If the number of SSL-VPN connections is 50, we recommend that you specify a client CIDR block with a subnet mask that is less than or equal to 24 bits in length. Examples: 10.0.0.0/24 and 10.0.0.0/23.\n*   If the number of SSL-VPN connections is 100, we recommend that you specify a client CIDR block with a subnet mask that is less than or equal to 23 bits in length. Examples: 10.0.0.0/23 and 10.0.0.0/22.\n*   If the number of SSL-VPN connections is 200, we recommend that you specify a client CIDR block with a subnet mask that is less than or equal to 22 bits in length. Examples: 10.0.0.0/22 and 10.0.0.0/21.\n*   If the number of SSL-VPN connections is 500, we recommend that you specify a client CIDR block with a subnet mask that is less than or equal to 21 bits in length. Examples: 10.0.0.0/21 and 10.0.0.0/20.\n*   If the number of SSL-VPN connections is 1,000, we recommend that you specify a client CIDR block with a subnet mask that is less than or equal to 20 bits in length. Examples: 10.0.0.0/20 and 10.0.0.0/19.\n</details>\n\n>  - The subnet mask of the client CIDR block must be 16 to 29 bits in length.\n> - Make sure that the client CIDR block does not overlap with the local CIDR block, the VPC CIDR block, or route CIDR blocks associated with the client.\n> - We recommend that you use 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, or one of their subnets as the client CIDR block. If you want to specify a public CIDR block as the client CIDR block, you must specify the public CIDR block as the user CIDR block of the virtual private cloud (VPC). This way, the VPC can access the public CIDR block. For more information, see [VPC FAQs](~~185311~~).\n> - After you create an SSL server, the system automatically adds routes that point to the client CIDR block to the VPC route table. Do not manually add routes that point to the client CIDR block. Otherwise, SSL-VPN connections cannot work as expected.",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
       "name": "ClientToken",
-      "description": "客户端Token，用于保证请求的幂等性。\n\n从您的客户端生成一个参数值，确保不同请求间该参数值唯一。ClientToken只支持ASCII字符。\n\n> 若您未指定，则系统自动使用API请求的**RequestId**作为**ClientToken**标识。每次API请求的**RequestId**不一样。",
+      "description": "The client token that is used to ensure the idempotence of the request.\n\nYou can use the client to generate the token, but you must make sure that the token is unique among different requests. The token can contain only ASCII characters.\n\n>  If you do not specify this parameter, the system automatically uses the **request ID** as the **client token**. The **request ID** may be different for each request.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "Compress",
-      "description": "指定是否对通信进行压缩， 取值：\n\n- **true**：对通信进行压缩。\n\n- **false**（默认值）：对通信不进行压缩。",
+      "description": "Specifies whether to enable data compression. Valid values:\n\n*   **true**\n*   **false** (default)",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
+      "name": "DryRun",
+      "description": "",
       "position": "Query",
       "type": "Boolean",
       "required": false
     },
     {
       "name": "EnableMultiFactorAuth",
-      "description": "是否开启双因子认证。如果您选择开启双因子认证功能，您还需要输入IDaaS实例ID。取值：\n\n- **true**：开启。\n\n- **false**（默认值）：不开启。\n\n<props=\"intl\">\n\n>- VPN网关的双因子认证功能仅支持旧版IDaaS实例。如果您没有旧版IDaaS实例，则不再支持新建旧版IDaaS实例，也不再支持开启双因子认证功能。\n>- 对于已经创建的SSL服务端，如果已开启双因子认证功能，则不受影响，可继续使用。\n\n</props>\n\n<props=\"china\">\n\n>- 仅2020年03月05日00时00分00秒之后创建的VPN网关支持开启双因子认证。如果您的VPN网关是2020年03月05日之前创建的，您可以通过自助升级方式将VPN网关升级至最新版，体验双因子认证功能。具体操作，请参见[升级VPN网关](~~303968~~)。\n>- VPN网关的双因子认证功能仅支持旧版IDaaS实例。关于旧版IDaaS实例的更多说明，请参见[1.x 旧版实例变更方案](~~408888~~)。\n>- 如果您是首次使用双因子认证功能，请先完成[授权](https://ram.console.aliyun.com/role/authorization?request=%7B%22Services%22%3A%5B%7B%22Service%22%3A%22VPN%22%2C%22Roles%22%3A%5B%7B%22RoleName%22%3A%22AliyunVpnAccessingIdaasRole%22%2C%22TemplateId%22%3A%22IdaasRole%22%7D%5D%7D%5D%2C%22ReturnUrl%22%3A%22https%3A%2F%2Fvpc.console.aliyun.com%2Fsslvpn%2Fcn-shanghai%2Fvpn-servers%22%7D)后再创建SSL服务端。\n\n</props>",
+      "description": "Specifies whether to enable two-factor authentication. To enable two-factor authentication, you need to specify `IDaaSInstanceId`, `IDaaSRegionId`, and `IDaaSApplicationId`. Valid values:\n\n*   **true**: enables this feature.\n*   **false** (default): disables this feature.\n\n> - If you use two-factor authentication for the first time, you must first complete [authorization](https://ram.console.aliyun.com/role/authorization?request=%7B%22Services%22%3A%5B%7B%22Service%22%3A%22VPN%22%2C%22Roles%22%3A%5B%7B%22RoleName%22%3A%22AliyunVpnAccessingIdaasRole%22%2C%22TemplateId%22%3A%22IdaasRole%22%7D%5D%7D%5D%2C%22ReturnUrl%22%3A%22https%3A%2F%2Fvpc.console.aliyun.com%2Fsslvpn%2Fcn-shanghai%2Fvpn-servers%22%7D).\n> - When you create an SSL server in the UAE (Dubai) region, we recommend that you associate the SSL server with an IDaaS EIAM 2.0 instance in Singapore to reduce latency.\n> - IDaaS EIAM 1.0 instances are no longer for purchase. If your Alibaba Cloud account has IDaaS EIAM 1.0 instances, the IDaaS EIAM 1.0 instances can be associated after two-factor authentication is enabled. If your Alibaba Cloud account does not have IDaaS EIAM 1.0 instances, only IDaaS EIAM 2.0 instances can be associated after two-factor authentication is enabled.",
       "position": "Query",
       "type": "Boolean",
       "required": false
     },
     {
+      "name": "IDaaSApplicationId",
+      "description": "The ID of the IDaaS application.\n\n*   If an IDaaS EIAM 2.0 instance is associated, you need to specify an IDaaS application ID.\n*   If an IDaaS EIAM 1.0 instance is associated, you do not need to specify an IDaaS application ID.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "IDaaSInstanceId",
-      "description": "IDaaS实例ID。",
+      "description": "The ID of the IDaaS EIAM instance.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "IDaaSRegionId",
-      "description": "IDaaS实例所属地域ID。",
+      "description": "The region ID of the IDaaS EIAM instance.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "LocalSubnet",
-      "description": "本端网段。\n\n是客户端通过SSL-VPN连接要访问的地址段。\n\n本端网段可以是VPC的网段、交换机的网段、通过专线和VPC互连的IDC的网段、云服务如对象存储服务OSS（Object Storage Service）等的网段。",
+      "description": "The local CIDR block.\n\nThe CIDR block that your client needs to access by using the SSL-VPN connection.\n\nThis value can be the CIDR block of a VPC, a vSwitch, a data center that is connected to a VPC by using an Express Connect circuit, or an Alibaba Cloud service such as Object Storage Service (OSS).\n\nThe subnet mask of the specified local CIDR block must be 8 to 32 bits in length. You cannot specify the following CIDR blocks as the local CIDR blocks:\n\n*   127.0.0.0~127.255.255.255\n*   169.254.0.0~169.254.255.255\n*   224.0.0.0~239.255.255.255\n*   255.0.0.0~255.255.255.255",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
       "name": "Name",
-      "description": "SSL-VPN服务端的名称。  \n\n长度为1～100个字符，不能以`http://`或`https://`开头。",
+      "description": "The SSL server name.\n\nThe name must be 1 to 100 characters in length and cannot start with `http://` or `https://`.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "Port",
-      "description": "SSL-VPN服务端所使用的端口。端口取值范围：**1**~**65535**。默认值：**1194**。\n\n不支持使用以下端口：**22**、**2222**、**22222**、**9000**、**9001**、**9002**、**7505**、**80**、**443**、**53**、**68**、**123**、**4510**、**4560**、**500**、**4500**。",
+      "description": "The port that is used by the SSL server. Valid values of port numbers: **1** to **65535**. Default value: **1194**.\n\nThe following ports are not supported: **22**, **2222**, **22222**, **9000**, **9001**, **9002**, **7505**, **80**, **443**, **53**, **68**, **123**, **4510**, **4560**, **500**, and **4500**.",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
       "name": "Proto",
-      "description": "SSL-VPN服务端所使用的协议，取值：\n\n- **TCP**（默认值）：TCP协议。\n\n- **UDP**：UDP协议。",
+      "description": "The protocol that is used by the SSL server. Valid values:\n\n*   **TCP** (default)\n*   **UDP**",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "RegionId",
-      "description": "VPN网关所在的地域ID。 \n\n您可以通过调用[DescribeRegions](~~36063~~)接口获取地域ID。",
+      "description": "The region ID of the VPN gateway.\n\nYou can call the [DescribeRegions](~~36063~~) operation to query the most recent region list.",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
       "name": "VpnGatewayId",
-      "description": "VPN网关的ID。",
+      "description": "The ID of the VPN gateway.",
       "position": "Query",
       "type": "String",
       "required": true

@@ -1,9 +1,6 @@
 {
   "name": "CreateServerGroup",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "POST",
   "pathPattern": "",
@@ -58,15 +55,22 @@
       "required": false
     },
     {
+      "name": "IpVersionAffinityMode",
+      "description": "双栈模式下的流量调度策略：\n\n- NonAffinity（默认）：无亲和模式，转发时不区分来源的IP协议版本，按照调度算法向健康的后端转发。\n- Affinity：亲和模式，转发时根据请求来源的IP协议版本亲和转发，IPv4请求仅转发至IPv4后端，IPv6请求仅转发至IPv6后端。\n> 仅**AddressIPVersion**为**DualStack**时，该参数生效。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "PreserveClientIpEnabled",
-      "description": "是否开启客户端地址保持功能。取值：\n\n- **true**：开启。\n- **false**（默认值）：关闭。",
+      "description": "是否开启客户端地址保持功能。取值：\n\n- **true**（默认值）：开启。\n- **false**：关闭。\n\n\n> \n> 当**Protocol**取值为**TCP**且该参数取值为**true**时，该服务器组不支持关联**TCPSSL**监听。",
       "position": "Body",
       "type": "Boolean",
       "required": false
     },
     {
       "name": "Protocol",
-      "description": "转发到后端服务器使用的通信协议。取值：\n\n- **TCP**（默认值）\n- **UDP**\n- **TCPSSL**",
+      "description": "转发到后端服务器使用的通信协议。取值：\n\n- **TCP**（默认值）\n- **UDP**\n- **TCP_UDP**\n> \n> - 当该参数取值为**UDP**时，该服务器组只支持关联**UDP**监听。\n> - 当该参数取值为**TCP**且**PreserveClientIpEnabled**取值为**true**时，该服务器组只支持关联**TCP**监听。\n> - 当该参数取值为**TCP**且**PreserveClientIpEnabled**取值为**false**时，该服务器组支持关联**TCPSSL**监听和**TCP**监听。\n> - 当该参数取值为**TCP_UDP**时，该服务器组支持关联**TCP**监听和**UDP**监听。",
       "position": "Body",
       "type": "String",
       "required": false
@@ -87,7 +91,7 @@
     },
     {
       "name": "Scheduler",
-      "description": "调度算法。取值：\n\n- **Wrr**（默认值）：加权轮询，权重值越高的后端服务器，被轮询到的概率也越高。\n\n- **rr**：轮询，按照访问顺序依次将外部请求分发到后端服务器。\n\n- **sch**：源IP哈希：相同的源地址会调度到相同的后端服务器。\n\n- **tch**：四元组哈希，基于四元组（源IP、目的IP、源端口和目的端口）的一致性哈希，相同的流会调度到相同的后端服务器。\n\n- **qch**：QUIC ID哈希，支持将同一个QUIC ID的请求哈希到同一台后端服务器上。\n\n>  仅后端协议为UDP时，支持选择QUIC ID哈希。",
+      "description": "调度算法。取值：\n\n- **Wrr**（默认值）：加权轮询，权重值越高的后端服务器，被轮询到的概率也越高。\n\n- **Wlc**：加权最小连接数，除了根据每台后端服务器设定的权重值来进行轮询，同时还考虑后端服务器的实际负载（即连接数）。当权重值相同时，当前连接数越小的后端服务器被轮询到的概率也越高。\n\n- **rr**：轮询，按照访问顺序依次将外部请求分发到后端服务器。\n\n- **sch**：源IP哈希：相同的源地址会调度到相同的后端服务器。\n\n- **tch**：四元组哈希，基于四元组（源IP、目的IP、源端口和目的端口）的一致性哈希，相同的流会调度到相同的后端服务器。\n\n- **qch**：QUIC ID哈希，支持将同一个QUIC ID的请求哈希到同一台后端服务器上。\n\n>  仅后端协议为UDP时，支持选择QUIC ID哈希。",
       "position": "Body",
       "type": "String",
       "required": false
@@ -101,7 +105,7 @@
     },
     {
       "name": "ServerGroupType",
-      "description": "服务器组类型。取值：\n\n- **Instance**（默认值）：服务器类型，该类型服务器组支持添加**Ecs**、**Ens**、**Eci**类型实例。\n\n- **Ip**：IP地址类型，该类型服务器组支持直接添加IP地址类型的后端服务器。",
+      "description": "服务器组类型。取值：\n\n- **Instance**（默认值）：服务器类型，该类型服务器组支持添加**Ecs**、**Eni**、**Eci**类型实例。\n\n- **Ip**：IP地址类型，该类型服务器组支持直接添加IP地址类型的后端服务器。",
       "position": "Body",
       "type": "String",
       "required": false
