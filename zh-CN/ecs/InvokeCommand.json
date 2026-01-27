@@ -1,8 +1,5 @@
 {
   "name": "InvokeCommand",
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -44,9 +41,23 @@
     },
     {
       "name": "InstanceId",
-      "description": "需要执行命令的实例列表，最多能指定50台实例ID。N的取值范围为1~50。",
+      "description": "需要执行命令的实例列表，最多能指定100台实例ID。N的取值范围为1~100。\n\n您也可以在配额中心申请提升配额（配额名称为命令执行支持实例上限数）。",
       "position": "Query",
       "type": "RepeatList",
+      "required": false
+    },
+    {
+      "name": "Launcher",
+      "description": "脚本执行的引导程序。长度不能超过 1 KB。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "OssOutputDelivery",
+      "description": "命令执行Output OSS投递配置。\n\n- 格式：oss://${BucketName}/${Prefix}，${BucketName}为待投递到的OSS Bucket名称，${Prefix}为待投递到的目录前缀。",
+      "position": "Query",
+      "type": "String",
       "required": false
     },
     {
@@ -65,14 +76,14 @@
     },
     {
       "name": "RepeatMode",
-      "description": "设置命令执行的方式。取值范围：\n\n- Once：立即执行命令。\n- Period：定时执行命令。当该参数取值为`Period`时，必须同时指定`Frequency`参数。\n- NextRebootOnly：当实例下一次启动时，自动执行命令。\n- EveryReboot：实例每一次启动都将自动执行命令。\n\n默认值：\n\n- 当不指定`Frequency`参数时，默认值为`Once`。\n- 当指定`Frequency`参数时，无论是否已设置了该参数值，都将按照`Period`处理。\n\n注意事项：\n\n- 您可以调用[StopInvocation](~~64838~~)停止待执行的命令或定时执行的命令。\n- 当该参数取值`Period`或者`EveryReboot`时，您可以调用[DescribeInvocationResults](~~64845~~)，然后指定`IncludeHistory=true`查看命令定时执行的历史记录。",
+      "description": "设置命令执行的方式。取值范围：\n\n- Once：立即执行命令。\n- Period：定时执行命令。当该参数取值为`Period`时，必须同时指定`Frequency`参数。\n- NextRebootOnly：当实例下一次启动时，自动执行命令。\n- EveryReboot：实例每一次启动都将自动执行命令。\n- DryRun：只预检此次请求，命令执行不会实际生效，检查项包括请求参数、实例执行环境、云助手Agent运行状态等。\n\n默认值：\n\n- 当不指定`Frequency`参数时，默认值为`Once`。\n- 当指定`Frequency`参数时，无论是否已设置了该参数值，都将按照`Period`处理。\n\n注意事项：\n\n- 您可以调用[StopInvocation](~~64838~~)停止待执行的命令或定时执行的命令。\n- 当该参数取值`Period`或者`EveryReboot`时，您可以调用[DescribeInvocationResults](~~64845~~)，然后指定`IncludeHistory=true`查看命令定时执行的历史记录。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "ResourceGroupId",
-      "description": "命令执行的资源组ID，当指定该参数时：\n\n- InstanceId对应的ECS实例必须属于该资源组。\n\n- 支持通过指定该参数筛选出对应的命令执行结果（通过调用[DescribeInvocations](~~64840~~)或[DescribeInvocationResults](~~64845~~)）。",
+      "description": "命令执行的资源组ID，当指定该参数时：\n\n- 当InstanceId对应的ECS实例属于非默认资源组时，该ECS实例必须属于该资源组。\n\n- 支持通过指定该参数筛选出对应的命令执行结果（通过调用[DescribeInvocations](~~64840~~)或[DescribeInvocationResults](~~64845~~)）。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -120,6 +131,13 @@
       ]
     },
     {
+      "name": "TerminationMode",
+      "description": "停止任务（手动停止或执行超时打断）时的模式。可能值：\n- Process：停止当前脚本进程。\n- ProcessTree：停止当前进程树（脚本进程以及它创建的所有子进程的集合）。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "Timed",
       "description": ">该参数已废弃，传入该参数不会生效。",
       "position": "Query",
@@ -143,6 +161,13 @@
     {
       "name": "WindowsPasswordName",
       "description": "在Windows实例中执行命令的用户的密码名称。长度不得超过255个字符。\n\n当您希望以非默认用户（System）在Windows实例中执行命令时，需要同时传入`Username`和该参数。为降低密码泄露的风险，需要将密码明文托管在系统运维管理的参数仓库中，此处仅传入密码的名称。更多信息，请参见[加密参数](~~186828~~)以及[设置普通用户执行云助手命令](~~203771~~)。\n\n> 当您使用Linux实例的root用户或Windows实例的System用户执行命令时，不需要传递该参数。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "WorkingDir",
+      "description": "命令在 ECS 实例中运行的目录。长度不得超过 200 个字符。\n- 若不设置该值，会采用创建命令时指定的运行目录。\n- 该值只会作为该次命令执行的运行目录，不会改变命令本身的运行目录。",
       "position": "Query",
       "type": "String",
       "required": false

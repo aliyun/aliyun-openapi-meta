@@ -1,16 +1,13 @@
 {
   "name": "DescribeHistoryMonitorValues",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
       "name": "EndTime",
-      "description": "历史监控结束时间点，须晚于历史监控开始时间，格式为<i>yyyy-MM-dd</i>T<i>HH:mm:ss</i>Z（UTC时间）。\n\n> - 支持查询最近1个月的监控数据，且最大查询范围不能超过7天。\n> - 如果实例的数据节点数大于32，数据节点和Proxy节点的聚合指标查询时间范围不能超过1小时。",
+      "description": "查询历史监控结束时间点，须晚于历史监控开始时间，格式为<i>yyyy-MM-dd</i>T<i>HH:mm:ss</i>Z（UTC时间）。\n\n> 支持查询最近1个月的监控数据，且最大查询范围不能超过7天。",
       "position": "Query",
       "type": "String",
       "required": true
@@ -24,38 +21,45 @@
     },
     {
       "name": "IntervalForHistory",
-      "description": "历史监控数据间隔，单位为分钟，取值固定为`01m`。",
+      "description": "本参数已废弃，固定取值为`01m`。\n\n实际会根据查询的开始时间和结束时间自动决定**查询的时间间隔**。以查询时间范围小于等于10分钟为例，数据聚合频率为5s/次，查询结果会按照5s/次的频率返回。\n> * 查询结果会与实例的数据聚合频率对齐。若您传入的 StartTime 不在数据聚合时间点上，系统返回的首个时间点为最近的数据聚合时间点。例如您传入的 StartTime 为 2022-01-20T12:01:48Z，系统返回的首个时间点为 2022-01-20T12:01:45Z。\n> * 如果实例的数据分片数大于等于32，最小的数据聚合频率为1分钟/次。",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
       "name": "MonitorKeys",
-      "description": "监控指标，如需传入多个监控指标，需使用英文逗号（,）分隔。\n\n> * 默认为空，将返回UsedMemory与quotaMemory指标，关于Redis实例支持的监控指标及其详细说明，请参见下文的**MonitorKeys参数补充说明**。\n> * 为保障查询效率，查询单个节点的监控指标时，建议单次传入不超过5个监控指标；查询聚合监控指标时，建议单次不超过传入1个监控指标。",
+      "description": "监控指标，如需传入多个监控指标，需使用英文逗号（,）分隔。以CpuUsage为例：\n* 集群节点或读写分离架构：\n    - 若您希望查询所有数据节点（DB）整体的CPU使用率，请传入**CpuUsage$db**。\n   - 若您希望查询单个数据节点的CPU使用率，请传入**CpuUsage**，同时在NodeId参数指定DB 节点。\n\n* 标准架构（主备）：传入**CpuUsage**即可。\n\n更多信息监控指标与详细说明，请参见下方的<props=\"china\">[MonitorKeys参数补充说明](https://help.aliyun.com/zh/redis/developer-reference/api-r-kvstore-2015-01-01-describehistorymonitorvalues-redis#monitorKeys-note)</props><props=\"intl\">[MonitorKeys参数补充说明](https://www.alibabacloud.com/help/zh/redis/developer-reference/api-r-kvstore-2015-01-01-describehistorymonitorvalues-redis#monitorKeys-note)</props>。\n> * 默认为空，将返回UsedMemory与quotaMemory指标。\n> * 为保障查询效率，查询单个节点的监控指标时，建议单次传入不超过5个监控指标；查询聚合监控指标时，建议单次不超过传入1个监控指标。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "NodeId",
-      "description": "实例的中的节点ID。传入本参数可查询指定节点的监控信息。\n\n> * 当Redis实例的架构为读写分离或集群架构时，本参数才可用。\n> * 您可以调用[DescribeLogicInstanceTopology](~~94665~~)接口查询节点ID。",
+      "description": "实例的中的节点ID。传入本参数可查询指定节点的监控信息。\n\n> * 当实例的架构为读写分离或集群架构时，本参数才可用。\n> * 您可以调用[DescribeLogicInstanceTopology](~~473786~~)接口查询节点ID。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
-      "name": "SecurityToken",
-      "description": "",
+      "name": "NodeRole",
+      "description": "若希望查询云原生版读写分离架构实例中只读节点的指标，您在传入具体**NodeId**的同时，还需要在本参数传入**READONLY**。\n>  其余情况请无需传入（或传入**MASTER**）。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "StartTime",
-      "description": "历史监控开始时间点，格式为<i>yyyy-MM-dd</i>T<i>HH:mm:ss</i>Z（UTC时间）。",
+      "description": "查询历史监控开始时间点，格式为<i>yyyy-MM-dd</i>T<i>HH:mm:ss</i>Z（UTC时间）。",
       "position": "Query",
       "type": "String",
       "required": true
+    },
+    {
+      "name": "Type",
+      "description": "",
+      "position": "Query",
+      "type": "String",
+      "required": false
     }
   ]
 }

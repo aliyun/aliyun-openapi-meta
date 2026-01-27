@@ -1,9 +1,6 @@
 {
   "name": "SingleSendMail",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -11,86 +8,156 @@
     {
       "name": "AccountName",
       "description": "管理控制台中配置的发信地址。",
-      "position": "Query",
+      "position": "Body",
       "type": "String",
       "required": true
     },
     {
       "name": "AddressType",
       "description": "地址类型。取值：\n\n0：为随机账号\n\n1：为发信地址",
-      "position": "Query",
+      "position": "Body",
       "type": "Integer",
       "required": true
     },
     {
-      "name": "ClickTrace",
-      "description": "1：为打开数据跟踪功能\n\n0（默认）：为关闭数据跟踪功能。",
-      "position": "Query",
+      "name": "Attachments",
+      "description": "仅支持下载新版SDK使用，openapi和签名机制方式暂不支持。 参照[如何通过SDK方式发送带附件的邮件？](~~2937843~~)文档。",
+      "position": "Body",
+      "type": "RepeatList",
+      "required": false,
+      "sub_parameters": [
+        {
+          "name": "AttachmentName",
+          "position": "FormData",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "AttachmentUrl",
+          "position": "FormData",
+          "type": "String",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "BccAddress",
+      "description": "- 指定邮件的密送收件人列表。\n- 系统会将与主邮件内容一致的副本分别发送至每个密送地址，但密送信息对所有收件人（含ToAddress、BccAddress）均不可见。\n- 为了保护密送收件人的隐私，发送给密送收件人的邮件将默认不开启任何邮件追踪功能。 这意味着，对于密送邮件，系统不会记录打开率、点击率等行为数据。但发送量的计费、和发送详情、和发送状态的统计与正常邮件一致。\n- 每次发送最多可指定2个密送收件人。",
+      "position": "Body",
       "type": "String",
       "required": false
     },
     {
+      "name": "ClickTrace",
+      "description": "1：为打开数据跟踪功能\n\n0（默认）：为关闭数据跟踪功能。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "DomainAuth",
+      "description": "",
+      "position": "Body",
+      "type": "Boolean",
+      "required": false
+    },
+    {
       "name": "FromAlias",
-      "description": "发信人昵称，长度小于15个字符。\n\n例如：发信人昵称设置为”小红”，发信地址为 test***@example.net，收信人看到的发信地址为“小红”<test***@example.net>。",
-      "position": "Query",
+      "description": "发信人昵称，长度小于15个字符。\n\n例如：发信人昵称设置为”小红”，发信地址为 test***@example.net，收信人看到的发信地址为“小红”test***@example.net。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "Headers",
+      "description": "邮件头目前可以添加的标准字段是 Message-ID，List-Unsubscribe，List-Unsubscribe-Post。标准字段会覆盖掉邮件头中原有的值，非标准字段需要以 X-User- 开头，会被追加到邮件头中。 目前支持 JSON 传入的邮件头最多 10 个，标准字段和非标准字段都需要符合标准中对头的语法要求。",
+      "position": "Body",
       "type": "String",
       "required": false
     },
     {
       "name": "HtmlBody",
-      "description": "邮件 html 正文，限制28K。注意：HtmlBody和TextBody是针对不同类型的邮件内容，两者必须传其一。",
-      "position": "Query",
+      "description": "邮件 html 正文。\n\n注意：HtmlBody和TextBody是针对不同类型的邮件内容，两者必须传其一。\n\n- URL传参限制约80KB\n- Body传参限制约6MB",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "IpPoolId",
+      "description": "独立IP地址池ID。购买了独立IP的用户可以通过这个参数指定本次发信出口IP。 参照[独立IP](~~2932088~~)文档。",
+      "position": "Body",
       "type": "String",
       "required": false
     },
     {
       "name": "ReplyAddress",
       "description": "回信地址",
-      "position": "Query",
+      "position": "Body",
       "type": "String",
       "required": false
     },
     {
       "name": "ReplyAddressAlias",
       "description": "回信地址昵称",
-      "position": "Query",
+      "position": "Body",
       "type": "String",
       "required": false
     },
     {
       "name": "ReplyToAddress",
-      "description": "是否启用管理控制台中配置好回信地址（状态须验证通过），取值范围是字符串true或者false（不是bool值）。",
-      "position": "Query",
+      "description": "是否启用管理控制台中配置好回信地址（状态须验证通过），取值范围是字符串true或者false。",
+      "position": "Body",
       "type": "Boolean",
       "required": true
     },
     {
       "name": "Subject",
-      "description": "邮件主题，建议填写。",
-      "position": "Query",
+      "description": "邮件主题，长度不大于256个字符。",
+      "position": "Body",
       "type": "String",
       "required": true
     },
     {
       "name": "TagName",
-      "description": "在邮件推送控制台创建的标签，用于分类所发送的邮件批次，可以通过标签来查询每批邮件的发送情况，另外如果开启邮件跟踪功能，发信必须使用邮件标签。",
-      "position": "Query",
+      "description": "在邮件推送控制台创建的标签，用于分类所发送的邮件批次，可以通过标签来查询每批邮件的发送情况，另外如果开启邮件跟踪功能，发信必须使用邮件标签。\n长度为1-128个字符，允许英文字母、数字、_、-",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "Template",
+      "description": "模版发送，模版信息",
+      "position": "Body",
       "type": "String",
       "required": false
     },
     {
       "name": "TextBody",
-      "description": "邮件 text 正文，限制28K。注意：HtmlBody和TextBody是针对不同类型的邮件内容，两者必须传其一。",
-      "position": "Query",
+      "description": "邮件 text 正文。\n\n注意：HtmlBody和TextBody是针对不同类型的邮件内容，两者必须传其一。\n\n- URL传参限制约80KB\n- Body传参限制约6MB",
+      "position": "Body",
       "type": "String",
       "required": false
     },
     {
       "name": "ToAddress",
       "description": "目标地址，多个 email 地址可以用逗号分隔，最多100个地址（支持邮件组）。",
-      "position": "Query",
+      "position": "Body",
       "type": "String",
       "required": true
+    },
+    {
+      "name": "UnSubscribeFilterLevel",
+      "description": "过滤级别。参照[退订功能生成链接和过滤机制](~~2689048~~)文档\n\ndisabled: 不过滤\n\ndefault: 采用默认策略，批量地址采用发信地址级别过滤\n\nmailfrom: 发信地址级别过滤\n\nmailfrom_domain: 发信域名级别过滤\n\nedm_id: 账号级别过滤",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "UnSubscribeLinkType",
+      "description": "default: 采用默认策略：对批量类型的发信地址发给特定域名时会生成退订链接，如带有关键字\"gmail\", \"yahoo\",\n\n\"google\", \"aol.com\", \"hotmail\",\n\n\"outlook\", \"ymail.com\"等，具体参照[退订功能生成链接和过滤机制](~~2689048~~)文档\n\nzh-cn: 生成，给将来埋点到内容准备\n\nen-us: 生成，给将来埋点到内容准备",
+      "position": "Body",
+      "type": "String",
+      "required": false
     }
   ]
 }

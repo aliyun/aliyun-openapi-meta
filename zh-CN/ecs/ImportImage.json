@@ -1,9 +1,6 @@
 {
   "name": "ImportImage",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -17,7 +14,14 @@
     },
     {
       "name": "BootMode",
-      "description": "修改镜像的启动模式。取值范围：\n\n- BIOS：BIOS启动模式。\n- UEFI：UEFI启动模式。\n\n默认值：BIOS。如果`Architecture=arm64`，则该参数默认值为UEFI，且只能设置为UEFI。\n\n> 您需要了解指定的镜像支持的启动模式，当通过该参数修改启动模式后，必须与镜像本身支持的启动模式匹配，实例才能正常启动。",
+      "description": "修改镜像的启动模式。取值范围：\n\n- BIOS：BIOS启动模式。\n- UEFI：UEFI启动模式。\n\n默认值：BIOS。如果`Architecture=arm64`，则该参数默认值为UEFI，且只能设置为UEFI。\n\n<notice>\n\n为了避免使用镜像不支持的启动模式导致实例无法正常启动，请您务必在选择该参数之前了解目标镜像支持的启动模式。镜像启动模式详情，请参见[镜像启动模式](~~2244655#b9caa9b8bb1wf~~)。\n\n</notice>",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "ClientToken",
+      "description": "保证请求幂等性。从您的客户端生成一个参数值，确保不同请求间该参数值唯一。**ClientToken**只支持ASCII字符，且不能超过64个字符。更多信息，请参见[如何保证幂等性](~~25693~~)。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -31,7 +35,7 @@
     },
     {
       "name": "DetectionStrategy",
-      "description": "镜像检测策略，不配置此参数时不触发检测。当前仅支持检测Linux操作系统镜像，并且仅支持标准（Standard）检测模式。 \n\n标准检测模式覆盖的检测项如下：\n- Virtio：Virtio驱动是否安装。\n- Fstab：系统挂载文件配置是否正常。\n- Grub：启动引导配置是否正常。\n- SystemImage：否为有效的系统文件，如ISO文件、裸盘等。\n- CloudInit：CloudInit服务是否安装。\n- NVMe：NVMe驱动是否安装。\n- Selinux：Selinux是否打开。\n- OnlineResizeFS：是否支持根分区自动扩容。\n- Dhcp：网卡DHCP配置是否打开。\n- RtcTimeMode：系统硬件时钟时区。\n- Platform：系统平台，如Linux、Windows。  \n- OSVersion：操作系统版本，如Centos 7.9。  \n- Architecture：系统架构，如Arm、x86_64。\n- BootMode：启动模式，如UEFI、Legacy。\n- KernelVersion：内核版本。\n- CloudAssistant：是否安装云助手。\n- SecurityCenterAgent：是否安装云安全中心。",
+      "description": "镜像检测策略，不配置此参数时不触发检测。仅支持标准（Standard）检测模式。\n\n>目前已支持大部分的Linux/Windows版本，关于镜像检测项与操作系统限制说明，请参见[镜像检测概述](~~439819~~)和[镜像检测操作系统限制](~~475800~~)。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -82,8 +86,22 @@
       ]
     },
     {
+      "name": "DryRun",
+      "description": "是否只预检此次请求。取值范围：\n\n- true：发送检查请求，不会查询资源状况。检查项包括AccessKey是否有效、RAM用户的授权情况和是否填写了必需参数。如果检查不通过，则返回对应错误。如果检查通过，则返回错误码`DryRunOperation`。\n- false：发送正常请求，通过检查后返回 2XX HTTP状态码并直接查询资源状况。\n\n默认值：false。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
+      "name": "Features",
+      "description": "镜像特性相关属性。",
+      "position": "Query",
+      "type": "Struct",
+      "required": false
+    },
+    {
       "name": "ImageName",
-      "description": "镜像名称。长度为2~128个字符。必须以大小字母或中文开头，不能以`aliyun`或`acs:`开头，不能包含`http://`或者`https://`。可以包含数字、半角句号（.）、半角冒号（:）、下划线（_）或者短划线（-）。",
+      "description": "镜像名称。长度为2~128个字符。必须以大小写字母或中文开头，不能以`aliyun`或`acs:`开头，不能包含`http://`或者`https://`。可以包含数字、半角句号（.）、半角冒号（:）、下划线（_）或者短划线（-）。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -97,14 +115,14 @@
     },
     {
       "name": "OSType",
-      "description": "操作系统平台类型。取值范围： \n\n- windows。\n- linux。\n\n默认值：linux。",
+      "description": "操作系统类型。取值范围： \n\n- windows。\n- linux。\n\n默认值：linux。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "Platform",
-      "description": "操作系统发行版。取值范围： \n- Aliyun\n- Anolis\n- CentOS\n- Ubuntu\n- CoreOS\n- SUSE\n- Debian\n- OpenSUSE\n- FressBSD\n- RedHat\n- Kylin\n- UOS\n- Fedora\n- Fedora CoreOS\n- CentOS Stream\n- AlmaLinux\n- Rocky Linux\n- Gentoo\n- Customized Linux\n- Others Linux\n- Windows Server 2022\n- Windows Server 2019\n- Windows Server 2016\n- Windows Server 2012\n- Windows Server 2008\n- Windows Server 2003\n\n默认值：Others Linux",
+      "description": "操作系统版本。取值范围： \n- Aliyun\n- Anolis\n- CentOS\n- Ubuntu\n- CoreOS\n- SUSE\n- Debian\n- OpenSUSE\n- FreeBSD\n- RedHat\n- Kylin\n- UOS\n- Fedora\n- Fedora CoreOS\n- CentOS Stream\n- AlmaLinux\n- Rocky Linux\n- Gentoo\n- Customized Linux\n- Others Linux\n- Windows Server 2022\n- Windows Server 2019\n- Windows Server 2016\n- Windows Server 2012\n- Windows Server 2008\n- Windows Server 2003\n- Other Windows\n\n默认值：Others Linux。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -126,6 +144,13 @@
     {
       "name": "RoleName",
       "description": "导入镜像时，使用的RAM角色名称。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "StorageLocationArn",
+      "description": "指定云盒的资源名称（ARN），用于唯一标识云端存储位置。\n\n>仅当您需要从OSS ON云盒中导入镜像文件时，才需提供此参数的值。如果您使用的存储服务不是OSS ON云盒，则无需设置此参数。更多信息，请参见[什么是OSS ON云盒](~~430190~~)。\n\n正确的ARN格式应遵循：`arn:acs:cloudbox:{RegionId}:{AliUid}:cloudbox/{CloudBoxId}`的模式，其中`{RegionId}`应替换为云盒实际所在的地域ID，`{AliUid}`是阿里云账号（主账号）ID，而`{CloudBoxId}`是云盒ID。",
       "position": "Query",
       "type": "String",
       "required": false

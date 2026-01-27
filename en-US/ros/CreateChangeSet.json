@@ -1,9 +1,6 @@
 {
   "name": "CreateChangeSet",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -17,7 +14,7 @@
     },
     {
       "name": "ChangeSetType",
-      "description": "The type of the change set. Valid values:\n\n*   CREATE: creates a change set for a new stack.\n*   UPDATE (default): creates a change set for an existing stack.\n*   IMPORT: creates a change set for a new stack or an existing stack to import resources that are not managed by ROS.\n\nIf you create a change set for a new stack, ROS generates a unique stack ID for the stack. The stack remains in the REVIEW_IN_PROGRESS state until you execute the change set.\\\nIf you want to create a change set for a new stack, do not set ChangeSetType to UPDATE. If you want to create a change set for an existing stack, do not set ChangeSetType to CREATE.",
+      "description": "The type of the change set. Valid values:\n\n*   CREATE: creates a change set for a new stack.\n*   UPDATE (default): creates a change set for an existing stack.\n*   IMPORT: creates a change set for a new stack or an existing stack to import resources that are not managed by ROS.\n\nIf you set ChangeSetType to CREATE, ROS creates a stack. The stack remains in the `REVIEW_IN_PROGRESS` state until you execute the change set.\n\n> \n\n*   You cannot set ChangeSetType to UPDATE when you create a change set for a new stack. You cannot set ChangeSetType to CREATE when you create a change set for an existing stack.\n\n*   If you set ChangeSetType to Import, you cannot configure a stack policy. You can specify ChangeSetType only when you create or update a stack.",
       "position": "Query",
       "type": "String",
       "required": false
@@ -80,14 +77,14 @@
     },
     {
       "name": "RamRoleName",
-      "description": "The name of the Resource Access Management (RAM) role. Resource Orchestration Service (ROS) assumes the RAM role to create the stack and uses the credentials of the role to call the APIs of Alibaba Cloud services.\\\nROS assumes the role to perform operations on the stack. If you have permissions to perform operations on the stack but do not have permissions to use the RAM role, ROS still assumes the RAM role. You must make sure that the least privileges are granted to the RAM role.\\\nIf you do not specify this parameter, ROS uses the existing role that is associated with the stack. If no roles are available for ROS to assume, ROS uses a temporary credential that is generated from the credentials of your Alibaba Cloud account.\\\nThe name of the RAM role can be up to 64 bytes in length.",
+      "description": "The name of the Resource Access Management (RAM) role. ROS assumes the RAM role to create the stack and uses the credentials of the role to call the APIs of Alibaba Cloud services.\\\nROS assumes the RAM role to perform operations on the stack. If you have permissions to perform operations on the stack, ROS assumes the RAM role even if you do not have permissions to use the RAM role. You must make sure that permissions are granted to the RAM role based on the principle of least privilege.\\\nIf you do not specify this parameter, ROS assumes the existing role of the stack. If no roles are available, ROS uses a temporary credential that is generated from the credentials of your account.\\\nThe RAM role name can be up to 64 characters in length.\n\nFor more information about RAM roles, see [Use a stack role](~~2568025~~).",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "RegionId",
-      "description": "The region ID of the change set. You can call the [DescribeRegions](~~131035~~) operation to query the most recent region list.",
+      "description": "The region ID of the change set.\n\nYou can call the [DescribeRegions](~~131035~~) operation to query the most recent region list.",
       "position": "Query",
       "type": "String",
       "required": true
@@ -100,8 +97,15 @@
       "required": false
     },
     {
+      "name": "ResourceGroupId",
+      "description": "",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "ResourcesToImport",
-      "description": "The resources that you want to import into the stack.",
+      "description": "The resources that you want to import to the stack.",
       "position": "Query",
       "type": "RepeatList",
       "required": false,
@@ -128,7 +132,7 @@
     },
     {
       "name": "StackId",
-      "description": "The ID of the stack for which you want to create a change set. ROS compares the stack information with the information that you submit, such as a modified template or a changed parameter value, to generate the change set.\n\n> This parameter takes effect only for change sets of the UPDATE or IMPORT.",
+      "description": "The ID of the stack for which you want to create the change set. ROS compares the stack information with the information that you submit, such as an updated template or parameter value, to generate the change set.\\\nYou can call the [ListStacks](~~610818~~) operation to query the stack ID.\n\n>  This parameter takes effect only when ChangeSetType is set to UPDATE or IMPORT.",
       "position": "Query",
       "type": "String",
       "required": false
@@ -142,7 +146,7 @@
     },
     {
       "name": "StackPolicyBody",
-      "description": "The structure of the stack policy body. The policy body must be 1 to 16,384 bytes in length. If you set ChangeSetType to CREATE, you can specify StackPolicyBody or StackPolicyURL. If you set ChangeSetType to UPDATE, you can specify only one of the following parameters:\n\n*   StackPolicyBody\n*   StackPolicyURL\n*   StackPolicyDuringUpdateBody\n*   StackPolicyDuringUpdateURL",
+      "description": "The structure that contains the stack policy body. The policy body must be 1 to 16,384 bytes in length.\n\nIf you set ChangeSetType to **CREATE**, you can specify StackPolicyBody or StackPolicyURL.\n\nIf you set ChangeSetType to **UPDATE**, you can specify only one of the following parameters:\n\n*   StackPolicyBody\n*   StackPolicyURL\n*   StackPolicyDuringUpdateBody\n*   StackPolicyDuringUpdateURL",
       "position": "Query",
       "type": "String",
       "required": false
@@ -163,28 +167,56 @@
     },
     {
       "name": "StackPolicyURL",
-      "description": "The URL of the file that contains the stack policy. The URL must point to a policy that is located on an HTTP or HTTPS web server or in an Object Storage Service (OSS) bucket, such as oss://ros/stack-policy/demo and oss://ros/stack-policy/demo?RegionId=cn-hangzhou. The policy file can be up to 16,384 bytes in length.\n\n> If you do not specify the region of the OSS bucket, the value of RegionId is used.\n\nYou can specify only one of the following parameters: StackPolicyBody and StackPolicyURL.\\\nThe URL can be up to 1,350 bytes in length.\n\nIf you set ChangeSetType to CREATE, you can specify StackPolicyBody or StackPolicyURL. If you set ChangeSetType to UPDATE, you can specify only one of the following parameters:\n\n*   StackPolicyBody\n*   StackPolicyURL\n*   StackPolicyDuringUpdateBody\n*   StackPolicyDuringUpdateURL",
+      "description": "The URL of the file that contains the stack policy. The URL must point to a policy that is located on an HTTP or HTTPS web server or in an Object Storage Service (OSS) bucket, such as oss://ros/stack-policy/demo or oss://ros/stack-policy/demo?RegionId=cn-hangzhou. The policy file can be up to 16,384 bytes in length.\n\nThe URL can be up to 1,350 bytes in length.\n\n>  If you do not specify the region ID of the OSS bucket, the value of RegionId is used.\n\nIf you set ChangeSetType to **CREATE**, you can specify StackPolicyBody or StackPolicyURL.\n\nIf you set ChangeSetType to **UPDATE**, you can specify only one of the following parameters:\n\n*   StackPolicyBody\n*   StackPolicyURL\n*   StackPolicyDuringUpdateBody\n*   StackPolicyDuringUpdateURL",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
+      "name": "Tags",
+      "description": "",
+      "position": "Query",
+      "type": "RepeatList",
+      "required": false,
+      "sub_parameters": [
+        {
+          "name": "Key",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "Value",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "TaintResources",
+      "description": "",
+      "position": "Query",
+      "type": "RepeatList",
+      "required": false
+    },
+    {
       "name": "TemplateBody",
-      "description": "The structure of the template body. The template body must be 1 to 524,288 bytes in length.\\\nIf the length of the template body is longer than required, we recommend that you add parameters to the HTTP POST request body to prevent request failures caused by excessive length of URLs.\n\nYou can specify only one of the following parameters: TemplateBody, TemplateURL, and TemplateId.",
+      "description": "The structure that contains the template body. The template body must be 1 to 524,288 bytes in length. If the length of the template body exceeds the upper limit, we recommend that you add parameters to the HTTP POST request body to prevent request failures caused by excessively long URLs.\n\n>  You must and can specify only one of the following parameters: TemplateBody, TemplateURL, and TemplateId.",
       "position": "Body",
       "type": "String",
       "required": false
     },
     {
       "name": "TemplateId",
-      "description": "The ID of the template. This parameter applies to shared and private templates.\n\nYou can specify only one of the following parameters: TemplateBody, TemplateURL, and TemplateId.",
+      "description": "The template ID. This parameter applies to shared templates and private templates.\n\nYou can call the [ListTemplates](~~610842~~) operation to query the template ID.\n\n>  You can specify only one of the following parameters: TemplateBody, TemplateURL, and TemplateId.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "TemplateScratchId",
-      "description": "The ID of the scenario template.",
+      "description": "The ID of the resource scenario. In this example, this parameter specifies the ID of a resource management scenario.\n\nThis parameter takes effect only when ChangeSetType is set to IMPORT. TemplateScratchId is supported only when you import resources to create a new stack.\n\nIf you want to use a resource management scenario to import resources, you can specify only TemplateScratchId rather than configuring parameters related to templates.\n\nYou can call the [ListTemplateScratches](~~610832~~) operation to query the ID of the resource management scenario.",
       "position": "Query",
       "type": "String",
       "required": false

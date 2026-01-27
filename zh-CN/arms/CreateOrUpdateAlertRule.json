@@ -1,9 +1,6 @@
 {
   "name": "CreateOrUpdateAlertRule",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -45,7 +42,7 @@
     },
     {
       "name": "AlertRuleContent",
-      "description": "应用监控或前端监控的告警规则内容。**AlertRuleContent**模板如下，模板中各字段含义请参见表格下方的补充说明。\n\n```json\n{ \n    \"Condition\": \"OR\", \n     \"AlertRuleItems\": [ \n             { \"Operator\": \"CURRENT_LTE\",\n                 \"MetricKey\": \"appstat.jvm.threadcount\", \n                 \"Value\": 1000, \n                 \"Aggregate\": \"AVG\",\n                  \"N\": 1\n            } \n       ]  \n  }\n```\n\n> 不同的**MetricsType**，**AlertRuleItems.MetricKey**可使用的条件字段不同。应用监控和前端监控支持的指标类型以及各指标对应的告警规则字段，请参见表格下方的补充说明。",
+      "description": "应用监控或前端监控的告警规则内容。**AlertRuleContent**模板如下，模板中各字段含义请参见表格下方的补充说明。\n\n```json\n{ \n    \"Condition\": \"OR\",\n     \"AlertRuleItems\": [\n             { \"Operator\": \"CURRENT_LTE\",\n                 \"MetricKey\": \"appstat.jvm.threadcount\",\n                 \"Value\": 1000,\n                 \"Aggregate\": \"AVG\",\n                  \"N\": 10,\n                  \"Tolerability\": 169\n            } \n       ]  \n  }\n```\n\n> 不同的**MetricsType**，**AlertRuleItems.MetricKey**可使用的条件字段不同。应用监控和前端监控支持的指标类型以及各指标对应的告警规则字段，请参见表格下方的补充说明。",
       "position": "Body",
       "type": "String",
       "required": false
@@ -59,7 +56,7 @@
     },
     {
       "name": "AlertType",
-      "description": "告警规则类型：\n\n- APPLICATION\\_MONITORING\\_ALERT_RULE：应用监控告警规则。\n- BROWSER\\_MONITORING\\_ALERT_RULE：前端监控告警规则。\n- PROMETHEUS\\_MONITORING\\_ALERT_RULE：Prometheus监控告警规则。\n- XTRACE_MONITORING_ALERT_RULE：可观测链路OpenTelemetry版监控告警规则。\n- EBPF_MONITORING_ALERT_RULE：EBPF监控告警规则。",
+      "description": "告警规则类型：\n\n- APPLICATION\\_MONITORING\\_ALERT_RULE：应用监控告警规则。\n- BROWSER\\_MONITORING\\_ALERT_RULE：前端监控告警规则。\n- PROMETHEUS\\_MONITORING\\_ALERT_RULE：Prometheus监控告警规则。\n- XTRACE_MONITORING_ALERT_RULE：可观测链路OpenTelemetry版监控告警规则。\n- EBPF_MONITORING_ALERT_RULE：EBPF监控告警规则。\n- RUM_MONITORING_ALERT_RULE：用户体验监控告警规则。",
       "position": "Body",
       "type": "String",
       "required": true
@@ -79,6 +76,20 @@
       "required": false
     },
     {
+      "name": "AutoAddTargetConfig",
+      "description": "应用监控告警规则-告警应用自动追加配置。\n\n- autoAddMatchType：\n  \n  匹配方式：正则匹配（REGULAR）/正则不匹配（NOT_REGULAR）\n\n- autoAddMatchExp：正则表达式",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CheckCycle",
+      "description": "prometheus的告警检查周期。",
+      "position": "Body",
+      "type": "Long",
+      "required": false
+    },
+    {
       "name": "ClusterId",
       "description": "Prometheus监控告警规则的集群ID。",
       "position": "Body",
@@ -94,14 +105,14 @@
     },
     {
       "name": "Duration",
-      "description": "Prometheus告警规则的持续时间，单位为分钟。",
+      "description": "Prometheus告警规则的持续时间，单位为分钟，取值范围[0,1440]。",
       "position": "Body",
       "type": "Long",
       "required": false
     },
     {
       "name": "Filters",
-      "description": "应用监控或前端监控告警规则的筛选条件。\n格式如下：\n\n```\n\"DimFilters\": [ \n{ \n \"FilterOpt\": \"ALL\",\n \"FilterValues\": [],         //过滤条件Value。\n \"FilterKey\": \"rootIp\"     //过滤条件Key。\n}\n]\n```\n**FilterOpt**取值如下：\n- STATIC： 固定匹配此维度值。\n- ALL：遍历所有维度值。\n- DISABLE：聚合所有维度值为一个值（求和）。",
+      "description": "应用监控或前端监控告警规则的筛选条件。\n格式如下：\n\n```\n\"DimFilters\": [ \n{ \n \"FilterOpt\": \"ALL\",\n \"FilterValues\": [],         //过滤条件Value。\n \"FilterKey\": \"rootIp\"     //过滤条件Key。\n}\n]\n```\n**FilterOpt**取值如下：\n- STATIC： 固定匹配此维度值。\n- ALL：遍历所有维度值。注意：区间检测不支持遍历操作。\n- DISABLE：聚合所有维度值为一个值（求和）。",
       "position": "Body",
       "type": "String",
       "required": false
@@ -171,7 +182,7 @@
     },
     {
       "name": "NotifyMode",
-      "description": "通知模式。普通模式或极简模式。",
+      "description": "通知模式。普通模式或极简模式。\n- DIRECTED_MODE\n- NORMAL_MODE",
       "position": "Body",
       "type": "String",
       "required": false
@@ -186,6 +197,13 @@
     {
       "name": "Pids",
       "description": "应用监控或前端监控告警规则关联应用的PID。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "Product",
+      "description": "创建Prometheus告警规则时传入，后台会校验是否存在此产品，用于区分云产品过滤查询。",
       "position": "Body",
       "type": "String",
       "required": false

@@ -1,0 +1,121 @@
+{
+  "name": "RunCommand",
+  "deprecated": false,
+  "protocol": "HTTP|HTTPS",
+  "method": "POST",
+  "pathPattern": "",
+  "parameters": [
+    {
+      "name": "ClientToken",
+      "description": "保证请求幂等性。从您的客户端生成一个参数值，确保不同请求间该参数值唯一。ClientToken只支持ASCII字符，且不能超过64个字符。更多信息，请参见如何保证幂等性。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CommandContent",
+      "description": "命令内容。您需要注意：\n\n- 指定参数`EnableParameter=true`可在命令内容中启用自定义参数功能。\n- 用{{}}包含的方式定义自定义参数，在`{{}}`内参数名前后的空格以及换行符会被忽略。\n- 自定义参数个数不能超过20个。\n- 自定义参数名允许a-zA-Z0-9-_的组合，不支持其余字符，参数名不区分大小写。\n- 单个自定义参数名不能超过64字节。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CommandId",
+      "description": "命令ID",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "ContentEncoding",
+      "description": "脚本内容的编码方式。取值范围：\n\n- PlainText：不编码，采用明文传输。\n- Base64：Base64编码。\n\n默认值：PlainText。乱填或错填时，该取值会当作PlainText处理。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "Description",
+      "description": "命令描述。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "EnableParameter",
+      "description": "命令中是否包含自定义参数。\n\n默认值：false。",
+      "position": "Body",
+      "type": "Boolean",
+      "required": false
+    },
+    {
+      "name": "Frequency",
+      "description": "定时执行命令的执行时间。目前支持三种定时执行方式：固定时间间隔执行（基于 Rate 表达式）、仅在指定时间执行一次、基于时钟定时执行（基于 Cron 表达式）。\n\n- 固定时间间隔执行：基于 Rate 表达式，按照设置的时间间隔执行命令。时间间隔支持按秒（s） 、分钟（m） 、小时（h）和天（d）来选择，适用于在固定时间间隔执行任务的场景。格式为 rate(<执行间隔数值><执行间隔单位>)，如 5 分钟执行一次，格式为 rate(5m)。使用固定时间间隔执行有以下限制： \n    - 设置的时间间隔不大于 7 天、不小于 60 秒，且需大于定时任务的超时时间。 \n    - 执行间隔只基于固定频率，与任务实际执行需要的时间无关。例如设置每 5 分钟执行一次命令，任务需要 2 分钟执行完成，则在任务完成 3 分钟后继续执行下一轮。 \n    - 创建任务时不会立即执行。例如设置每 5 分钟执行一次命令，创建任务时不会立即执行一次命令，而是在任务创建完成后的 5 分钟后开始执行。\n \n- 仅在指定时间执行一次：按照设置的时区和执行时间点执行一次命令。格式为 at(yyyy-MM-dd HH:mm:ss <时区>)，即 at(年-月-日 时:分:秒 <时区>)。如果不指定时区，默认为 UTC 时区。时区支持以下三种形式： 时区全称： 如 Asia/Shanghai（中国/上海时间）、America/Los_Angeles（美国/洛杉矶时间）等。 时区相对于格林威治时间的偏移量： 如 GMT+8:00（东八区）、GMT-7:00（西七区）等。使用 GMT 格式时，小时位不支持添加前导零。 时区缩写： 仅支持 UTC（协调世界时间）。\n如果指定在中国/上海时间 2022 年 06 月 06 日 13 时 15 分 30 秒执行一次，格式为：at(2022-06-06 13:15:30 Asia/Shanghai)；如果指定在西七区 2022 年 06 月 06 日 13 时 15 分 30 秒执行一次，格式为：at(2022-06-06 13:15:30 GMT-7:00)。\n\n- 基于时钟定时执行（基于 Cron 表达式）：基于 Cron 表达式，按照设置的定时任务执行命令。格式为<秒> <分钟> <小时> <日期> <月份> <星期> <年份（可选）> <时区>，即<Cron 表达式> <时区>。在指定的时区下，根据 Cron 表达式推算定时任务执行时间并执行。若不指定时区，默认为执行定时任务实例的系统内部时区。关于 Cron 表达式的更多信息，请参见 Cron 表达式。时区支持以下三种形式： \n    - 时区全称：如 Asia/Shanghai（中国/上海时间）、America/Los_Angeles（美国/洛杉矶时间）等。 \n    - 时区相对于格林威治时间的偏移量：如 GMT+8:00（东八区）、GMT-7:00（西七区）等。使用 GMT 格式时，小时位不支持添加前导零。 \n    - 时区缩写：仅支持 UTC（协调世界时间）。\n\n    例如，在中国/上海时间，2022 年每天上午 10:15 执行一次命令，格式为 0 15 10 ? * * 2022 Asia/Shanghai；在东八区时间，2022 年每天上午 10:00 到 11:30 每隔半小时执行，格式为 0 0/30 10-11 * * ? 2022 GMT+8:00；在 UTC 时间，从 2022 年开始，每隔两年的 10 月每天下午 14:00 到下午 14:55 时间段内每隔 5 分钟执行，格式为 0 0/5 14 * 10 ? 2022/2 UTC。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "Launcher",
+      "description": "脚本执行的引导程序。长度不能超过 1 KB。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "Name",
+      "description": "命令名称。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "NodeIdList",
+      "description": "节点列表。",
+      "position": "Body",
+      "type": "Json",
+      "required": false
+    },
+    {
+      "name": "Parameters",
+      "description": "命令中包含自定义参数时，执行命令时传入的自定义参数的键值对。例如，命令内容为`echo {{name}}`，则可以通过`Parameter`参数传入键值对`{\"name\":\"Jack\"}`。自定义参数将自动替换变量值`name`，得到一条新的命令，实际执行的是`echo Jack`。\n\n自定义参数的个数范围为0~10，且您需要注意：\n\n- 键不允许为空字符串，最多支持64个字符。\n- 值允许为空字符串。\n- 自定义参数与原始命令内容在Base64编码后，若保存命令，命令内容在Base64编码后的大小不能超过18 KB；若不保存命令，命令内容在Base64编码后的大小不能超过24 KB。您可通过`KeepCommand`设置是否保留命令。\n- 设置的自定义参数名集合必须为创建命令时定义的参数集的子集。对于未传入的参数，您可以使用空字符串代替。\n\n默认值为空，表示取消设置该参数从而禁用自定义参数。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "RepeatMode",
+      "description": "设置命令执行的方式。取值范围：\n\n- Once：立即执行命令。\n- Period：定时执行命令。当该参数取值为`Period`时，必须同时指定`Frequency`参数。\n- NextRebootOnly：当实例下一次启动时，自动执行命令。\n- EveryReboot：实例每一次启动都将自动执行命令。\n\n默认值：\n- 当不指定`Frequency`参数时，默认值为`Once`。\n- 当指定`Frequency`参数时，无论是否已设置了该参数值，都将按照`Period`处理。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "TerminationMode",
+      "description": "停止任务（手动停止或执行超时打断）时的模式。可能值：\n\nProcess：停止当前脚本进程。\nProcessTree：停止当前进程树（脚本进程以及它创建的所有子进程的集合）",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "Timeout",
+      "description": "执行命令的超时时间，单位：秒。当因为进程原因、缺失模块、缺失云助手Agent等原因无法运行命令时，会出现超时现象。超时后，会强制终止命令进程。默认值：60。",
+      "position": "Body",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "Username",
+      "description": "在实例中执行命令的用户名称。长度不得超过255个字符。\nLinux系统的实例，默认以root用户执行命令。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "WorkingDir",
+      "description": "您可自定义命令的执行路径。默认路径如下：\n\nLinux实例：执行路径默认在管理员root用户的/home目录下。",
+      "position": "Body",
+      "type": "String",
+      "required": false
+    }
+  ]
+}

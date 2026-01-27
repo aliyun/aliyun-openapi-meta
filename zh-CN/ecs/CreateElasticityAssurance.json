@@ -1,17 +1,28 @@
 {
   "name": "CreateElasticityAssurance",
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
       "name": "AssuranceTimes",
-      "description": "弹性保障的总次数。取值：Unlimited，目前仅支持在服务生效期内的无限次模式。\n\n默认值：Unlimited",
+      "description": "弹性保障的总次数。取值：Unlimited，目前仅支持在服务生效期内的无限次模式。\n\n默认值：Unlimited。",
       "position": "Query",
       "type": "String",
+      "required": false
+    },
+    {
+      "name": "AutoRenew",
+      "description": "是否自动续费。取值范围：\n\n- true：自动续费。\n- false：不自动续费。\n\n默认值：false。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
+      "name": "AutoRenewPeriod",
+      "description": "自动续费的时长，单位：月。取值范围：1、2、3、6、12、24、36。\n\n\n\n- 当`PeriodUnit=Month`时，默认值为1；\n\n- 当`PeriodUnit=Year`时，默认值为12。\n\n\n> 当参数`AutoRenew`取值`True`时，该参数为必填参数。",
+      "position": "Query",
+      "type": "Integer",
       "required": false
     },
     {
@@ -23,14 +34,14 @@
     },
     {
       "name": "Description",
-      "description": "弹性保障服务的描述信息。长度为2~256个英文或中文字符，不能以`http://`和`https://`开头。\n\n默认值：空",
+      "description": "弹性保障服务的描述信息。长度为2~256个英文或中文字符，不能以`http://`和`https://`开头。\n\n默认值：空。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "InstanceAmount",
-      "description": "在一个实例规格内，需要预留的实例的总数量。\n\n取值范围：1~1000。",
+      "description": "在一个实例规格内，需要预留的实例的总数量。\n\n取值范围：1~1000。\n\n><notice>此参数为必填参数。></notice>",
       "position": "Query",
       "type": "Integer",
       "required": false
@@ -51,21 +62,21 @@
     },
     {
       "name": "Period",
-      "description": "购买时长。时长单位由`PeriodUnit`参数确定。取值范围：\n\n- 当`PeriodUnit`参数值为`Month`时，该参数的取值：1、2、3、4、5、6、7、8、9。\n- 当`PeriodUnit`参数值为`Year`时，该参数的取值：1、2、3、4、5。\n\n默认值：1",
+      "description": "购买时长。时长单位由`PeriodUnit`参数确定。取值范围：\n\n- 当`PeriodUnit`参数值为`Month`时，该参数的取值：1、2、3、4、5、6、7、8、9。\n- 当`PeriodUnit`参数值为`Year`时，该参数的取值：1、2、3、4、5。\n- 当`PeriodUnit`参数值为`Day`时，该参数的取值：1~365。\n\n默认值：1。",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
       "name": "PeriodUnit",
-      "description": "时长单位。取值范围：\n\n- Month：月\n- Year：年\n\n默认值：Year",
+      "description": "时长单位。取值范围：\n\n- Month：月\n- Year：年\n- Day：天\n  > `PeriodUnit`取值为`Day`时，必须同时指定RecurrenceRules，表示创建弹性保障-分时保障。\n\n默认值：Year。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "PrivatePoolOptions.MatchCriteria",
-      "description": "弹性保障服务的匹配模式。取值范围：\n\n- Open：开放模式的弹性保障服务。\n- Target：指定模式的弹性保障服务。\n\n默认值：Open",
+      "description": "弹性保障服务的匹配模式。取值范围：\n\n- Open：开放模式的弹性保障服务。实例启动时将自动匹配开放类型的私有池容量。如果没有符合条件的私有池容量，则使用公共池资源启动。\n- Target：指定模式的弹性保障服务。实例启动时将使用指定的私有池容量，如果该私有池容量不可用，则实例会启动失败。\n\n默认值：Open。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -76,6 +87,39 @@
       "position": "Query",
       "type": "String",
       "required": false
+    },
+    {
+      "name": "RecurrenceRules",
+      "description": "弹性保障-分时保障重复规则列表。",
+      "position": "Query",
+      "type": "RepeatList",
+      "required": false,
+      "sub_parameters": [
+        {
+          "name": "EndHour",
+          "position": "Query",
+          "type": "Integer",
+          "required": false
+        },
+        {
+          "name": "RecurrenceType",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "RecurrenceValue",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "StartHour",
+          "position": "Query",
+          "type": "Integer",
+          "required": false
+        }
+      ]
     },
     {
       "name": "RegionId",
@@ -93,14 +137,14 @@
     },
     {
       "name": "StartTime",
-      "description": "弹性保障服务生效时间。默认为调用该接口创建服务的时间。时间格式以ISO8601为标准，需要使用UTC +0时间，格式为`yyyy-MM-ddTHH:mm:ssZ`。更多信息，请参见[ISO8601](~~25696~~)。",
+      "description": "弹性保障服务生效时间。默认为调用该接口创建服务的时间。时间格式以ISO 8601为标准，需要使用UTC +0时间，格式为`yyyy-MM-ddTHH:mm:ssZ`。更多信息，请参见[ISO 8601](~~25696~~)。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "Tag",
-      "description": "标签列表。",
+      "description": "弹性保障服务的标签列表。",
       "position": "Query",
       "type": "RepeatList",
       "required": false,

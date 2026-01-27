@@ -1,12 +1,17 @@
 {
   "name": "CreateLifecyclePolicy",
-  "security": [
-    "AK"
-  ],
+  "deprecated": false,
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST|PUT",
   "pathPattern": "",
   "parameters": [
+    {
+      "name": "Description",
+      "description": "生命周期策略描述。\n\n格式：\n长度为3-64个字符，必须以字母开头，可以包含英文字母、数字、下划线（_）或者短划线（-）。\n>仅 CPFS 智算版支持。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
     {
       "name": "FileSystemId",
       "description": "文件系统ID。",
@@ -16,38 +21,87 @@
     },
     {
       "name": "LifecyclePolicyName",
-      "description": "生命周期管理策略名称。\n长度为3~64个字符，必须以大写字母或小写字母开头，可以包含英文字母、数字、下划线（_）或者短划线（-）。",
+      "description": "生命周期管理策略名称。 长度为 3~64 个字符，必须以大写字母或小写字母开头，可以包含英文字母、数字、下划线（_）或者短划线（-）。\n\n>通用型 NAS 必须传入，CPFS 智算版无需填入。",
       "position": "Query",
       "type": "String",
-      "required": true
+      "required": false
+    },
+    {
+      "name": "LifecyclePolicyType",
+      "description": "策略类型\n- Auto（默认）：自动执行。\n-  OnDemand：按需执行。",
+      "position": "Query",
+      "type": "String",
+      "required": false
     },
     {
       "name": "LifecycleRuleName",
-      "description": "生命周期管理策略关联的管理规则。\n\n取值：\n\n- DEFAULT_ATIME_14：距今14天未访问的文件\n- DEFAULT_ATIME_30：距今30天未访问的文件\n- DEFAULT_ATIME_60：距今60天未访问的文件 \n- DEFAULT_ATIME_90：距今90天未访问的文件",
+      "description": "生命周期管理策略关联的管理规则。仅通用型 NAS 支持。\n\n取值：\n\n- DEFAULT_ATIME_14：距今14天未访问的文件。\n- DEFAULT_ATIME_30：距今30天未访问的文件。\n- DEFAULT_ATIME_60：距今60天未访问的文件 。\n- DEFAULT_ATIME_90：距今90天未访问的文件。\n- DEFAULT_ATIME_180：距今180天未访问的文件。仅当StorageType=Archive时，支持DEFAULT_ATIME_180。\n>- 如果该目录已经设置了低频策略，再次设置归档策略的时候，归档策略的时间要比低频策略设置的长。\n> -  仅通用型NAS支持该参数。",
       "position": "Query",
       "type": "String",
-      "required": true
+      "required": false
     },
     {
       "name": "Path",
-      "description": "生命周期管理策略关联目录的绝对路径。\n\n仅支持关联单个目录。必须以正斜线（/）开头，并且是挂载点中真实存在的路径。\n\n>- 建议您配置Paths.N，可以同时关联多个目录。\n>- Path和Paths 有且只能存在一个入参。",
+      "description": "生命周期管理策略关联目录的绝对路径。仅支持通用型NAS。\n\n- 通用型NAS仅支持关联单个目录。必须以正斜线（/）开头，并且是挂载点中真实存在的路径。\n\n> 仅支持通用型NAS。通用型NAS建议您配置Paths.N，可以同时关联多个目录。\n>- Path和Paths 有且只能存在一个入参。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "Paths",
-      "description": "",
+      "description": "生命周期管理策略关联目录的绝对路径。",
       "position": "Query",
       "type": "RepeatList",
       "required": false
     },
     {
+      "name": "RetrieveRules",
+      "description": "文件数据取回规则，最多配置 1 个。\n>仅 CPFS 智算版文件系统支持。",
+      "position": "Query",
+      "type": "RepeatList",
+      "required": false,
+      "sub_parameters": [
+        {
+          "name": "Attribute",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "Threshold",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        }
+      ]
+    },
+    {
       "name": "StorageType",
-      "description": "数据转储后的存储类型。\n\n默认值：InfrequentAccess（低频介质存储）",
+      "description": "分级存储类型。\n- InfrequentAccess：低频存储。\n- Archive：归档存储。\n\n>通用型 NAS支持 InfrequentAccess和Archive； CPFS 智算版仅支持 InfrequentAccess。",
       "position": "Query",
       "type": "String",
       "required": true
+    },
+    {
+      "name": "TransitRules",
+      "description": "文件数据转储规则，最多配置 1 个。\n\n>仅 CPFS 智算版文件系统的 LifecyclePolicyType=Auto 时支持",
+      "position": "Query",
+      "type": "RepeatList",
+      "required": false,
+      "sub_parameters": [
+        {
+          "name": "Attribute",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "Threshold",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        }
+      ]
     }
   ]
 }

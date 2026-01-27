@@ -1,9 +1,6 @@
 {
   "name": "ModifyBackupPolicy",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -23,6 +20,55 @@
       "required": false
     },
     {
+      "name": "BackupRetentionPolicyOnClusterDeletion",
+      "description": "备份保留策略。\n\n- 0：实例释放时立即删除该实例的所有备份集\n\n- 1：实例释放时会自动备份，长期保留该备份集\n- 2：实例释放时会自动备份，并长期保留该集群的所有备份集\n\n详细信息请参见：[长期保留备份](~~2779111~~)",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "CrossBackupPeriod",
+      "description": "异地备份的保留时间。\n\n1. Monday：周一\n2. Tuesday：周二\n3. Wednesday：周三\n4. Thursday：周四\n5. Friday：周五\n6. Saturday：周六\n7. Sunday：周日\n\n> 异地备份必填\n> - 传入多个值，请用英文逗号（,）隔开。\n> - 当备份设置为常规备份时，该值需要为 PreferredBackupPeriod 备份周期的子集。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CrossBackupType",
+      "description": "异地备份操作策略：\n\n- update: 修改异地备份策略\n- delete: 删除异地备份策略\n\n> 异地备份必填",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CrossLogRetentionType",
+      "description": "异地日志备份保留类型。\n\n- delay（保留一段时间）\n- never（不过期）\n\n> 异地备份必填",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CrossLogRetentionValue",
+      "description": "异地日志备份保留时长，可设置 3-1825 天，需要小于等于CrossRetentionValue的值。\n\n\n> 异地备份必填",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "CrossRetentionType",
+      "description": "异地备份保留类型。\n\n-  delay（保留一段时间）\n\n- never（不过期）\n\n> 异地备份必填",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CrossRetentionValue",
+      "description": "异地备份保留时长，可设置 3-1825 天。\n\n> \n> - 异地备份必填\n> - 当 CrossRetentionType 为 delay 时使用且必须使用。",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
       "name": "DBInstanceId",
       "description": "实例ID。",
       "position": "Query",
@@ -30,10 +76,38 @@
       "required": true
     },
     {
+      "name": "DestRegion",
+      "description": "备份所在地域。\n\n\n> 异地备份必填",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "EnableBackupLog",
-      "description": "是否打开日志备份，取值说明：\n- **0**：关闭（默认值）。\n- **1**：打开。",
+      "description": "是否打开日志备份，取值说明：\n- **0**：关闭（默认值）。\n\n- **1**：打开。\n><notice>分片集群不支持关闭日志备份></notice>",
       "position": "Query",
       "type": "Long",
+      "required": false
+    },
+    {
+      "name": "EnableCrossLogBackup",
+      "description": "是否开启跨地域日志备份 。\n\n> 异地备份必填\n> - 1： 打开  (分片集群必须为1，副本集如果想支持异地时间点恢复必须为1)\n> - 0： 关闭",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "HighFrequencyBackupRetention",
+      "description": "高频备份保留天数，使用该参数前需要先确认已经传入BackupInterval字段。默认保留时长一天。",
+      "position": "Query",
+      "type": "Long",
+      "required": false
+    },
+    {
+      "name": "InstanceType",
+      "description": "实例类型，取值：\n- replicate \n- sharding\n\n>- 当备份恢复类型为已删除实例重建时，需要且必填\n>- 当备份恢复类型为异地备份克隆时，需要且必填",
+      "position": "Query",
+      "type": "String",
       "required": false
     },
     {
@@ -45,28 +119,35 @@
     },
     {
       "name": "PreferredBackupPeriod",
-      "description": "备份周期，取值说明：\n- **Monday**：周一。\n- **Tuesday**：周二。\n- **Wednesday**：周三。\n- **Thursday**：周四。\n- **Friday**：周五。\n- **Saturday**：周六。\n- **Sunday**：周日。\n\n> 如需传入多个值，请用英文逗号（,）隔开。",
+      "description": "备份周期，取值说明：\n- **Monday**：周一。\n- **Tuesday**：周二。\n- **Wednesday**：周三。\n- **Thursday**：周四。\n- **Friday**：周五。\n- **Saturday**：周六。\n- **Sunday**：周日。\n\n><notice>为了数据安全，请一周至少备份两次MongoDB></notice>\n\n\n> 传入多个值，请用英文逗号（,）隔开。",
       "position": "Query",
       "type": "String",
-      "required": true
+      "required": false
     },
     {
       "name": "PreferredBackupTime",
       "description": "执行备份的时间，格式为<i>HH:mm</i>Z-<i>HH:mm</i>Z（UTC时间）。\n\n> 时间范围限制为1小时。",
       "position": "Query",
       "type": "String",
-      "required": true
+      "required": false
     },
     {
-      "name": "SecurityToken",
-      "description": "",
+      "name": "PreserveOneEachHour",
+      "description": "是否开启按小时稀疏备份。\n\n- true：当备份频率为分钟级时，距离当前时间1小时内的快照全部保留。距离当前时间超过1小时且在24小时内的快照，仅保留整点后的第一个快照。\n\n- false：高频备份保留天数内的快照全部保留。",
       "position": "Query",
-      "type": "String",
+      "type": "Boolean",
       "required": false
     },
     {
       "name": "SnapshotBackupType",
       "description": "快照备份类型，取值说明：\n\n- **Flash**：秒级备份。\n- **Standard**：常规备份（默认值）。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "SrcRegion",
+      "description": "实例所在地域。\n\n> \n> - 已删除实例恢复必填\n> - 异地备份必填",
       "position": "Query",
       "type": "String",
       "required": false

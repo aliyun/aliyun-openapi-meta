@@ -1,8 +1,5 @@
 {
   "name": "CreateAutoProvisioningGroup",
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -45,7 +42,7 @@
     },
     {
       "name": "DefaultTargetCapacityType",
-      "description": "The type of supplemental instances. When the sum of the `PayAsYouGoTargetCapacity` and `SpotTargetCapacity` values is smaller than the `TotalTargetCapacity` value, the auto provisioning group creates instances of the specified type to meet the total target capacity. Valid values:\n\n*   PayAsYouGo: pay-as-you-go instances\n*   Spot: preemptible instances.\n\nDefault value: Spot.",
+      "description": "The type of supplemental instances. When the sum of the `PayAsYouGoTargetCapacity` and `SpotTargetCapacity` values is smaller than the `TotalTargetCapacity` value, the auto provisioning group creates instances of the specified type to meet the total target capacity. Valid values:\n\n*   PayAsYouGo: pay-as-you-go\n*   Spot: spot instance\n\nDefault value: Spot.",
       "position": "Query",
       "type": "String",
       "required": false
@@ -59,7 +56,14 @@
     },
     {
       "name": "ExcessCapacityTerminationPolicy",
-      "description": "Specifies whether to release the removed instances when the real-time capacity of the auto provisioning group exceeds the target capacity and a scale-in event is triggered. Valid values:\n\n*   termination: releases the removed instances.\n*   no-termination: only removes the instances from the auto provisioning group but does not release them.\n\nDefault value: no-termination.",
+      "description": "Specifies whether to release scaled-in instances when the real-time capacity of the auto provisioning group exceeds the target capacity and the group is triggered to scale in. Valid values:\n\n*   termination: releases the scaled-in instances in the auto provisioning group.\n*   no-termination: removes the scaled-in instances from the auto provisioning group but does not release the instances.\n\nDefault value: no-termination.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "ExecutionMode",
+      "description": "",
       "position": "Query",
       "type": "String",
       "required": false
@@ -72,8 +76,15 @@
       "required": false
     },
     {
+      "name": "LaunchConfiguration",
+      "description": "The startup parameter.",
+      "position": "Query",
+      "type": "Struct",
+      "required": false
+    },
+    {
       "name": "LaunchConfiguration.Arn",
-      "description": "This parameter is unavailable for public use.",
+      "description": ">  This parameter is in invitational preview and is not publicly available.",
       "position": "Query",
       "type": "RepeatList",
       "required": false,
@@ -100,14 +111,14 @@
     },
     {
       "name": "LaunchConfiguration.AutoReleaseTime",
-      "description": "The automatic release time of the instance. Specify the time in the [ISO 8601](~~25696~~) standard in the yyyy-MM-ddTHH:mm:ssZ format. in the yyyy-MM-ddTHH:mm:ssZ format. The time must be in UTC.\n\n*   If the value of `ss` is not `00`, the time is automatically rounded to the nearest minute based on the value of `mm`.\n*   The specified time must be at least 30 minutes later than the current time.\n*   The specified time can be at most three years from the current time.",
+      "description": "The automatic release time of the pay-as-you-go instance. Specify the time in the [ISO 8601](~~25696~~) standard in the `yyyy-MM-ddTHH:mm:ssZ` format. The time must be in Coordinated Universal Time (UTC).\n\n*   If the value of `ss` is not `00`, the start time is automatically rounded down to the nearest minute based on the value of `mm`.\n*   The specified time must be at least 30 minutes later than the current time.\n*   The specified time can be at most three years later than the current time.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "LaunchConfiguration.CreditSpecification",
-      "description": "The performance mode of the burstable instance. Valid values:\n\n*   Standard: the standard mode. For more information, see the \"Standard mode\" section in [Overview of burstable instances](~~59977~~).\n*   Unlimited: the unlimited mode. For more information, see the \"Unlimited mode\" section in [Overview of burstable instances](~~59977~~).\n\nThis parameter is empty by default.\n\nWhen both LaunchTemplateId and LaunchConfiguration.\\* parameters are specified, LaunchTemplateId takes precedence.",
+      "description": "The performance mode of the burstable instance. Valid values:\n\n*   Standard: the standard mode. For more information, see the \"Standard mode\" section in the [Overview of burstable instances](~~59977~~) topic.\n*   Unlimited: the unlimited mode. For more information, see the \"Unlimited mode\" section in the [Overview of burstable instances](~~59977~~) topic.\n\nThis parameter is empty by default.\n\nWhen both LaunchTemplateId and LaunchConfiguration.\\* parameters are specified, LaunchTemplateId takes precedence.",
       "position": "Query",
       "type": "String",
       "required": false
@@ -119,6 +130,18 @@
       "type": "RepeatList",
       "required": false,
       "sub_parameters": [
+        {
+          "name": "AutoSnapshotPolicyId",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "BurstingEnabled",
+          "position": "Query",
+          "type": "Boolean",
+          "required": false
+        },
         {
           "name": "Category",
           "position": "Query",
@@ -150,6 +173,12 @@
           "required": false
         },
         {
+          "name": "EncryptAlgorithm",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        },
+        {
           "name": "Encrypted",
           "position": "Query",
           "type": "Boolean",
@@ -165,6 +194,12 @@
           "name": "PerformanceLevel",
           "position": "Query",
           "type": "String",
+          "required": false
+        },
+        {
+          "name": "ProvisionedIops",
+          "position": "Query",
+          "type": "Long",
           "required": false
         },
         {
@@ -204,7 +239,7 @@
     },
     {
       "name": "LaunchConfiguration.ImageFamily",
-      "description": "The name of the image family. The name must be 2 to 128 characters in length. The name must start with a letter and cannot start with `aliyun` or `acs:`. The name cannot contain `http://` or `https://`. The name can contain letters, digits, colons (:), underscores (_), and hyphens (-).",
+      "description": "The name of the image family. The name must be 2 to 128 characters in length. The name must start with a letter and cannot start with `aliyun` or `acs:`. The name cannot contain `http://` or `https://`. The name can contain letters, digits, colons (:), underscores (\\_), and hyphens (-).",
       "position": "Query",
       "type": "String",
       "required": false
@@ -225,7 +260,7 @@
     },
     {
       "name": "LaunchConfiguration.InstanceName",
-      "description": "The instance name. The name must be 2 to 128 characters in length. It must start with a letter and cannot start with `http://` or `https://`. The name can contain letters, digits, colons (:), underscores (\\_), periods (.), and hyphens (-). The default value of this parameter is the `InstanceId` value.\n\nWhen you batch create instances, you can batch configure sequential names for the instances. For more information, see [Batch configure sequential names or hostnames for multiple instances](~~196048~~).\n\nWhen both LaunchTemplateId and LaunchConfiguration.\\* parameters are specified, LaunchTemplateId takes precedence.",
+      "description": "The instance name. The name must be 2 to 128 characters in length. The name must start with a letter and cannot start with `http://` or `https://`. The name can contain letters, digits, colons (:), underscores (\\_), periods (.), and hyphens (-).\n\nThe default value of this parameter is the `InstanceId` value.\n\nWhen you batch create instances, you can batch configure sequential names for the instances. For more information, see [Batch configure sequential names or hostnames for multiple instances](~~196048~~).\n\nWhen both LaunchTemplateId and LaunchConfiguration.\\* parameters are specified, LaunchTemplateId takes precedence.",
       "position": "Query",
       "type": "String",
       "required": false
@@ -316,7 +351,7 @@
     },
     {
       "name": "LaunchConfiguration.SystemDisk",
-      "description": "The information of the system disk on the instance. If both the LaunchTemplateId and LaunchConfiguration.* parameters are specified, the LaunchTemplateId parameter takes precedence.",
+      "description": "The system disk information of instances. When both LaunchTemplateId and LaunchConfiguration.\\* parameters are specified, LaunchTemplateId takes precedence.",
       "position": "Query",
       "type": "Struct",
       "required": false
@@ -337,7 +372,7 @@
     },
     {
       "name": "LaunchConfiguration.SystemDiskName",
-      "description": "The name of the system disk. The name must be 2 to 128 characters in length. The name must start with a letter and cannot start with `http://` or `https://`. It can contain letters, digits, periods (.), colons (:), underscores (\\_), and hyphens (-).\n\nThis parameter is empty by default.\n\nWhen both LaunchTemplateId and LaunchConfiguration.\\* parameters are specified, LaunchTemplateId takes precedence.",
+      "description": "The name of the system disk. The name must be 2 to 128 characters in length. The name must start with a letter and cannot start with `http://` or `https://`. The name can contain letters, digits, periods (.), colons (:), underscores (\\_), and hyphens (-).\n\nThis parameter is empty by default.\n\nWhen both LaunchTemplateId and LaunchConfiguration.\\* parameters are specified, LaunchTemplateId takes precedence.",
       "position": "Query",
       "type": "String",
       "required": false
@@ -379,7 +414,7 @@
     },
     {
       "name": "LaunchConfiguration.UserData",
-      "description": "The instance user data. The user data must be encoded in Base64. The raw data can be up to 16 KB in size. When both LaunchTemplateId and LaunchConfiguration.\\* parameters are specified, LaunchTemplateId takes precedence.",
+      "description": "The instance user data. The user data must be encoded in Base64. The raw data can be up to 32 KB in size. When both LaunchTemplateId and LaunchConfiguration.\\* parameters are specified, LaunchTemplateId takes precedence.",
       "position": "Query",
       "type": "String",
       "required": false
@@ -413,6 +448,12 @@
           "name": "ExcludedInstanceTypes",
           "position": "Query",
           "type": "RepeatList",
+          "required": false
+        },
+        {
+          "name": "ImageId",
+          "position": "Query",
+          "type": "String",
           "required": false
         },
         {
@@ -481,7 +522,7 @@
     },
     {
       "name": "MaxSpotPrice",
-      "description": "The maximum price of preemptible instances in the auto provisioning group.\n\n>  When both `MaxSpotPrice` and `LaunchTemplateConfig.N.MaxPrice` are specified, the smaller one of the two parameter values is used.",
+      "description": "The maximum price of spot instances in the auto provisioning group.\n\n>  When both `MaxSpotPrice` and `LaunchTemplateConfig.N.MaxPrice` are specified, the smaller one of the two parameter values is used.",
       "position": "Query",
       "type": "Float",
       "required": false
@@ -502,9 +543,16 @@
     },
     {
       "name": "PayAsYouGoTargetCapacity",
-      "description": "The target capacity of pay-as-you-go instances in the auto provisioning group. The value must be smaller than the `TotalTargetCapacity` value.",
+      "description": "The target capacity of pay-as-you-go instances in the auto provisioning group. The value must be less than or equal to the `TotalTargetCapacity` value.",
       "position": "Query",
       "type": "String",
+      "required": false
+    },
+    {
+      "name": "PrePaidOptions",
+      "description": "The capacity details of the subscription instance.",
+      "position": "Query",
+      "type": "Struct",
       "required": false
     },
     {
@@ -522,29 +570,36 @@
       "required": false
     },
     {
+      "name": "ResourcePoolOptions",
+      "description": "The resource pool options to use to create instances. When you specify this parameter, take note of the following items:\n\n*   This parameter takes effect only when the auto provisioning group creates pay-as-you-go instances.\n*   This parameter takes effect only if you set `AutoProvisioningGroupType` to instant.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "SpotAllocationStrategy",
-      "description": "The policy for creating preemptible instances. Valid values:\n\n*   lowest-price: cost optimization policy. The auto provisioning group selects the lowest-priced instance type to create instances.\n*   diversified: balanced distribution policy. The auto provisioning group creates instances in zones that are specified in extended configurations and then evenly distributes the instances across the zones.\n*   capacity-optimized: capacity-optimized distribution policy. The auto provisioning group creates instances of the optimal instance types across the optimal zones based on resource availability.\n\nDefault value: lowest-price.",
+      "description": "The policy for creating spot instances. Valid values:\n\n*   lowest-price: cost optimization policy. The auto provisioning group selects the lowest-priced instance type to create instances.\n*   diversified: balanced distribution policy. The auto provisioning group creates instances in zones that are specified in extended configurations and then evenly distributes the instances across the zones.\n*   capacity-optimized: capacity-optimized distribution policy. The auto provisioning group creates instances of the optimal instance types across the optimal zones based on resource availability.\n\nDefault value: lowest-price.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "SpotInstanceInterruptionBehavior",
-      "description": "The operation to be performed on the preemptible instance when it is interrupted. Valid values:\n\n*   stop: stops the preemptible instance.\n*   terminate: releases the preemptible instance.\n\nDefault value: terminate.",
+      "description": "The operation to be performed on the spot instance when it is interrupted. Valid values:\n\n*   stop: stops the spot instance.\n*   terminate: releases the spot instance.\n\nDefault value: terminate.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "SpotInstancePoolsToUseCount",
-      "description": "The number of preemptible instances of the lowest-priced instance type to be created by the auto provisioning group. This parameter takes effect when `SpotAllocationStrategy` is set to `lowest-price`.\n\nThe value must be smaller than the N value specified in `LaunchTemplateConfig.N`.",
+      "description": "The number of spot instances of the lowest-priced instance type to be created by the auto provisioning group. This parameter takes effect when `SpotAllocationStrategy` is set to `lowest-price`.\n\nThe value must be smaller than the N value specified in `LaunchTemplateConfig.N`.",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
       "name": "SpotTargetCapacity",
-      "description": "The target capacity of preemptible instances in the auto provisioning group. The value must be smaller than the `TotalTargetCapacity` value.",
+      "description": "The target capacity of spot instances in the auto provisioning group. The value must be less than or equal to the `TotalTargetCapacity` value.",
       "position": "Query",
       "type": "String",
       "required": false
@@ -558,6 +613,27 @@
       "sub_parameters": [
         {
           "name": "DiskCategory",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "Tag",
+      "description": "The tags to add to the auto provisioning group.",
+      "position": "Query",
+      "type": "RepeatList",
+      "required": false,
+      "sub_parameters": [
+        {
+          "name": "Key",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "Value",
           "position": "Query",
           "type": "String",
           "required": false
@@ -580,7 +656,7 @@
     },
     {
       "name": "TotalTargetCapacity",
-      "description": "The total target capacity of the auto provisioning group. The value must be a positive integer.\n\nThe total target capacity of the auto provisioning group must be greater than or equal to the sum of the target capacity of pay-as-you-go instances specified by `PayAsYouGoTargetCapacity` and the target capacity of preemptible instances specified by `SpotTargetCapacity`.",
+      "description": "The total target capacity of the auto provisioning group. The value must be a positive integer.\n\nThe total target capacity of the auto provisioning group must be greater than or equal to the sum of the target capacity of pay-as-you-go instances specified by `PayAsYouGoTargetCapacity` and the target capacity of spot instances specified by `SpotTargetCapacity`.",
       "position": "Query",
       "type": "String",
       "required": true

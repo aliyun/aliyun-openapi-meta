@@ -1,72 +1,153 @@
 {
   "name": "ModifyBackupPolicy",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
       "name": "BackupInterval",
-      "description": "The frequency at which high-frequency backups are created. Valid values:\n\n*   **-1**: disables high-frequency backup.\n*   **15**: every 15 minutes.\n*   **30**: every 30 minutes.\n*   **60**: every hour.\n*   **120**: every 2 hours.\n*   **180**: every 3 hours.\n*   **240**: every 4 hours.\n*   **360**: every 6 hours.\n*   **480**: every 8 hours.\n*   **720**: every 12 hours.\n\n> * If **SnapshotBackupType** is set to **Standard**, this parameter is set to **-1** and cannot be changed.\n> * High-frequency backup takes effect only when **SnapshotBackupType** is set to **Flash** and the value of this parameter is greater than 0.",
+      "description": "The frequency of high-frequency backups. Valid values:\n\n- **-1**: High-frequency backup is disabled.\n\n- **30**: every 30 minutes.\n\n- **60**: every 1 hour.\n\n- **120**: every 2 hours.\n\n- **180**: every 3 hours.\n\n- **240**: every 4 hours.\n\n- **360**: every 6 hours.\n\n- **480**: every 8 hours.\n\n- **720**: every 12 hours.\n\n> * If you set **SnapshotBackupType** to **Standard**, the value of this parameter is -1.\n>\n> * High-frequency backup takes effect only if you set **SnapshotBackupType** to **Flash** and set this parameter to a value greater than 0.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "BackupRetentionPeriod",
-      "description": "The retention period of full backups.\n\n> * If your instance is created before September 10, 2021, backups are retained for seven days by default.\n> * If your instance is created after September 10, 2021, backups are retained for 30 days by default.",
+      "description": "The number of days to retain full backups.\n\n> - For instances that were created before September 10, 2021, the default retention period is 7 days.\n>\n> - For instances that are created after September 10, 2021, the default retention period is 30 days.",
       "position": "Query",
       "type": "Long",
       "required": false
     },
     {
+      "name": "BackupRetentionPolicyOnClusterDeletion",
+      "description": "The policy to retain backups when you release the instance.\n\n- 0: All backup sets of the instance are deleted when the instance is released.\n\n- 1: An automatic backup is performed when the instance is released, and this backup is retained for a long time.\n\n- 2: An automatic backup is performed when the instance is released, and all backup sets of the instance are retained for a long time.\n\nFor more information, see [Long-term backup retention](~~2779111~~).",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "CrossBackupPeriod",
+      "description": "The days of the week to perform geo-redundant backups. Valid values:\n\n1. Monday\n\n2. Tuesday\n\n3. Wednesday\n\n4. Thursday\n\n5. Friday\n\n6. Saturday\n\n7. Sunday\n\n> This parameter is required if you enable geo-redundancy.\n>\n> - To specify multiple days, separate them with commas (,).\n>\n> - If you set the backup method to conventional backup, the days of the week specified by this parameter must be a subset of the days of the week specified by PreferredBackupPeriod.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CrossBackupType",
+      "description": "The policy for geo-redundant backups. Valid values:\n\n- update: Modify the geo-redundancy policy.\n\n- delete: Delete the geo-redundancy policy.\n\n> This parameter is required if you enable geo-redundancy.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CrossLogRetentionType",
+      "description": "The retention policy for cross-region log backups. Valid values:\n\n- delay: Retain the backup for a specified period.\n\n- never: Retain the backup permanently.\n\n> This parameter is required if you enable geo-redundancy.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CrossLogRetentionValue",
+      "description": "The number of days to retain cross-region log backups. Valid values: 3 to 1825. The value must be less than or equal to the value of CrossRetentionValue.\n\n> This parameter is required if you enable geo-redundancy.",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "CrossRetentionType",
+      "description": "The retention policy for geo-redundant backups. Valid values:\n\n- delay: Retain the backup for a specified period.\n\n- never: Retain the backup permanently.\n\n> This parameter is required if you enable geo-redundancy.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CrossRetentionValue",
+      "description": "The number of days to retain geo-redundant backups. Valid values: 3 to 1825.\n\n> - This parameter is required if you enable geo-redundancy.\n>\n> - This parameter is required if you set CrossRetentionType to delay.",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
       "name": "DBInstanceId",
-      "description": "The ID of the instance.",
+      "description": "The instance ID.",
       "position": "Query",
       "type": "String",
       "required": true
     },
     {
+      "name": "DestRegion",
+      "description": "The region ID of the geo-redundant backup.\n\n> This parameter is required if you enable geo-redundancy.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "EnableBackupLog",
-      "description": "Specifies whether to enable log backup. Default value: 0. Valid values:\n\n*   **0**: disables log backup.\n*   **1**: enables log backup.",
+      "description": "Specifies whether to enable log backup. Valid values:\n\n- **0**: Disable log backup. This is the default value.\n\n- **1**: Enable log backup.\n\n><notice>\n\nYou cannot disable log backup for sharded cluster instances.\n\n></notice>",
       "position": "Query",
       "type": "Long",
       "required": false
     },
     {
+      "name": "EnableCrossLogBackup",
+      "description": "Specifies whether to enable cross-region log backup. Valid values:\n\n> This parameter is required if you enable geo-redundancy.\n>\n> - 1: Enable cross-region log backup. This value is required for sharded cluster instances. This value is also required for replica set instances if you want to enable geo-redundant point-in-time recovery.\n>\n> - 0: Disable cross-region log backup.",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "HighFrequencyBackupRetention",
+      "description": "The number of days to retain high-frequency backups. Before you specify this parameter, you must set the BackupInterval parameter. The default retention period is 1 day.",
+      "position": "Query",
+      "type": "Long",
+      "required": false
+    },
+    {
+      "name": "InstanceType",
+      "description": "The instance type. Valid values:\n\n- replicate\n\n- sharding\n\n> * This parameter is required when you restore a deleted instance.\n>\n> * This parameter is required when you clone an instance from a geo-redundant backup.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "LogBackupRetentionPeriod",
-      "description": "The number of days for which log backups are retained. Default value: 7.\n\nValid values: 7 to 730.",
+      "description": "The number of days to retain log backups. Default value: 7.\n\nValid values: 7 to 730.",
       "position": "Query",
       "type": "Long",
       "required": false
     },
     {
       "name": "PreferredBackupPeriod",
-      "description": "The day of a week on which to back up data. Valid values:\n\n*   **Monday**\n*   **Tuesday**\n*   **Wednesday**\n*   **Thursday**\n*   **Friday**\n*   **Saturday**\n*   **Sunday**\n\n>  Separate multiple values with commas (,).",
-      "position": "Query",
-      "type": "String",
-      "required": true
-    },
-    {
-      "name": "PreferredBackupTime",
-      "description": "The time range to back up data. Specify the time in the *HH:mm*Z-*HH:mm*Z format. The time must be in UTC.\n\n>  The time range is 1 hour.",
-      "position": "Query",
-      "type": "String",
-      "required": true
-    },
-    {
-      "name": "SecurityToken",
-      "description": "",
+      "description": "The backup cycle. Valid values:\n\n- **Monday**\n\n- **Tuesday**\n\n- **Wednesday**\n\n- **Thursday**\n\n- **Friday**\n\n- **Saturday**\n\n- **Sunday**\n\n><notice>\n\nTo ensure data security, back up the MongoDB instance at least twice a week.\n\n></notice>\n\n> To specify multiple backup cycles, separate them with commas (,).",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
+      "name": "PreferredBackupTime",
+      "description": "The time range to perform a backup. Specify the time in the *HH:mm*Z-*HH:mm*Z format. The time is displayed in Coordinated Universal Time (UTC).\n\n> The time range must be 1 hour.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "PreserveOneEachHour",
+      "description": "Specifies whether to enable hourly sparse backup. Valid values:\n\n- true: If the backup frequency is in minutes, all snapshots that are generated within the last hour are retained. For snapshots that were generated more than 1 hour ago but less than 24 hours ago, only the first snapshot that is generated after each full hour is retained.\n\n- false: All snapshots are retained within the high-frequency backup retention period.",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
       "name": "SnapshotBackupType",
-      "description": "The snapshot backup type. Default value: Standard. Valid values:\n\n*   **Flash**: single-digit second backup\n*   **Standard**: standard backup",
+      "description": "The snapshot backup type. Valid values:\n\n- **Flash**: second-level backup.\n\n- **Standard**: conventional backup. This is the default value.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "SrcRegion",
+      "description": "The region ID of the instance.\n\n> - This parameter is required if you restore a deleted instance.\n>\n> - This parameter is required if you enable geo-redundancy.",
       "position": "Query",
       "type": "String",
       "required": false

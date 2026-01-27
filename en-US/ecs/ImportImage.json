@@ -1,9 +1,6 @@
 {
   "name": "ImportImage",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -23,6 +20,13 @@
       "required": false
     },
     {
+      "name": "ClientToken",
+      "description": "The client token that is used to ensure the idempotence of the request. You can use the client to generate the token, but you must make sure that the token is unique among different requests. **The token can contain only ASCII characters and cannot exceed 64 characters in length.** For more information, see [How to ensure idempotence](~~25693~~).",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "Description",
       "description": "The image description. The description must be 2 to 256 characters in length and cannot start with `http://` or `https://`.",
       "position": "Query",
@@ -31,14 +35,14 @@
     },
     {
       "name": "DetectionStrategy",
-      "description": "The mode that you want to use to check the source image. If you do not specify this parameter, the source image is not checked. Only Linux images can be checked. Set the value to Standard, which indicates standard check mode.\n\nThe following items are checked in standard check mode:\n\n*   Virtio: whether the virtio driver is installed.\n*   Fstab: whether mounting configurations in the fstab file are correct.\n*   Grub: whether GRand Unified Bootloader (GRUB) configurations are correct.\n*   SystemImage: whether the image is valid. Do not import images that are empty or in the ISO format.\n*   CloudInit: whether cloud-init is installed.\n*   NVMe: whether the Non-Volatile Memory Express (NVMe) driver is installed.\n*   Selinux: whether SElinux is enabled.\n*   OnlineResizeFS: whether the root partition can be automatically resized.\n*   Dhcp: whether Dynamic Host Configuration Protocol (DHCP) is enabled for network interface controllers (NICs).\n*   RtcTimeMode: the RTC time mode.\n*   Platform: the platform. Examples: Linux and Windows.\n*   OSVersion: the operating system version. Example: Centos 7.9.\n*   Architecture: the architecture. Examples: ARM and x86\\_64.\n*   BootMode: the boot mode. Examples: UEFI and Legacy.\n*   KernelVersion: the kernel version.\n*   CloudAssistant: whether the Cloud Assistant client is installed.\n*   SecurityCenterAgent: whether the Security Center agent is installed.",
+      "description": "The mode in which to check the image. If you do not specify this parameter, the image is not checked. Only the standard check mode is supported.\n\n>  This parameter is supported for most Linux and Windows operating system versions. For more information about image check items and operating system limits for image check, see [Overview](~~439819~~) and [Operating system limits for image check](~~475800~~).",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "DiskDeviceMapping",
-      "description": "The custom images.",
+      "description": "Details about the custom images.",
       "position": "Query",
       "type": "RepeatList",
       "required": false,
@@ -82,8 +86,22 @@
       ]
     },
     {
+      "name": "DryRun",
+      "description": "Specifies whether to perform only a dry run, without performing the actual request. Valid values:\n\n*   true: performs only a dry run. The system checks the request for potential issues, including invalid AccessKey pairs, unauthorized RAM users, and missing parameter values. If the request fails the dry run, an error message is returned. If the request passes the dry run, the `DryRunOperation` error code is returned.\n*   false: performs a dry run and performs the actual request. If the request passes the dry run, a 2xx HTTP status code is returned and the operation is performed.\n\nDefault value: false.",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
+      "name": "Features",
+      "description": "The attributes of the image.",
+      "position": "Query",
+      "type": "Struct",
+      "required": false
+    },
+    {
       "name": "ImageName",
-      "description": "The name of the custom image. The name must be 2 to 128 characters in length. It must start with a letter and cannot start with `acs:` or `aliyun`. It cannot contain `http://` or `https://`. It can contain letters, digits, periods (.), colons (:), underscores (\\_), and hyphens (-).",
+      "description": "The image name. The name must be 2 to 128 characters in length. The name must start with a letter and cannot start with `acs:` or `aliyun`. The name cannot contain `http://` or `https://`. The name can contain letters, digits, periods (.), colons (:), underscores (\\_), and hyphens (-).",
       "position": "Query",
       "type": "String",
       "required": false
@@ -104,7 +122,7 @@
     },
     {
       "name": "Platform",
-      "description": "The operating system distribution. Valid values:\n\n*   CentOS\n*   CentOS Stream\n*   Ubuntu\n*   SUSE\n*   openSUSE\n*   Debian\n*   CoreOS\n*   Aliyun\n*   Anolis\n*   AlmaLinux\n*   FreeBSD\n*   Fedora\n*   Rocky Linux\n*   UOS\n*   Kylin\n*   Others Linux\n*   Customized Linux\n*   Windows Server 2022\n*   Windows Server 2019\n*   Windows Server 2016\n*   Windows Server 2012\n*   Windows Server 2008\n*   Windows Server 2003\n\nDefault value: Others Linux.",
+      "description": "The operating system distribution. Valid values:\n\n*   Aliyun\n*   Anolis\n*   CentOS\n*   Ubuntu\n*   CoreOS\n*   SUSE\n*   Debian\n*   OpenSUSE\n*   FreeBSD\n*   RedHat\n*   Kylin\n*   UOS\n*   Fedora\n*   Fedora CoreOS\n*   CentOS Stream\n*   AlmaLinux\n*   Rocky Linux\n*   Gentoo\n*   Customized Linux\n*   Others Linux\n*   Windows Server 2022\n*   Windows Server 2019\n*   Windows Server 2016\n*   Windows Server 2012\n*   Windows Server 2008\n*   Windows Server 2003\n\nDefault value: Others Linux.",
       "position": "Query",
       "type": "String",
       "required": false
@@ -126,6 +144,13 @@
     {
       "name": "RoleName",
       "description": "The name of the RAM role used to import the image.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "StorageLocationArn",
+      "description": "The Alibaba Cloud Resource Name (ARN) of the cloud box, which is used to uniquely identify a storage location in the cloud.\n\n>  Specify this parameter only if you import an image from OSS on CloudBox. Otherwise, you do not need to specify this parameter. For more information, see [What is OSS on CloudBox?](~~430190~~)\n\nThe ARN must be in the following format: `arn:acs:cloudbox:{RegionId}:{AliUid}:cloudbox/{CloudBoxId}`. Replace `{RegionId}` with the region ID of the cloud box, `{AliUid}` with the ID of the Alibaba Cloud account to which the cloud box belongs, and `{CloudBoxId}` with the ID of the cloud box.",
       "position": "Query",
       "type": "String",
       "required": false

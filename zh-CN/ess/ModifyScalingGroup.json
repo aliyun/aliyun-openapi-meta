@@ -1,9 +1,6 @@
 {
   "name": "ModifyScalingGroup",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -23,6 +20,13 @@
       "required": false
     },
     {
+      "name": "AutoRebalance",
+      "description": "是否开启伸缩组自动均衡，仅当可用区均衡伸缩组开启了BalancedOnly才生效。取值范围：\n- false：不开启伸缩组自动均衡。\n- true：开启伸缩组自动均衡时，伸缩组会自动检测可用区见容量，当可用区容量不均衡时，会主动进行可用区扩缩，进行可用区容量再均衡。\n\n默认值: false。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
       "name": "AzBalance",
       "description": "伸缩组的容量是否在多个可用区间均衡分布（仅当`MultiAZPolicy`参数取值为`COMPOSABLE`策略时生效），取值范围：\n- true：伸缩组的容量在多个可用区间均衡分布。\n- false：伸缩组的容量不在多个可用区间均衡分布。\n\n默认值：false。",
       "position": "Query",
@@ -30,8 +34,22 @@
       "required": false
     },
     {
+      "name": "BalanceMode",
+      "description": "可用区均衡模式，仅当开启可用区均衡模式时生效。取值范围：\n \n- BalancedBestEffort：\n当某可用区资源创建失败时，会降级至其他可用区，保障资源的尽力交付。\n\n- BalancedOnly：\n当某可用区资源创建失败时，不会降级至其他可用区，扩容活动部分成功，避免资源在不同可用区过度不均衡。\n\n默认值：BalancedBestEffort。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "CapacityOptions",
+      "description": "容量选项。",
+      "position": "Query",
+      "type": "Struct",
+      "required": false
+    },
+    {
       "name": "CompensateWithOnDemand",
-      "description": "当CreateScalingGroup接口的MultiAZPolicy取值为COST_OPTIMIZED时，如果因价格、库存等原因无法创建足够的抢占式实例，是否允许自动尝试创建按量实例满足ECS实例数量要求。取值范围：\n\n- true：允许。\n- false：不允许。",
+      "description": "当`CreateScalingGroup`接口的`MultiAZPolicy`取值为`COST_OPTIMIZED`时，如果因价格、库存等原因无法创建足够的抢占式实例，是否允许自动尝试创建按量实例满足ECS实例数量要求。取值范围：\n\n- true：允许。\n- false：不允许。",
       "position": "Query",
       "type": "Boolean",
       "required": false
@@ -45,14 +63,14 @@
     },
     {
       "name": "DefaultCooldown",
-      "description": "一次伸缩活动（添加或移出ECS实例）结束后的一段冷却时间。取值范围：0~86400，单位：秒。\n\n冷却时间内，该伸缩组不执行其它的伸缩活动，仅针对云监控报警任务触发的伸缩活动有效。",
+      "description": "一次伸缩活动（添加或移出ECS实例或ECI实例）结束后的一段冷却时间。取值范围：0~86400，单位：秒。\n\n冷却时间内，该伸缩组不执行其他的伸缩活动，仅针对云监控报警任务触发的伸缩活动有效。",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
       "name": "DesiredCapacity",
-      "description": "伸缩组内ECS实例的期望数量。设置该参数意味着开启了期望实例数功能，伸缩组会自动将ECS实例数量维持在期望实例数。取值不得大于MaxSize，且不得小于MinSize。\n>如果期望实例数功能关闭后又重新开启，则您需要重新设置`DesiredCapacity `值。",
+      "description": "伸缩组内ECS实例或ECI实例的期望数量。设置该参数意味着开启了期望实例数功能，伸缩组会自动将ECS实例或ECI实例数量维持在期望实例数。取值范围：MaxSize≥期望实例数量≥MinSize。\n>如果期望实例数功能关闭后又重新开启，则您需要重新设置`DesiredCapacity`值。",
       "position": "Query",
       "type": "Integer",
       "required": false
@@ -73,9 +91,16 @@
     },
     {
       "name": "HealthCheckType",
-      "description": "伸缩组的健康检查方式。取值范围：\n\n- NONE：不做健康检查。\n- ECS：对伸缩组内的ECS实例做健康检查。",
+      "description": "伸缩组的健康检查方式。取值范围：\n\n- NONE：不做健康检查。\n- ECS：对伸缩组内的实例做健康检查（ECS类型和ECI类型的伸缩组均使用本取值开启实例健康检查）。\n- LOAD_BALANCER: 根据负载均衡（暂不支持CLB负载均衡类型）健康检查结果判断实例健康状态。\n\n默认值：ECS。\n\n> 如果需要同时开启实例健康检查和负载均衡健康检查，请使用`HealthCheckTypes`参数。",
       "position": "Query",
       "type": "String",
+      "required": false
+    },
+    {
+      "name": "HealthCheckTypes",
+      "description": "伸缩组的健康检查方式。\n> 使用此参数可以设置多个值，开启多个健康检查选项。如果设置了`HealthCheckType`参数，则本参数将被忽略。",
+      "position": "Query",
+      "type": "RepeatList",
       "required": false
     },
     {
@@ -128,14 +153,14 @@
     },
     {
       "name": "MaxSize",
-      "description": "伸缩组内ECS实例台数的最大值，当伸缩组内ECS实例数大于`MaxSize`时，弹性伸缩会自动移出ECS实例。\n\n<props=\"china\">MaxSize的取值范围和弹性伸缩使用情况有关，请前往[配额中心](https://quotas.console.aliyun.com/products/ess/quotas)查看**单个伸缩组可以设置的组内最大实例数**对应的配额值。</props>\n\n<props=\"intl\">MaxSize的取值范围和弹性伸缩使用情况有关，请前往[配额中心](https://quotas.console.aliyun.com/products/ess/quotas)查看**单个伸缩组可以设置的组内最大实例数**对应的配额值。</props>\n\n<props=\"partner\">MaxSize的取值范围和弹性伸缩使用情况有关，请前往配额中心查看**单个伸缩组可以设置的组内最大实例数**对应的配额值。</props>\n\n例如，如果**单个伸缩组可以设置的组内最大实例数**对应的配额值为2000，则`MaxSize`的取值范围为0~2000。",
+      "description": "伸缩组内ECS实例或ECI实例台数的最大值，当伸缩组内ECS或ECI实例数大于`MaxSize`时，弹性伸缩会自动移出ECS实例或ECI实例。\n\n<props=\"china\">MaxSize的取值范围和弹性伸缩使用情况有关，请前往[配额中心](https://quotas.console.aliyun.com/products/ess/quotas)查看**单个伸缩组可以设置的组内最大实例数**对应的配额值。</props>\n\n<props=\"intl\">MaxSize的取值范围和弹性伸缩使用情况有关，请前往[配额中心](https://quotas.console.aliyun.com/products/ess/quotas)查看**单个伸缩组可以设置的组内最大实例数**对应的配额值。</props>\n\n<props=\"partner\">MaxSize的取值范围和弹性伸缩使用情况有关，请前往配额中心查看**单个伸缩组可以设置的组内最大实例数**对应的配额值。</props>\n\n例如，如果**单个伸缩组可以设置的组内最大实例数**对应的配额值为2000，则`MaxSize`的取值范围为0~2000。",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
       "name": "MinSize",
-      "description": "伸缩组内ECS实例台数的最小值，当伸缩组内ECS实例数小于`MinSize`时，弹性伸缩会自动创建ECS实例。\n\n> `MinSize`的值必须小于或等于`MaxSize`的值。",
+      "description": "伸缩组内ECS实例或ECI实例台数的最小值，当伸缩组内ECS或ECI实例数小于`MinSize`时，弹性伸缩会自动创建ECS实例或ECI实例。\n\n> `MinSize`的值必须小于或等于`MaxSize`的值。",
       "position": "Query",
       "type": "Integer",
       "required": false
@@ -197,6 +222,13 @@
       "required": false
     },
     {
+      "name": "ScalingPolicy",
+      "description": "指定伸缩组的回收模式。取值范围：\n\n- recycle：伸缩组的回收模式为停机回收模式。\n\n- release：伸缩组的回收模式为释放模式。\n\n- forcerelease：伸缩组的回收模式为强制释放模式。\n\n    >选择`forcerelease`后，在弹性收缩活动中系统会强制释放`运行中`（Running）的实例。强制释放实例相当于断电操作，会导致该实例内存以及存储中的临时数据被擦除，数据无法恢复，请您谨慎选择。\n\n- forcerecycle：伸缩组的回收模式为强制停机回收模式。\n\n    >选择`forcerecycle`后，在弹性收缩活动中系统会强制关机`运行中`（Running）的实例。强制关机相当于断电操作，会导致该实例内存以及存储中的临时数据被擦除，数据无法恢复，请您谨慎选择。\n\nScalingPolicy指定伸缩组的回收模式，但实例被移出伸缩组时的具体动作，由RemoveInstances的RemovePolicy参数决定，更多信息，请参见[RemoveInstances](~~25955~~)。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "SpotAllocationStrategy",
       "description": "抢占式容量分布策略。您可以通过该参数单独指定抢占式容量的分布策略（仅当`MultiAZPolicy`参数取值为`COMPOSABLE`策略时生效）。取值范围：\n\n- priority：按照配置的实例规格的顺序创建实例。\n- lowestPrice：按照实例规格单位vCpu价格从低到高创建实例。\n\n默认值：priority。",
       "position": "Query",
@@ -215,6 +247,13 @@
       "description": "是否开启补齐抢占式实例。开启后，当收到抢占式实例将被回收的系统消息时，伸缩组将尝试创建新的实例，替换掉将被回收的抢占式实例。",
       "position": "Query",
       "type": "Boolean",
+      "required": false
+    },
+    {
+      "name": "StopInstanceTimeout",
+      "description": "缩容流程中等待ECS实例停机成功的超时时间，单位为秒。\n取值范围：30~240。\n\n> - 该参数仅在 ScalingPolicy = release 模式下的缩容流程里生效。  \n- 如果设置了该参数，系统会最长等待StopInstanceTimeout时间将实例停机成功，超时后无论实例是否成功停机都会继续缩容。  \n- 如果没有设置该参数，系统会长时间等待实例停机成功，只有实例停机成功后才继续缩容，停机失败时，缩容流程会回滚，缩容失败。\n- 该参数设置为0时，表示取消该参数配置。",
+      "position": "Query",
+      "type": "Integer",
       "required": false
     },
     {

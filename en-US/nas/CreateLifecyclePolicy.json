@@ -1,12 +1,17 @@
 {
   "name": "CreateLifecyclePolicy",
-  "security": [
-    "AK"
-  ],
+  "deprecated": false,
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST|PUT",
   "pathPattern": "",
   "parameters": [
+    {
+      "name": "Description",
+      "description": "The description of the lifecycle policy.\n\nFormat: The name must be 3 to 64 characters in length and must start with a letter. It can contain letters, digits, underscores (\\_), and hyphens (-).\n\n>  Only CPFS for Lingjun supports this parameter.",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
     {
       "name": "FileSystemId",
       "description": "The ID of the file system.",
@@ -16,38 +21,87 @@
     },
     {
       "name": "LifecyclePolicyName",
-      "description": "The name of the lifecycle policy. The name must be 3 to 64 characters in length and can contain letters, digits, underscores (\\_), and hyphens (-). The name must start with a letter.",
+      "description": "The name of the lifecycle policy. The name must be 3 to 64 characters in length and must start with a letter. It can contain letters, digits, underscores (\\_), and hyphens (-).\n\n>  Required for General-purpose NAS.",
       "position": "Query",
       "type": "String",
-      "required": true
+      "required": false
+    },
+    {
+      "name": "LifecyclePolicyType",
+      "description": "The policy type.\n\n*   Auto (default): The job is automatically triggered.\n*   OnDemand: On-demand execution.",
+      "position": "Query",
+      "type": "String",
+      "required": false
     },
     {
       "name": "LifecycleRuleName",
-      "description": "The management rule that is associated with the lifecycle policy.\n\nValid values:\n\n*   DEFAULT_ATIME\\_14: Files that are not accessed in the last 14 days are dumped to the IA storage medium.\n*   DEFAULT_ATIME\\_30: Files that are not accessed in the last 30 days are dumped to the IA storage medium.\n*   DEFAULT_ATIME\\_60: Files that are not accessed in the last 60 days are dumped to the IA storage medium.\n*   DEFAULT_ATIME\\_90: Files that are not accessed in the last 90 days are dumped to the IA storage medium.",
+      "description": "The management rule associated with the lifecycle policy. Only General-purpose NAS supports this parameter.\n\nValid values:\n\n*   DEFAULT_ATIME\\_14: Files not accessed for 14 days.\n*   DEFAULT_ATIME\\_30: Files not accessed for 30 days.\n*   DEFAULT_ATIME\\_60: Files not accessed for 60 days.\n*   DEFAULT_ATIME\\_90: Files not accessed for 90 days.\n*   DEFAULT_ATIME\\_180: Files not accessed for 180 days. DEFAULT_ATIME\\_180 is supported only when the StorageType parameter is set to Archive.\n\n> \n\n*   If an IA policy already exists for the directory, the new archive policy must have a longer transition period.\n\n*   Only General-purpose NAS supports this parameter.",
       "position": "Query",
       "type": "String",
-      "required": true
+      "required": false
     },
     {
       "name": "Path",
-      "description": "The absolute path of the directory that is associated with the lifecycle policy.\n\nIf you specify this parameter, you can associate the lifecycle policy with only one directory. The path must start with a forward slash (/) and must be a path that exists in the mount target.\n\n> We recommend that you specify the Paths.N parameter so that you can associate the lifecycle policy with multiple directories.",
+      "description": "The absolute path of the directory associated with the lifecycle policy. Only General-purpose NAS supports this parameter.\n\n*   Single value only. The path must start with a forward slash (/) and must be a path that exists in the mount target.\n\n>  We recommend configuring the Paths.N parameter so that you can associate the policy with multiple directories at a time.\n\n*   Path and Paths are mutually exclusive. You must specify one.",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "Paths",
-      "description": "The absolute paths of the directories that are associated with the lifecycle policy.\n\nIf you specify this parameter, you can associate the lifecycle policy with multiple directories. Each path must start with a forward slash (/) and must be a path that exists in the mount target. Valid values of N: 1 to 10.",
+      "description": "The absolute paths of the directories associated with the lifecycle policy.",
       "position": "Query",
       "type": "RepeatList",
       "required": false
     },
     {
+      "name": "RetrieveRules",
+      "description": "The file data retrieval rule. Only one rule can be configured.\n\n>  Only CPFS for Lingjun supports this parameter.",
+      "position": "Query",
+      "type": "RepeatList",
+      "required": false,
+      "sub_parameters": [
+        {
+          "name": "Attribute",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "Threshold",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        }
+      ]
+    },
+    {
       "name": "StorageType",
-      "description": "The storage type of the data that is dumped to the IA storage medium.\n\nDefault value: InfrequentAccess (IA).",
+      "description": "The storage class.\n\n*   InfrequentAccess: the Infrequent Access (IA) storage class.\n*   Archive: the Archive storage class.\n\n>  General-purpose NAS supports InfrequentAccess and Archive. CPFS for Lingjun only supports InfrequentAccess.",
       "position": "Query",
       "type": "String",
       "required": true
+    },
+    {
+      "name": "TransitRules",
+      "description": "The data transition rule. Only one rule can be configured.\n\n>  Supported only for CPFS for Lingjun file systems with LifecyclePolicyType set to Auto.",
+      "position": "Query",
+      "type": "RepeatList",
+      "required": false,
+      "sub_parameters": [
+        {
+          "name": "Attribute",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "Threshold",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        }
+      ]
     }
   ]
 }

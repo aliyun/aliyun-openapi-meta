@@ -1,9 +1,6 @@
 {
   "name": "CreateLaunchTemplate",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -13,6 +10,20 @@
       "description": "自动释放时间。按照[ISO 8601](~~25696~~)标准表示，并需要使用UTC时间。格式为：yyyy-MM-ddTHH:mm:ssZ。\n\n- 如果秒（`ss`）取值不是`00`，则自动取为当前分钟（`mm`）开始时。\n\n- 最短释放时间为当前时间半小时之后。\n\n- 最长释放时间不能超过当前时间三年。",
       "position": "Query",
       "type": "String",
+      "required": false
+    },
+    {
+      "name": "AutoRenew",
+      "description": "是否要自动续费。取值范围：\n\n- true：自动续费。\n- false：不自动续费。\n\n默认值：false。\n\n> 当参数`InstanceChargeType`取值`PrePaid`时才生效。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
+      "name": "AutoRenewPeriod",
+      "description": "单次自动续费的续费时长。取值范围： \n         \n<props=\"china\">\n- PeriodUnit=Week时：1、2、3。\n- PeriodUnit=Month时：1、2、3、6、12、24、36、48、60。\n\n</props>\n\n<props=\"intl\">PeriodUnit=Month时：1、2、3、6、12、24、36、48、60。</props>\n\n默认值：1。",
+      "position": "Query",
+      "type": "Integer",
       "required": false
     },
     {
@@ -73,6 +84,12 @@
         },
         {
           "name": "Encrypted",
+          "position": "Query",
+          "type": "String",
+          "required": false
+        },
+        {
+          "name": "KMSKeyId",
           "position": "Query",
           "type": "String",
           "required": false
@@ -139,10 +156,38 @@
       "required": false
     },
     {
+      "name": "HttpEndpoint",
+      "description": "是否启用实例元数据的访问通道。取值范围：\n\n- enabled：启用。\n- disabled：禁用。\n\n默认值：enabled。\n\n> 有关实例元数据的信息，请参见[实例元数据概述](~~108460~~)。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "HttpPutResponseHopLimit",
+      "description": ">该参数暂未开放使用。",
+      "position": "Query",
+      "type": "Integer",
+      "required": false
+    },
+    {
+      "name": "HttpTokens",
+      "description": "访问实例元数据时是否强制使用加固模式（IMDSv2）。取值范围：\n\n- optional：不强制使用。\n- required：强制使用。设置该取值后，普通模式无法访问实例元数据。\n\n默认值：optional。\n\n> 有关访问实例元数据的模式，请参见[实例元数据概述](~~108460~~)。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "ImageId",
       "description": "镜像ID，启动实例时选择的镜像资源。您可以通过[DescribeImages](~~25534~~)查询您可以使用的镜像资源。",
       "position": "Query",
       "type": "String",
+      "required": false
+    },
+    {
+      "name": "ImageOptions",
+      "description": "镜像相关属性信息。",
+      "position": "Query",
+      "type": "Struct",
       "required": false
     },
     {
@@ -161,7 +206,7 @@
     },
     {
       "name": "InstanceName",
-      "description": "实例名称。长度为2~128个英文或中文字符。必须以大小写字母或中文开头，不能以`http://`或`https://`开头。可以包含数字、半角冒号（:）、下划线（_）或者短划线（-）。",
+      "description": "实例名称。长度为2~128个字符，支持Unicode中letter分类下的字符（其中包括英文、中文和数字等）。可以包含半角冒号（:）、下划线（_）、半角句号（.）或者短划线（-）。默认值为实例的`InstanceId`。\n\n创建多台ECS实例时，您可以批量设置有序的实例名称，并且可以包含方括号（[]）和逗号（,）。具体操作，请参见[批量设置有序的实例名称或主机名称](~~196048~~)。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -229,6 +274,12 @@
       "type": "RepeatList",
       "required": false,
       "sub_parameters": [
+        {
+          "name": "DeleteOnRelease",
+          "position": "Query",
+          "type": "Boolean",
+          "required": false
+        },
         {
           "name": "Description",
           "position": "Query",
@@ -301,6 +352,13 @@
       "required": false
     },
     {
+      "name": "PeriodUnit",
+      "description": "包年包月计费方式的时长单位。取值范围： \n\n<props=\"china\">\n- Week。\n- Month（默认）。\n\n</props>\n\n<props=\"intl\">Month（默认）。</props>",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "PrivateIpAddress",
       "description": "实例私网IP地址。\n\n专有网络VPC类型ECS实例设置私网IP地址时，必须从虚拟交换机（`VSwitchId`）的空闲网段中选择。",
       "position": "Query",
@@ -350,6 +408,13 @@
       "required": false
     },
     {
+      "name": "SecurityOptions",
+      "description": "安全选项。",
+      "position": "Query",
+      "type": "Struct",
+      "required": false
+    },
+    {
       "name": "SpotDuration",
       "description": "抢占式实例的保留时长，单位为小时。 默认值：1。取值范围：\n- 1：创建后阿里云会保证实例运行1小时不会被自动释放；超过1小时后，系统会自动比较出价与市场价格、检查资源库存，来决定实例的持有和回收。\n- 0：创建后，阿里云不保证实例运行1小时，系统会自动比较出价与市场价格、检查资源库存，来决定实例的持有和回收。\n\n实例回收前5分钟阿里云会通过ECS系统事件向您发送通知。抢占式实例按秒计费，建议您结合具体任务执行耗时来选择合适的保留时长。\n\n> 当SpotStrategy值为SpotWithPriceLimit或SpotAsPriceGo时该参数生效。",
       "position": "Query",
@@ -386,7 +451,7 @@
     },
     {
       "name": "SystemDisk.Category",
-      "description": "系统盘的云盘种类。取值范围：\n\n-   cloud：普通云盘。\n-   cloud_efficiency：高效云盘。\n-   cloud_ssd：SSD云盘。\n-   cloud_essd：ESSD云盘。您可以通过参数`SystemDisk.PerformanceLevel`设置云盘的性能等级。\n\n已停售的实例规格且非I/O优化实例默认值为cloud，否则默认值为cloud_efficiency。",
+      "description": "系统盘的云盘种类。取值范围：\n\n-   cloud：普通云盘。\n-   cloud_efficiency：高效云盘。\n-   cloud_ssd：SSD云盘。\n-   cloud_essd：ESSD云盘。您可以通过参数`SystemDisk.PerformanceLevel`设置云盘的性能等级。\n- cloud_auto：ESSD AutoPL 云盘\n- cloud_essd_entry：ESSD Entry 云盘。\n\n已停售的实例规格且非I/O优化实例默认值为cloud，否则默认值为cloud_efficiency。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -427,6 +492,13 @@
       "required": false
     },
     {
+      "name": "SystemDisk.KMSKeyId",
+      "description": "系统盘对应的KMS密钥ID。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "SystemDisk.PerformanceLevel",
       "description": "创建ESSD云盘作为系统盘使用时，设置云盘的性能等级。取值范围：\n\n- PL0（默认）：单盘最高随机读写IOPS 1万。\n- PL1：单盘最高随机读写IOPS 5万。\n- PL2：单盘最高随机读写IOPS 10万。\n- PL3：单盘最高随机读写IOPS 100万。\n\n有关如何选择ESSD性能等级，请参见[ESSD云盘](~~122389~~)。",
       "position": "Query",
@@ -442,14 +514,14 @@
     },
     {
       "name": "SystemDisk.Size",
-      "description": "系统盘大小，单位为GiB。取值范围为20~500。\n\n该参数的取值必须大于或者等于max{20, ImageSize}。",
+      "description": "系统盘大小，单位为GiB。取值范围：\n\n- cloud：20~500。\n- 其他云盘种类：20~2048。\n\n该参数的取值必须大于或者等于max{20, ImageSize}。",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
       "name": "Tag",
-      "description": "启动模板的标签对信息。",
+      "description": "通过该模板的版本创建的实例、云盘和主网卡的标签信息。\n\n<details>\n<summary>使用场景</summary>\n通过调用CreateLaunchTemplate接口创建模版后，使用自动生成的默认版本来创建实例时，将使用此标签来标记实例、云盘和主网卡。\n</details>",
       "position": "Query",
       "type": "RepeatList",
       "required": false,
@@ -477,7 +549,7 @@
     },
     {
       "name": "TemplateTag",
-      "description": "启动模板的标签对信息。",
+      "description": "启动模版自身的标签对信息。\n\n> 当前仅支持通过API创建和查询启动模板的标签，控制台无法创建或查看。",
       "position": "Query",
       "type": "RepeatList",
       "required": false,
@@ -498,7 +570,7 @@
     },
     {
       "name": "UserData",
-      "description": "实例自定义数据，需要以Base64方式编码，原始数据最多为16 KB。",
+      "description": "实例自定义数据，需要以Base64方式编码，原始数据最多为32 KB。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -512,7 +584,7 @@
     },
     {
       "name": "VersionDescription",
-      "description": "实例启动模板版本描述。长度为2~256个英文或中文字符，不能以`http://`或`https://`开头。",
+      "description": "实例启动模板的版本描述。长度为2~256个英文或中文字符，不能以`http://`或`https://`开头。",
       "position": "Query",
       "type": "String",
       "required": false

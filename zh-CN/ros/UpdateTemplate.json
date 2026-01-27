@@ -1,9 +1,6 @@
 {
   "name": "UpdateTemplate",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -16,8 +13,22 @@
       "required": false
     },
     {
+      "name": "IsDraft",
+      "description": "是否更新Draft（草稿）版本。取值：\n- false（默认值）：如果传递了模板内容，则会创建一个新版本，并清除Draft版本。否则修改当前最新版本。\n- true：修改更新Draft版本。Draft版本只能通过GetTemplate接口获取。ListTemplateVersions接口不会返回。其他接口的TemplateVersion参数也不能指定Draft。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
+      "name": "RotateStrategy",
+      "description": "模板版本轮转策略。取值：\n- None（默认值）：不轮转。模板版本数量达到上限时报错。\n- DeleteOldestNonSharedVersionWhenLimitExceeded：转轮删除未共享的模板版本。\n> \n> - 如果模板共享了所有版本，则无法轮转删除。\n> - 当前的最新版本不会被转轮删除。\n> - 无论是否使用了轮转删除，模板版本号无法超过v65000。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
       "name": "TemplateBody",
-      "description": "",
+      "description": "模板主体的结构。长度为1~524,288个字节。如果长度较长，则建议通过HTTP POST+Body Param的方式，将参数放在请求体中进行传递，避免因URL过长而导致请求失败。\n\n> 您必须且仅能指定TemplateBody、TemplateURL、TemplateId和TemplateScratchId其中一个参数。",
       "position": "Body",
       "type": "String",
       "required": false
@@ -31,7 +42,7 @@
     },
     {
       "name": "TemplateName",
-      "description": "模板的名称。  \n长度不超过255个字符，必须以数字或英文字母开头，可包含数字、英文字母、短划线（-）和下划线（_）。",
+      "description": "模板的名称。  \n长度不超过255个字符（utf-8编码），必须以数字、英文字母或中文开头，可包含数字、英文字母、中文、短划线（-）和下划线（_）。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -41,6 +52,13 @@
       "description": "包含模板主体的文件的位置。URL必须指向位于Web服务器（HTTP或HTTPS）或阿里云OSS存储桶（例如：oss://ros/template/demo、oss://ros/template/demo?RegionId=cn-hangzhou）中的模板，模板最大为524,288个字节。   \n\n> 如果OSS地域未指定，默认与接口参数RegionId相同。\n   \n您仅能指定TemplateBody、TemplateURL其中一个参数。   \nURL的最大长度为：1024个字节。",
       "position": "Query",
       "type": "String",
+      "required": false
+    },
+    {
+      "name": "ValidationOptions",
+      "description": "校验选项。\n\n默认不启用任何选项，进行严格校验。",
+      "position": "Query",
+      "type": "RepeatList",
       "required": false
     }
   ]

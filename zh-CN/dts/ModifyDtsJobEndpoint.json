@@ -1,30 +1,27 @@
 {
   "name": "ModifyDtsJobEndpoint",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
       "name": "AliyunUid",
-      "description": "数据库实例所属的阿里云账号（主账号）的ID。\n\n> - 暂不支持此功能，请勿传参。 \n- 传入本参数即代表执行跨阿里云账号的数据同步，同时您还需要传入**RoleName**参数。",
+      "description": "数据库实例所属的阿里云账号（主账号）的ID。\n\n>  传入本参数即代表执行跨阿里云账号的数据同步，同时您还需要传入**RoleName**参数。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "Database",
-      "description": "鉴权数据库名称。\n\n> 当数据库实例为MongoDB时，本参数才可用且必须传入。",
+      "description": "当数据库类型为**PostgreSQL**、**PolarDB for PostgreSQL**、**AnalyticDB PostgreSQL**时，表示数据库名称；当数据库类型为**MongoDB**时，表示鉴权数据库名称。\n\n> 当数据库类型为**PostgreSQL**、**PolarDB for PostgreSQL**、**AnalyticDB PostgreSQL**、**MongoDB**时，本参数才可用且必须传入。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "DryRun",
-      "description": "是否只进行预检查，取值为：\n\n- **true**：是。预检查通过后，实例不进行变更操作。\n- **false**：否。预检查通过后，修改DTS任务的数据库实例并运行。",
+      "description": "是否只进行预检查，取值为：\n\n- **true**：是。预检查通过后，实例不进行变更操作。\n- **false**（默认值）：否。预检查通过后，修改DTS任务的数据库实例并运行。",
       "position": "Query",
       "type": "Boolean",
       "required": false
@@ -59,7 +56,7 @@
     },
     {
       "name": "EndpointInstanceType",
-      "description": "数据库实例类型，取值为：\n\n- **rds**：RDS MySQL。\n- **polardb**：PolarDB MySQL。\n- **mongodb**：云数据库MongoDB（副本集）。\n- **distributed_mongodb**：云数据库MongoDB（分片集群）。\n- **ecs**：ECS自建的数据库（仅限支持的数据库类型）。\n- **express**：专线接入的数据库（仅限支持的数据库类型）。\n- **other**：公网接入的数据库（仅限支持的数据库类型）。\n\n> - 当前支持的数据库类型有MySQL、PolarDB MySQL版和MongoDB。\n- 传入的参数大小写不敏感。",
+      "description": "数据库实例类型，取值为：\n\n- **rds**：RDS MySQL或RDS PostgreSQL。\n- **polardb**：PolarDB MySQL版或PolarDB PostgreSQL版。\n- **mongodb**：作为源库时，表示云数据库MongoDB（副本集架构）；作为目标库时，表示云数据库MongoDB（副本集架构或分片集群架构）。\n- **distributed_mongodb**：仅支持作为分布式实例的源库，表示云数据库MongoDB（分片集群架构）。\n\n> 分布式实例的增量任务，必须通过Oplog日志获取源库的数据变更。\n\n- **greenplum**：云原生数据仓库AnalyticDB PostgreSQL版。\n- **kafka**：云消息队列Kafka版。\n- **ecs**：ECS自建的数据库（仅限支持的数据库类型）。\n- **express**：专线接入的数据库（仅限支持的数据库类型）。\n- **other**：公网接入的数据库（仅限支持的数据库类型）。\n\n> - 当前支持的数据库类型有**MySQL**、**PolarDB for MySQL**、**PostgreSQL**、**PolarDB for PostgreSQL**、**MongoDB**、**Kafka**和**AnalyticDB PostgreSQL**。\n- 若数据库为MongoDB（分片集群），则新数据库的Shard数量需与原来的MongoDB（分片集群）相同。\n- 若需要修改的是源库实例，且数据库类型为**PostgreSQL**，则需确保DTS实例的延迟时间小于30秒，并且停止向源库写入数据，否则可能会出现不一致数据。\n- 传入的参数大小写不敏感。",
       "position": "Query",
       "type": "String",
       "required": true
@@ -79,8 +76,22 @@
       "required": false
     },
     {
+      "name": "EndpointRegionId",
+      "description": "数据库实例所属的地域。",
+      "position": "Query",
+      "type": "String",
+      "required": false
+    },
+    {
+      "name": "ModifyAccount",
+      "description": "是否修改账号密码，取值为：\n\n- **true**：是。\n- **false**（默认值）：否。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
       "name": "Password",
-      "description": "数据库密码。",
+      "description": "数据库密码。\n\n> 仅当**ModifyAccount**取值为**true**时才生效。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -90,25 +101,32 @@
       "description": "DTS实例所属的地域。",
       "position": "Query",
       "type": "String",
-      "required": true
+      "required": false
+    },
+    {
+      "name": "ResourceGroupId",
+      "description": "资源组ID。",
+      "position": "Query",
+      "type": "String",
+      "required": false
     },
     {
       "name": "RoleName",
-      "description": "跨阿里云账号角色名。\n\n>- 暂不支持此功能，请勿传参。 \n- 执行跨阿里云账号的数据同步时须传入本参数，该角色所需的权限及授权方式，请参见[跨阿里云账号数据迁移或同步时如何配置RAM授权](~~48468~~)。",
+      "description": "跨阿里云账号角色名。\n\n> 执行跨阿里云账号的数据同步时须传入本参数，该角色所需的权限及授权方式，请参见[跨阿里云账号数据迁移或同步时如何配置RAM授权](~~48468~~)。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "ShardPassword",
-      "description": "MongoDB分片集群实例的Shard的密码。\n\n> 当源数据库实例为MongoDB（分片集群架构）时，本参数才可用且必须传入。",
+      "description": "MongoDB分片集群实例的Shard的密码。\n\n> - 当源数据库实例为MongoDB（分片集群架构）时，本参数才可用且必须传入。\n- 当**ModifyAccount**取值为**true**时才生效。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "ShardUsername",
-      "description": "MongoDB分片集群实例的Shard的账号。\n\n> 当源数据库实例为MongoDB（分片集群架构）时，本参数才可用且必须传入。",
+      "description": "MongoDB分片集群实例的Shard的账号。\n\n> - 当源数据库实例为MongoDB（分片集群架构）时，本参数才可用且必须传入。\n- 当**ModifyAccount**取值为**true**时才生效。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -122,9 +140,16 @@
     },
     {
       "name": "Username",
-      "description": "数据库账号。",
+      "description": "数据库账号。\n\n> 仅当**ModifyAccount**取值为**true**时才生效。",
       "position": "Query",
       "type": "String",
+      "required": false
+    },
+    {
+      "name": "ZeroEtlJob",
+      "description": "",
+      "position": "Query",
+      "type": "Boolean",
       "required": false
     }
   ]

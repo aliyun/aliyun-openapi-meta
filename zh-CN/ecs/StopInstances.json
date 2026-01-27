@@ -1,36 +1,33 @@
 {
   "name": "StopInstances",
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
   "parameters": [
     {
       "name": "BatchOptimization",
-      "description": "设置批量操作模式。取值范围：\n\n- AllTogether：该模式下，如果实例全部停止成功，则返回成功信息；如果任意一个实例校验不通过，则所有实例停止失败，并返回失败信息。\n\n- SuccessFirst：该模式下，分别停止每个实例，返回结果包含每个实例的操作结果信息。\n\n默认值：AllTogether。",
+      "description": "设置批量操作模式。取值范围：\n\n- AllTogether：所有操作必须全部成功才能确认整个批量操作的成功。如果任何一个操作失败，整个批量操作都会被视为失败，所有已执行的操作都会被回滚，恢复到操作前的状态。\n\n- SuccessFirst：允许批量操作中的每个操作独立执行。如果某个操作失败，其他操作仍然可以继续执行并确认成功。这种模式下，成功的操作会被提交，失败的操作会被标记为失败，但不会影响其他操作的执行结果。\n\n默认值：AllTogether。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "DryRun",
-      "description": "是否只预检此次请求。取值范围：\n\n- true：发送检查请求，不会停止实例。检查项包括是否填写了必需参数、请求格式、实例状态。如果检查不通过，则返回对应错误。如果检查通过，则返回`DRYRUN.SUCCESS`。\n> 如果参数`BatchOptimization`被设置为`SuccessFirst`，对应的`DryRun=true`的预检结果只会返回`DRYRUN.SUCCESS`。\n\n- false：发送正常请求，通过检查后直接停止实例。\n\n默认值：false。",
+      "description": "是否发送预检请求。取值范围：\n\n- true：发送检查请求，不会停止实例。检查项包括是否填写了必需参数、请求格式、实例状态。如果检查不通过，则返回对应错误。如果检查通过，则返回`DRYRUN.SUCCESS`。\n> 如果参数`BatchOptimization`被设置为`SuccessFirst`，对应的`DryRun=true`的预检结果只会返回`DRYRUN.SUCCESS`。\n\n- false：发送正常请求，通过检查后直接停止实例。\n\n默认值：false。",
       "position": "Query",
       "type": "Boolean",
       "required": false
     },
     {
       "name": "ForceStop",
-      "description": "是否强制关机。取值范围：\n\n- true：强制关机。相当于典型的断电操作，所有未写入存储设备的缓存数据会丢失。\n- false：正常关机。\n\n默认值：false。",
+      "description": "是否强制关机。取值范围：\n\n- true：强制关机。\n  ><warning>强制停止等同于断电处理，可能丢失实例操作系统中未写入磁盘的数据，请谨慎选择。></warning>\n- false：正常关机。\n\n默认值：false。",
       "position": "Query",
       "type": "Boolean",
       "required": false
     },
     {
       "name": "InstanceId",
-      "description": "实例ID列表。",
+      "description": "实例ID数组。数组长度：1~100。",
       "position": "Query",
       "type": "RepeatList",
       "required": true
@@ -44,7 +41,7 @@
     },
     {
       "name": "StoppedMode",
-      "description": "停止按量付费ECS实例时，设置的停止模式。取值：\n\n- StopCharging：节省停机模式。有关`StopCharging`生效的条件，请参见[按量付费实例节省停机模式](~~63353~~)的启用条件章节。\n- KeepCharging：普通停机模式。实例停止后仍继续收费。\n\n默认值：如果您在ECS控制台上开启VPC内实例节省停机模式（更多信息，请参见[打开默认启用节省停机模式](~~63353#default~~)），并符合开启条件，则默认值为`StopCharging`。否则，默认值为`KeepCharging`。",
+      "description": "停止模式。取值：\n  - StopCharging：节省停机模式。开启节省停机模式后：\n    - 计算资源(vCPU、内存、GPU)、镜像License费用、固定公网IP的固定带宽模式暂停计费。\n    - 系统盘、数据盘、弹性公网 IP 的固定带宽模式持续计费。\n    - 由于计算资源被回收，启动时可能因库存不足导致启动失败，请您稍后再试或更换实例规格。\n    - 如果实例停止前绑定了弹性公网 IP 地址，重启后 IP 地址不变；否则，固定公网 IP 地址可能会变，但私网 IP 地址不会变。 \n\n    更多信息，请参见[节省停机模式](~~63353~~)。\n    ><notice>\n如实例自身不支持节省停机模式，API侧不会进行报错拦截，优先保证实例停机。不支持节省停机的实例类型：经典网络实例、本地盘实例、包年包月实例等。\n    ></notice>\n\n  - KeepCharging：普通停机模式。停止实例后保留实例的资源并继续收费，并为您保留 ECS 实例规格库存和公网 IP 地址。如果您停止实例是为了更换操作系统、重新初始化云盘、更改实例规格、修改私网 IP 等操作，建议您选择该模式，以避免启动失败。\n\n默认值：如果您[开启VPC内实例节省停机模式](~~63353#default~~)并符合开启条件，则默认值为`StopCharging`；否则，默认值为`KeepCharging`。",
       "position": "Query",
       "type": "String",
       "required": false
