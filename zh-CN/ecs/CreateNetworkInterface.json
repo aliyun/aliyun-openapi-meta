@@ -1,9 +1,6 @@
 {
   "name": "CreateNetworkInterface",
   "deprecated": false,
-  "security": [
-    "AK"
-  ],
   "protocol": "HTTP|HTTPS",
   "method": "GET|POST",
   "pathPattern": "",
@@ -23,6 +20,13 @@
       "required": false
     },
     {
+      "name": "ConnectionTrackingConfiguration",
+      "description": "网络连接跟踪配置信息集合。\n\n使用该参数前，请认真阅读[连接超时管理](~~2865958~~)。",
+      "position": "Query",
+      "type": "Struct",
+      "required": false
+    },
+    {
       "name": "DeleteOnRelease",
       "description": "释放实例时是否保留网卡。取值范围：\n\n- true：不保留。\n\n- false：保留。",
       "position": "Query",
@@ -37,8 +41,15 @@
       "required": false
     },
     {
+      "name": "EnhancedNetwork",
+      "description": ">参数暂未开放使用。",
+      "position": "Query",
+      "type": "Struct",
+      "required": false
+    },
+    {
       "name": "InstanceType",
-      "description": "弹性网卡类型。取值范围：\n\n- Secondary：弹性辅助网卡。\n- Trunk：中继网卡 (邀测中）。\n\n默认值：Secondary。",
+      "description": "弹性网卡类型。取值范围：\n\n- Secondary：辅助弹性网卡。\n- Trunk：中继网卡 (邀测中）。\n\n默认值：Secondary。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -87,21 +98,28 @@
     },
     {
       "name": "NetworkInterfaceName",
-      "description": "弹性网卡名称。长度为2~128个英文或中文字符。必须以大小写字母或中文开头，不能以`http://`或`https://`开头。可以包含数字、半角冒号（:）、下划线（_）或者短划线（-）。\n\n默认值：空。",
+      "description": "弹性网卡名称。长度为2~128个字符，支持Unicode中letter分类下的字符（其中包括英文、中文等），ASCII数字（0-9）。可以包含半角冒号（:）、下划线（_）、半角句号（.）或者短划线（-）。\n\n默认值：空。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
+      "name": "NetworkInterfaceTrafficConfig",
+      "description": "弹性网卡通讯参数集合。",
+      "position": "Query",
+      "type": "Struct",
+      "required": false
+    },
+    {
       "name": "NetworkInterfaceTrafficMode",
-      "description": "弹性网卡的通讯模式。取值范围：\n\n- Standard：使用TCP通讯模式。\n- HighPerformance：开启ERI（Elastic RDMA Interface）接口，使用RDMA通讯模式。\n\n> HighPerformance参数值只支持RDMA增强型实例规格族c7re，且RDMA模式的弹性网卡数量不能超过该实例规格族的限制。c7re正在华北2（北京）可用区K进行邀测。更多信息，请参见[实例规格族](~~25378~~)。\n\n默认值：Standard。",
+      "description": "弹性网卡的通讯模式。取值范围：\n\n- Standard：使用TCP通讯模式。\n- HighPerformance：开启ERI（Elastic RDMA Interface）接口，使用RDMA通讯模式。\n\n> 对于使用RDMA通信模式的弹性网卡，仅允许与实例规格支持ERI的实例绑定，且使用RDMA模式的弹性网卡数量不能超过该实例规格族的限制。更多信息，请参见[实例规格族](~~25378~~)，[在企业级实例上配置eRDMA](~~336853~~)<props=\"china\">及[在GPU实例上配置eRDMA](~~2248432~~)</props>。\n\n默认值：Standard。",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "PrimaryIpAddress",
-      "description": "弹性网卡的主私有IP地址。\n\n指定IP必须是在所属交换机的地址段内的空闲地址，不指定则默认随机分配该交换机中的空闲地址。",
+      "description": "弹性网卡的主私网IP地址。\n\n指定IP必须是在所属交换机的地址段内的空闲地址，不指定则默认随机分配该交换机中的空闲地址。",
       "position": "Query",
       "type": "String",
       "required": false
@@ -122,14 +140,14 @@
     },
     {
       "name": "QueuePairNumber",
-      "description": ">该参数正在邀测中，暂未开放使用。",
+      "description": "RDMA网卡队列数。\n\n如果要为实例附加多张RDMA网卡，建议根据实例规格支持的RDMA网卡的`QueuePairNumber`上限值和规划要使用的网卡数量，手动为每张网卡指定QueuePairNumber，并确保所有网卡的QueuePairNumber总数不超过该实例规格允许的最大值。调用[DescribeInstanceTypes](~~2679699~~)查看实例规格的上限。\n\n><notice>如果RDMA网卡未指定QueuePairNumber，则默认使用该实例规格支持的所有RDMA网卡的QueuePairNumber上限值。因此，一旦附加了一张未设置QueuePairNumber的RDMA网卡，就不能再添加更多RDMA网卡了（普通网卡不受此限制）。</notice>",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
       "name": "RegionId",
-      "description": "实例所在地域的ID。您可以调用[DescribeRegions](~~25609~~)查看最新的阿里云地域列表。",
+      "description": "要创建的弹性网卡所在地域的ID。您可以调用[DescribeRegions](~~25609~~)查看最新的阿里云地域列表。",
       "position": "Query",
       "type": "String",
       "required": true
@@ -143,7 +161,7 @@
     },
     {
       "name": "RxQueueSize",
-      "description": "弹性网卡入方向队列深度。\n\n您需要注意：\n\n- 网卡的入方向队列深度必须和出方向队列深度相等，取值范围：8192~16384，且必须为 2 的幂。\n\n- 较大的入方向队列深度可以提升入方向的吞吐量，但会占用更多的内存。",
+      "description": "弹性网卡入方向队列深度。\n\n您需要注意：\n\n- 网卡的入方向队列深度必须和出方向队列深度相等，取值范围：8192~16384，且必须为 2 的幂。\n\n- 较大的入方向队列深度可以提升入方向的吞吐量，但会占用更多的内存。\n\n> 该参数暂未开放使用。",
       "position": "Query",
       "type": "Integer",
       "required": false
@@ -170,8 +188,15 @@
       "required": false
     },
     {
+      "name": "SourceDestCheck",
+      "description": "是否开启源/目的检查功能。建议您打开该功能，以提高网络安全。可能值：\n\n- true：是。\n\n- false：否。\n\n默认值：false。\n\n> 仅部分地域支持该功能。使用前，请认真阅读[源/目的检查](~~2863210~~)。",
+      "position": "Query",
+      "type": "Boolean",
+      "required": false
+    },
+    {
       "name": "Tag",
-      "description": "弹性网卡的标签。",
+      "description": "弹性网卡的标签列表。",
       "position": "Query",
       "type": "RepeatList",
       "required": false,
@@ -192,14 +217,14 @@
     },
     {
       "name": "TxQueueSize",
-      "description": "弹性网卡出方向队列深度。\n\n您需要注意：\n\n- 网卡的出方向队列深度必须和入方向队列深度相等，取值范围：8192~16384，且必须为 2 的幂。\n\n- 较大的出方向队列深度可以提升出方向的吞吐量，但会占用更多的内存。",
+      "description": "弹性网卡出方向队列深度。\n\n您需要注意：\n\n- 网卡的出方向队列深度必须和入方向队列深度相等，取值范围：8192~16384，且必须为 2 的幂。\n\n- 较大的出方向队列深度可以提升出方向的吞吐量，但会占用更多的内存。\n\n> 该参数暂未开放使用。",
       "position": "Query",
       "type": "Integer",
       "required": false
     },
     {
       "name": "VSwitchId",
-      "description": "指定VPC的交换机ID。弹性网卡的私网IP地址在交换机的IP地址段内的空闲地址中取值。",
+      "description": "弹性网卡的交换机ID。弹性网卡的私网IP地址在交换机的IP地址段内的空闲地址中取值。\n\n><notice>弹性网卡和待绑定的实例需要属于同一可用区，可以分属不同的交换机。</notice>",
       "position": "Query",
       "type": "String",
       "required": true
