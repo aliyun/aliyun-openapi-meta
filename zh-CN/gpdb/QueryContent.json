@@ -63,14 +63,14 @@
     },
     {
       "name": "HybridSearch",
-      "description": "双路召回算法，默认为空(即直接将向量和全文的分数比较并排序)。\n\n可选值：\n\n- RRF：倒数排序融合(Reciprocal rank fusion)，有一个参数k控制融合效果，详见HybridSearchArgs配置；\n- Weight：比重排序，采用一个参数alpha控制向量和全文的分数比重，然后再排序，参数详见HybridSearchArgs配置；\n- Cascaded：先全文检索再在其基础上进行向量检索；",
+      "description": "多路召回算法，默认为空(即直接将稠密向量和全文的分数比较并排序)。\n\n可选值：\n\n- RRF：倒数排序融合(Reciprocal rank fusion)，有一个参数k控制融合效果，详见HybridSearchArgs配置；\n- Weight：比重排序，采用参数控制向量和全文的分数比重，然后再排序，参数详见 HybridSearchArgs 配置；\n- Cascaded：先全文检索再在其基础上进行向量检索；",
       "position": "Query",
       "type": "String",
       "required": false
     },
     {
       "name": "HybridSearchArgs",
-      "description": "双路召回的算法参数。目前支持RRF和Weight两种：\n\n- RRF：指定计算分数的算法的`1/(k+rank_i)`中的k常数，范围大于1的正整数，格式为：\n```\n{ \n   \"RRF\": {\n    \"k\": 60\n   }\n}\n```\n\n- Weight: 计算公式`alpha * vector_score + (1-alpha) * text_score`，参数alpha表示向量和全文的检索分数比重，范围为0～1，其中0表示只全文，1表示只向量：\n```\n{ \n   \"Weight\": {\n    \"alpha\": 0.5\n   }\n}\n```",
+      "description": "多路召回的算法参数。目前支持RRF和Weight两种。HybridPathsSetting可以指定召回稠密向量（dense）、稀疏向量（sparse）和全文检索（fulltext），如果值为空，默认召回稠密向量（dense）和全文检索（fulltext）。\n\n- RRF：指定计算分数的算法的`1/(k+rank_i)`中的k常数，范围大于1的正整数，格式为：\n```\n{\n  \"HybridPathsSetting\": {\n    \"paths\": \"dense,fulltext\"\n  },\n  \"RRF\": {\n    \"k\": 60\n  }\n}\n```\n\n- Weight: \n   - 双路召回（不指定HybridPathsSetting，仅指定 alpha）：\n      - 计算公式：alpha * dense_score + (1-alpha) * fulltext_score，参数 alpha 表示稠密向量和全文的检索分数比重，范围为 0～1，其中 0 表示只全文，1 表示只稠密向量：\n```\n{ \n   \"Weight\": {\n    \"alpha\": 0.5\n   }\n}\n```\n  - 三路召回模式：\n     - 计算公式：normalized_dense * dense_score + normalized_sparse * sparse_score + normalized_fulltext * fulltext_score。其中dense、sparse、fulltext 分别代表稠密向量、稀疏向量、全文检索的权重，取值范围大于等于 0。系统会自动将权重归一化到 0～1（即 normalized_x = x / (dense + sparse + fulltext)）。\n```\n{\n  \"HybridPathsSetting\": {\n     \"paths\": \"dense,sparse,fulltext\"\n   },\n  \"Weight\": {\n    \"dense\": 0.5,\n    \"sparse\": 0.3,\n    \"fulltext\": 0.2\n  }\n}\n```",
       "position": "Query",
       "type": "String",
       "required": false
@@ -168,7 +168,7 @@
     },
     {
       "name": "UseFullTextRetrieval",
-      "description": "是否使用全文检索（双路召回）。默认为false，仅采用向量检索。",
+      "description": "（参数废弃）是否使用全文检索（双路召回）。默认为false，仅采用向量检索。",
       "position": "Query",
       "type": "Boolean",
       "required": false
