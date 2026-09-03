@@ -1,0 +1,378 @@
+{
+  "camel_example": "aliyun sls GET /logstores/ali-test-logstore --project example-string --region cn-hangzhou --header \"Content-Type=application/json\"",
+  "cmd_full_name": "sls get-log-store",
+  "cmd_name": "get-log-store",
+  "components": {
+    "schemas": {
+      "EncryptConf": {
+        "description_en": "The data structure of the encryption configuration",
+        "description_zh": "加密配置数据结构",
+        "properties": {
+          "enable": {
+            "default": "true",
+            "description_en": "Specifies whether to enable data encryption. Valid values:\n\ntrue\nfalse",
+            "description_zh": "是否启用数据加密。\n\ntrue：是\nfalse：否",
+            "example": "true",
+            "required": true,
+            "title": "enable",
+            "type": "boolean"
+          },
+          "encrypt_type": {
+            "default": "default",
+            "description_en": "The encryption algorithm. Valid values: default and sm4. If enable is set to true, you must configure this parameter",
+            "description_zh": "加密算法类型，支持 default、m4、sm4_ecb、sm4_cbc、sm4_gcm、aes_ecb、aes_cbc、aes_cfb、aes_ofb、aes_gcm。当enable为true时，此项必选",
+            "enumValueTitles": {
+              "aes_cbc": "aes_cbc",
+              "aes_cfb": "aes_cfb",
+              "aes_ecb": "aes_ecb",
+              "aes_gcm": "aes_gcm",
+              "aes_ofb": "aes_ofb",
+              "default": "default",
+              "m4": "m4",
+              "sm4_cbc": "sm4_cbc",
+              "sm4_ecb": "sm4_ecb",
+              "sm4_gcm": "sm4_gcm"
+            },
+            "example": "default",
+            "required": false,
+            "title": "加密算法，只支持default和m4。当 enable 为 true 时，此项必选。",
+            "type": "string"
+          },
+          "user_cmk_info": {
+            "$ref": "#/components/schemas/EncryptUserCmkConf",
+            "description_en": "Optional. If you configure this parameter, the bring-your-own-key (BYOK) key is used. If you do not configure this parameter, the service key of Simple Log Service is used",
+            "description_zh": "可选字段。如果设置该字段，则表示使用自带密钥（BYOK），否则使用日志服务的服务密钥",
+            "example": " {    \"cmk_key_id\" : \"f5136b95-2420-ab31-xxxxxxxxx\"    \"arn\" :  \"acs:ram::13234:role/logsource\"    \"region_id\" : \"cn-hangzhou\"  }"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "EncryptUserCmkConf": {
+        "description_en": "The data structure of the user-defined encryption configuration",
+        "description_zh": "用户加密配置数据结构",
+        "properties": {
+          "arn": {
+            "description_en": "The Alibaba Cloud Resource Name (ARN) of the Resource Access Management (RAM) role",
+            "description_zh": "RAM角色的ARN",
+            "example": "acs:ram::13234:role/logsource",
+            "required": true,
+            "title": "arn",
+            "type": "string"
+          },
+          "cmk_key_id": {
+            "description_en": "The ID of the customer master key (CMK) if you use the bring-your-own-key (BYOK) key",
+            "description_zh": "BYOK的主密钥ID",
+            "example": "f5136b95-2420-ab31-xxxxxxxxx",
+            "required": true,
+            "title": "cmk_key_id",
+            "type": "string"
+          },
+          "region_id": {
+            "description_en": "The ID of the region where the CMK resides",
+            "description_zh": "主密钥所在的地域ID",
+            "example": "cn-hangzhou",
+            "required": true,
+            "title": "region_id",
+            "type": "string"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "ShardingPolicy": {
+        "description_en": "The hash write configuration",
+        "description_zh": "哈希写入配置",
+        "properties": {
+          "enabled": {
+            "description_en": "",
+            "description_zh": "是否开启，默认 true，传 false 时会关闭 shardingPolicy 功能",
+            "title": "是否开启，默认 true，传 false 时会关闭 shardingPolicy 功能",
+            "type": "boolean"
+          },
+          "queryActiveTime": {
+            "description_en": "",
+            "description_zh": "查询生效时间，Unix Timestamp",
+            "example": "1764659409",
+            "format": "int64",
+            "title": "查询生效时间，Unix Timestamp",
+            "type": "integer"
+          },
+          "shardGroup": {
+            "description_en": "",
+            "description_zh": "ShardGroup 配置，整个 LogStore 的哈希区间将被均为切分成多个大小相同的 ShardGroup。写入的数据计算一级哈希后选择相应的 ShardGroup 写入",
+            "properties": {
+              "groupCount": {
+                "description_en": "",
+                "description_zh": "ShardGroup 分组个数，必须为 2 的幂次，小于 shard 个数，通常为 4-32 个",
+                "example": "8",
+                "format": "int32",
+                "required": true,
+                "title": "ShardGroup 分组个数，必须为 2 的幂次，小于 shard 个数，通常为 4-32 个。",
+                "type": "integer"
+              },
+              "keys": {
+                "description_en": "",
+                "description_zh": "用于计算哈希的键，大小写敏感，顺序敏感，键不能重复",
+                "items": {
+                  "description_en": "",
+                  "description_zh": "",
+                  "example": "userId",
+                  "type": "string"
+                },
+                "required": true,
+                "title": "用于计算哈希的键，大小写敏感，顺序敏感，键不能重复。",
+                "type": "array"
+              }
+            },
+            "title": "ShardGroup 配置，整个 LogStore 的哈希区间将被均为切分成多个大小相同的 ShardGroup。写入的数据计算一级哈希后选择相应的 ShardGroup 写入。",
+            "type": "object"
+          },
+          "shardHash": {
+            "description_en": "",
+            "description_zh": "ShardHash 配置，二级哈希。此配置用于在 ShardGroup 内部选择 shard 进行写入",
+            "properties": {
+              "keys": {
+                "description_en": "",
+                "description_zh": "用于计算哈希的键，大小写敏感，顺序敏感，键不能重复",
+                "items": {
+                  "description_en": "",
+                  "description_zh": "",
+                  "example": "instanceId",
+                  "type": "string"
+                },
+                "required": true,
+                "title": "用于计算哈希的键，大小写敏感，顺序敏感，键不能重复。",
+                "type": "array"
+              },
+              "maxHashCount": {
+                "default": "2",
+                "description_en": "",
+                "description_zh": "表示哈希重试个数，当写入失败时，会切换哈希值进行写入重试。可选值为 1、2、4。1 表示不带重试，2 表示最多一次重试，4 表示最多 3次重试",
+                "enum": [
+                  "1",
+                  "2",
+                  "4"
+                ],
+                "example": "2",
+                "format": "int32",
+                "required": true,
+                "title": "表示哈希重试个数，当写入失败时，会切换哈希值进行写入重试。可选值为 1、2、4。1 表示不带重试，2 表示最多一次重试，4 表示最多 3次重试。",
+                "type": "integer"
+              }
+            },
+            "required": false,
+            "title": "ShardHash 配置，二级哈希。此配置用于在 ShardGroup 内部选择 shard 进行写入",
+            "type": "object"
+          }
+        },
+        "title": "哈希写入配置",
+        "type": "object"
+      },
+      "logstore": {
+        "description_en": "The Logstore data structure",
+        "description_zh": "日志库Logstore数据结构",
+        "properties": {
+          "appendMeta": {
+            "description_en": "Specifies whether to include the client's public IP address in the log data. The default is false.\n\ntrue: Records the public IP address.\n\nfalse: Does not record the public IP address",
+            "description_zh": "是否记录外网IP地址功能。默认值为false。\n\ntrue：记录外网IP地址。\nfalse：不记录外网IP地址",
+            "example": "false",
+            "title": "接收日志后，自动添加客户端外网IP和日志到达时间",
+            "type": "boolean"
+          },
+          "autoSplit": {
+            "description_en": "Specifies whether to enable auto split.\n\ntrue: Enables auto split.\n\nfalse: Disables auto split",
+            "description_zh": "是否自动分裂Shard。\n\ntrue：自动分裂Shard。\nfalse：不自动分裂Shard",
+            "example": "true",
+            "title": "是否开启 shard 自动分裂。当写入数据量超过已有分区（Shard）写入服务能力且持续5分钟以上时，开启自动分裂功能可自动根据数据量增加分区数量",
+            "type": "boolean"
+          },
+          "createTime": {
+            "description_en": "The creation time of the Logstore, specified as a UNIX timestamp (the number of seconds since January 1, 1970, 00:00:00 UTC)",
+            "description_zh": "日志库创建时间。UNIX时间戳格式，表示从1970-1-1 00:00:00 UTC计算起的秒数",
+            "example": "1453949705",
+            "format": "int32",
+            "title": "创建时间。",
+            "type": "integer"
+          },
+          "enableModify": {
+            "description_en": "",
+            "description_zh": "",
+            "type": "boolean"
+          },
+          "enable_tracking": {
+            "description_en": "Specifies whether to enable WebTracking. The default value is false.\n\ntrue: Enables WebTracking.\n\nfalse: Disables WebTracking",
+            "description_zh": "是否开启WebTracking功能。默认值为false。\n\ntrue：开启WebTracking。\nfalse：不开启WebTracking",
+            "example": "false",
+            "title": "WebTracking功能支持快速采集各种浏览器以及iOS/Android/APP访问信息，默认关闭",
+            "type": "boolean"
+          },
+          "encrypt_conf": {
+            "$ref": "#/components/schemas/EncryptConf",
+            "description_en": "The data encryption configuration",
+            "description_zh": "数据加密配置",
+            "title": "加密配置"
+          },
+          "hot_ttl": {
+            "description_en": "The number of days to retain data in the hot storage tier. The minimum value is 30",
+            "description_zh": "数据在Logstore热存储层中的存储时间，最少为30天。单位：天",
+            "example": "60",
+            "format": "int32",
+            "title": "必须在 (30, ttl) 之间",
+            "type": "integer"
+          },
+          "infrequentAccessTTL": {
+            "description_en": "The number of days to retain data in the infrequent access storage tier",
+            "description_zh": "低频存储时间",
+            "example": "30",
+            "format": "int32",
+            "title": "低频存储时间",
+            "type": "integer"
+          },
+          "lastModifyTime": {
+            "description_en": "The time the Logstore was last modified, specified as a UNIX timestamp (the number of seconds since January 1, 1970, 00:00:00 UTC)",
+            "description_zh": "日志库最后一次更新时间。UNIX时间戳格式，表示从1970-1-1 00:00:00 UTC计算起的秒数",
+            "example": "1524155379",
+            "format": "int32",
+            "title": "最后修改时间。",
+            "type": "integer"
+          },
+          "logstoreName": {
+            "description_en": "The name of the Logstore",
+            "description_zh": "Logstore名称",
+            "example": "my-logstore",
+            "required": true,
+            "title": "logstore 的名称。",
+            "type": "string"
+          },
+          "maxSplitShard": {
+            "description_en": "The maximum number of shards that an auto split can create. Valid values: 1 to 64",
+            "description_zh": "自动分裂时最大的Shard个数，最小值是1，最大值是64",
+            "example": "6",
+            "format": "int32",
+            "title": "最大 shard 数量。",
+            "type": "integer"
+          },
+          "mode": {
+            "description_en": "Log Service provides two types of Logstores: Standard and Query.\n\nStandard: Supports the full suite of Log Service data analysis features. This mode is ideal for real-time monitoring, interactive analysis, and building complete observability solutions.\n\nQuery: Optimized for high-performance queries with indexing traffic costs that are approximately half those of the Standard mode. This mode does not support SQL analysis and is best for use cases involving large data volumes and long retention periods, where complex log analysis is not a requirement",
+            "description_zh": "日志服务提供标准型（Standard）和查询型（Query）两种类型的Logstore。\n\nstandard：支持日志服务一站式数据分析功能，适用于实时监控、交互式分析以及构建完整的可观测性系统等场景。\nquery：支持高性能查询，索引流量费用约为Standard的一半，但不支持SQL分析，适用于数据量大、存储周期长（周、月级别以上）、无日志分析的场景",
+            "example": "standard",
+            "title": "[ standard | query ]",
+            "type": "string"
+          },
+          "processorId": {
+            "description_en": "The IngestProcessor ID",
+            "description_zh": "IngestProcessor ID",
+            "title": "IngestProcessor ID",
+            "type": "string"
+          },
+          "productType": {
+            "description_en": "The product type of the logs",
+            "description_zh": "日志所属产品类型",
+            "example": "aliyun",
+            "title": "日志所属产品类型",
+            "type": "string"
+          },
+          "resourceGroupId": {
+            "description_en": "",
+            "description_zh": "资源组",
+            "title": "资源组",
+            "type": "string"
+          },
+          "shardCount": {
+            "description_en": "The number of shards in the Logstore",
+            "description_zh": "Shard分区个数",
+            "example": "2",
+            "format": "int32",
+            "required": true,
+            "title": "shard 数量。",
+            "type": "integer"
+          },
+          "shardingPolicy": {
+            "$ref": "#/components/schemas/ShardingPolicy",
+            "description_en": "",
+            "description_zh": "哈希写入配置",
+            "title": "哈希写入配置"
+          },
+          "telemetryType": {
+            "description_en": "The type of log data. Valid values:\n\nMetrics: The Logstore is optimized for time-series storage.\n\nNone: The Logstore uses standard storage for logs",
+            "description_zh": "要查询的日志类型。取值：\n\nMetrics：时序存储。\nNone：非时序存储",
+            "example": "Metrics",
+            "title": "telemetryType",
+            "type": "string"
+          },
+          "ttl": {
+            "description_en": "The data retention period in days. Valid values: 1 to 3,650. A value of 3,650 indicates permanent storage",
+            "description_zh": "数据的保存时间，单位为天。取值范围为1~3650。如果配置为3650，表示永久保存",
+            "example": "1",
+            "format": "int32",
+            "required": true,
+            "title": "数据保存的天数。",
+            "type": "integer"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Queries the details of a Logstore",
+  "description_zh": "查看Logstore的详细信息",
+  "kebab_example": "aliyun sls get-log-store --logstore ali-test-logstore --project example-string --region cn-hangzhou",
+  "method": "GET",
+  "multi_version": false,
+  "name": "GetLogStore",
+  "operation": {
+    "action": "GetLogStore",
+    "api_style": "ROA",
+    "api_version": "2020-12-30",
+    "method": "GET",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "get",
+    "url": "/logstores/{logstore}"
+  },
+  "parameters": [
+    {
+      "example": "ali-test-logstore",
+      "help_en": "The Logstore name",
+      "help_zh": "Logstore名称",
+      "location": "path",
+      "name": "logstore",
+      "options": [
+        "--logstore"
+      ],
+      "raw_name": "logstore",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "help_en": "The project",
+      "help_zh": "The project",
+      "location": "host",
+      "name": "project",
+      "options": [
+        "--project"
+      ],
+      "raw_name": "project",
+      "required": true,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/logstores/[logstore]",
+  "product_code": "Sls",
+  "protocol": "HTTP|HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "$ref": "#/components/schemas/logstore",
+        "description_en": "The Logstore struct",
+        "description_zh": "Logstore结构体",
+        "example": "ali-test-logstore",
+        "title_en": "",
+        "title_zh": "Schema of Response"
+      }
+    }
+  }
+}

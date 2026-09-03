@@ -1,0 +1,1176 @@
+{
+  "camel_example": "aliyun ververica POST /api/v2/namespaces/default-namespace/jobs:start --region cn-hangzhou --header \"workspace=a14bd5d90a0000\" --header \"Content-Type=application/json\" --body \"example-string\"",
+  "cmd_full_name": "ververica start-job-with-params",
+  "cmd_name": "start-job-with-params",
+  "components": {
+    "schemas": {
+      "Artifact": {
+        "description_en": "An artifact contains the user-provided information required to launch a deployed job. You cannot create a deployed job without an artifact. For an SQL job, it includes the SQL text and dependencies such as udfs and connectors. For a JAR job, it includes JAR files and dependency files. For a Python job, it includes py files and zip files",
+        "description_zh": "Artifact承载了用户启动一个已部署作业所必需的用户侧信息，没有Artifact信息已部署作业无法创建。对于SQL作业是SQL文本以及依赖的udf/connector等，对于JAR作业是使用到的全部的JAR包和依赖文件，对于Python作业是要使用到的py文件以及zip包",
+        "properties": {
+          "cdcYamlArtifact": {
+            "$ref": "#/components/schemas/CdcYamlArtifact",
+            "backendName": "cdcYamlArtifact",
+            "description_en": "Required for a data ingestion job",
+            "description_zh": "数据摄入作业",
+            "title": "数据摄入作业"
+          },
+          "jarArtifact": {
+            "$ref": "#/components/schemas/JarArtifact",
+            "backendName": "jarArtifact",
+            "description_en": "Required for a JAR job",
+            "description_zh": "JAR作业必填信息",
+            "title": "Jar作业"
+          },
+          "kind": {
+            "backendName": "kind",
+            "description_en": "Specifies the kind of job. This field is required and cannot be changed after creation.\n\nSQLSCRIPT: An SQL job.\n\nJAR: A JAR job.\n\nPYTHON: A Python job.\n\nCDCYAML: A CDC data ingestion job",
+            "description_zh": "生效作业类型，必填，创建后无法修改。\nSQLSCRIPT：SQL作业。\nJAR：JAR作业。\nPYTHON：Python作业。\nCDCYAML：CDC数据摄入作业",
+            "enum": [
+              "SQLSCRIPT",
+              "JAR",
+              "PYTHON",
+              "CDCYAML"
+            ],
+            "example": "SQLSCRIPT",
+            "required": false,
+            "title": "生效作业类型",
+            "type": "string"
+          },
+          "pythonArtifact": {
+            "$ref": "#/components/schemas/PythonArtifact",
+            "backendName": "pythonArtifact",
+            "description_en": "Required for a Python job",
+            "description_zh": "Python作业必填信息",
+            "title": "Python作业"
+          },
+          "sqlArtifact": {
+            "$ref": "#/components/schemas/SqlArtifact",
+            "backendName": "sqlArtifact",
+            "description_en": "Required for an SQL job",
+            "description_zh": "SQL作业必填信息",
+            "title": "SQL作业"
+          }
+        },
+        "title": "作业内容模版",
+        "type": "object"
+      },
+      "BasicResourceSetting": {
+        "description_en": "The basic mode resource configuration commonly used in the community edition, which differs from the expert mode resource configuration provided in the commercial edition",
+        "description_zh": "本数据结构表示用户使用的社区版本常用的基础模式资源配置，有别于商业版本提供的专家模式资源配置",
+        "properties": {
+          "jobmanagerResourceSettingSpec": {
+            "$ref": "#/components/schemas/BasicResourceSettingSpec",
+            "backendName": "jobmanagerResourceSettingSpec",
+            "description_en": "The JobManager resource settings",
+            "description_zh": "JobManager资源设置",
+            "title": "JobManager资源设置"
+          },
+          "parallelism": {
+            "backendName": "parallelism",
+            "description_en": "The concurrency",
+            "description_zh": "并发度",
+            "example": "4",
+            "format": "int64",
+            "title": "并发度",
+            "type": "integer"
+          },
+          "taskmanagerResourceSettingSpec": {
+            "$ref": "#/components/schemas/BasicResourceSettingSpec",
+            "backendName": "taskmanagerResourceSettingSpec",
+            "description_en": "The TaskManager resource settings",
+            "description_zh": "TaskManager资源设置",
+            "title": "TaskManager资源设置"
+          }
+        },
+        "title": "作业通用资源设置",
+        "type": "object"
+      },
+      "BasicResourceSettingSpec": {
+        "description_en": "The configurations of CPU and memory resources for a deployment. A coarse-grained description of the JobManager or TaskManager resources can be generated based on the data structure",
+        "description_zh": "本数据结构表示对作业使用CPU和内存资源的包装，依据本数据结构可以生成对JM/TM资源的粗粒度的描述",
+        "properties": {
+          "cpu": {
+            "backendName": "cpu",
+            "description_en": "The number of CPU cores",
+            "description_zh": "CPU核数",
+            "example": "2.0",
+            "format": "double",
+            "title": "CPU",
+            "type": "number"
+          },
+          "memory": {
+            "backendName": "memory",
+            "description_en": "The capacity of the memory. Unit: GiB",
+            "description_zh": "内存，单位GiB",
+            "example": "4 GiB",
+            "title": "内存",
+            "type": "string"
+          }
+        },
+        "title": "作业基础源",
+        "type": "object"
+      },
+      "BatchResourceSetting": {
+        "description_en": "The resource parameters for a deployment in batch mode",
+        "description_zh": "本数据结构代表批模式资源设置信息",
+        "properties": {
+          "basicResourceSetting": {
+            "$ref": "#/components/schemas/BasicResourceSetting",
+            "backendName": "basicResourceSetting",
+            "description_en": "The resource parameters in basic mode",
+            "description_zh": "基础模式资源设置",
+            "title": "基础资源设置"
+          },
+          "maxSlot": {
+            "backendName": "maxSlot",
+            "description_en": "The maximum number of slots",
+            "description_zh": "最大slot数",
+            "example": "10",
+            "format": "int64",
+            "title": "最大slot数",
+            "type": "integer"
+          }
+        },
+        "title": "批作业资源设置",
+        "type": "object"
+      },
+      "CdcYamlArtifact": {
+        "properties": {
+          "additionalDependencies": {
+            "backendName": "additionalDependencies",
+            "description_en": "Full URL paths to the additional dependencies",
+            "description_zh": "附加依赖文件的URL全路径",
+            "items": {
+              "type": "string"
+            },
+            "title": "附加依赖文件的URL全路径",
+            "type": "array"
+          },
+          "cdcYaml": {
+            "backendName": "cdcYaml",
+            "description_en": "Code for the data ingestion job",
+            "description_zh": "数据摄入作业的代码",
+            "title": "数据摄入作业的代码",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DeploymentRestoreStrategy": {
+        "description_en": "The startup strategy for a deployment",
+        "description_zh": "本数据结构代表已部署作业的启动策略",
+        "properties": {
+          "allowNonRestoredState": {
+            "backendName": "allowNonRestoredState",
+            "description_en": "Specifies whether to allow specific operator states to be skipped. This parameter is required only when a Python deployment or a JAR deployment is resumed with state data",
+            "description_zh": "允许忽略部分算子状态。仅当Python类型或者Jar类型作业选择有状态恢复时需要设置",
+            "example": "TRUE",
+            "title": "是否无状态启动",
+            "type": "boolean"
+          },
+          "jobStartTimeInMs": {
+            "backendName": "jobStartTimeInMs",
+            "description_en": "The time point at which the deployment is started without states. You must enter a 13-digit timestamp. If you set the kind parameter to NONE, you can configure this parameter to allow all source tables for which the startTime parameter is configured to read data from the specified time point",
+            "description_zh": "无状态启动时间，需输入13位时间戳。当选择无状态启动时，可以设置本参数让所有支持startTime的源表均从该时刻开始读取数据",
+            "example": "1660293803155",
+            "format": "int64",
+            "title": "无状态启动时间，当选择无状态启动时，可以设置本参数让所有支持startTime 的源表均从该时刻开始读取数据",
+            "type": "integer"
+          },
+          "kind": {
+            "backendName": "kind",
+            "description_en": "The type of the start offset. Valid values:\n\nNONE: The deployment is started without states.\n\nLATEST_SAVEPOINT: The deployment is started from the latest savepoint.\n\nFROM_SAVEPOINT: The deployment is started from the specified savepoint.\n\nLATEST_STATE: The deployment is started from the latest state of the deployment",
+            "description_zh": "启动位点类型。\nNONE：无状态启动。\nLATEST_SAVEPOINT：最新的作业快照启动。\nFROM_SAVEPOINT：从指定快照启动。\nLATEST_STATE：最新状态启动",
+            "enum": [
+              "NONE",
+              "LATEST_SAVEPOINT",
+              "FROM_SAVEPOINT",
+              "LATEST_STATE"
+            ],
+            "example": "LATEST_STATE",
+            "title": "启动位点类型",
+            "type": "string"
+          },
+          "savepointId": {
+            "backendName": "savepointId",
+            "description_en": "The ID of the savepoint for starting the deployment. This parameter is required when the kind parameter is set to FROM_SAVEPOINT",
+            "description_zh": "启动作业快照ID，启动策略为FROM_SAVEPOINT时必填",
+            "example": "354dde66-a3ae-463e-967a-0b4107fd****",
+            "title": "启动作业快照ID",
+            "type": "string"
+          }
+        },
+        "title": "作业启动位点",
+        "type": "object"
+      },
+      "ExpertResourceSetting": {
+        "description_en": "The information about the resource configuration of a deployment in expert mode",
+        "description_zh": "本数据结构代表作业专家模式资源配置的信息",
+        "properties": {
+          "jobmanagerResourceSettingSpec": {
+            "$ref": "#/components/schemas/BasicResourceSettingSpec",
+            "backendName": "jobmanagerResourceSettingSpec",
+            "description_en": "The basic resource configuration of the JobManager",
+            "description_zh": "JobManager基础资源设置",
+            "title": "JobManager基础资源设置"
+          },
+          "resourcePlan": {
+            "backendName": "resourcePlan",
+            "description_en": "The resource configuration plan of the deployment in expert mode",
+            "description_zh": "专家模式资源配置计划",
+            "example": "{\\\"ssgProfiles\\\":[{\\\"name\\\":\\\"default\\\",\\\"cpu\\\":1.13,\\\"heap\\\":\\\"1 gb\\\",\\\"offHeap\\\":\\\"32 mb\\\",\\\"managed\\\":{},\\\"extended\\\":{}}],\\\"nodes\\\":[{\\\"id\\\":1,\\\"type\\\":\\\"StreamExecTableSourceScan\\\",\\\"desc\\\":\\\"Source: datagen_source[78]\\\",\\\"profile\\\":{\\\"group\\\":\\\"default\\\",\\\"parallelism\\\":1,\\\"maxParallelism\\\":32768,\\\"minParallelism\\\":1}},{\\\"id\\\":2,\\\"type\\\":\\\"StreamExecSink\\\",\\\"desc\\\":\\\"Sink: blackhole_sink[79]\\\",\\\"profile\\\":{\\\"group\\\":\\\"default\\\",\\\"parallelism\\\":1,\\\"maxParallelism\\\":32768,\\\"minParallelism\\\":1}}],\\\"edges\\\":[{\\\"source\\\":1,\\\"target\\\":2,\\\"mode\\\":\\\"PIPELINED\\\",\\\"strategy\\\":\\\"FORWARD\\\"}],\\\"vertices\\\":{\\\"717c7b8afebbfb7137f6f0f99beb2a94\\\":[1,2]}}",
+            "title": "细粒度资源计划",
+            "type": "string"
+          }
+        },
+        "title": "细粒度资源设置",
+        "type": "object"
+      },
+      "FlinkConf": {
+        "description_en": "The Realtime Compute for Apache Flink configurations",
+        "description_zh": "flink配置参数",
+        "example": "{\"taskmanager.numberOfTaskSlots\":\"1\",\"table.exec.state.ttl\":\"128000s\"}\n",
+        "parseType": "struct",
+        "title": "Flink conf",
+        "type": "object"
+      },
+      "JarArtifact": {
+        "description_en": "The information required for a JAR deployment",
+        "description_zh": "本数据结构代表JAR类型作业必填的信息",
+        "properties": {
+          "additionalDependencies": {
+            "backendName": "additionalDependencies",
+            "description_en": "The full URL of the additional dependency file. You can enter the dependency file for the JAR deployment",
+            "description_zh": "附加依赖的URL全路径，可以将JAR需要使用的其他依赖在这里填写",
+            "items": {
+              "description_en": "The full URL of the additional dependency file",
+              "description_zh": "附加依赖文件的URL全路径",
+              "example": "https://oss/bucket/addition.jar",
+              "type": "string"
+            },
+            "title": "附加依赖URL全路径，可以将Jar需要使用的其他依赖在这里填写",
+            "type": "array"
+          },
+          "entryClass": {
+            "backendName": "entryClass",
+            "description_en": "The entry class. You must enter the full name of the class",
+            "description_zh": "启动类，需要填写类的全称",
+            "example": "org.apapche.flink.test",
+            "title": "启动类，需要填写类的全称",
+            "type": "string"
+          },
+          "jarUri": {
+            "backendName": "jarUri",
+            "description_en": "The full URL for the JAR deployment",
+            "description_zh": "JAR作业URL全路径",
+            "example": "https://oss/bucket/test.jar",
+            "title": "Jar作业URL全路径",
+            "type": "string"
+          },
+          "mainArgs": {
+            "backendName": "mainArgs",
+            "description_en": "The parameters required by the entry class",
+            "description_zh": "启动类所需参数",
+            "example": "start from main",
+            "title": "启动类所需参数",
+            "type": "string"
+          }
+        },
+        "title": "Jar作业结构",
+        "type": "object"
+      },
+      "Job": {
+        "description_en": "This data structure represents the details of a job instance generated by a deployment",
+        "description_zh": "本数据结构代表已部署作业生成的实例详情",
+        "properties": {
+          "artifact": {
+            "$ref": "#/components/schemas/Artifact",
+            "backendName": "artifact",
+            "description_en": "Job instance content template",
+            "description_zh": "作业实例内容模版",
+            "title": "作业内容模版"
+          },
+          "batchResourceSetting": {
+            "$ref": "#/components/schemas/BatchResourceSetting",
+            "backendName": "batchResourceSetting",
+            "description_en": "Batch mode resource settings",
+            "description_zh": "批模式资源设置",
+            "title": "batchResourceSetting"
+          },
+          "createdAt": {
+            "backendName": "createdAt",
+            "description_en": "Creation time",
+            "description_zh": "创建时间",
+            "example": "1714058507",
+            "title": "创建时间",
+            "type": "string"
+          },
+          "creator": {
+            "backendName": "creator",
+            "description_en": "Creator",
+            "description_zh": "创建者",
+            "example": "27846363877456****",
+            "title": "创建者",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "creatorName": {
+            "backendName": "creatorName",
+            "description_en": "Creator name",
+            "description_zh": "创建者名称",
+            "example": "****@streamcompute.onaliyun.com",
+            "title": "创建者名称",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "deploymentId": {
+            "backendName": "deploymentId",
+            "description_en": "Deployment ID",
+            "description_zh": "已部署作业ID",
+            "example": "354dde66-a3ae-463e-967a-0b4107fd****",
+            "title": "作业ID",
+            "type": "string"
+          },
+          "deploymentName": {
+            "backendName": "deploymentName",
+            "description_en": "Deployment name",
+            "description_zh": "已部署作业名称",
+            "example": "flinktest",
+            "title": "作业名称",
+            "type": "string"
+          },
+          "endTime": {
+            "backendName": "endTime",
+            "description_en": "Job instance end time",
+            "description_zh": "作业实例结束时间",
+            "example": "1660277235",
+            "format": "int64",
+            "title": "实例结束时间",
+            "type": "integer"
+          },
+          "engineVersion": {
+            "backendName": "engineVersion",
+            "description_en": "Job engine version",
+            "description_zh": "作业引擎版本",
+            "example": "vvr-4.0.14-flink-1.13",
+            "title": "作业引擎版本",
+            "type": "string"
+          },
+          "executionMode": {
+            "backendName": "executionMode",
+            "description_en": "Job instance execution mode.\n\nSTREAM: Stream mode.\n\nBATCH: Batch mode",
+            "description_zh": "作业实例运行模式。\nSTREAM：流模式。\nBATCH：批模式",
+            "enum": [
+              "STREAMING",
+              "BATCH"
+            ],
+            "example": "BATCH",
+            "title": "实例运行模式",
+            "type": "string"
+          },
+          "flinkConf": {
+            "backendName": "flinkConf",
+            "description_en": "Full parameter settings for the job instance",
+            "description_zh": "作业实例全量参数配置",
+            "example": "{execution.checkpointing.unaligned: false}",
+            "title": "作业配置",
+            "type": "object"
+          },
+          "jobId": {
+            "backendName": "jobId",
+            "description_en": "Job instance ID",
+            "description_zh": "作业实例ID",
+            "example": "354dde66-a3ae-463e-967a-0b4107fd****",
+            "title": "实例ID",
+            "type": "string"
+          },
+          "localVariables": {
+            "backendName": "localVariables",
+            "description_en": "Job variables",
+            "description_zh": "作业变量",
+            "items": {
+              "$ref": "#/components/schemas/LocalVariable"
+            },
+            "title": "作业变量",
+            "type": "array"
+          },
+          "logging": {
+            "$ref": "#/components/schemas/Logging",
+            "backendName": "logging",
+            "description_en": "Job instance log configuration",
+            "description_zh": "作业实例日志配置",
+            "title": "作业日志配置"
+          },
+          "metric": {
+            "$ref": "#/components/schemas/JobMetric",
+            "backendName": "metric",
+            "description_en": "Job instance resource information",
+            "description_zh": "作业实例资源信息",
+            "title": "实例资源信息"
+          },
+          "modifiedAt": {
+            "backendName": "modifiedAt",
+            "description_en": "Modification time",
+            "description_zh": "修改时间",
+            "example": "1714058800",
+            "title": "修改时间",
+            "type": "string"
+          },
+          "modifier": {
+            "backendName": "modifier",
+            "description_en": "Modifier",
+            "description_zh": "修改者",
+            "example": "27846363877456****",
+            "title": "修改者",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "modifierName": {
+            "backendName": "modifierName",
+            "description_en": "Modifier name",
+            "description_zh": "修改者名称",
+            "example": "****@streamcompute.onaliyun.com",
+            "title": "修改者名称",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "namespace": {
+            "backendName": "namespace",
+            "description_en": "The name of the namespace",
+            "description_zh": "项目空间名称",
+            "example": "namespacetest",
+            "title": "项目空间名称",
+            "type": "string"
+          },
+          "restoreStrategy": {
+            "$ref": "#/components/schemas/DeploymentRestoreStrategy",
+            "backendName": "restoreStrategy",
+            "description_en": "Job instance startup policy",
+            "description_zh": "作业实例启动策略",
+            "title": "流作业资源设置"
+          },
+          "sessionClusterName": {
+            "backendName": "sessionClusterName",
+            "description_en": "If the job instance runs on a Session cluster, this shows the Session cluster name; otherwise, it is null",
+            "description_zh": "如果作业实例运行在Session集群，展示该Session集群名称，否则为null",
+            "example": "null",
+            "title": "session集群名称",
+            "type": "string"
+          },
+          "startTime": {
+            "backendName": "startTime",
+            "description_en": "Job instance start time",
+            "description_zh": "作业实例启动时间",
+            "example": "1660190835",
+            "format": "int64",
+            "title": "实例启动时间",
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/JobStatus",
+            "backendName": "status",
+            "description_en": "Job instance status",
+            "description_zh": "作业实例状态",
+            "title": "实例状态"
+          },
+          "streamingResourceSetting": {
+            "$ref": "#/components/schemas/StreamingResourceSetting",
+            "backendName": "streamingResourceSetting",
+            "description_en": "Stream mode resource settings",
+            "description_zh": "流模式资源设置",
+            "title": "批作业资源设置"
+          },
+          "userFlinkConf": {
+            "$ref": "#/components/schemas/FlinkConf",
+            "backendName": "userFlinkConf",
+            "description_en": "User job parameter settings",
+            "description_zh": "用户作业参数配置",
+            "title": "用户作业配置"
+          },
+          "workspace": {
+            "backendName": "workspace",
+            "description_en": "Workspace",
+            "description_zh": "工作空间",
+            "example": "edcef******b4f",
+            "title": "工作空间",
+            "type": "string"
+          }
+        },
+        "title": "作业运行实例",
+        "type": "object"
+      },
+      "JobFailure": {
+        "description_en": "The information about the deployment failure",
+        "description_zh": "本数据结构代表作业失败信息",
+        "properties": {
+          "failedAt": {
+            "backendName": "failedAt",
+            "description_en": "The time when the deployment fails",
+            "description_zh": "失败时间",
+            "example": "1660120062",
+            "format": "int64",
+            "title": "失败时间",
+            "type": "integer"
+          },
+          "message": {
+            "backendName": "message",
+            "description_en": "The details of the failure",
+            "description_zh": "失败信息详情",
+            "example": "Kubernetes deployment resource with name job-8b7db913-5b1f-4ac5-a332-8d50f342**** is not progressing.",
+            "title": "失败信息详情",
+            "type": "string"
+          },
+          "reason": {
+            "backendName": "reason",
+            "description_en": "The reason for the failure",
+            "description_zh": "失败原因",
+            "example": "KubernetesDeploymentNotProgressing",
+            "title": "失败原因",
+            "type": "string"
+          }
+        },
+        "title": "实例失败信息",
+        "type": "object"
+      },
+      "JobMetric": {
+        "description_en": "The metrics for the resources of the job that is running in a deployment",
+        "description_zh": "本数据结构表示作业运行实例上资源的指标信息",
+        "properties": {
+          "totalCpu": {
+            "backendName": "totalCpu",
+            "description_en": "The number of CPU cores",
+            "description_zh": "CPU",
+            "example": "2",
+            "format": "double",
+            "title": "CPU",
+            "type": "number"
+          },
+          "totalMemoryByte": {
+            "backendName": "totalMemoryByte",
+            "description_en": "The memory size. Unit: bytes",
+            "description_zh": "内存，单位是Byte",
+            "example": "4096",
+            "format": "int64",
+            "title": "内存，单位是Byte",
+            "type": "integer"
+          }
+        },
+        "title": "作业运行指标",
+        "type": "object"
+      },
+      "JobStatus": {
+        "description_en": "The status of the job that is generated in a deployment",
+        "description_zh": "本数据结构代表作业下生成实例的状态",
+        "properties": {
+          "currentJobStatus": {
+            "backendName": "currentJobStatus",
+            "description_en": "The status of the current job. Valid values:\n\nSTARTING\nRUNNING\nCANCELLING\nFAILED\nCANCELLED\nFINISHED",
+            "description_zh": "当前实例的状态。\nSTARTING：启动中。\nRUNNING：运行中。\nCANCELLING：停止中。\nFAILED：已失败。\nCANCELLED：已停止。\nFINISHED：已完成",
+            "enum": [
+              "STARTING",
+              "RUNNING",
+              "CANCELLING",
+              "FAILED",
+              "CANCELLED",
+              "FINISHED"
+            ],
+            "example": "RUNNING",
+            "title": "当前实例的运行状态",
+            "type": "string"
+          },
+          "failure": {
+            "$ref": "#/components/schemas/JobFailure",
+            "backendName": "failure",
+            "description_en": "The information about the job failure. This parameter is valid when the value of the currentJobStatus parameter is FAILED",
+            "description_zh": "实例失败信息。当作业状态为FAILED的时候，该数据结构有值",
+            "title": "实例失败信息"
+          },
+          "healthScore": {
+            "backendName": "healthScore",
+            "format": "int32",
+            "type": "integer"
+          },
+          "riskLevel": {
+            "backendName": "riskLevel",
+            "type": "string"
+          },
+          "running": {
+            "$ref": "#/components/schemas/JobStatusRunning",
+            "backendName": "running",
+            "description_en": "The details of the job. This parameter is valid when the value of the currentJobStatus parameter is RUNNING",
+            "description_zh": "实例运行信息。当作业状态为RUNNING的时候，该数据结构有值",
+            "title": "实例运行信息"
+          }
+        },
+        "title": "实例状态",
+        "type": "object"
+      },
+      "JobStatusRunning": {
+        "description_en": "The status of a job",
+        "description_zh": "本数据结构表示实例的运行状态",
+        "properties": {
+          "observedFlinkJobRestarts": {
+            "backendName": "observedFlinkJobRestarts",
+            "description_en": "The number of times the job is restarted",
+            "description_zh": "实例重启次数",
+            "example": "4",
+            "format": "int64",
+            "title": "实力重启次数",
+            "type": "integer"
+          },
+          "observedFlinkJobStatus": {
+            "backendName": "observedFlinkJobStatus",
+            "description_en": "The status of the Flink job",
+            "description_zh": "当前Flink实例状态",
+            "example": "RUNNING",
+            "title": "当前Flink作业状态",
+            "type": "string"
+          }
+        },
+        "title": "实例运行信息",
+        "type": "object"
+      },
+      "LocalVariable": {
+        "description_en": "The variables",
+        "description_zh": "作业变量",
+        "properties": {
+          "name": {
+            "backendName": "name",
+            "description_en": "The name of the variable",
+            "description_zh": "作业变量名称",
+            "example": "test",
+            "title": "作业变量名称",
+            "type": "string"
+          },
+          "value": {
+            "backendName": "value",
+            "description_en": "The value of the variable",
+            "description_zh": "作业变量值",
+            "example": "datagen",
+            "title": "作业变量值",
+            "type": "string"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "Log4jLogger": {
+        "description_en": "The configuration information about the output log of a job",
+        "description_zh": "本数据结构代表作业实例上日志输出的相关配置信息",
+        "properties": {
+          "loggerLevel": {
+            "backendName": "loggerLevel",
+            "description_en": "The level of the output log",
+            "description_zh": "输出日志的级别",
+            "enum": [
+              "TRACE",
+              "DEBUG",
+              "INFO",
+              "WARN",
+              "ERROR"
+            ],
+            "example": "ERROR",
+            "title": "输出日志的级别",
+            "type": "string"
+          },
+          "loggerName": {
+            "backendName": "loggerName",
+            "description_en": "The name of the class of the output log",
+            "description_zh": "输出日志的类的名称",
+            "example": "StdOutErrConsoleAppender",
+            "title": "输出日志的累的名称",
+            "type": "string"
+          }
+        },
+        "title": "日志log4j的配置",
+        "type": "object"
+      },
+      "LogReservePolicy": {
+        "description_en": "The configurations related to log archiving for a job",
+        "description_zh": "本数据结构代表作业实例上日志保存的相关配置",
+        "properties": {
+          "expirationDays": {
+            "backendName": "expirationDays",
+            "description_en": "The number of days for which logs are retained after you enable the\nlog archiving feature",
+            "description_zh": "开启日志保存后，日志保存天数",
+            "example": "7",
+            "format": "int64",
+            "title": "开启日志保存后，日志保存天数",
+            "type": "integer"
+          },
+          "openHistory": {
+            "backendName": "openHistory",
+            "description_en": "Specifies whether to enable the log archiving feature",
+            "description_zh": "是否开启日志保存",
+            "example": "true",
+            "title": "是否开启日志保存",
+            "type": "boolean"
+          }
+        },
+        "title": "日志保存策略",
+        "type": "object"
+      },
+      "Logging": {
+        "description_en": "The information about log configurations for a deployment",
+        "description_zh": "本数据结构代表作业日志配置的相关信息",
+        "properties": {
+          "log4j2ConfigurationTemplate": {
+            "backendName": "log4j2ConfigurationTemplate",
+            "description_en": "Custom log templates",
+            "description_zh": "自定义日志模版",
+            "example": "xml格式文本",
+            "title": "自定义日志模版",
+            "type": "string"
+          },
+          "log4jLoggers": {
+            "backendName": "log4jLoggers",
+            "description_en": "The Log4j configuration",
+            "description_zh": "log4j配置",
+            "items": {
+              "$ref": "#/components/schemas/Log4jLogger",
+              "description_en": "The log output configuration information about a job",
+              "description_zh": "作业实例上日志输出相关配置信息"
+            },
+            "title": "log4j配置",
+            "type": "array"
+          },
+          "logReservePolicy": {
+            "$ref": "#/components/schemas/LogReservePolicy",
+            "backendName": "logReservePolicy",
+            "description_en": "The log retention policy",
+            "description_zh": "日志保存策略",
+            "title": "日志保存策略"
+          },
+          "loggingProfile": {
+            "backendName": "loggingProfile",
+            "description_en": "The type of the system log template.\n\ndefault: The default template is used.\n\noss: Logs are delivered to Object Storage Service (OSS)",
+            "description_zh": "系统日志默认模版",
+            "enum": [
+              "default",
+              "oss"
+            ],
+            "example": "default",
+            "title": "系统日志模版类型",
+            "type": "string"
+          }
+        },
+        "title": "作业日志配置",
+        "type": "object"
+      },
+      "PythonArtifact": {
+        "description_en": "The information required for a Python deployment",
+        "description_zh": "本数据结构代表Python类型作业必填的信息",
+        "properties": {
+          "additionalDependencies": {
+            "backendName": "additionalDependencies",
+            "description_en": "The URL of the additional dependency file",
+            "description_zh": "其他附件依赖文件URL路径",
+            "items": {
+              "description_en": "The URL of the dependency file",
+              "description_zh": "依赖文件URL路径",
+              "example": "https://oss/bucket/addition.py",
+              "type": "string"
+            },
+            "title": "其他附件依赖文件URL路径",
+            "type": "array"
+          },
+          "additionalPythonArchives": {
+            "backendName": "additionalPythonArchives",
+            "description_en": "The Python archive file on which the deployment depends",
+            "description_zh": "依赖的Python archives文件",
+            "items": {
+              "description_en": "The URL of the Python archive file",
+              "description_zh": "Python archive文件的URL路径",
+              "example": "https://oss/bucket/additionArchives.zip",
+              "type": "string"
+            },
+            "title": "依赖的python archives文件URL路径",
+            "type": "array"
+          },
+          "additionalPythonLibraries": {
+            "backendName": "additionalPythonLibraries",
+            "description_en": "The Python library file on which the deployment depends",
+            "description_zh": "依赖的Python lib文件",
+            "items": {
+              "description_en": "The URL of the Python library file",
+              "description_zh": "Python lib文件的URL路径",
+              "example": "https://oss/bucket/additionlib.py",
+              "type": "string"
+            },
+            "title": "依赖的python lib文件URL路径",
+            "type": "array"
+          },
+          "entryModule": {
+            "backendName": "entryModule",
+            "description_en": "The startup module for the Python deployment",
+            "description_zh": "Python的启动模块",
+            "example": "test.py",
+            "title": "python的启动模块",
+            "type": "string"
+          },
+          "mainArgs": {
+            "backendName": "mainArgs",
+            "description_en": "The startup parameter",
+            "description_zh": "启动参数",
+            "example": "start from main",
+            "title": "启动参数",
+            "type": "string"
+          },
+          "pythonArtifactUri": {
+            "backendName": "pythonArtifactUri",
+            "description_en": "The full URL for the Python deployment",
+            "description_zh": "Python类型作业URL全路径",
+            "example": "https://oss/bucket/test.py",
+            "title": "python作业URL全路径",
+            "type": "string"
+          }
+        },
+        "title": "python作业结构",
+        "type": "object"
+      },
+      "SqlArtifact": {
+        "description_en": "The information required for an SQL deployment",
+        "description_zh": "本数据结构代表SQL类型作业必填的信息",
+        "properties": {
+          "additionalDependencies": {
+            "backendName": "additionalDependencies",
+            "description_en": "The additional dependency files. If you want to use dependencies such as UDFs, connectors, and formats that are not registered on Ververica Platform (VVP), you need to configure this parameter. You do not need to configure this parameter for dependencies that are registered on VVP",
+            "description_zh": "附加依赖文件，如果您要是用未在VVP平台上注册的UDF/Connector/Format等依赖时，需要使用该方式添加，已注册的内容不需要使用本方式关联",
+            "items": {
+              "description_en": "The URL of the additional dependency file",
+              "description_zh": "附加依赖文件的URL地址",
+              "example": "https://oss/bucket/addition.jar",
+              "type": "string"
+            },
+            "title": "附加文件URL全路径地址，如果您要是用未在VVP平台上注册的UDF/Connector/Format等依赖时，需要使用该方式添加，已注册的内容不需要使用本方式关联",
+            "type": "array"
+          },
+          "sqlScript": {
+            "backendName": "sqlScript",
+            "description_en": "The script of the SQL deployment",
+            "description_zh": "SQL作业文本内容",
+            "example": "CREATE TEMPORARY TABLE datagen_source(   name VARCHAR ) WITH (   'connector' = 'datagen' ); CREATE TEMPORARY TABLE blackhole_sink(   name  VARCHAR ) with (   'connector' = 'blackhole' ); INSERT INTO blackhole_sink SELECT name from datagen_source;",
+            "title": "SQL作业文本内容",
+            "type": "string"
+          }
+        },
+        "title": "SQL作业结构",
+        "type": "object"
+      },
+      "StreamingResourceSetting": {
+        "description_en": "The resource settings for a job running in stream mode",
+        "description_zh": "本数据结构代表作业运行流模式时的资源设置",
+        "properties": {
+          "basicResourceSetting": {
+            "$ref": "#/components/schemas/BasicResourceSetting",
+            "backendName": "basicResourceSetting",
+            "description_en": "The resource settings for basic mode",
+            "description_zh": "基础模式资源设置",
+            "title": "基础资源设置"
+          },
+          "expertResourceSetting": {
+            "$ref": "#/components/schemas/ExpertResourceSetting",
+            "backendName": "expertResourceSetting",
+            "description_en": "The resource settings for expert mode",
+            "description_zh": "专家模式资源设置",
+            "title": "细粒度资源设置"
+          },
+          "resourceSettingMode": {
+            "backendName": "resourceSettingMode",
+            "description_en": "The resource mode used in stream mode. Valid values:\nEXPERT: expert mode.\nBASIC: basic mode",
+            "description_zh": "流模式使用的资源模式。\nEXPERT：专家模式。\nBASIC：基础模式",
+            "enum": [
+              "BASIC",
+              "EXPERT"
+            ],
+            "example": "EXPERT",
+            "title": "流作业资源模式",
+            "type": "string"
+          }
+        },
+        "title": "流作业资源设置",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Starts a job instance",
+  "description_zh": "启动一个作业实例",
+  "kebab_example": "aliyun ververica start-job-with-params --workspace a14bd5d90a0000 --namespace default-namespace --api-version 2022-07-18 --region cn-hangzhou",
+  "method": "POST",
+  "multi_version": false,
+  "name": "StartJobWithParams",
+  "operation": {
+    "action": "StartJobWithParams",
+    "api_style": "ROA",
+    "api_version": "2022-07-18",
+    "body_mapping": {
+      "deployment_id": "deploymentId",
+      "job_id": "jobId",
+      "local_variables": "localVariables",
+      "resource_queue_name": "resourceQueueName",
+      "restore_strategy": "restoreStrategy"
+    },
+    "content_type": "application/json",
+    "method": "POST",
+    "operation_type": "readAndWrite",
+    "protocol": "HTTPS",
+    "req_body_type": "json",
+    "system_operation_type": "none",
+    "url": "/api/v2/namespaces/{namespace}/jobs:start"
+  },
+  "parameters": [
+    {
+      "example": "a14bd5d90a****\n",
+      "help_en": "The ID of the workspace",
+      "help_zh": "工作空间ID",
+      "location": "header",
+      "name": "workspace",
+      "options": [
+        "--workspace"
+      ],
+      "raw_name": "workspace",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "default-namespace\n",
+      "help_en": "The name of the namespace",
+      "help_zh": "项目空间名称",
+      "location": "path",
+      "name": "namespace",
+      "options": [
+        "--namespace"
+      ],
+      "raw_name": "namespace",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "737d0921-c5ac-47fc-9ba9-07a1e0b4****",
+      "help_en": "Job ID",
+      "help_zh": "作业ID",
+      "location": "body",
+      "name": "deployment_id",
+      "options": [
+        "--deployment-id"
+      ],
+      "raw_name": "deploymentId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "help_en": "Job instance ID",
+      "help_zh": "作业实例 ID",
+      "location": "body",
+      "name": "job_id",
+      "options": [
+        "--job-id"
+      ],
+      "raw_name": "jobId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "element": {
+        "fields": [
+          {
+            "example": "test",
+            "help_en": "The name of the variable",
+            "help_zh": "作业变量名称",
+            "name": "name",
+            "options": [
+              "--name"
+            ],
+            "raw_name": "name",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "datagen",
+            "help_en": "The value of the variable",
+            "help_zh": "作业变量值",
+            "name": "value",
+            "options": [
+              "--value"
+            ],
+            "raw_name": "value",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "type": "object"
+      },
+      "help_en": "Job variables",
+      "help_zh": "作业变量",
+      "location": "body",
+      "name": "local_variables",
+      "options": [
+        "--local-variables"
+      ],
+      "raw_name": "localVariables",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "example": "default-queue",
+      "help_en": "Resource queue for job execution",
+      "help_zh": "作业运行的资源队列",
+      "location": "body",
+      "name": "resource_queue_name",
+      "options": [
+        "--resource-queue-name"
+      ],
+      "raw_name": "resourceQueueName",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "fields": [
+        {
+          "example": "TRUE",
+          "help_en": "Specifies whether to allow specific operator states to be skipped. This parameter is required only when a Python deployment or a JAR deployment is resumed with state data",
+          "help_zh": "允许忽略部分算子状态。仅当Python类型或者Jar类型作业选择有状态恢复时需要设置",
+          "name": "allow_non_restored_state",
+          "options": [
+            "--allow-non-restored-state"
+          ],
+          "raw_name": "allowNonRestoredState",
+          "required": false,
+          "type": "bool"
+        },
+        {
+          "example": "1660293803155",
+          "help_en": "The time point at which the deployment is started without states. You must enter a 13-digit timestamp. If you set the kind parameter to NONE, you can configure this parameter to allow all source tables for which the startTime parameter is configured to read data from the specified time point",
+          "help_zh": "无状态启动时间，需输入13位时间戳。当选择无状态启动时，可以设置本参数让所有支持startTime的源表均从该时刻开始读取数据",
+          "name": "job_start_time_in_ms",
+          "options": [
+            "--job-start-time-in-ms"
+          ],
+          "raw_name": "jobStartTimeInMs",
+          "required": false,
+          "type": "int"
+        },
+        {
+          "enum": [
+            "NONE",
+            "LATEST_SAVEPOINT",
+            "FROM_SAVEPOINT",
+            "LATEST_STATE"
+          ],
+          "example": "LATEST_STATE",
+          "help_en": "The type of the start offset. Valid values:\n\nNONE: The deployment is started without states.\n\nLATEST_SAVEPOINT: The deployment is started from the latest savepoint.\n\nFROM_SAVEPOINT: The deployment is started from the specified savepoint.\n\nLATEST_STATE: The deployment is started from the latest state of the deployment",
+          "help_zh": "启动位点类型。\nNONE：无状态启动。\nLATEST_SAVEPOINT：最新的作业快照启动。\nFROM_SAVEPOINT：从指定快照启动。\nLATEST_STATE：最新状态启动",
+          "name": "kind",
+          "options": [
+            "--kind"
+          ],
+          "raw_name": "kind",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "354dde66-a3ae-463e-967a-0b4107fd****",
+          "help_en": "The ID of the savepoint for starting the deployment. This parameter is required when the kind parameter is set to FROM_SAVEPOINT",
+          "help_zh": "启动作业快照ID，启动策略为FROM_SAVEPOINT时必填",
+          "name": "savepoint_id",
+          "options": [
+            "--savepoint-id"
+          ],
+          "raw_name": "savepointId",
+          "required": false,
+          "type": "string"
+        }
+      ],
+      "help_en": "Job start offset settings",
+      "help_zh": "作业启动位点设置",
+      "location": "body",
+      "name": "restore_strategy",
+      "options": [
+        "--restore-strategy"
+      ],
+      "raw_name": "restoreStrategy",
+      "required": false,
+      "type": "object"
+    }
+  ],
+  "pathPattern": "/api/v2/namespaces/[namespace]/jobs:start",
+  "product_code": "ververica",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "The response data",
+        "description_zh": "响应数据",
+        "properties": {
+          "accessDeniedDetail": {
+            "backendName": "accessDeniedDetail",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Job",
+            "description_en": "Details of the job instance created from the deployment",
+            "description_zh": "本数据结构代表已部署作业生成的实例详情",
+            "sensitive": true
+          },
+          "errorCode": {
+            "description_en": "The error code. This field is populated only when `success` is `false` and is empty otherwise",
+            "description_zh": "当success为false时，该值不为空，表示业务错误码；当success为true时，该值为空",
+            "example": "\"\"",
+            "title_en": "当success为false时，该值不为空，表示业务错误码；当success为true时，该值为空。",
+            "title_zh": "当success为false时，该值不为空，表示业务错误码；当success为true时，该值为空。",
+            "type": "string"
+          },
+          "errorMessage": {
+            "description_en": "The error message. This field is populated only when `success` is `false` and is empty otherwise",
+            "description_zh": "当success为false时，该值不为空，表示业务错误信息；当success为true时，该值为空",
+            "example": "\"\"",
+            "title_en": "当success为false时，该值不为空，表示业务错误信息；当success为true时，该值为空。",
+            "title_zh": "当success为false时，该值不为空，表示业务错误信息；当success为true时，该值为空。",
+            "type": "string"
+          },
+          "httpCode": {
+            "description_en": "The HTTP status code. This value is always 200. Use the `success` field to determine whether the request was successful",
+            "description_zh": "业务状态码，统一为200；使用success表示业务请求是否成功",
+            "example": "200",
+            "format": "int32",
+            "title_en": "业务状态码，统一为200；使用success表示业务请求是否成功。",
+            "title_zh": "业务状态码，统一为200；使用success表示业务请求是否成功。",
+            "type": "integer"
+          },
+          "requestId": {
+            "description_en": "The ID of the request",
+            "description_zh": "请求ID",
+            "example": "CBC799F0-AS7S-1D30-8A4F-882ED4DD****\n",
+            "title_en": "请求ID。",
+            "title_zh": "请求ID。",
+            "type": "string"
+          },
+          "success": {
+            "description_en": "Indicates whether the request was successful",
+            "description_zh": "表示业务请求是否成功",
+            "example": "true\n",
+            "title_en": "表示业务请求是否成功。",
+            "title_zh": "表示业务请求是否成功。",
+            "type": "boolean"
+          }
+        },
+        "title_en": "响应数据结构。",
+        "title_zh": "响应数据结构。",
+        "type": "object"
+      }
+    }
+  },
+  "v1_body_parameters": [
+    {
+      "help_en": "Parameters to start the job instance",
+      "help_zh": "作业实例启动参数",
+      "name": "body",
+      "param_style": "json",
+      "position": "body",
+      "required": false,
+      "type": "string"
+    }
+  ]
+}

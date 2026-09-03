@@ -1,0 +1,148 @@
+{
+  "cmd_full_name": "adb get-semantic-view",
+  "cmd_name": "get-semantic-view",
+  "components": {
+    "schemas": {
+      "SemanticViewModel": {
+        "description_en": "Contains the definition and metadata for a semantic view",
+        "description_zh": "语义视图定义",
+        "properties": {
+          "Comment": {
+            "backendName": "comment",
+            "description_en": "The annotation for the semantic view",
+            "description_zh": "语义视图注解",
+            "example": "这是一个定义销售额相关指标的视图",
+            "title": "语义视图注解",
+            "type": "string"
+          },
+          "Definition": {
+            "backendName": "definition",
+            "description_en": "The YAML definition of the semantic view",
+            "description_zh": "语义视图 YAML 定义内容",
+            "example": "name: revenue_analysis\ndescription: \"Semantic view for analyzing revenue across products and customers\"\n\ntables:\n  - name: customers\n    description: \"Customer information\"\n    base_table:\n      schema: sales_db\n      table: customers\n    dimensions:\n      - name: customer_name\n        synonyms: [\"client name\", \"customer\"]\n        description: \"Full name of the customer\"\n        expr: c_name\n        data_type: VARCHAR\n      - name: customer_segment\n        synonyms: [\"segment\", \"market segment\"]\n        description: \"Customer market segment\"\n        expr: c_mktsegment\n        data_type: VARCHAR\n        is_enum: true\n\n  - name: orders\n    description: \"Order information\"\n    base_table:\n      schema: sales_db\n      table: orders\n    dimensions:\n      - name: order_date\n        description: \"Date when order was placed\"\n        expr: o_orderdate\n        data_type: DATE\n      - name: order_year\n        description: \"Year when order was placed\"\n        expr: YEAR(o_orderdate)\n        data_type: NUMBER\n    facts:\n      - name: order_total\n        description: \"Total order amount\"\n        expr: o_totalprice\n        data_type: NUMBER\n    metrics:\n      - name: total_orders\n        description: \"Total number of orders\"\n        expr: COUNT(*)\n      - name: total_revenue\n        description: \"Total revenue of orders\"\n        expr: SUM(o_totalprice)\n      - name: average_order_value\n        description: \"Average order value\"\n        expr: AVG(o_totalprice)\n\nrelationships:\n  - name: orders_to_customers\n    left_table: orders\n    right_table: customers\n    relationship_columns:\n      - left_column: o_custkey\n        right_column: c_custkey\n\nmetrics:\n  - name: revenue_per_customer\n    description: \"Average revenue per customer\"\n    expr: orders.total_revenue / customers.customer_count\n",
+            "title": "语义视图 YAML 定义内容",
+            "type": "string"
+          },
+          "Score": {
+            "backendName": "score",
+            "description_en": "The vector retrieval match score (defaults to 1; during retrieval queries, it is a decimal between 0 and 1 representing vector similarity)",
+            "description_zh": "向量检索匹配度（默认为 1，检索查询时为向量匹配值0-1之间的小数）",
+            "example": "0.81",
+            "format": "double",
+            "title": "向量检索匹配度（默认为 1，检索查询时为向量匹配值0-1之间的小数）",
+            "type": "number"
+          },
+          "ViewName": {
+            "backendName": "viewName",
+            "description_en": "The name of the semantic view",
+            "description_zh": "语义视图名称",
+            "example": "revenue_analysis",
+            "title": "语义视图名称",
+            "type": "string"
+          },
+          "ViewSchema": {
+            "backendName": "viewSchema",
+            "description_en": "The schema where the semantic view resides",
+            "description_zh": "语义视图所在的 schema",
+            "example": "sales_db",
+            "title": "语义视图所在的 schema",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Retrieves the details of a semantic view",
+  "description_zh": "查询语义视图",
+  "kebab_example": "aliyun adb get-semantic-view --db-cluster-id amv-bp1d8lbdj22rx0000 --schema-name adb_demo --view-name sv_name --api-version 2021-12-01 --region cn-hangzhou",
+  "method": "GET|POST",
+  "multi_version": true,
+  "name": "GetSemanticView",
+  "operation": {
+    "action": "GetSemanticView",
+    "api_style": "RPC",
+    "api_version": "2021-12-01",
+    "method": "POST",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "get",
+    "url": ""
+  },
+  "parameters": [
+    {
+      "example": "amv-bp1d8lbdj22rx****",
+      "help_en": "The ID of the AnalyticDB for MySQL Data Lakehouse Edition (V3.0) cluster",
+      "help_zh": "ADB 集群ID",
+      "location": "query",
+      "name": "db_cluster_id",
+      "options": [
+        "--db-cluster-id"
+      ],
+      "raw_name": "DBClusterId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "adb_demo",
+      "help_en": "The name of the schema",
+      "help_zh": "Schema名称",
+      "location": "query",
+      "name": "schema_name",
+      "options": [
+        "--schema-name"
+      ],
+      "raw_name": "SchemaName",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "sv_name",
+      "help_en": "The name of the semantic view",
+      "help_zh": "语义视图名称",
+      "location": "query",
+      "name": "view_name",
+      "options": [
+        "--view-name"
+      ],
+      "raw_name": "ViewName",
+      "required": true,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "",
+  "product_code": "adb",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "The returned data",
+        "description_zh": "Schema of Response",
+        "properties": {
+          "Data": {
+            "$ref": "#/components/schemas/SemanticViewModel",
+            "backendName": "data",
+            "description_en": "The details of the semantic view",
+            "description_zh": "返回结果数据",
+            "example": "69",
+            "title_en": "返回结果数据。",
+            "title_zh": "返回结果数据。"
+          },
+          "RequestId": {
+            "backendName": "requestId",
+            "description_en": "The request ID",
+            "description_zh": "Id of the request",
+            "example": "1AD222E9-E606-4A42-BF6D-8A4442913CEF",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          }
+        },
+        "title_en": "Schema of Response",
+        "title_zh": "Schema of Response",
+        "type": "object"
+      }
+    }
+  }
+}

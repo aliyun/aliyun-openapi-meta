@@ -1,0 +1,368 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "agentloop list-evaluation-tasks",
+  "cmd_name": "list-evaluation-tasks",
+  "components": {
+    "schemas": {
+      "BackfillStrategy": {
+        "description_en": "The backfill evaluation policy for historical data, which specifies the time range and trigger method for a backfill run",
+        "description_zh": "历史数据回填评估策略，用于指定一次回填运行的时间范围和触发方式",
+        "example": "{\"enabled\":true,\"startTime\":1782816000000,\"endTime\":1782902400000,\"immediate\":false}",
+        "properties": {
+          "enabled": {
+            "backendName": "enabled",
+            "description_en": "Specifies whether the backfill policy is enabled. If this parameter is not specified or is set to true, the policy is enabled. If this parameter is set to false, the policy is disabled but the configuration is retained",
+            "description_zh": "是否启用回填策略。不传或 true 表示启用；false 表示关闭但保留配置",
+            "example": "true",
+            "type": "boolean"
+          },
+          "endTime": {
+            "backendName": "endTime",
+            "description_en": "The end of the backfill time range, in UNIX millisecond timestamp. Provide a complete time range when you need to manually start a backfill",
+            "description_zh": "回填时间范围终点，Unix 毫秒时间戳。需要手动启动回填时应提供完整时间范围",
+            "example": "1782902400000",
+            "format": "int64",
+            "type": "integer"
+          },
+          "startTime": {
+            "backendName": "startTime",
+            "description_en": "The start of the backfill time range, in UNIX millisecond timestamp. Provide a complete time range when you need to manually start a backfill",
+            "description_zh": "回填时间范围起点，Unix 毫秒时间戳。需要手动启动回填时应提供完整时间范围",
+            "example": "1782816000000",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ContinuousStrategy": {
+        "description_en": "The continuous evaluation policy, which is used to continuously evaluate new data within fixed time windows",
+        "description_zh": "持续评估策略，用于按固定时间窗口持续评估新增数据",
+        "example": "{\"enabled\":true,\"intervalUnit\":\"HOUR\",\"intervalValue\":1,\"dataDelayMinutes\":5}",
+        "properties": {
+          "dataDelayMinutes": {
+            "backendName": "dataDelayMinutes",
+            "description_en": "The data arrival delay in minutes. After a window ends, the system waits for this duration before creating a run to allow data to arrive completely. Default value: 0",
+            "description_zh": "数据到达延迟时间，单位为分钟。窗口结束后延迟该时间再创建运行，用于等待数据完整到达；不传默认为 0",
+            "example": "5",
+            "format": "int32",
+            "type": "integer"
+          },
+          "enabled": {
+            "backendName": "enabled",
+            "description_en": "Specifies whether to enable continuous evaluation. If this parameter is not specified or is set to true, continuous evaluation is enabled. If this parameter is set to false, continuous evaluation is disabled but the configuration is retained",
+            "description_zh": "是否启用持续评估。不传或 true 表示启用；false 表示关闭但保留配置",
+            "example": "true",
+            "type": "boolean"
+          },
+          "intervalUnit": {
+            "backendName": "intervalUnit",
+            "description_en": "The unit of the continuous evaluation window interval. This field is required for the current polling implementation",
+            "description_zh": "持续评估窗口间隔单位。当前轮询实现需要该字段",
+            "example": "HOUR",
+            "type": "string"
+          },
+          "intervalValue": {
+            "backendName": "intervalValue",
+            "description_en": "The size of the continuous evaluation window interval. This parameter is used together with intervalUnit. The value must be greater than 0",
+            "description_zh": "持续评估窗口间隔大小，需要与 intervalUnit 配合使用，取值应大于 0",
+            "example": "1",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "RunStrategies": {
+        "description_en": "The run policy container for evaluation tasks, used to configure historical data backfill evaluation and continuous incremental evaluation",
+        "description_zh": "评估任务的运行策略容器，用于配置历史数据回填评估和持续增量评估",
+        "example": "{\"backfill\":{\"enabled\":true,\"startTime\":1782816000000,\"endTime\":1782902400000,\"immediate\":false},\"continuous\":{\"enabled\":true,\"intervalUnit\":\"HOUR\",\"intervalValue\":1,\"dataDelayMinutes\":5}}",
+        "properties": {
+          "backfill": {
+            "$ref": "#/components/schemas/BackfillStrategy",
+            "backendName": "backfill",
+            "description_en": "The historical batch backfill policy. Backfill is enabled when the object exists and enabled is not explicitly set to false",
+            "description_zh": "历史批量回填策略。对象存在且 enabled 未显式为 false 时表示启用 backfill",
+            "example": "{\"enabled\":true,\"startTime\":1782816000000,\"endTime\":1782902400000,\"immediate\":false}"
+          },
+          "continuous": {
+            "$ref": "#/components/schemas/ContinuousStrategy",
+            "backendName": "continuous",
+            "description_en": "The continuous evaluation policy. Continuous evaluation is enabled when the object exists and enabled is not explicitly set to false",
+            "description_zh": "持续评估策略。对象存在且 enabled 未显式为 false 时表示启用 continuous",
+            "example": "{\"enabled\":true,\"intervalUnit\":\"HOUR\",\"intervalValue\":1,\"dataDelayMinutes\":5}"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Queries a list of evaluation tasks",
+  "description_zh": "查询评估任务列表",
+  "kebab_example": "aliyun agentloop list-evaluation-tasks --agent-space prod-agentspace --task-name trace_task_completion_eval --task-mode batch --data-type trace --status Running --next-token eyJsYXN0SWQiOjEyMywib2Zmc2V0IjoyMH0= --max-results 20 --channel default --region cn-hangzhou",
+  "method": "GET",
+  "multi_version": false,
+  "name": "ListEvaluationTasks",
+  "operation": {
+    "action": "ListEvaluationTasks",
+    "api_style": "ROA",
+    "api_version": "2026-05-20",
+    "method": "GET",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "list",
+    "url": "/api/v1/evaluation-tasks"
+  },
+  "parameters": [
+    {
+      "example": "prod-agentspace",
+      "help_en": "The AgentSpace name",
+      "help_zh": "AgentSpace 名称",
+      "location": "query",
+      "name": "agent_space",
+      "options": [
+        "--agent-space"
+      ],
+      "raw_name": "agentSpace",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "trace_task_completion_eval",
+      "help_en": "The fuzzy match condition for the task name",
+      "help_zh": "任务名称模糊搜索条件",
+      "location": "query",
+      "name": "task_name",
+      "options": [
+        "--task-name"
+      ],
+      "raw_name": "taskName",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "batch",
+      "help_en": "The evaluation task mode. If this parameter is not specified, the default value is `batch`",
+      "help_zh": "评估任务模式。不传时后端默认设置为 `batch`",
+      "location": "query",
+      "name": "task_mode",
+      "options": [
+        "--task-mode"
+      ],
+      "raw_name": "taskMode",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "trace",
+      "help_en": "The data source type of the evaluation object. Set this parameter to `trace` for trace-based evaluation",
+      "help_zh": "评估对象的数据来源类型。链路 Trace 评估使用 `trace`",
+      "location": "query",
+      "name": "data_type",
+      "options": [
+        "--data-type"
+      ],
+      "raw_name": "dataType",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "Running",
+      "help_en": "The filter condition for the evaluation task status",
+      "help_zh": "评估任务状态过滤条件",
+      "location": "query",
+      "name": "status",
+      "options": [
+        "--status"
+      ],
+      "raw_name": "status",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "eyJsYXN0SWQiOjEyMywib2Zmc2V0IjoyMH0=",
+      "help_en": "The pagination token for the next page, obtained from the previous response",
+      "help_zh": "下一页分页 Token，来自上一次响应",
+      "location": "query",
+      "name": "next_token",
+      "options": [
+        "--next-token"
+      ],
+      "raw_name": "nextToken",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "20",
+      "help_en": "The number of entries per page. Default value: 20. Maximum value: 100",
+      "help_zh": "每页返回条数。后端默认 20，最大 100",
+      "location": "query",
+      "name": "max_results",
+      "options": [
+        "--max-results"
+      ],
+      "raw_name": "maxResults",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "default",
+      "help_en": "The filter condition for the task source. If this parameter is not specified, tasks from the default source are queried",
+      "help_zh": "任务来源过滤条件。不传时查询默认来源任务",
+      "location": "query",
+      "name": "channel",
+      "options": [
+        "--channel"
+      ],
+      "raw_name": "channel",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/api/v1/evaluation-tasks",
+  "product_code": "AgentLoop",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "Schema of Response",
+        "description_zh": "Schema of Response",
+        "properties": {
+          "evaluationTasks": {
+            "description_en": "The list of evaluation task summaries",
+            "description_zh": "评估任务摘要列表",
+            "example": "[{\"taskId\":\"eval-task-8b36f2e2b1f94f9c91ce7a4b0f6d9c25\",\"taskName\":\"trace_task_completion_eval\",\"taskMode\":\"batch\",\"dataType\":\"trace\",\"status\":\"Running\"}]",
+            "itemName": "evaluationTask",
+            "items": {
+              "description_en": "The evaluation task summary object",
+              "description_zh": "单个评估任务摘要对象",
+              "example": "{\"taskId\":\"eval-task-8b36f2e2b1f94f9c91ce7a4b0f6d9c25\"}",
+              "properties": {
+                "config": {
+                  "additionalProperties": {
+                    "description_en": "The value of a configuration item. The key name is determined by the specific field convention",
+                    "description_zh": "单个配置项的值，键名由具体字段约定决定",
+                    "example": "trace",
+                    "type": "string"
+                  },
+                  "description_en": "The data source and execution configuration summary",
+                  "description_zh": "数据源和执行配置摘要",
+                  "example": "{\"storeName\":\"logstore-tracing\",\"dataScope\":\"trace\"}",
+                  "type": "object"
+                },
+                "createdAt": {
+                  "description_en": "The creation time, in seconds-level UNIX timestamp",
+                  "description_zh": "创建时间，秒级 Unix 时间戳",
+                  "example": "1782816000",
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "dataType": {
+                  "description_en": "The data source type of the evaluation object",
+                  "description_zh": "评估对象的数据来源类型",
+                  "example": "trace",
+                  "type": "string"
+                },
+                "description": {
+                  "description_en": "The evaluation task description",
+                  "description_zh": "评估任务描述",
+                  "example": "评估线上 Agent 链路任务完成度",
+                  "type": "string"
+                },
+                "evaluators": {
+                  "description_en": "The evaluator configuration summary, in JSON string format",
+                  "description_zh": "评估器配置摘要，JSON 字符串",
+                  "example": "[{\"evaluatorRef\":\"Builtin.agent_task_completion\"}]",
+                  "type": "string"
+                },
+                "runStrategyConfig": {
+                  "$ref": "#/components/schemas/RunStrategies",
+                  "description_en": "The structured run strategy configuration, including the parsed backfill strategy and continuous evaluation strategy",
+                  "description_zh": "运行策略结构化配置，解析后的回填策略和持续评估策略",
+                  "example": "{\"backfill\":{\"enabled\":true,\"startTime\":1782816000000,\"endTime\":1782902400000},\"continuous\":{\"enabled\":true,\"intervalUnit\":\"HOUR\",\"intervalValue\":1,\"dataDelayMinutes\":5}}"
+                },
+                "status": {
+                  "description_en": "The evaluation task status",
+                  "description_zh": "评估任务状态",
+                  "example": "Running",
+                  "type": "string"
+                },
+                "tags": {
+                  "additionalProperties": {
+                    "description_en": "The value of a task tag. The key name is customized based on business dimensions",
+                    "description_zh": "单个任务标签值，键名按业务维度自定义",
+                    "example": "prod",
+                    "type": "string"
+                  },
+                  "description_en": "The key-value pairs of task tags. This parameter is empty if no tags are set",
+                  "description_zh": "任务标签键值对。未设置时为空",
+                  "example": "{\"serviceId\":\"checkout-service\",\"env\":\"prod\"}",
+                  "type": "object"
+                },
+                "taskId": {
+                  "description_en": "The evaluation task ID",
+                  "description_zh": "评估任务 ID",
+                  "example": "eval-task-8b36f2e2b1f94f9c91ce7a4b0f6d9c25",
+                  "type": "string"
+                },
+                "taskMode": {
+                  "description_en": "The evaluation task mode",
+                  "description_zh": "评估任务模式",
+                  "example": "batch",
+                  "type": "string"
+                },
+                "taskName": {
+                  "description_en": "The task name",
+                  "description_zh": "任务名称",
+                  "example": "trace_task_completion_eval",
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "description_en": "The last update time, in seconds-level UNIX timestamp",
+                  "description_zh": "最近更新时间，秒级 Unix 时间戳",
+                  "example": "1782816600",
+                  "format": "int64",
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "maxResults": {
+            "description_en": "The number of entries per page used in this request",
+            "description_zh": "本次请求使用的每页条数",
+            "example": "20",
+            "format": "int32",
+            "type": "integer"
+          },
+          "nextToken": {
+            "description_en": "The pagination token for the next page. An empty value indicates that no more pages are available",
+            "description_zh": "下一页分页 Token。为空表示没有下一页",
+            "example": "eyJsYXN0SWQiOjEwMSwib2Zmc2V0IjoyMH0=",
+            "type": "string"
+          },
+          "requestId": {
+            "description_en": "The request ID",
+            "description_zh": "请求 ID",
+            "example": "3FE4CD1E-FF41-56BE-B590-7A021D9C1524",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          },
+          "totalCount": {
+            "description_en": "The total number of records. The total count is returned only on the first page. This value may be empty on subsequent pages",
+            "description_zh": "总记录数。后端仅在第一页查询总数，后续页可能为空",
+            "example": "126",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "title_en": "Schema of Response",
+        "title_zh": "Schema of Response",
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,385 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "dms retrieve-knowledge-base",
+  "cmd_name": "retrieve-knowledge-base",
+  "deprecated": false,
+  "description_en": "Query a knowledge base",
+  "description_zh": "检索知识库",
+  "kebab_example": "aliyun dms retrieve-knowledge-base --kb-uuid kb-000 --query What_is_GraphRAG0 --region cn-hangzhou",
+  "method": "POST",
+  "multi_version": false,
+  "name": "RetrieveKnowledgeBase",
+  "operation": {
+    "action": "RetrieveKnowledgeBase",
+    "api_style": "RPC",
+    "api_version": "2025-04-14",
+    "content_type": "application/x-www-form-urlencoded",
+    "method": "POST",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "req_body_type": "formData",
+    "system_operation_type": "get",
+    "url": ""
+  },
+  "parameters": [
+    {
+      "example": "kb-***",
+      "help_en": "The ID of the knowledge base",
+      "help_zh": "知识库ID",
+      "location": "formData",
+      "name": "kb_uuid",
+      "options": [
+        "--kb-uuid"
+      ],
+      "raw_name": "KbUuid",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "What is GraphRAG?",
+      "help_en": "The query text",
+      "help_zh": "查询内容",
+      "location": "formData",
+      "name": "query",
+      "options": [
+        "--query"
+      ],
+      "raw_name": "Query",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "10",
+      "help_en": "The number of top-ranked results to return",
+      "help_zh": "返回 top 数量的结果",
+      "location": "formData",
+      "name": "topk",
+      "options": [
+        "--topk"
+      ],
+      "raw_name": "TopK",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "title = 'test' AND name like 'test%'",
+      "help_en": "A filter for the data, specified as a SQL `WHERE` clause",
+      "help_zh": "要查询的数据的过滤条件，格式为 SQL 的 WHERE 格式",
+      "location": "formData",
+      "name": "filter",
+      "options": [
+        "--filter"
+      ],
+      "raw_name": "Filter",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "cosine",
+      "help_en": "The distance metric for retrieval. If unspecified, this defaults to the metric configured for the knowledge base. Only set this parameter if you have specific requirements.\n\nValid values:\n\n`l2`: Euclidean distance.\n\n`ip`: Inner product.\n\n`cosine`: Cosine similarity",
+      "help_zh": "检索时的相似度算法。此值为空时则采用创建知识库时指定的算法，建议如无特殊需求不需设置。\n\n可选值：\nl2：欧氏距离。\nip：点积（内积）距离。\ncosine：余弦相似度",
+      "location": "formData",
+      "name": "metrics",
+      "options": [
+        "--metrics"
+      ],
+      "raw_name": "Metrics",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "RRF",
+      "help_en": "The hybrid search algorithm. If this parameter is not set, the system directly compares and ranks the scores from the dense vector and full-text searches.\n\nValid values:\n\n`RRF`: Reciprocal Rank Fusion. This method uses a parameter `k` to control the fusion effect. For more information, see the `HybridSearchArgs` configuration.\n\n`Weight`: Weighted ranking. This method applies weights to the vector and full-text search scores before ranking. For more information, see the `HybridSearchArgs` configuration.\n\n`Cascaded`: Performs a full-text search first, followed by a vector search on the results of the full-text search",
+      "help_zh": "多路召回算法，默认为空(即直接将稠密向量和全文的分数比较并排序)。\n\n可选值：\n\nRRF：倒数排序融合(Reciprocal rank fusion)，有一个参数k控制融合效果，详见HybridSearchArgs配置。\nWeight：比重排序，采用参数控制向量和全文的分数比重，然后再排序，参数详见 HybridSearchArgs 配置。\nCascaded：先全文检索再在其基础上进行向量检索",
+      "location": "formData",
+      "name": "hybrid_search",
+      "options": [
+        "--hybrid-search"
+      ],
+      "raw_name": "HybridSearch",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "{ \\\"Weight\\\": { \\\"alpha\\\": 0.5 } }",
+      "help_en": "Parameters for the specified `HybridSearch` algorithm. Both `RRF` and `Weight` are supported. You can use the `HybridPathsSetting` object to specify the retrieval paths: dense vector (`dense`), sparse vector (`sparse`), and full-text search (`fulltext`). If this object is not provided, the default retrieval paths are `dense` and `fulltext`.\n\n`RRF`: Specifies the constant `k` in the scoring formula `1/(k+rank_i)`. The value of `k` must be an integer greater than 1. The format is as follows:\n\n```\n{\n  \"HybridPathsSetting\": {\n    \"paths\": \"dense,fulltext\"\n  },\n  \"RRF\": {\n    \"k\": 60\n  }\n}\n```\n\n`Weight`:\n\nTwo-path recall (do not specify `HybridPathsSetting`; specify only `alpha`):\n\n    - The score is calculated using the formula: `alpha * dense_score + (1-alpha) * fulltext_score`. The `alpha` parameter balances the scores from the dense vector and full-text searches. Its value must be in the range [0, 1], where 0 relies solely on full-text search, and 1 relies solely on dense vector search.\n\n```\n{ \n   \"Weight\": {\n    \"alpha\": 0.5\n   }\n}\n```\n\nThree-path recall:\n\nThe score is calculated using the formula: `normalized_dense * dense_score + normalized_sparse * sparse_score + normalized_fulltext * fulltext_score`. The `dense`, `sparse`, and `fulltext` parameters are the weights for the dense vector, sparse vector, and full-text searches, respectively. Their values must be 0 or greater. The system automatically normalizes the weights to sum to 1 (for example, `normalized_x = x / (dense + sparse + fulltext)`).\n\n```\n{\n  \"HybridPathsSetting\": {\n     \"paths\": \"dense,sparse,fulltext\"\n   },\n  \"Weight\": {\n    \"dense\": 0.5,\n    \"sparse\": 0.3,\n    \"fulltext\": 0.2\n  }\n}\n```",
+      "help_zh": "多路召回的算法参数。目前支持RRF和Weight两种。HybridPathsSetting可以指定召回稠密向量（dense）、稀疏向量（sparse）和全文检索（fulltext），如果值为空，默认召回稠密向量（dense）和全文检索（fulltext）。\n\nRRF：指定计算分数的算法的`1/(k+rank_i)`中的k常数，范围大于1的正整数，格式为：\n```\n{\n  \"HybridPathsSetting\": {\n    \"paths\": \"dense,fulltext\"\n  },\n  \"RRF\": {\n    \"k\": 60\n  }\n}\n```\n\nWeight: \n双路召回（不指定HybridPathsSetting，仅指定 alpha）：\n      - 计算公式：alpha * dense_score + (1-alpha) * fulltext_score，参数 alpha 表示稠密向量和全文的检索分数比重，范围为 0～1，其中 0 表示只全文，1 表示只稠密向量：\n```\n{ \n   \"Weight\": {\n    \"alpha\": 0.5\n   }\n}\n```\n  - 三路召回模式：\n     - 计算公式：normalized_dense * dense_score + normalized_sparse * sparse_score + normalized_fulltext * fulltext_score。其中dense、sparse、fulltext 分别代表稠密向量、稀疏向量、全文检索的权重，取值范围大于等于 0。系统会自动将权重归一化到 0～1（即 normalized_x = x / (dense + sparse + fulltext)）。\n```\n{\n  \"HybridPathsSetting\": {\n     \"paths\": \"dense,sparse,fulltext\"\n   },\n  \"Weight\": {\n    \"dense\": 0.5,\n    \"sparse\": 0.3,\n    \"fulltext\": 0.2\n  }\n}\n```",
+      "location": "formData",
+      "name": "hybrid_search_args",
+      "options": [
+        "--hybrid-search-args"
+      ],
+      "raw_name": "HybridSearchArgs",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "false",
+      "help_en": "Specifies whether to include the vector in the results. The default value is `false`.\n\nfalse: The vector is not returned.\n\ntrue: The vector is returned",
+      "help_zh": "是否返回向量。默认为false。\nfalse：不返回向量。\ntrue：返回向量",
+      "location": "formData",
+      "name": "include_vector",
+      "options": [
+        "--include-vector"
+      ],
+      "raw_name": "IncludeVector",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "example": "title,page",
+      "help_en": "The metadata fields to return, separated by commas. By default, no metadata fields are returned",
+      "help_zh": "默认为空，表示要返回的metadata字段，多个字段用逗号分隔",
+      "location": "formData",
+      "name": "include_metadata_fields",
+      "options": [
+        "--include-metadata-fields"
+      ],
+      "raw_name": "IncludeMetadataFields",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "2",
+      "help_en": "The factor used to rerank vector search results. The value must be in the range (1, 5].\n\nReranking may be slow if document chunks are sparse.\n\nThe number of items to rerank, calculated as `ceil(TopK * RerankFactor)`, should not exceed 50",
+      "help_zh": "重排因子。当该值不为空时，会对向量检索结果再做一次重排。取值范围：1<RerankFactor<=5。\n当文档切分稀疏时，重排效率慢。\n建议重排个数（TopK*Factor（向上取整））不超过50",
+      "location": "formData",
+      "name": "rerank_factor",
+      "options": [
+        "--rerank-factor"
+      ],
+      "raw_name": "RerankFactor",
+      "required": false,
+      "type": "float"
+    },
+    {
+      "example": "[-5,5]",
+      "help_en": "The recall window. If specified, this parameter expands the context of the retrieved results. The format is a two-element array `[A, B]`, where `-10 <= A <= 0` and `0 <= B <= 10`.\n\nRecommended when document chunks are highly fragmented, which might cause context loss during retrieval.\n\nReranking occurs before windowing is applied",
+      "help_zh": "召回窗口。当该值不为空时，增加返回检索结果的上下文。格式为2个元素的数组：List<A, B>，其中-10<=A<=0，0<=B<=10。\n推荐当文档切分过碎、检索可能会丢失上下文信息时使用该参数。\n重排优先窗口化，即先rerank，再窗口化处理",
+      "location": "formData",
+      "name": "recall_window",
+      "options": [
+        "--recall-window"
+      ],
+      "raw_name": "RecallWindow",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "created_at",
+      "help_en": "The field to use for sorting the results. By default, this parameter is empty.\n\nThe field must be a metadata field or a default table field, such as `id`. Supported formats include:\n\nYou can specify a single field (for example, `chunk_id`), multiple comma-separated fields (for example, `block_id, chunk_id`), or fields with descending order (for example, `block_id DESC, chunk_id DESC`)",
+      "help_zh": "默认为空，表示排序的依据字段。\n\n字段必须属于 metadata 或表里的默认字段比如 id，格式支持：\n\n单个字段，如 chunk_id； 多个字段，用逗号连接，如 block_id, chunk_id； 支持反序，如: block_id DESC, chunk_id DESC；",
+      "location": "formData",
+      "name": "order_by",
+      "options": [
+        "--order-by"
+      ],
+      "raw_name": "OrderBy",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "0",
+      "help_en": "The offset for pagination",
+      "help_zh": "偏移量，用于分页查询",
+      "location": "formData",
+      "name": "offset",
+      "options": [
+        "--offset"
+      ],
+      "raw_name": "Offset",
+      "required": false,
+      "type": "int"
+    }
+  ],
+  "pathPattern": "",
+  "product_code": "Dms",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "The response object",
+        "description_zh": "Schema of Response",
+        "properties": {
+          "Data": {
+            "backendName": "data",
+            "description_en": "The response payload",
+            "description_zh": "返回结构体",
+            "properties": {
+              "Matches": {
+                "backendName": "matches",
+                "description_en": "Matched items from the windowing process",
+                "description_zh": "窗口化匹配到的列表",
+                "itemName": "matches",
+                "items": {
+                  "description_en": "A matched data object",
+                  "description_zh": "返回数据",
+                  "properties": {
+                    "Content": {
+                      "backendName": "content",
+                      "description_en": "The text content",
+                      "description_zh": "文本内容",
+                      "example": "GraphRAG (Graph Retrieval-Augmented Generation) is an advanced AI framework that combines Knowledge Graphs with Large Language Models (LLMs) to improve the accuracy, context, and reasoning capabilities of information retrieval and generation.",
+                      "type": "string"
+                    },
+                    "FileName": {
+                      "backendName": "fileName",
+                      "description_en": "The name of the source document",
+                      "description_zh": "文档名称",
+                      "example": "1.txt",
+                      "type": "string"
+                    },
+                    "Id": {
+                      "backendName": "id",
+                      "description_en": "The unique ID of the vector",
+                      "description_zh": "向量数据的唯一 Id",
+                      "example": "3b35c95-57f3-442f-9220-xxxxx",
+                      "type": "string"
+                    },
+                    "LoaderMetadata": {
+                      "backendName": "loaderMetadata",
+                      "description_en": "The metadata generated by the document loader",
+                      "description_zh": "文档加载器加载时的元信息",
+                      "example": "{\"page_pos\": 1}",
+                      "type": "string"
+                    },
+                    "Metadata": {
+                      "backendName": "metadata",
+                      "description_en": "A key-value map of the metadata",
+                      "description_zh": "元数据 Map",
+                      "example": "{\"title\":\"test\"}",
+                      "type": "object"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "Results": {
+                "backendName": "results",
+                "description_en": "The retrieved results",
+                "description_zh": "结果列表",
+                "itemName": "results",
+                "items": {
+                  "description_en": "A single retrieval result",
+                  "description_zh": "返回数据",
+                  "properties": {
+                    "Content": {
+                      "backendName": "content",
+                      "description_en": "The content of the retrieved text chunk",
+                      "description_zh": "文本内容",
+                      "example": "GraphRAG (Graph Retrieval-Augmented Generation) is an advanced AI framework that combines Knowledge Graphs with Large Language Models (LLMs) to improve the accuracy, context, and reasoning capabilities of information retrieval and generation.",
+                      "type": "string"
+                    },
+                    "FileName": {
+                      "backendName": "fileName",
+                      "description_en": "The name of the source document",
+                      "description_zh": "文档名称",
+                      "example": "1.txt",
+                      "type": "string"
+                    },
+                    "Id": {
+                      "backendName": "id",
+                      "description_en": "The unique ID of the vector",
+                      "description_zh": "向量数据的唯一 Id",
+                      "example": "3b35c95-57f3-442f-9220-xxxxx",
+                      "type": "string"
+                    },
+                    "LoaderMetadata": {
+                      "backendName": "loaderMetadata",
+                      "description_en": "The metadata generated by the document loader",
+                      "description_zh": "文档加载器加载时的元信息",
+                      "example": "{\"page_pos\": 1}",
+                      "type": "string"
+                    },
+                    "Metadata": {
+                      "backendName": "metadata",
+                      "description_en": "A key-value map of the metadata",
+                      "description_zh": "元数据 Map",
+                      "example": "{\"title\":\"test\"}",
+                      "type": "object"
+                    },
+                    "RerankScore": {
+                      "backendName": "rerankScore",
+                      "description_en": "The rerank score",
+                      "description_zh": "重排分数",
+                      "example": "6.2345",
+                      "format": "double",
+                      "type": "number"
+                    },
+                    "RetrievalSource": {
+                      "backendName": "retrievalSource",
+                      "description_en": "The method used for retrieval. Valid values: `1` (vector retrieval), `2` (full-text search), and `3` (hybrid search)",
+                      "description_zh": "检索结果的来源。1表示向量检索，2表示全文检索，3表示双路召回",
+                      "example": "1",
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "Score": {
+                      "backendName": "score",
+                      "description_en": "The similarity score of the result. This score depends on the distance metric (`l2`, `ip`, or `cosine`) specified when the index was created",
+                      "description_zh": "此条数据的相似度分数，其分数算法和创建索引时指定的算法(l2/ip/cosine)相关",
+                      "example": "0.81",
+                      "format": "double",
+                      "type": "number"
+                    },
+                    "Vector": {
+                      "backendName": "vector",
+                      "description_en": "The vector data as an array of floating-point numbers",
+                      "description_zh": "向量数据列表",
+                      "itemName": "vector",
+                      "items": {
+                        "description_en": "A single floating-point value from the vector",
+                        "description_zh": "向量数据",
+                        "example": "1.2123",
+                        "format": "double",
+                        "type": "number"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "ErrorCode": {
+            "backendName": "code",
+            "description_en": "The error code for a failed request",
+            "description_zh": "错误码，请求异常时返回",
+            "example": "KnowledgeBaseNotFound",
+            "type": "string"
+          },
+          "ErrorMessage": {
+            "backendName": "msg",
+            "description_en": "The error message for a failed request",
+            "description_zh": "调用失败时，返回的错误信息",
+            "example": "Resource not found kb-***",
+            "type": "string"
+          },
+          "RequestId": {
+            "backendName": "requestId",
+            "description_en": "The unique request ID. Use this ID to troubleshoot errors",
+            "description_zh": "本次调用的唯一 ID。出现错误后，您可以根据该 ID 排查问题",
+            "example": "67E910F2-4B62-5B0C-ACA3-7547695C****",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          },
+          "Success": {
+            "backendName": "success",
+            "description_en": "Indicates whether the request was successful. Valid values:\n\ntrue: The request was successful.\n\nfalse: The request failed",
+            "description_zh": "请求是否成功，返回值如下：\n\ntrue：请求成功。                                 \nfalse：请求失败",
+            "example": "true",
+            "type": "boolean"
+          }
+        },
+        "title_en": "Schema of Response",
+        "title_zh": "Schema of Response",
+        "type": "object"
+      }
+    }
+  }
+}

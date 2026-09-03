@@ -1,0 +1,660 @@
+{
+  "camel_example": "aliyun fc-open GET /2021-04-06/services/service_name/functions/function_name --region cn-hangzhou --header \"Content-Type=application/json\"",
+  "cmd_full_name": "fc-open get-function",
+  "cmd_name": "get-function",
+  "components": {
+    "schemas": {
+      "AccelerationInfo": {
+        "description_en": "The acceleration information about the custom container",
+        "description_zh": "自定义容器加速信息",
+        "properties": {
+          "status": {
+            "backendName": "status",
+            "description_en": "The status of the acceleration for function invocations. Valid values:\n\nPreparing: The acceleration is being prepared. When the acceleration is being prepared, an original image is used to invoke functions without acceleration.\nReady: The acceleration is complete. Function invocations are accelerated",
+            "description_zh": "函数调用的加速状态：\nPreparing：加速正在准备中。准备加速的过程中，函数的调用会使用没有加速效果的原始镜像。\nReady：加速完成。加速完成后函数的调用会有加速效果",
+            "example": "Preparing",
+            "title": "镜像加速状态，取值 Preparing 或 Ready",
+            "type": "string"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "CustomContainerConfigInfo": {
+        "description_en": "The function configurations for a custom container",
+        "description_zh": "自定义容器相关函数配置",
+        "properties": {
+          "accelerationInfo": {
+            "$ref": "#/components/schemas/AccelerationInfo",
+            "backendName": "accelerationInfo",
+            "description_en": "The information about the acceleration of the custom container",
+            "description_zh": "自定义容器加速信息"
+          },
+          "accelerationType": {
+            "backendName": "accelerationType",
+            "description_en": "Specifies whether to enable image acceleration. Valid values:\n\nDefault: enables image acceleration.\nNone: disables image acceleration",
+            "description_zh": "是否开启镜像加速。\nDefault：默认值，表示开启镜像加速。\nNone：表示关闭镜像加速",
+            "example": "Default",
+            "title": "镜像加速类型，取值Default为开启加速，None为关闭加速，默认开启",
+            "type": "string"
+          },
+          "args": {
+            "backendName": "args",
+            "description_en": "The startup argument of the container",
+            "description_zh": "容器启动参数",
+            "example": "[\"-arg1\", \"value1\"]",
+            "title": "容器启动参数",
+            "type": "string"
+          },
+          "command": {
+            "backendName": "command",
+            "description_en": "The startup command of the container",
+            "description_zh": "容器启动命令",
+            "example": "[\"/code/myserver\"]",
+            "title": "容器启动命令，等同于 Docker ENTRYPOINT",
+            "type": "string"
+          },
+          "image": {
+            "backendName": "image",
+            "description_en": "The endpoint of the container image",
+            "description_zh": "容器镜像地址",
+            "example": "registry-vpc.cn-hangzhou.aliyuncs.com/fc-demo/helloworld:v1beta1",
+            "title": "容器镜像地址，实例值： registry-vpc.cn-hangzhou.aliyuncs.com/fc-demo/helloworld:v1beta1",
+            "type": "string"
+          },
+          "instanceID": {
+            "backendName": "instanceID",
+            "description_en": "The ID of the image repository for the Container Registry Enterprise Edition. You must specify this parameter if you use an image of Container Registry Enterprise Edition",
+            "description_zh": "ACR企业版镜像仓库ID，使用ACR企业版镜像时须传入",
+            "example": "cri-xxxxxxxxxx",
+            "title": "ACR企业版镜像仓库ID，使用ACR企业版镜像时须传入",
+            "type": "string"
+          },
+          "webServerMode": {
+            "backendName": "webServerMode",
+            "default": "true",
+            "description_en": "Specifies whether to enable web server mode.\n\ntrue (default): enables web server mode. In this case, web servers must be implemented in container images to listen for and process requests.\nfalse: disables web server mode. In this case, the container exits the process after running and the exit code must be 0",
+            "description_zh": "镜像运行是否为Web Server模式。\n\n取值为true表示需要在容器镜像中实现Web Server来监听端口并处理请求。\n取值为false表示需要容器运行后主动退出进程，并且ExitCode需要为0。\n默认值为true",
+            "example": "true",
+            "title": "镜像运行是否为Web Server模式，取值true需要在容器镜像中实现Web Server来监听端口并处理请求，取值false需要容器运行后主动退出进程，并且ExitCode需要为0。默认true",
+            "type": "boolean"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "CustomDNS": {
+        "description_en": "The custom Domain Name System (DNS) configurations of the function",
+        "description_zh": "函数自定义DNS配置",
+        "properties": {
+          "dnsOptions": {
+            "backendName": "dnsOptions",
+            "description_en": "The configuration items in the resolv.conf file. Each item is a key-value pair in the key:value format, in which the key is required",
+            "description_zh": "resolv.conf文件中的配置项列表。每一项对应一个键值对，格式为key:value，其中键为必填",
+            "items": {
+              "$ref": "#/components/schemas/DNSOption",
+              "description_en": "The configuration item in the resolv.conf file",
+              "description_zh": "resolv.conf文件中的配置项"
+            },
+            "title": "DNS resolver 配置参数列表",
+            "type": "array"
+          },
+          "nameServers": {
+            "backendName": "nameServers",
+            "description_en": "The IP addresses of DNS servers",
+            "description_zh": "DNS服务器的IP地址列表",
+            "items": {
+              "description_en": "The IP address of the DNS server",
+              "description_zh": "DNS服务器的IP地址",
+              "example": "8.8.x.x",
+              "type": "string"
+            },
+            "title": "DNS 服务器的 IP 地址列表",
+            "type": "array"
+          },
+          "searches": {
+            "backendName": "searches",
+            "description_en": "The search domains of the DNS server",
+            "description_zh": "DNS搜索域列表",
+            "items": {
+              "description_en": "The search domain of the DNS server",
+              "description_zh": "DNS搜索域值",
+              "example": "ns1.svc.cluster-domain.example",
+              "type": "string"
+            },
+            "title": "DNS 搜索域的列表",
+            "type": "array"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "CustomHealthCheckConfig": {
+        "description_en": "The custom health check configurations of custom runtimes and Custom Container runtimes",
+        "description_zh": "Custom Runtime和Custom Container自定义健康检查配置",
+        "properties": {
+          "failureThreshold": {
+            "backendName": "failureThreshold",
+            "description_en": "The threshold for health check failures. When this value is reached, the system considers the check failed. Valid values: 1 to 120. Unit: seconds. Default value: 3",
+            "description_zh": "健康检查失败次数阈值，达到该值后系统认为检查失败。取值范围1~120，单位为秒，默认值为3",
+            "example": "1",
+            "format": "int32",
+            "title": "健康检查失败次数阈值，达到该值后系统认为检查失败",
+            "type": "integer"
+          },
+          "httpGetUrl": {
+            "backendName": "httpGetUrl",
+            "description_en": "The custom health check URL of the container. The URL length cannot exceed 2,048 characters",
+            "description_zh": "容器自定义健康检查URL地址。长度不超过2048个字符",
+            "example": "/ready",
+            "required": true,
+            "title": "容器自定义健康检查URL地址",
+            "type": "string"
+          },
+          "initialDelaySeconds": {
+            "backendName": "initialDelaySeconds",
+            "description_en": "The duration after the container is started before health checks are initiated. Valid values: 0 to 120. Unit: seconds. Default value: 0",
+            "description_zh": "容器启动到发起健康检查的延迟。取值范围0~120，单位为秒，默认值为0",
+            "example": "1",
+            "format": "int32",
+            "title": "容器启动到发起健康检查的延迟",
+            "type": "integer"
+          },
+          "periodSeconds": {
+            "backendName": "periodSeconds",
+            "description_en": "The interval between two consecutive health checks. Valid values: 1 to 120. Unit: seconds. Default value: 3",
+            "description_zh": "健康检查周期。取值范围1~120，单位为秒，默认值为3",
+            "example": "1",
+            "format": "int32",
+            "title": "健康检查周期",
+            "type": "integer"
+          },
+          "successThreshold": {
+            "backendName": "successThreshold",
+            "description_en": "The threshold for health check successes. When this value is reached, the system considers the check succeeded. Valid values: 1 to 120. Unit: seconds. Default value: 1",
+            "description_zh": "健康检查成功次数阈值，达到该值后系统认为检查成功。取值范围1~120，单位为秒，默认值为1",
+            "example": "2",
+            "format": "int32",
+            "title": "健康检查成功次数阈值，达到该值后系统认为检查成功",
+            "type": "integer"
+          },
+          "timeoutSeconds": {
+            "backendName": "timeoutSeconds",
+            "description_en": "The timeout period of a health check. Valid values: 1 to 3. Unit: seconds. Default value: 1",
+            "description_zh": "健康检查超时时间。取值范围1~3，单位为秒，默认值为1",
+            "example": "2",
+            "format": "int32",
+            "title": "健康检查超时时间",
+            "type": "integer"
+          }
+        },
+        "title": "自定义健康检查配置结构体",
+        "type": "object"
+      },
+      "CustomRuntimeConfig": {
+        "description_en": "The configurations of the function that runs in the custom runtime",
+        "description_zh": "Custom Runtime函数详细配置",
+        "properties": {
+          "args": {
+            "backendName": "args",
+            "description_en": "The arguments that are used to start containers in the custom runtime. Pass the arguments in order",
+            "description_zh": "Custom Runtime启动命令接收的参数列表，按顺序依次传入",
+            "items": {
+              "description_en": "The startup argument of the container",
+              "description_zh": "容器启动参数",
+              "example": "args1",
+              "type": "string"
+            },
+            "title": "启动入口命令接收的参数",
+            "type": "array"
+          },
+          "command": {
+            "backendName": "command",
+            "description_en": "The custom commands that are used to start containers in the custom runtime. If multiple commands are specified, the commands are concatenated in order",
+            "description_zh": "Custom Runtime启动的自定义入口命令列表。列表内有多个命令时按顺序拼接",
+            "items": {
+              "description_en": "The command that is used to start the container",
+              "description_zh": "容器启动命令",
+              "example": "/code/myBootstrap",
+              "type": "string"
+            },
+            "title": "启动入口命令",
+            "type": "array"
+          }
+        },
+        "title": "Custom Runtime函数详细配置",
+        "type": "object"
+      },
+      "DNSOption": {
+        "description_en": "The DNS resolver configurations that are in the key-value format",
+        "description_zh": "DNS解析器配置，k-v结构",
+        "example": "t",
+        "properties": {
+          "name": {
+            "backendName": "name",
+            "description_en": "The parameter",
+            "description_zh": "配置项名称",
+            "example": "ndots",
+            "required": true,
+            "title": "DNS option 名称",
+            "type": "string"
+          },
+          "value": {
+            "backendName": "value",
+            "description_en": "The value",
+            "description_zh": "配置项值",
+            "example": "2",
+            "title": "DNS option 值",
+            "type": "string"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "InstanceLifecycleConfig": {
+        "description_en": "Instance lifecycle config",
+        "description_zh": "Instance lifecycle config",
+        "properties": {
+          "preFreeze": {
+            "$ref": "#/components/schemas/LifecycleHook",
+            "backendName": "preFreeze"
+          },
+          "preStop": {
+            "$ref": "#/components/schemas/LifecycleHook",
+            "backendName": "preStop"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "LifecycleHook": {
+        "description_en": "The lifecycle hook configurations",
+        "description_zh": "生命周期函数配置",
+        "properties": {
+          "handler": {
+            "backendName": "handler",
+            "description_en": "The handler of the function. For more information, see [Function handler]（https://help.aliyun.com/document_detail/157704.html）",
+            "description_zh": "函数执行的入口，更多信息，请参见[函数入口]（https://help.aliyun.com/document_detail/157704.html）",
+            "example": "index.preStop",
+            "title": "handler name",
+            "type": "string"
+          },
+          "timeout": {
+            "backendName": "timeout",
+            "description_en": "The timeout period for function execution. Unit: seconds",
+            "description_zh": "运行的超时时间，单位为秒",
+            "example": "10",
+            "format": "int32",
+            "title": "timeout in second",
+            "type": "integer"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Queries the information about a function",
+  "description_zh": "获取函数信息",
+  "kebab_example": "aliyun fc-open get-function --service-name service_name --function-name function_name --api-version 2021-04-06 --region cn-hangzhou",
+  "method": "GET",
+  "multi_version": true,
+  "name": "GetFunction",
+  "operation": {
+    "action": "GetFunction",
+    "api_style": "ROA",
+    "api_version": "2021-04-06",
+    "method": "GET",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "get",
+    "url": "/2021-04-06/services/{serviceName}/functions/{functionName}"
+  },
+  "parameters": [
+    {
+      "example": "service_name",
+      "help_en": "The name of the service",
+      "help_zh": "服务的名称",
+      "location": "path",
+      "name": "service_name",
+      "options": [
+        "--service-name"
+      ],
+      "raw_name": "serviceName",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "demoQualifier",
+      "help_en": "The version or alias of the service",
+      "help_zh": "服务的版本ID或者别名",
+      "location": "query",
+      "name": "qualifier",
+      "options": [
+        "--qualifier"
+      ],
+      "raw_name": "qualifier",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "function_name",
+      "help_en": "The name of the function",
+      "help_zh": "函数的名称",
+      "location": "path",
+      "name": "function_name",
+      "options": [
+        "--function-name"
+      ],
+      "raw_name": "functionName",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "188077086902****",
+      "help_en": "The ID of your Alibaba Cloud account",
+      "help_zh": "您的阿里云账号（主账号）ID",
+      "location": "header",
+      "name": "x_fc_account_id",
+      "options": [
+        "--x-fc-account-id"
+      ],
+      "raw_name": "X-Fc-Account-Id",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "Wed, 11 May 2022 09:00:00 GMT",
+      "help_en": "The time on which the function is invoked. The format of the value is: EEE,d MMM yyyy HH:mm:ss GMT",
+      "help_zh": "函数的调用开始日期，格式为EEE,d MMM yyyy HH:mm:ss GMT",
+      "location": "header",
+      "name": "x_fc_date",
+      "options": [
+        "--x-fc-date"
+      ],
+      "raw_name": "X-Fc-Date",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "asdf****",
+      "help_en": "The custom request ID",
+      "help_zh": " 自定义请求ID",
+      "location": "header",
+      "name": "x_fc_trace_id",
+      "options": [
+        "--x-fc-trace-id"
+      ],
+      "raw_name": "X-Fc-Trace-Id",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/2021-04-06/services/[serviceName]/functions/[functionName]",
+  "product_code": "FC-Open",
+  "protocol": "HTTP|HTTPS",
+  "responses": {
+    "200": {
+      "headers": {
+        "ETag": {
+          "schema": {
+            "title_en": "function etag，用于更改function。以确保实际更改的function和期望更改的function是一致的.",
+            "title_zh": "function etag，用于更改function。以确保实际更改的function和期望更改的function是一致的.",
+            "type": "string"
+          }
+        }
+      },
+      "schema": {
+        "description_en": "The definition of the function",
+        "description_zh": "函数的定义",
+        "properties": {
+          "caPort": {
+            "description_en": "The port on which the HTTP server listens for the custom runtime or custom container runtime",
+            "description_zh": "Custom Runtime或Custom Container运行时HTTP Server的监听端口",
+            "example": "9000",
+            "format": "int32",
+            "title_en": "自定义、自定义容器运行时 HTTP Server 的监听端口",
+            "title_zh": "自定义、自定义容器运行时 HTTP Server 的监听端口",
+            "type": "integer"
+          },
+          "codeChecksum": {
+            "backendName": "requestId",
+            "description_en": "The CRC-64 value of the function code package",
+            "description_zh": "函数代码包的CRC-64值",
+            "example": "2825179536350****",
+            "title_en": "function code包的CRC64值",
+            "title_zh": "function code包的CRC64值",
+            "type": "string"
+          },
+          "codeSize": {
+            "description_en": "The size of the function code package. Unit: byte",
+            "description_zh": "系统返回的函数代码包的大小，单位Byte",
+            "example": "421",
+            "format": "int64",
+            "title_en": "系统返回的function的code包大小，单位为byte Example : 1024",
+            "title_zh": "系统返回的function的code包大小，单位为byte Example : 1024",
+            "type": "integer"
+          },
+          "cpu": {
+            "description_en": "The number of vCPUs of the function. The value must be a multiple of 0.05",
+            "description_zh": "函数的CPU规格，单位为vCPU，为0.05 vCPU的倍数",
+            "example": "1.5",
+            "format": "float",
+            "title_en": "function的CPU规格，单位为vCPU，为0.05vCPU的倍数",
+            "title_zh": "function的CPU规格，单位为vCPU，为0.05vCPU的倍数",
+            "type": "number"
+          },
+          "createdTime": {
+            "description_en": "The time when the function was created",
+            "description_zh": "函数的创建时间",
+            "example": "2020-04-01T08:15:27Z",
+            "title_en": "function创建时间",
+            "title_zh": "function创建时间",
+            "type": "string"
+          },
+          "customContainerConfig": {
+            "$ref": "#/components/schemas/CustomContainerConfigInfo",
+            "description_en": "The configurations of the Custom Container runtime. After you configure the Custom Container runtime, you can use a custom container image to execute functions",
+            "description_zh": "Custom Container运行时的相关配置，配置后函数可以使用自定义容器镜像执行函数"
+          },
+          "customDNS": {
+            "$ref": "#/components/schemas/CustomDNS",
+            "description_en": "The custom Domain Name System (DNS) settings of the function",
+            "description_zh": "函数自定义DNS配置",
+            "title_en": "函数自定义DNS配置",
+            "title_zh": "函数自定义DNS配置"
+          },
+          "customHealthCheckConfig": {
+            "$ref": "#/components/schemas/CustomHealthCheckConfig",
+            "description_en": "The custom health check configurations of the function. This parameter is applicable only to custom runtimes and Custom Container runtimes",
+            "description_zh": "函数自定义健康检查配置，仅适用于Custom Runtime和Custom Container",
+            "title_en": "函数自定义健康检查配置，仅适用于Custom runtime/container",
+            "title_zh": "函数自定义健康检查配置，仅适用于Custom runtime/container"
+          },
+          "customRuntimeConfig": {
+            "$ref": "#/components/schemas/CustomRuntimeConfig",
+            "description_en": "The configurations of the function that runs in the custom runtime",
+            "description_zh": "Custom Runtime函数详细配置",
+            "title_en": "Custom Runtime函数详细配置",
+            "title_zh": "Custom Runtime函数详细配置"
+          },
+          "description": {
+            "description_en": "The description of the function",
+            "description_zh": "函数的描述",
+            "example": "test_description",
+            "title_en": "函数描述",
+            "title_zh": "函数描述",
+            "type": "string"
+          },
+          "diskSize": {
+            "description_en": "The disk size of the function. Unit: MB. Valid values: 512 and 10240",
+            "description_zh": "函数的磁盘规格，单位为MB，可选值为512 MB或10240 MB",
+            "example": "512",
+            "format": "int32",
+            "title_en": "function的磁盘规格，单位为MB，可选值为512MB或10240MB",
+            "title_zh": "function的磁盘规格，单位为MB，可选值为512MB或10240MB",
+            "type": "integer"
+          },
+          "environmentVariables": {
+            "additionalProperties": {
+              "description_en": "The environment variables that you configured for the function",
+              "description_zh": "环境变量配置",
+              "example": "{\"key\":\"value\"}",
+              "type": "string"
+            },
+            "description_en": "The environment variables that are configured for the function. You can obtain the values of the environment variables from the function. For more information, see [Environment variables]（https://help.aliyun.com/document_detail/69777.html）",
+            "description_zh": "为函数设置的环境变量，可以在函数中获取环境变量的值。更多信息，请参见[环境变量]（https://help.aliyun.com/document_detail/69777.html）",
+            "title_en": "为函数设置的环境变量，可以在函数中获取环境变量的值",
+            "title_zh": "为函数设置的环境变量，可以在函数中获取环境变量的值",
+            "type": "object"
+          },
+          "functionId": {
+            "description_en": "The ID that is generated by the system for the function. Each function ID is unique in Function Compute",
+            "description_zh": "系统为每个函数生成的ID，全局唯一",
+            "example": "aa715851-1c20-4b89-a8fb-***",
+            "title_en": "系统为每个function生成的唯一ID",
+            "title_zh": "系统为每个function生成的唯一ID",
+            "type": "string"
+          },
+          "functionName": {
+            "description_en": "The name of the function",
+            "description_zh": "函数的名称",
+            "example": "function_name",
+            "title_en": "函数名称",
+            "title_zh": "函数名称",
+            "type": "string"
+          },
+          "gpuMemorySize": {
+            "description_en": "The GPU memory capacity for the function. Unit: MB. The value is a multiple of 1,024",
+            "description_zh": "function的GPU显存规格，单位为MB，为1024MB的倍数",
+            "example": "2048",
+            "format": "int32",
+            "title_en": "function的GPU显存规格，单位为MB，为1024MB的倍数",
+            "title_zh": "function的GPU显存规格，单位为MB，为1024MB的倍数",
+            "type": "integer"
+          },
+          "handler": {
+            "description_en": "The handler of the function. For more information, see [Function handler]（https://help.aliyun.com/document_detail/157704.html）",
+            "description_zh": "函数执行的入口，更多信息，请参见[函数入口]（https://help.aliyun.com/document_detail/157704.html）",
+            "example": "index.handler",
+            "title_en": "function的执行入口",
+            "title_zh": "function的执行入口",
+            "type": "string"
+          },
+          "initializationTimeout": {
+            "description_en": "The timeout period for the execution of the Initializer hook. Unit: seconds. Default value: 3. Valid values: 1 to 300. When this period ends, the execution of the Initializer hook is terminated",
+            "description_zh": "初始化函数运行的超时时间，单位为秒，默认3秒。最小1秒，最长5分钟。初始化函数超过这个时间后会被终止执行",
+            "example": "60",
+            "format": "int32",
+            "title_en": "初始化function运行的超时时间，单位为秒，最小1秒，默认3秒。初始化function超过这个时间后会被终止执行",
+            "title_zh": "初始化function运行的超时时间，单位为秒，最小1秒，默认3秒。初始化function超过这个时间后会被终止执行",
+            "type": "integer"
+          },
+          "initializer": {
+            "description_en": "The handler of the Initializer hook. The format of the value is determined by the programming language that you use. For more information, see [Initializer hook]（https://help.aliyun.com/document_detail/157704.html）",
+            "description_zh": "初始化函数执行的入口，具体格式与语言相关，更多信息，请参见[Initializer函数]（https://help.aliyun.com/document_detail/157704.html）",
+            "example": "index.handler",
+            "title_en": "初始化 function 执行的入口，具体格式和语言相关",
+            "title_zh": "初始化 function 执行的入口，具体格式和语言相关",
+            "type": "string"
+          },
+          "instanceConcurrency": {
+            "description_en": "The number of requests that can be concurrently processed by a single instance",
+            "description_zh": "单个函数实例的并发度",
+            "example": "10",
+            "format": "int32",
+            "type": "integer"
+          },
+          "instanceLifecycleConfig": {
+            "$ref": "#/components/schemas/InstanceLifecycleConfig",
+            "description_en": "The lifecycle configurations of instances",
+            "description_zh": "实例生命周期配置"
+          },
+          "instanceSoftConcurrency": {
+            "description_en": "The soft concurrency of the instance. You can use this parameter to implement graceful scale-up of instances. If the number of concurrent requests on an instance is greater than the value of soft concurrency, an instance scale-up is triggered. For example, if your instance requires a long time to start, you can specify a suitable soft concurrency to start the instance in advance.\n\nThe value must be less than or equal to that of the instanceConcurrency parameter",
+            "description_zh": "实例软并发度，用于优雅扩容。当实例上的并发数超过软并发度时，会触发实例扩容。例如，您的实例启动较慢，可以通过设置合适的软实例并发度，提前启动实例。\n\n取值小于或等于instanceConcurrency",
+            "example": "5",
+            "format": "int32",
+            "type": "integer"
+          },
+          "instanceType": {
+            "description_en": "The instance type of the function. Valid values:\n\ne1: elastic instances\nc1: performance instances\nfc.gpu.tesla.1: GPU-accelerated instances with Tesla series cards\nfc.gpu.ampere.1: GPU-accelerated instances with Ampere series cards\nfc.gpu.ada.1:GPU-accelerated instances with Ada series cards\ng1: same as fc.gpu.tesla.1",
+            "description_zh": "函数的实例类型，取值如下：\ne1：弹性实例。\nc1：性能实例。\nfc.gpu.tesla.1：GPU Tesla 系列实例类型。\nfc.gpu.ampere.1：GPU Ampere 系列实例类型。\nfc.gpu.ada.1：GPU Ada 系列实例类型。\ng1：同fc.gpu.tesla.1",
+            "example": "e1",
+            "type": "string"
+          },
+          "lastModifiedTime": {
+            "description_en": "The time when the function was last modified",
+            "description_zh": "函数上一次被更新的时间",
+            "example": "2020-04-01T08:15:27Z",
+            "title_en": "function上次修改时间",
+            "title_zh": "function上次修改时间",
+            "type": "string"
+          },
+          "layers": {
+            "description_en": "The list of layers (ARN V1).\n\nIf multiple layers exist, the layers are merged based on the array subscripts in descending order. The content of a layer with a smaller subscript overwrites that of a larger subscript.\n\nThis parameter is to be deprecated. Use layersArnV2",
+            "description_zh": "层的列表（ARN V1版本）。\n\n多个层会按照数组下标从大到小的顺序进行合并，下标小的层的内容会覆盖下标大的层的同名文件。\n\n<warning>该参数待废弃，请使用layersArnV2。></warning>",
+            "itemName": "layer",
+            "items": {
+              "description_en": "The name of the layer resource (ARN V1 version)",
+              "description_zh": "层资源的名称（ARN V1版本）",
+              "example": "02f81d283888f5ec63442a88fe82b260#Layer-name#1",
+              "type": "string"
+            },
+            "title_en": "层列表",
+            "title_zh": "层列表",
+            "type": "array"
+          },
+          "layersArnV2": {
+            "description_en": "The list of layers (ARN V2).\n\nIf multiple layers exist, the layers are merged based on the array subscripts in descending order. The content of a layer with a smaller subscript overwrites that of a larger subscript",
+            "description_zh": "层的列表（ARN V2版本）。\n多个层会按照数组下标从大到小的顺序进行合并，下标小的层的内容会覆盖下标大的层的同名文件",
+            "itemName": "layer",
+            "items": {
+              "description_en": "The name of the layer resource (ARN V2 version)",
+              "description_zh": "层资源的名称（ARN V2版本）",
+              "example": "acs:fc:{region}:{accountID}:layers/{layerName}/versions/{layerVersion}",
+              "type": "string"
+            },
+            "title_en": "层的arn列表",
+            "title_zh": "层的arn列表",
+            "type": "array"
+          },
+          "memorySize": {
+            "description_en": "The memory size for the function. Unit: MB. The value must be a multiple of 64. The memory size varies based on the function instance type. For more information, see [Instance types]（https://help.aliyun.com/document_detail/179379.html）",
+            "description_zh": "函数的内存规格，单位为MB，内存大小为64 MB的倍数。不同的函数实例类型，内存规格存在差异。更多信息，请参见[实例规格]（https://help.aliyun.com/document_detail/179379.html）",
+            "example": "256",
+            "format": "int32",
+            "title_en": "function的内存规格，单位为MB，为64MB的倍数",
+            "title_zh": "function的内存规格，单位为MB，为64MB的倍数",
+            "type": "integer"
+          },
+          "runtime": {
+            "description_en": "The runtime of the function. Valid values: nodejs20, nodejs18, nodejs16, nodejs14, nodejs12, nodejs10, nodejs8, nodejs6, nodejs4.4, python3.10, python3.9, python3, python2.7, java11, java8, go1, php7.2, dotnetcore2.1, custom.debian10, custom, and custom-container",
+            "description_zh": "函数运行的语言环境。当前支持nodejs20、nodejs18、nodejs16、nodejs14、nodejs12、nodejs10、nodejs8、nodejs6、nodejs4.4、python3.10、python3.9、python3、python2.7、java11、java8、go1、php7.2、dotnetcore2.1、custom.debian10、custom和custom-container",
+            "example": "python3",
+            "title_en": "function运行的语言环境，目前支持nodejs6, nodejs8, python2.7, python3, java8",
+            "title_zh": "function运行的语言环境，目前支持nodejs6, nodejs8, python2.7, python3, java8",
+            "type": "string"
+          },
+          "timeout": {
+            "description_en": "The timeout period for the execution of the function. Unit: seconds. Default value: 60. Valid values: 1 to 600. When this period expires, the execution of the function is terminated",
+            "description_zh": "函数运行的超时时间，单位为秒，默认60秒。最小1秒，最长10分钟。如果函数运行超过设置的时间，函数运行将被终止",
+            "example": "60",
+            "format": "int32",
+            "title_en": "运行的超时时间，单位为秒",
+            "title_zh": "运行的超时时间，单位为秒",
+            "type": "integer"
+          }
+        },
+        "title_en": "FunctionResponse",
+        "title_zh": "FunctionResponse",
+        "type": "object"
+      }
+    },
+    "400": {},
+    "403": {},
+    "404": {},
+    "500": {}
+  }
+}

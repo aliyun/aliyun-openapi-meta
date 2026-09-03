@@ -1,0 +1,105 @@
+{
+  "camel_example": "aliyun cdn RefreshObjectCaches --region cn-hangzhou --ObjectPath 'http://example.com/image/1.png_http://aliyundoc.com/image/2.png'",
+  "cmd_full_name": "cdn refresh-object-caches",
+  "cmd_name": "refresh-object-caches",
+  "deprecated": false,
+  "description_en": "Refreshes file content on nodes. The cached files that are refreshed immediately become invalid. New requests retrieve the latest files from the origin server. Batch URL refresh is supported",
+  "description_zh": "刷新节点上的文件内容。被刷新的文件缓存将立即失效，新的请求将回源获取最新的文件，支持URL批量刷新",
+  "kebab_example": "aliyun cdn refresh-object-caches --object-path http://example.com/image/1.png_http://aliyundoc.com/image/2.png --region cn-hangzhou",
+  "method": "GET|POST",
+  "multi_version": false,
+  "name": "RefreshObjectCaches",
+  "operation": {
+    "action": "RefreshObjectCaches",
+    "api_style": "RPC",
+    "api_version": "2018-05-10",
+    "content_type": "application/x-www-form-urlencoded",
+    "method": "POST",
+    "operation_type": "write",
+    "protocol": "HTTPS",
+    "req_body_type": "formData",
+    "system_operation_type": "none",
+    "url": ""
+  },
+  "parameters": [
+    {
+      "example": "http://example.com/image/1.png\nhttp://aliyundoc.com/image/2.png",
+      "help_en": "To commit multiple URLs or multiple folders at a time, separate them with line feed characters.\nThe total number of domain names across all URLs in a single committed node must not exceed 10",
+      "help_zh": "单次提交多个URL或多个目录时，使用换行符分隔。\n单次提交的任务中所有URL的域名个数总和需要在10个以内",
+      "location": "formData",
+      "name": "object_path",
+      "options": [
+        "--object-path"
+      ],
+      "raw_name": "ObjectPath",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "File",
+      "help_en": "The refresh type. Valid values:\n\nFile (default): URL.\nDirectory: folder.\nRegex: regex-based refresh.\nIgnoreParams: parameter-filtering refresh. Parameter filtering removes the `?` and all characters after `?` from a request URL. In a parameter-filtering refresh, you commit a URL with parameters removed through the API. The committed URL is then matched against cached resource URLs after their parameters are removed. If a cached resource URL matches the committed URL after parameter filtering, the CDN point of presence executes a refresh on the cached resource.\n\nFor the feature description of URL refresh and folder refresh, refer to https://help.aliyun.com/document_detail/64936.html.\nA file refresh directly deletes the resource from the point of presence. When a new request arrives, the latest resource is retrieved through origin fetch. Other refresh types refresh only changed resources by default. To force a refresh, set the Force parameter to true. For more information, see the metric description of the Force parameter",
+      "help_zh": "刷新类型。取值范围：\n\nFile（默认值）：URL。\nDirectory：目录。\nRegex：正则刷新。\nIgnoreParams：去参数刷新。去参数指的是去除请求URL中`?`及`?`之后的参数，去参数刷新指的是用户先通过接口提交去参数后的URL，然后用户提交的待刷新URL将会与已缓存资源的URL进行去参数匹配，如果已缓存资源的URL去参数以后与待刷新URL匹配，那么CDN节点将对缓存资源执行刷新处理。\n\nURL刷新和目录刷新的功能说明请参考https://help.aliyun.com/document_detail/64936.html。\n文件刷新将直接删除节点上的资源，当有新请求时回源拉取新资源。其它刷新类型默认只刷新发生变更的资源，需要强制刷新请配置Force参数为true，详见Force参数说明",
+      "location": "formData",
+      "name": "object_type",
+      "options": [
+        "--object-type"
+      ],
+      "raw_name": "ObjectType",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "false",
+      "help_en": "Specifies whether to directly delete the cache on CDN points of presence. Default value: false.\n\ntrue: Directly deletes the cache on CDN points of presence. This means the specified cached resources are immediately removed from all CDN points of presence. The next request for the resource must access the origin server to retrieve the latest version, which is then cached again. This ensures that all subsequent requests return the latest content after the deletion. This option is suitable for scenarios that require immediate cache updates, such as emergency security vulnerability fixes or publishing critical updates. Note that this may temporarily increase the load on the origin server because all related requests need to access the origin server.\n\nfalse: Marks the cache on CDN points of presence as expired. After a cached resource is marked as expired, the next request for the resource triggers the CDN point of presence to authenticate the latest version through origin fetch. If the version matches the current row cache, the cached resource is returned directly. If not, the latest resource is retrieved through origin fetch, returned to the user, and cached again. This method allows gradual cache updates instead of immediate full purge. It is suitable for scenarios that require smoothing transitions and reduces the increased origin server load that may result from deleting a large amount of cache at once.\n\nThis parameter takes effect only when you use folder refresh, regex-based refresh, or parameter-filtering refresh",
+      "help_zh": "是否直接删除CDN节点上的缓存。默认为false。\n\ntrue：直接删除CDN节点上的缓存。直接删除意味着立即将指定的缓存资源从CDN的所有节点上删除，下一个对该资源的请求将需要访问源服务器去获取最新版本的数据，然后重新进行缓存。这种方式可以确保一旦执行了删除操作后，所有后续请求都将获得最新的内容，适合于需要立即更新缓存内容的情况，例如紧急修复安全漏洞或者发布重要更新时。但需要注意的是，这可能会瞬间增加源服务器的压力，因为所有相关请求都需要访问源服务器。\n\nfalse：对CDN节点上的缓存标记过期。将缓存资源标记为过期之后，下一个对该资源的请求到达时，CDN节点将会回源验证该资源的最新版本，若与当前缓存资源一致，则直接返回已缓存资源，若不一致，则回源拉取新资源返回给用户，并重新缓存该资源。这种方法的好处是它允许逐渐更新缓存中的内容，而不是立即全部清除，适用于需要平滑过渡的情况，可以减少由于直接删除大量缓存而可能导致源站压力增大。\n\n此参数生效范围：使用目录刷新、正则刷新、去参数刷新这三种刷新方式的时候可以生效",
+      "location": "formData",
+      "name": "force",
+      "options": [
+        "--biz-force"
+      ],
+      "raw_name": "Force",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "example": "false",
+      "help_en": "This parameter is not active",
+      "help_zh": "参数暂不可用",
+      "location": "formData",
+      "max_length": "1024",
+      "name": "replica_tag",
+      "options": [
+        "--replica-tag"
+      ],
+      "raw_name": "ReplicaTag",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "",
+  "product_code": "Cdn",
+  "protocol": "HTTP|HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "properties": {
+          "RefreshTaskId": {
+            "backendName": "data",
+            "description_en": "The node ID returned for the refresh request. Multiple node IDs are separated by commas (,). The returned node IDs are merged based on the following rules:\n\nRefresh nodes (at URL granularity) committed for the same domain name within the same second are merged into a single RefreshTaskId.\nIf more than 2,000 refresh nodes (at URL granularity) are committed for the same domain name within the same second, they are merged into groups of 2,000, each assigned a separate RefreshTaskId",
+            "description_zh": "刷新返回的任务ID，多个任务ID用半角逗号（,）分隔。刷新返回的任务ID会按照以下两条规则对刷新任务做合并：\n\n同一个域名、同一秒钟提交的刷新任务（URL颗粒度）会被合并为同一个RefreshTaskId。\n同一个域名、同一秒钟提交的刷新任务（URL颗粒度）如果超过2000条，那么会按照每2000条合并为一个RefreshTaskId的方式处理",
+            "example": "704222901",
+            "type": "string"
+          },
+          "RequestId": {
+            "backendName": "requestId",
+            "description_en": "The request ID",
+            "description_zh": "请求ID",
+            "example": "D61E4801-EAFF-4A63-AAE1-FBF6CE1CFD1C",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

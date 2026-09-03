@@ -1,0 +1,1952 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "agentrun update-template",
+  "cmd_name": "update-template",
+  "components": {
+    "schemas": {
+      "ContainerConfiguration": {
+        "description_en": "The custom container configuration",
+        "description_zh": "自定义容器配置",
+        "properties": {
+          "acrInstanceId": {
+            "backendName": "acrInstanceId",
+            "description_en": "The instance ID or name of Alibaba Cloud Container Registry (ACR)",
+            "description_zh": "阿里云容器镜像服务（ACR）的实例ID或名称",
+            "example": "cri-xxxxx",
+            "title": "ACR实例ID或名称",
+            "type": "string"
+          },
+          "command": {
+            "backendName": "command",
+            "description_en": "The sandbox entrypoint command. Example: ['python3', 'app.py']",
+            "description_zh": "沙箱入口点命令（例如：['python3', 'app.py']）",
+            "example": "python3,app.py",
+            "items": {
+              "description_en": "The entrypoint command",
+              "description_zh": "入口点命令",
+              "example": "/usr/local/bin/entrypoint.sh",
+              "type": "string"
+            },
+            "title": "运行命令",
+            "type": "array"
+          },
+          "image": {
+            "backendName": "image",
+            "description_en": "The address of the container image",
+            "description_zh": "容器镜像地址",
+            "example": "registry.cn-hangzhou.aliyuncs.com/my-namespace/agent-runtime:latest",
+            "title": "容器镜像地址",
+            "type": "string"
+          },
+          "imageRegistryType": {
+            "backendName": "imageRegistryType",
+            "description_en": "The source type of the container image. Valid values: ACR (Alibaba Cloud Container Registry), ACREE (Alibaba Cloud Container Registry Enterprise Edition), and CUSTOM (custom image repository)",
+            "description_zh": "容器镜像的来源类型，支持ACR（阿里云容器镜像服务）、ACREE（阿里云容器镜像服务企业版）、CUSTOM（自定义镜像仓库）",
+            "enum": [
+              "ACR",
+              "ACREE",
+              "CUSTOM"
+            ],
+            "example": "ACR",
+            "title": "镜像仓库类型",
+            "type": "string"
+          },
+          "port": {
+            "backendName": "port",
+            "description_en": "The port number that the sandbox runtime listens on",
+            "description_zh": "沙箱运行时监听的端口号",
+            "example": "5000",
+            "format": "int32",
+            "type": "integer"
+          },
+          "registryConfig": {
+            "$ref": "#/components/schemas/RegistryConfig",
+            "backendName": "registryConfig",
+            "description_en": "The configuration of the custom image repository. This parameter is used when imageRegistryType is set to CUSTOM",
+            "description_zh": "自定义镜像仓库的配置信息，当imageRegistryType为CUSTOM时使用",
+            "example": "{}",
+            "title": "镜像仓库配置"
+          }
+        },
+        "title": "自定义容器配置",
+        "type": "object"
+      },
+      "CredentialConfiguration": {
+        "description_en": "Specifies the configuration for credentials used to access external services",
+        "description_zh": "访问外部服务的凭证配置",
+        "properties": {
+          "credentialName": {
+            "backendName": "credentialId",
+            "description_en": "The unique identifier for the credential",
+            "description_zh": "凭证的唯一标识符",
+            "example": "deepagent-key",
+            "title": "凭证ID",
+            "type": "string"
+          }
+        },
+        "title": "凭证配置",
+        "type": "object"
+      },
+      "ErrorResult": {
+        "description_en": "The error response structure",
+        "description_zh": "错误响应结构体",
+        "properties": {
+          "code": {
+            "backendName": "code",
+            "description_en": "The error code. SUCCESS indicates the request was successful. Otherwise, a specific error code is returned, such as ERR_BAD_REQUEST, ERR_VALIDATION_FAILED, or ERR_INTERNAL_SERVER_ERROR",
+            "description_zh": "SUCCESS 为成功，失败情况返回对应错误类型，比如 ERR_BAD_REQUEST ERR_VALIDATION_FAILED ERR_INTERNAL_SERVER_ERROR",
+            "example": "SUCCESS",
+            "title": "结果码",
+            "type": "string"
+          },
+          "message": {
+            "backendName": "message",
+            "description_en": "A human-readable description of the error",
+            "description_zh": "错误信息描述",
+            "example": "Conflict Transaction, process failed",
+            "title": "Error Message",
+            "type": "string"
+          },
+          "requestId": {
+            "backendName": "requestId",
+            "description_en": "The unique request identifier, used for troubleshooting",
+            "description_zh": "唯一的请求标识符，用于问题追踪",
+            "example": "55D4BE40-2811-5CFB-8482-E0E98D575B1E",
+            "title": "Request ID",
+            "type": "string"
+          }
+        },
+        "title": "Error Response",
+        "type": "object"
+      },
+      "LogConfiguration": {
+        "description_en": "Simple Log Service (SLS) configuration for the agent runtime",
+        "description_zh": "智能体运行时的SLS（简单日志服务）配置",
+        "properties": {
+          "logstore": {
+            "backendName": "logstore",
+            "description_en": "The name of the SLS logstore",
+            "description_zh": "SLS日志库名称",
+            "example": "agent-runtime-logs",
+            "title": "日志库名称",
+            "type": "string"
+          },
+          "project": {
+            "backendName": "project",
+            "description_en": "The name of the SLS project",
+            "description_zh": "SLS项目名称",
+            "example": "agent-runtime-logs",
+            "title": "项目名称",
+            "type": "string"
+          }
+        },
+        "title": "日志配置",
+        "type": "object"
+      },
+      "NASConfig": {
+        "description_en": "The NAS configuration",
+        "description_zh": "NAS配置",
+        "properties": {
+          "groupId": {
+            "backendName": "groupId",
+            "description_en": "The group ID for file system access",
+            "description_zh": "群组ID",
+            "example": "100",
+            "format": "int32",
+            "required": false,
+            "title": "群组ID。",
+            "type": "integer"
+          },
+          "mountPoints": {
+            "backendName": "mountPoints",
+            "description_en": "A list of mount point configurations",
+            "description_zh": "挂载点列表",
+            "items": {
+              "$ref": "#/components/schemas/NASMountConfig",
+              "description_en": "A mount point configuration",
+              "description_zh": "挂载点配置"
+            },
+            "maxItems": 5,
+            "required": false,
+            "title": "挂载点列表。",
+            "type": "array"
+          },
+          "userId": {
+            "backendName": "userId",
+            "description_en": "The user ID for file system access",
+            "description_zh": "账号ID",
+            "example": "100",
+            "format": "int32",
+            "required": false,
+            "title": "账号ID。",
+            "type": "integer"
+          }
+        },
+        "title": "NAS配置",
+        "type": "object"
+      },
+      "NASMountConfig": {
+        "description_en": "The configuration for a NAS mount point",
+        "description_zh": "NAS挂载点列表",
+        "properties": {
+          "enableTLS": {
+            "backendName": "enableTLS",
+            "description_en": "Specifies whether to enable encryption in transit. This option is supported only for general-purpose NAS",
+            "description_zh": "使用传输加密方式挂载。 说明：仅通用型NAS支持传输加密",
+            "required": false,
+            "title": "使用传输加密方式挂载。 说明：仅通用型NAS支持传输加密",
+            "type": "boolean"
+          },
+          "mountDir": {
+            "backendName": "mountDir",
+            "description_en": "Specifies the local mount directory",
+            "description_zh": "本地挂载目录",
+            "example": "/home/test",
+            "maxLength": 64,
+            "required": false,
+            "title": "本地挂载目录。",
+            "type": "string"
+          },
+          "serverAddr": {
+            "backendName": "serverAddr",
+            "description_en": "Specifies the NAS server address",
+            "description_zh": "NAS服务器地址",
+            "example": "***-uni85.cn-hangzhou.nas.com:/",
+            "maxLength": 128,
+            "required": false,
+            "title": "NAS服务器地址。",
+            "type": "string"
+          }
+        },
+        "title": "NAS挂载点列表",
+        "type": "object"
+      },
+      "NetworkConfiguration": {
+        "description_en": "The network configuration",
+        "description_zh": "网络配置信息",
+        "properties": {
+          "networkMode": {
+            "backendName": "networkMode",
+            "description_en": "The network mode",
+            "description_zh": "网络模式",
+            "enum": [
+              "PUBLIC",
+              "PRIVATE",
+              "PUBLIC_AND_PRIVATE"
+            ],
+            "example": "PRIVATE",
+            "title": "网络模式",
+            "type": "string"
+          },
+          "securityGroupId": {
+            "backendName": "securityGroupId",
+            "description_en": "The security group ID",
+            "description_zh": "安全组ID",
+            "example": "sg-1234567890abcdef0",
+            "title": "安全组ID",
+            "type": "string"
+          },
+          "vpcId": {
+            "backendName": "vpcId",
+            "description_en": "The VPC ID",
+            "description_zh": "专有网络ID",
+            "example": "vpc-1234567890abcdef0",
+            "title": "专有网络ID",
+            "type": "string"
+          },
+          "vswitchIds": {
+            "backendName": "vswitchIds",
+            "description_en": "An array of VSwitch IDs",
+            "description_zh": "交换机ID列表",
+            "example": "vsw-1234567890abcdef0,vsw-abcdef1234567890",
+            "items": {
+              "description_en": "The VSwitch ID",
+              "description_zh": "交换机ID",
+              "example": "vsw-sg-1234567890abcdef0",
+              "type": "string"
+            },
+            "title": "交换机ID列表",
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "OssConfiguration": {
+        "description_en": "The OSS configuration for the interpreter or browser",
+        "description_zh": "代码解释器或浏览器的OSS配置",
+        "properties": {
+          "bucketName": {
+            "backendName": "bucketName",
+            "description_en": "The OSS bucket name",
+            "description_zh": "OSS存储桶名称",
+            "example": "a-test-oss",
+            "required": true,
+            "title": "OSS存储桶名称",
+            "type": "string"
+          },
+          "endpoint": {
+            "backendName": "endpoint",
+            "description_en": "The OSS endpoint",
+            "description_zh": "OSS端点",
+            "example": "http://oss-cn-hangzhou.aliyuncs.com",
+            "title": "OSS端点",
+            "type": "string"
+          },
+          "mountPoint": {
+            "backendName": "mountPoint",
+            "description_en": "The OSS mount point",
+            "description_zh": "OSS挂载点",
+            "example": "/mnt/oss1",
+            "required": true,
+            "title": "OSS挂载点",
+            "type": "string"
+          },
+          "permission": {
+            "backendName": "permission",
+            "description_en": "The permission",
+            "description_zh": "权限",
+            "enum": [
+              "READ_ONLY",
+              "READ_WRITE"
+            ],
+            "example": "READ_WRITE",
+            "title": "权限",
+            "type": "string"
+          },
+          "prefix": {
+            "backendName": "prefix",
+            "description_en": "The OSS object prefix or path",
+            "description_zh": "OSS对象前缀/路径",
+            "example": "/",
+            "required": true,
+            "title": "OSS对象前缀/路径",
+            "type": "string"
+          },
+          "region": {
+            "backendName": "region",
+            "default": "cn-hangzhou",
+            "description_en": "The OSS region",
+            "description_zh": "oss地域",
+            "example": "ch-hangzhou",
+            "title": "oss地域",
+            "type": "string"
+          }
+        },
+        "title": "OSS配置",
+        "type": "object"
+      },
+      "RegistryAuthConfig": {
+        "description_en": "The authentication configuration for a custom container image repository",
+        "description_zh": "自定义容器镜像仓库的认证配置信息",
+        "properties": {
+          "password": {
+            "backendName": "password",
+            "description_en": "The logon password of the image repository",
+            "description_zh": "镜像仓库的登录密码",
+            "example": "abc***",
+            "title": "密码",
+            "type": "string"
+          },
+          "userName": {
+            "backendName": "userName",
+            "description_en": "The logon username of the image repository",
+            "description_zh": "镜像仓库的登录用户名",
+            "example": "admin",
+            "title": "用户名",
+            "type": "string"
+          }
+        },
+        "title": "镜像仓库认证配置",
+        "type": "object"
+      },
+      "RegistryCertConfig": {
+        "description_en": "The certificate configuration information for a custom container image repository",
+        "description_zh": "自定义容器镜像仓库的证书配置信息",
+        "properties": {
+          "insecure": {
+            "backendName": "insecure",
+            "description_en": "Specifies whether to skip TLS certificate verification. If this parameter is set to true, the certificate of the image repository is not verified",
+            "description_zh": "是否跳过TLS证书验证，设置为true时将不验证镜像仓库的证书",
+            "example": "false",
+            "title": "是否跳过证书验证",
+            "type": "boolean"
+          },
+          "rootCaCertBase64": {
+            "backendName": "rootCaCertBase64",
+            "description_en": "The Base64 encoding of the root CA certificate of the image repository, used to verify a self-signed certificate",
+            "description_zh": "镜像仓库的根CA证书Base64编码，用于自签名证书的验证",
+            "example": "cm9vdF9jYV9jZXJ0X2Jhc2U2NA==",
+            "title": "根CA证书Base64",
+            "type": "string"
+          }
+        },
+        "title": "镜像仓库证书配置",
+        "type": "object"
+      },
+      "RegistryConfig": {
+        "description_en": "The configuration of a custom container image repository, including authentication, certificate, and network settings",
+        "description_zh": "自定义容器镜像仓库的配置信息，包括认证、证书和网络配置",
+        "properties": {
+          "authConfig": {
+            "$ref": "#/components/schemas/RegistryAuthConfig",
+            "backendName": "authConfig",
+            "description_en": "The authentication configuration of the image repository",
+            "description_zh": "镜像仓库的认证配置信息",
+            "example": "{}",
+            "title": "认证配置"
+          },
+          "certConfig": {
+            "$ref": "#/components/schemas/RegistryCertConfig",
+            "backendName": "certConfig",
+            "description_en": "The certificate configuration of the image repository",
+            "description_zh": "镜像仓库的证书配置信息",
+            "example": "{}",
+            "title": "证书配置"
+          },
+          "networkConfig": {
+            "$ref": "#/components/schemas/RegistryNetworkConfig",
+            "backendName": "networkConfig",
+            "description_en": "The network configuration of the image repository",
+            "description_zh": "镜像仓库的网络配置信息",
+            "example": "{}",
+            "title": "网络配置"
+          }
+        },
+        "title": "镜像仓库配置",
+        "type": "object"
+      },
+      "RegistryNetworkConfig": {
+        "description_en": "The network configuration of the custom container image repository",
+        "description_zh": "自定义容器镜像仓库的网络配置信息",
+        "properties": {
+          "securityGroupId": {
+            "backendName": "securityGroupId",
+            "description_en": "The security group ID of the image repository",
+            "description_zh": "镜像仓库的安全组ID",
+            "example": "sg-xxxxxxxxxxxxx",
+            "title": "安全组ID",
+            "type": "string"
+          },
+          "vSwitchId": {
+            "backendName": "vSwitchId",
+            "description_en": "The ID of the vSwitch where the image repository resides",
+            "description_zh": "镜像仓库所在的交换机ID",
+            "example": "vsw-xxxxxxxxxxxxx",
+            "title": "交换机ID",
+            "type": "string"
+          },
+          "vpcId": {
+            "backendName": "vpcId",
+            "description_en": "The ID of the VPC where the image repository resides",
+            "description_zh": "镜像仓库所在的VPC ID",
+            "example": "vpc-xxxxxxxxxxxxx",
+            "title": "VPC ID",
+            "type": "string"
+          }
+        },
+        "title": "镜像仓库网络配置",
+        "type": "object"
+      },
+      "ScalingStatus": {
+        "description_en": "The reserved instance elastic configuration",
+        "description_zh": "预留实例弹性配置",
+        "properties": {
+          "currentError": {
+            "backendName": "currentError",
+            "description_en": "The current error",
+            "description_zh": "当前错误",
+            "example": "error",
+            "title": "当前错误",
+            "type": "string"
+          },
+          "currentInstances": {
+            "backendName": "currentInstances",
+            "description_en": "The current number of instances",
+            "description_zh": "当前实例数",
+            "example": "2",
+            "format": "int64",
+            "title": "当前实例数",
+            "type": "integer"
+          },
+          "minInstances": {
+            "backendName": "minInstances",
+            "description_en": "The minimum number of instances",
+            "description_zh": "最小实例数量",
+            "example": "1",
+            "format": "int64",
+            "title": "最小实例数量",
+            "type": "integer"
+          },
+          "scheduledPolicies": {
+            "backendName": "scheduledPolicies",
+            "description_en": "The scheduled scaling policies",
+            "description_zh": "定时伸缩策略",
+            "items": {
+              "$ref": "#/components/schemas/ScheduledPolicy",
+              "description_en": "The reserved configuration policy",
+              "description_zh": "预留配置策略",
+              "title": "定时伸缩策略"
+            },
+            "title": "定时伸缩策略",
+            "type": "array"
+          },
+          "targetInstances": {
+            "backendName": "targetInstances",
+            "description_en": "The target instance count",
+            "description_zh": "目标实例数量",
+            "example": "2",
+            "format": "int64",
+            "title": "目标实例数量",
+            "type": "integer"
+          }
+        },
+        "title": "预留实例弹性配置",
+        "type": "object"
+      },
+      "ScheduledPolicy": {
+        "description_en": "The reserved provisioning policy",
+        "description_zh": "预留配置策略",
+        "properties": {
+          "endTime": {
+            "backendName": "endTime",
+            "description_en": "The time when the policy expires",
+            "description_zh": "策略失效时间",
+            "example": "2024-01-01T08:00:00",
+            "title": "策略失效时间",
+            "type": "string"
+          },
+          "name": {
+            "backendName": "name",
+            "description_en": "The policy name",
+            "description_zh": "策略名称",
+            "example": "scale-up-morning",
+            "title": "策略名称",
+            "type": "string"
+          },
+          "scheduleExpression": {
+            "backendName": "scheduleExpression",
+            "description_en": "The scheduled configuration",
+            "description_zh": "定时配置",
+            "example": "cron(0 8 * * ? *)",
+            "title": "定时配置",
+            "type": "string"
+          },
+          "startTime": {
+            "backendName": "startTime",
+            "description_en": "The effective period of the policy",
+            "description_zh": "策略生效时间",
+            "example": "2024-01-01T08:00:00",
+            "title": "策略生效时间",
+            "type": "string"
+          },
+          "target": {
+            "backendName": "target",
+            "description_en": "The number of target instances for the policy",
+            "description_zh": "策略目标实例数",
+            "example": "20",
+            "format": "int64",
+            "title": "策略目标实例数",
+            "type": "integer"
+          },
+          "timeZone": {
+            "backendName": "timeZone",
+            "description_en": "The time zone",
+            "description_zh": "时区",
+            "example": "Asia/Shanghai",
+            "title": "时区",
+            "type": "string"
+          }
+        },
+        "title": "调度策略",
+        "type": "object"
+      },
+      "Template": {
+        "description_en": "Template Data  ",
+        "description_zh": "模板数据",
+        "properties": {
+          "allowAnonymousManage": {
+            "backendName": "allowAnonymousManage",
+            "description_en": "Indicates whether the data link can invoke APIs to create, stop, or delete sandbox instances  ",
+            "description_zh": "是否允许数据链路调用创建/停止/删除沙箱接口",
+            "example": "true",
+            "title": "是否允许数据链路调用创建/停止/删除沙箱接口",
+            "type": "boolean"
+          },
+          "containerConfiguration": {
+            "$ref": "#/components/schemas/ContainerConfiguration",
+            "backendName": "containerConfiguration",
+            "description_en": "Custom image configuration",
+            "description_zh": "自定义镜像配置",
+            "title": "自定义镜像配置"
+          },
+          "cpu": {
+            "backendName": "cpu",
+            "description_en": "Number of CPU cores  ",
+            "description_zh": "cpu 核数",
+            "example": "4",
+            "format": "float",
+            "required": true,
+            "title": "cpu 核数",
+            "type": "number"
+          },
+          "createdAt": {
+            "backendName": "createdAt",
+            "description_en": "Creation Time  ",
+            "description_zh": "创建时间",
+            "example": "2026-01-15T17:12:59.375168+08:00",
+            "title": "创建时间",
+            "type": "string"
+          },
+          "credentialConfiguration": {
+            "$ref": "#/components/schemas/CredentialConfiguration",
+            "backendName": "credentialConfiguration",
+            "description_en": "Authentication configuration  ",
+            "description_zh": "鉴权配置",
+            "title": "鉴权配置"
+          },
+          "description": {
+            "backendName": "description",
+            "description_en": "Description  ",
+            "description_zh": "模板描述",
+            "example": "template描述",
+            "title": "模板描述",
+            "type": "string"
+          },
+          "disablePublicNetworkAccess": {
+            "backendName": "disablePublicNetworkAccess",
+            "description_zh": "是否禁止公网访问",
+            "example": "true",
+            "title": "是否禁止公网访问",
+            "type": "boolean"
+          },
+          "diskSize": {
+            "backendName": "diskSize",
+            "description_en": "Disk size  ",
+            "description_zh": "磁盘大小",
+            "example": "10240",
+            "format": "int32",
+            "title": "磁盘大小",
+            "type": "integer"
+          },
+          "enableAgent": {
+            "backendName": "enableAgent",
+            "description_en": "Sandbox Agent Toggle  ",
+            "description_zh": "Sandbox Agent 开关",
+            "title": "Sandbox Agent 开关",
+            "type": "boolean"
+          },
+          "enablePreStop": {
+            "backendName": "enablePreStop",
+            "description_zh": "是否开启实例销毁前回调",
+            "title": "是否开启实例销毁前回调",
+            "type": "boolean"
+          },
+          "environmentVariables": {
+            "additionalProperties": {
+              "description_en": "Environment variable configuration for the agent runtime",
+              "description_zh": "智能体运行时的环境变量配置",
+              "example": "{'FCTEST_IDE_ENV': 'IDE'}",
+              "type": "string"
+            },
+            "backendName": "environmentVariables",
+            "description_en": "Environment variable configuration for the agent runtime",
+            "description_zh": "智能体运行时的环境变量配置",
+            "type": "object"
+          },
+          "executionRoleArn": {
+            "backendName": "executionRoleArn",
+            "description_en": "Execution role",
+            "description_zh": "执行角色",
+            "example": "acs:agentrun:cn-hangzhou:12345678:templates/efb6de2f-1814-42a2-b7f3-474a0e0b3a48",
+            "title": "执行角色",
+            "type": "string"
+          },
+          "lastUpdatedAt": {
+            "backendName": "lastUpdatedAt",
+            "description_en": "Update Time  ",
+            "description_zh": "最后更新时间",
+            "example": "2026-01-15T17:12:59.375168+08:00",
+            "title": "最后更新时间",
+            "type": "string"
+          },
+          "logConfiguration": {
+            "$ref": "#/components/schemas/LogConfiguration",
+            "backendName": "logConfiguration",
+            "description_en": "Log configuration  ",
+            "description_zh": "日志配置",
+            "title": "日志配置"
+          },
+          "mcpOptions": {
+            "backendName": "mcpOptions",
+            "description_en": "MCP options",
+            "description_zh": "MCP选项",
+            "properties": {
+              "enabledTools": {
+                "backendName": "enabledTools",
+                "description_en": "List of enabled tools  ",
+                "description_zh": "开启的工具列表",
+                "items": {
+                  "description_en": "Enabled tool  ",
+                  "description_zh": "开启的工具",
+                  "example": "execute_code",
+                  "type": "string"
+                },
+                "title": "开启的工具列表",
+                "type": "array"
+              },
+              "transport": {
+                "backendName": "transport",
+                "description_en": "Transport type  ",
+                "description_zh": "传输类型",
+                "example": "streamable-http",
+                "title": "传输类型",
+                "type": "string"
+              }
+            },
+            "title": "MCP选项",
+            "type": "object"
+          },
+          "mcpState": {
+            "backendName": "mcpState",
+            "description_en": "MCP server status  ",
+            "description_zh": "MCP服务器状态",
+            "properties": {
+              "accessEndpoint": {
+                "backendName": "accessEndpoint",
+                "description_en": "Access Endpoint  ",
+                "description_zh": "访问端点",
+                "example": "/mcp",
+                "title": "访问端点",
+                "type": "string"
+              },
+              "status": {
+                "backendName": "status",
+                "description_en": "MCP Status  ",
+                "description_zh": "MCP状态",
+                "example": "CREATING",
+                "title": "MCP状态",
+                "type": "string"
+              },
+              "statusReason": {
+                "backendName": "statusReason",
+                "description_en": "Status reason  ",
+                "description_zh": "状态原因",
+                "example": "SDK Error",
+                "title": "状态原因",
+                "type": "string"
+              }
+            },
+            "title": "MCP服务器状态",
+            "type": "object"
+          },
+          "memory": {
+            "backendName": "memory",
+            "description_en": "Memory specification  ",
+            "description_zh": "内存规格",
+            "example": "4096",
+            "format": "int32",
+            "required": true,
+            "title": "内存规格",
+            "type": "integer"
+          },
+          "nasConfig": {
+            "$ref": "#/components/schemas/NASConfig",
+            "backendName": "nasConfig",
+            "description_en": "NAS mount configuration item  ",
+            "description_zh": "NAS 挂载配置项目",
+            "title": "NAS 挂载配置项目"
+          },
+          "networkConfiguration": {
+            "$ref": "#/components/schemas/NetworkConfiguration",
+            "backendName": "networkConfiguration",
+            "description_en": "Network configuration  ",
+            "description_zh": "网络配置",
+            "title": "网络配置"
+          },
+          "ossConfiguration": {
+            "backendName": "ossConfiguration",
+            "description_en": "OSS configuration  ",
+            "description_zh": "oss 配置",
+            "items": {
+              "$ref": "#/components/schemas/OssConfiguration",
+              "description_en": "OSS configuration  ",
+              "description_zh": "oss 配置",
+              "title": "oss 配置"
+            },
+            "title": "oss 配置",
+            "type": "array"
+          },
+          "preStopTimeoutInSeconds": {
+            "backendName": "preStopTimeoutInSeconds",
+            "description_zh": "实例销毁前回调超时时间（秒）",
+            "example": "5",
+            "format": "int32",
+            "title": "实例销毁前回调超时时间（秒）",
+            "type": "integer"
+          },
+          "resourceName": {
+            "backendName": "resourceName",
+            "description_en": "Resource Name  ",
+            "description_zh": "资源名称",
+            "example": "agentrun-f2570dd4-c8a2-452c-8bd5-4ef74b0a69b5",
+            "title": "资源名称",
+            "type": "string"
+          },
+          "sandboxIdleTimeoutInSeconds": {
+            "backendName": "sandboxIdleTimeoutInSeconds",
+            "description_en": "Sandbox idle timeout  ",
+            "description_zh": "沙箱闲置超时时间",
+            "example": "1800",
+            "title": "沙箱闲置超时时间",
+            "type": "string"
+          },
+          "sandboxTTLInSeconds": {
+            "backendName": "sandboxTTLInSeconds",
+            "deprecated": false,
+            "description_en": "Sandbox lifecycle time to live (deprecated)  ",
+            "description_zh": "沙箱生命周期存活时间(已弃用）",
+            "example": "已弃用",
+            "title": "沙箱生命周期存活时间",
+            "type": "string"
+          },
+          "scalingStatus": {
+            "$ref": "#/components/schemas/ScalingStatus",
+            "backendName": "scalingStatus",
+            "description_en": "Elasticity Status  ",
+            "description_zh": "弹性状态",
+            "title": "弹性状态"
+          },
+          "status": {
+            "backendName": "status",
+            "description_en": "Status",
+            "description_zh": "状态",
+            "example": "READY",
+            "title": "状态",
+            "type": "string"
+          },
+          "statusReason": {
+            "backendName": "statusReason",
+            "description_en": "Status reason  ",
+            "description_zh": "状态原因",
+            "example": "SDK Error",
+            "title": "状态原因",
+            "type": "string"
+          },
+          "templateArn": {
+            "backendName": "templateArn",
+            "description_en": "Template ARN",
+            "description_zh": "模板 ARN",
+            "example": "acs:agentrun:cn-hangzhou:12345678:templates/efb6de2f-1814-42a2-b7f3-474a0e0b3a48",
+            "title": "模板 ARN",
+            "type": "string"
+          },
+          "templateConfiguration": {
+            "additionalProperties": {
+              "description_en": "Template Configuration (flexible object structure that varies based on templateType)  ",
+              "description_zh": "模板配置（灵活的对象结构，根据 templateType 不同而不同）",
+              "example": "{\"example\":\"test\"}",
+              "type": "any"
+            },
+            "backendName": "templateConfiguration",
+            "description_en": "Template Configuration (flexible object structure that varies based on templateType)  ",
+            "description_zh": "模板配置（灵活的对象结构，根据 templateType 不同而不同）",
+            "type": "object"
+          },
+          "templateId": {
+            "backendName": "templateId",
+            "description_en": "Template ID  ",
+            "description_zh": "模板id",
+            "example": "996ffd5e-003f-4700-9f24-9e2a1c19019b.schema",
+            "required": true,
+            "title": "模板id",
+            "type": "string"
+          },
+          "templateName": {
+            "backendName": "templateName",
+            "description_en": "Template Name",
+            "description_zh": "模板名称",
+            "example": "browser-1767874121726",
+            "required": true,
+            "title": "模板名称",
+            "type": "string"
+          },
+          "templateType": {
+            "backendName": "templateType",
+            "description_en": "templatetype  ",
+            "description_zh": "模板类型",
+            "example": "Browser",
+            "title": "模板类型",
+            "type": "string"
+          },
+          "templateVersion": {
+            "backendName": "templateVersion",
+            "description_en": "Template Version",
+            "description_zh": "模板版本",
+            "example": "预留",
+            "title": "模板版本",
+            "type": "string"
+          },
+          "workspaceId": {
+            "backendName": "workspaceId",
+            "description_en": "Associated Space ID  ",
+            "description_zh": "关联的空间 ID",
+            "example": "1e546db8-xxxx-xxxx-9be1-5a1351cdac95",
+            "title": "关联的空间 ID",
+            "type": "string"
+          }
+        },
+        "title": "模板数据",
+        "type": "object"
+      },
+      "TemplateResult": {
+        "description_en": "Unified result format for template operations  ",
+        "description_zh": "模板操作的统一结果格式",
+        "properties": {
+          "code": {
+            "backendName": "code",
+            "description_en": "SUCCESS indicates success. In case of failure, the corresponding Error Type is returned.  ",
+            "description_zh": "SUCCESS 为成功，失败情况返回对应错误类型",
+            "example": "SUCCESS",
+            "title": "结果码",
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Template",
+            "backendName": "data",
+            "description_en": "Detailed information about the template  ",
+            "description_zh": "模板的详细信息",
+            "required": true,
+            "title": "模板数据"
+          },
+          "requestId": {
+            "backendName": "requestId",
+            "description_en": "Unique request ID used for troubleshooting  ",
+            "description_zh": "唯一的请求标识符，用于问题追踪",
+            "example": "F8A0F5F3-0C3E-4C82-9D4F-5E4B6A7C8D9E",
+            "title": "请求ID",
+            "type": "string"
+          }
+        },
+        "title": "模板结果",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Updates a template",
+  "description_zh": "更新模板",
+  "kebab_example": "aliyun agentrun update-template --template-name my-template --client-token clientToken --region cn-hangzhou",
+  "method": "PUT",
+  "multi_version": false,
+  "name": "UpdateTemplate",
+  "operation": {
+    "action": "UpdateTemplate",
+    "api_style": "ROA",
+    "api_version": "2025-09-10",
+    "body_mapping": {
+      "allow_anonymous_manage": "allowAnonymousManage",
+      "arms_configuration": "armsConfiguration",
+      "container_configuration": "containerConfiguration",
+      "cpu": "cpu",
+      "credential_configuration": "credentialConfiguration",
+      "description": "description",
+      "disable_public_network_access": "disablePublicNetworkAccess",
+      "enable_agent": "enableAgent",
+      "enable_pre_stop": "enablePreStop",
+      "environment_variables": "environmentVariables",
+      "execution_role_arn": "executionRoleArn",
+      "log_configuration": "logConfiguration",
+      "memory": "memory",
+      "nas_config": "nasConfig",
+      "network_configuration": "networkConfiguration",
+      "oss_configuration": "ossConfiguration",
+      "pre_stop_timeout_in_seconds": "preStopTimeoutInSeconds",
+      "sandbox_idle_timeout_in_seconds": "sandboxIdleTimeoutInSeconds",
+      "sandbox_ttl_in_seconds": "sandboxTTLInSeconds",
+      "scaling_config": "scalingConfig",
+      "template_configuration": "templateConfiguration",
+      "workspace_id": "workspaceId"
+    },
+    "content_type": "application/json",
+    "method": "PUT",
+    "operation_type": "readAndWrite",
+    "protocol": "HTTPS",
+    "req_body_type": "json",
+    "system_operation_type": "update",
+    "url": "/2025-09-10/templates/{templateName}"
+  },
+  "parameters": [
+    {
+      "example": "my-template",
+      "help_en": "The template name",
+      "help_zh": "模板名称",
+      "location": "path",
+      "name": "template_name",
+      "options": [
+        "--template-name"
+      ],
+      "raw_name": "templateName",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "clientToken",
+      "help_en": "The client token",
+      "help_zh": "客户端令牌",
+      "location": "query",
+      "name": "client_token",
+      "options": [
+        "--client-token"
+      ],
+      "raw_name": "clientToken",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "true",
+      "help_en": "Specifies whether the data link is allowed to invoke APIs to create, stop, or delete sandboxes  ",
+      "help_zh": "是否允许数据链路调用创建/停止/删除沙箱接口",
+      "location": "body",
+      "name": "allow_anonymous_manage",
+      "options": [
+        "--allow-anonymous-manage"
+      ],
+      "param_style": "json",
+      "raw_name": "allowAnonymousManage",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "fields": [
+        {
+          "example": "arms-license-key-123456",
+          "help_en": "应用实时监控服务（ARMS）的许可证密钥",
+          "help_zh": "应用实时监控服务（ARMS）的许可证密钥",
+          "name": "arms_license_key",
+          "options": [
+            "--arms-license-key"
+          ],
+          "raw_name": "armsLicenseKey",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "default-cms-1760xxxxxxxx5983-cn-hangzhou",
+          "help_en": "CMS 2.0 工作空间",
+          "help_zh": "CMS 2.0 工作空间",
+          "name": "cms_workspace",
+          "options": [
+            "--cms-workspace"
+          ],
+          "raw_name": "cmsWorkspace",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "true",
+          "help_en": "是否启用应用实时监控服务（ARMS）",
+          "help_zh": "是否启用应用实时监控服务（ARMS）",
+          "name": "enable_arms",
+          "options": [
+            "--enable-arms"
+          ],
+          "raw_name": "enableArms",
+          "required": false,
+          "type": "bool"
+        }
+      ],
+      "help_en": "Configuration information for Application Real-Time Monitoring Service (ARMS)  ",
+      "help_zh": "应用实时监控服务（ARMS）的配置信息",
+      "location": "body",
+      "name": "arms_configuration",
+      "options": [
+        "--arms-configuration"
+      ],
+      "param_style": "json",
+      "raw_name": "armsConfiguration",
+      "required": false,
+      "type": "object"
+    },
+    {
+      "fields": [
+        {
+          "example": "cri-xxxxx",
+          "help_en": "The instance ID or name of Alibaba Cloud Container Registry (ACR)",
+          "help_zh": "阿里云容器镜像服务（ACR）的实例ID或名称",
+          "name": "acr_instance_id",
+          "options": [
+            "--acr-instance-id"
+          ],
+          "raw_name": "acrInstanceId",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "element": {
+            "type": "string"
+          },
+          "example": "python3,app.py",
+          "help_en": "The sandbox entrypoint command. Example: ['python3', 'app.py']",
+          "help_zh": "沙箱入口点命令（例如：['python3', 'app.py']）",
+          "name": "command",
+          "options": [
+            "--command"
+          ],
+          "raw_name": "command",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "example": "registry.cn-hangzhou.aliyuncs.com/my-namespace/agent-runtime:latest",
+          "help_en": "The address of the container image",
+          "help_zh": "容器镜像地址",
+          "name": "image",
+          "options": [
+            "--image"
+          ],
+          "raw_name": "image",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "enum": [
+            "ACR",
+            "ACREE",
+            "CUSTOM"
+          ],
+          "example": "ACR",
+          "help_en": "The source type of the container image. Valid values: ACR (Alibaba Cloud Container Registry), ACREE (Alibaba Cloud Container Registry Enterprise Edition), and CUSTOM (custom image repository)",
+          "help_zh": "容器镜像的来源类型，支持ACR（阿里云容器镜像服务）、ACREE（阿里云容器镜像服务企业版）、CUSTOM（自定义镜像仓库）",
+          "name": "image_registry_type",
+          "options": [
+            "--image-registry-type"
+          ],
+          "raw_name": "imageRegistryType",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "5000",
+          "help_en": "The port number that the sandbox runtime listens on",
+          "help_zh": "沙箱运行时监听的端口号",
+          "name": "port",
+          "options": [
+            "--port"
+          ],
+          "raw_name": "port",
+          "required": false,
+          "type": "int"
+        },
+        {
+          "fields": [
+            {
+              "fields": [
+                {
+                  "example": "abc***",
+                  "help_en": "The logon password of the image repository",
+                  "help_zh": "镜像仓库的登录密码",
+                  "name": "password",
+                  "options": [
+                    "--password"
+                  ],
+                  "raw_name": "password",
+                  "required": false,
+                  "type": "string"
+                },
+                {
+                  "example": "admin",
+                  "help_en": "The logon username of the image repository",
+                  "help_zh": "镜像仓库的登录用户名",
+                  "name": "user_name",
+                  "options": [
+                    "--user-name"
+                  ],
+                  "raw_name": "userName",
+                  "required": false,
+                  "type": "string"
+                }
+              ],
+              "help_en": "The authentication configuration for a custom container image repository",
+              "help_zh": "自定义容器镜像仓库的认证配置信息",
+              "name": "auth_config",
+              "options": [
+                "--auth-config"
+              ],
+              "raw_name": "authConfig",
+              "required": false,
+              "type": "object"
+            },
+            {
+              "fields": [
+                {
+                  "example": "false",
+                  "help_en": "Specifies whether to skip TLS certificate verification. If this parameter is set to true, the certificate of the image repository is not verified",
+                  "help_zh": "是否跳过TLS证书验证，设置为true时将不验证镜像仓库的证书",
+                  "name": "insecure",
+                  "options": [
+                    "--insecure"
+                  ],
+                  "raw_name": "insecure",
+                  "required": false,
+                  "type": "bool"
+                },
+                {
+                  "example": "cm9vdF9jYV9jZXJ0X2Jhc2U2NA==",
+                  "help_en": "The Base64 encoding of the root CA certificate of the image repository, used to verify a self-signed certificate",
+                  "help_zh": "镜像仓库的根CA证书Base64编码，用于自签名证书的验证",
+                  "name": "root_ca_cert_base64",
+                  "options": [
+                    "--root-ca-cert-base64"
+                  ],
+                  "raw_name": "rootCaCertBase64",
+                  "required": false,
+                  "type": "string"
+                }
+              ],
+              "help_en": "The certificate configuration information for a custom container image repository",
+              "help_zh": "自定义容器镜像仓库的证书配置信息",
+              "name": "cert_config",
+              "options": [
+                "--cert-config"
+              ],
+              "raw_name": "certConfig",
+              "required": false,
+              "type": "object"
+            },
+            {
+              "fields": [
+                {
+                  "example": "sg-xxxxxxxxxxxxx",
+                  "help_en": "The security group ID of the image repository",
+                  "help_zh": "镜像仓库的安全组ID",
+                  "name": "security_group_id",
+                  "options": [
+                    "--security-group-id"
+                  ],
+                  "raw_name": "securityGroupId",
+                  "required": false,
+                  "type": "string"
+                },
+                {
+                  "example": "vsw-xxxxxxxxxxxxx",
+                  "help_en": "The ID of the vSwitch where the image repository resides",
+                  "help_zh": "镜像仓库所在的交换机ID",
+                  "name": "vswitch_id",
+                  "options": [
+                    "--vswitch-id"
+                  ],
+                  "raw_name": "vSwitchId",
+                  "required": false,
+                  "type": "string"
+                },
+                {
+                  "example": "vpc-xxxxxxxxxxxxx",
+                  "help_en": "The ID of the VPC where the image repository resides",
+                  "help_zh": "镜像仓库所在的VPC ID",
+                  "name": "vpc_id",
+                  "options": [
+                    "--vpc-id"
+                  ],
+                  "raw_name": "vpcId",
+                  "required": false,
+                  "type": "string"
+                }
+              ],
+              "help_en": "The network configuration of the custom container image repository",
+              "help_zh": "自定义容器镜像仓库的网络配置信息",
+              "name": "network_config",
+              "options": [
+                "--network-config"
+              ],
+              "raw_name": "networkConfig",
+              "required": false,
+              "type": "object"
+            }
+          ],
+          "help_en": "The configuration of a custom container image repository, including authentication, certificate, and network settings",
+          "help_zh": "自定义容器镜像仓库的配置信息，包括认证、证书和网络配置",
+          "name": "registry_config",
+          "options": [
+            "--registry-config"
+          ],
+          "raw_name": "registryConfig",
+          "required": false,
+          "type": "object"
+        }
+      ],
+      "help_en": "Container configuration (built-in and immutable)  ",
+      "help_zh": "容器配置（内置的不可改）",
+      "location": "body",
+      "name": "container_configuration",
+      "options": [
+        "--container-configuration"
+      ],
+      "param_style": "json",
+      "raw_name": "containerConfiguration",
+      "required": false,
+      "type": "object"
+    },
+    {
+      "example": "2",
+      "help_en": "CPU resource configuration (unit: core)  ",
+      "help_zh": "CPU资源配置（单位：核心）",
+      "location": "body",
+      "name": "cpu",
+      "options": [
+        "--cpu"
+      ],
+      "param_style": "json",
+      "raw_name": "cpu",
+      "required": false,
+      "type": "float"
+    },
+    {
+      "fields": [
+        {
+          "example": "deepagent-key",
+          "help_en": "The unique identifier for the credential",
+          "help_zh": "凭证的唯一标识符",
+          "name": "credential_name",
+          "options": [
+            "--credential-name"
+          ],
+          "raw_name": "credentialName",
+          "required": false,
+          "type": "string"
+        }
+      ],
+      "help_en": "Credential configuration",
+      "help_zh": "凭证配置",
+      "location": "body",
+      "name": "credential_configuration",
+      "options": [
+        "--credential-configuration"
+      ],
+      "param_style": "json",
+      "raw_name": "credentialConfiguration",
+      "required": false,
+      "type": "object"
+    },
+    {
+      "example": "demo description",
+      "help_en": "Template description  ",
+      "help_zh": "模板描述",
+      "location": "body",
+      "name": "description",
+      "options": [
+        "--description"
+      ],
+      "param_style": "json",
+      "raw_name": "description",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "true",
+      "help_en": "是否禁止公网访问",
+      "help_zh": "是否禁止公网访问",
+      "location": "body",
+      "name": "disable_public_network_access",
+      "options": [
+        "--disable-public-network-access"
+      ],
+      "param_style": "json",
+      "raw_name": "disablePublicNetworkAccess",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "example": "true",
+      "help_en": "Sandbox Agent toggle  ",
+      "help_zh": "Sandbox Agent 开关",
+      "location": "body",
+      "name": "enable_agent",
+      "options": [
+        "--enable-agent"
+      ],
+      "param_style": "json",
+      "raw_name": "enableAgent",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "help_en": "是否开启实例销毁前回调",
+      "help_zh": "是否开启实例销毁前回调",
+      "location": "body",
+      "name": "enable_pre_stop",
+      "options": [
+        "--enable-pre-stop"
+      ],
+      "param_style": "json",
+      "raw_name": "enablePreStop",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "help_en": "Environment variables  ",
+      "help_zh": "环境变量",
+      "location": "body",
+      "name": "environment_variables",
+      "options": [
+        "--environment-variables"
+      ],
+      "param_style": "json",
+      "raw_name": "environmentVariables",
+      "required": false,
+      "type": "map",
+      "value": {
+        "type": "string"
+      }
+    },
+    {
+      "example": "arn:acs:agentrun:cn-hangzhou:123456789:xxx/test",
+      "help_en": "Execution role ARN  ",
+      "help_zh": "执行角色ARN",
+      "location": "body",
+      "name": "execution_role_arn",
+      "options": [
+        "--execution-role-arn"
+      ],
+      "param_style": "json",
+      "raw_name": "executionRoleArn",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "fields": [
+        {
+          "example": "agent-runtime-logs",
+          "help_en": "The name of the SLS logstore",
+          "help_zh": "SLS日志库名称",
+          "name": "logstore",
+          "options": [
+            "--logstore"
+          ],
+          "raw_name": "logstore",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "agent-runtime-logs",
+          "help_en": "The name of the SLS project",
+          "help_zh": "SLS项目名称",
+          "name": "project",
+          "options": [
+            "--project"
+          ],
+          "raw_name": "project",
+          "required": false,
+          "type": "string"
+        }
+      ],
+      "help_en": "Log configuration  ",
+      "help_zh": "日志配置",
+      "location": "body",
+      "name": "log_configuration",
+      "options": [
+        "--log-configuration"
+      ],
+      "param_style": "json",
+      "raw_name": "logConfiguration",
+      "required": false,
+      "type": "object"
+    },
+    {
+      "example": "4",
+      "help_en": "Memory resource configuration (unit: MB)  ",
+      "help_zh": "内存资源配置（单位：MB）",
+      "location": "body",
+      "name": "memory",
+      "options": [
+        "--memory"
+      ],
+      "param_style": "json",
+      "raw_name": "memory",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "fields": [
+        {
+          "example": "100",
+          "help_en": "The group ID for file system access",
+          "help_zh": "群组ID",
+          "name": "group_id",
+          "options": [
+            "--group-id"
+          ],
+          "raw_name": "groupId",
+          "required": false,
+          "type": "int"
+        },
+        {
+          "element": {
+            "fields": [
+              {
+                "help_en": "Specifies whether to enable encryption in transit. This option is supported only for general-purpose NAS",
+                "help_zh": "使用传输加密方式挂载。 说明：仅通用型NAS支持传输加密",
+                "name": "enable_tls",
+                "options": [
+                  "--enable-tls"
+                ],
+                "raw_name": "enableTLS",
+                "required": false,
+                "type": "bool"
+              },
+              {
+                "example": "/home/test",
+                "help_en": "Specifies the local mount directory",
+                "help_zh": "本地挂载目录",
+                "max_length": "64",
+                "name": "mount_dir",
+                "options": [
+                  "--mount-dir"
+                ],
+                "raw_name": "mountDir",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "example": "***-uni85.cn-hangzhou.nas.com:/",
+                "help_en": "Specifies the NAS server address",
+                "help_zh": "NAS服务器地址",
+                "max_length": "128",
+                "name": "server_addr",
+                "options": [
+                  "--server-addr"
+                ],
+                "raw_name": "serverAddr",
+                "required": false,
+                "type": "string"
+              }
+            ],
+            "type": "object"
+          },
+          "help_en": "A list of mount point configurations",
+          "help_zh": "挂载点列表",
+          "name": "mount_points",
+          "options": [
+            "--mount-points"
+          ],
+          "raw_name": "mountPoints",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "example": "100",
+          "help_en": "The user ID for file system access",
+          "help_zh": "账号ID",
+          "name": "user_id",
+          "options": [
+            "--user-id"
+          ],
+          "raw_name": "userId",
+          "required": false,
+          "type": "int"
+        }
+      ],
+      "help_en": "NAS mount configuration item  ",
+      "help_zh": "NAS 挂载配置项",
+      "location": "body",
+      "name": "nas_config",
+      "options": [
+        "--nas-config"
+      ],
+      "param_style": "json",
+      "raw_name": "nasConfig",
+      "required": false,
+      "type": "object"
+    },
+    {
+      "fields": [
+        {
+          "enum": [
+            "PUBLIC",
+            "PRIVATE",
+            "PUBLIC_AND_PRIVATE"
+          ],
+          "example": "PRIVATE",
+          "help_en": "The network mode",
+          "help_zh": "网络模式",
+          "name": "network_mode",
+          "options": [
+            "--network-mode"
+          ],
+          "raw_name": "networkMode",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "sg-1234567890abcdef0",
+          "help_en": "The security group ID",
+          "help_zh": "安全组ID",
+          "name": "security_group_id",
+          "options": [
+            "--security-group-id"
+          ],
+          "raw_name": "securityGroupId",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "vpc-1234567890abcdef0",
+          "help_en": "The VPC ID",
+          "help_zh": "专有网络ID",
+          "name": "vpc_id",
+          "options": [
+            "--vpc-id"
+          ],
+          "raw_name": "vpcId",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "element": {
+            "type": "string"
+          },
+          "example": "vsw-1234567890abcdef0,vsw-abcdef1234567890",
+          "help_en": "An array of VSwitch IDs",
+          "help_zh": "交换机ID列表",
+          "name": "vswitch_ids",
+          "options": [
+            "--vswitch-ids"
+          ],
+          "raw_name": "vswitchIds",
+          "required": false,
+          "type": "array"
+        }
+      ],
+      "help_en": "Network configuration  ",
+      "help_zh": "网络配置",
+      "location": "body",
+      "name": "network_configuration",
+      "options": [
+        "--network-configuration"
+      ],
+      "param_style": "json",
+      "raw_name": "networkConfiguration",
+      "required": false,
+      "type": "object"
+    },
+    {
+      "element": {
+        "fields": [
+          {
+            "example": "a-test-oss",
+            "help_en": "The OSS bucket name",
+            "help_zh": "OSS存储桶名称",
+            "name": "bucket_name",
+            "options": [
+              "--bucket-name"
+            ],
+            "raw_name": "bucketName",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "example": "http://oss-cn-hangzhou.aliyuncs.com",
+            "help_en": "The OSS endpoint",
+            "help_zh": "OSS端点",
+            "name": "endpoint",
+            "options": [
+              "--endpoint"
+            ],
+            "raw_name": "endpoint",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "/mnt/oss1",
+            "help_en": "The OSS mount point",
+            "help_zh": "OSS挂载点",
+            "name": "mount_point",
+            "options": [
+              "--mount-point"
+            ],
+            "raw_name": "mountPoint",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "enum": [
+              "READ_ONLY",
+              "READ_WRITE"
+            ],
+            "example": "READ_WRITE",
+            "help_en": "The permission",
+            "help_zh": "权限",
+            "name": "permission",
+            "options": [
+              "--permission"
+            ],
+            "raw_name": "permission",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "/",
+            "help_en": "The OSS object prefix or path",
+            "help_zh": "OSS对象前缀/路径",
+            "name": "prefix",
+            "options": [
+              "--prefix"
+            ],
+            "raw_name": "prefix",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "example": "ch-hangzhou",
+            "help_en": "The OSS region",
+            "help_zh": "oss地域",
+            "name": "region",
+            "options": [
+              "--region"
+            ],
+            "raw_name": "region",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "type": "object"
+      },
+      "help_en": "OSS mount configuration  ",
+      "help_zh": "OSS挂载配置",
+      "location": "body",
+      "name": "oss_configuration",
+      "options": [
+        "--oss-configuration"
+      ],
+      "param_style": "json",
+      "raw_name": "ossConfiguration",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "example": "10",
+      "help_en": "实例销毁前回调超时时间（秒）",
+      "help_zh": "实例销毁前回调超时时间（秒）",
+      "location": "body",
+      "name": "pre_stop_timeout_in_seconds",
+      "options": [
+        "--pre-stop-timeout-in-seconds"
+      ],
+      "param_style": "json",
+      "raw_name": "preStopTimeoutInSeconds",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "21600",
+      "help_en": "Sandbox idle timeout (seconds)  ",
+      "help_zh": "沙箱空闲超时时间（秒）",
+      "location": "body",
+      "maximum": "21600",
+      "minimum": "1",
+      "name": "sandbox_idle_timeout_in_seconds",
+      "options": [
+        "--sandbox-idle-timeout-in-seconds"
+      ],
+      "param_style": "json",
+      "raw_name": "sandboxIdleTimeoutInSeconds",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "86400",
+      "help_en": "Sandbox time to live (seconds)  ",
+      "help_zh": "沙箱存活时间（秒）",
+      "location": "body",
+      "maximum": "604800",
+      "minimum": "1",
+      "name": "sandbox_ttl_in_seconds",
+      "options": [
+        "--sandbox-ttl-in-seconds"
+      ],
+      "param_style": "json",
+      "raw_name": "sandboxTTLInSeconds",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "fields": [
+        {
+          "example": "2",
+          "help_en": "The minimum number of instances",
+          "help_zh": "最小实例数",
+          "name": "min_instances",
+          "options": [
+            "--min-instances"
+          ],
+          "raw_name": "minInstances",
+          "required": false,
+          "type": "int"
+        },
+        {
+          "element": {
+            "fields": [
+              {
+                "example": "2024-01-01T08:00:00",
+                "help_en": "The time when the policy expires",
+                "help_zh": "策略失效时间",
+                "name": "end_time",
+                "options": [
+                  "--end-time"
+                ],
+                "raw_name": "endTime",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "example": "scale-up-morning",
+                "help_en": "The policy name",
+                "help_zh": "策略名称",
+                "name": "name",
+                "options": [
+                  "--name"
+                ],
+                "raw_name": "name",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "example": "cron(0 8 * * ? *)",
+                "help_en": "The scheduled configuration",
+                "help_zh": "定时配置",
+                "name": "schedule_expression",
+                "options": [
+                  "--schedule-expression"
+                ],
+                "raw_name": "scheduleExpression",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "example": "2024-01-01T08:00:00",
+                "help_en": "The effective period of the policy",
+                "help_zh": "策略生效时间",
+                "name": "start_time",
+                "options": [
+                  "--start-time"
+                ],
+                "raw_name": "startTime",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "example": "20",
+                "help_en": "The number of target instances for the policy",
+                "help_zh": "策略目标实例数",
+                "name": "target",
+                "options": [
+                  "--target"
+                ],
+                "raw_name": "target",
+                "required": false,
+                "type": "int"
+              },
+              {
+                "example": "Asia/Shanghai",
+                "help_en": "The time zone",
+                "help_zh": "时区",
+                "name": "time_zone",
+                "options": [
+                  "--time-zone"
+                ],
+                "raw_name": "timeZone",
+                "required": false,
+                "type": "string"
+              }
+            ],
+            "type": "object"
+          },
+          "help_en": "The scheduled scale-out policies",
+          "help_zh": "定时扩容策略",
+          "name": "scheduled_policies",
+          "options": [
+            "--scheduled-policies"
+          ],
+          "raw_name": "scheduledPolicies",
+          "required": false,
+          "type": "array"
+        }
+      ],
+      "help_en": "Elasticity configuration  ",
+      "help_zh": "弹性配置",
+      "location": "body",
+      "name": "scaling_config",
+      "options": [
+        "--scaling-config"
+      ],
+      "param_style": "json",
+      "raw_name": "scalingConfig",
+      "required": false,
+      "type": "object"
+    },
+    {
+      "help_en": "Template configuration (a flexible object structure that varies based on templateType)  ",
+      "help_zh": "模板配置（灵活的对象结构，根据 templateType 不同而不同）",
+      "location": "body",
+      "name": "template_configuration",
+      "options": [
+        "--template-configuration"
+      ],
+      "param_style": "json",
+      "raw_name": "templateConfiguration",
+      "required": false,
+      "type": "map",
+      "value": {
+        "type": "any"
+      }
+    },
+    {
+      "example": "ws-1234567890abcdef",
+      "help_en": "Associated Space ID  ",
+      "help_zh": "关联的空间 ID",
+      "location": "body",
+      "name": "workspace_id",
+      "options": [
+        "--workspace-id"
+      ],
+      "param_style": "json",
+      "raw_name": "workspaceId",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/2025-09-10/templates/[templateName]",
+  "product_code": "AgentRun",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "description_en": "成功响应 - 返回更新后的模板信息",
+      "description_zh": "成功响应 - 返回更新后的模板信息",
+      "examples": [],
+      "schema": {
+        "$ref": "#/components/schemas/TemplateResult",
+        "description_en": "The result of updating the template",
+        "description_zh": "返回更新模板的结果",
+        "parseType": "struct",
+        "title_en": "返回更新结构体的结果",
+        "title_zh": "返回更新结构体的结果"
+      }
+    },
+    "500": {
+      "schema": {
+        "$ref": "#/components/schemas/ErrorResult",
+        "parseType": "struct"
+      }
+    }
+  },
+  "v1_body_parameters": [
+    {
+      "help_en": "The request parameters for updating the template",
+      "help_zh": "更新模板请求参数",
+      "name": "body",
+      "param_style": "json",
+      "position": "body",
+      "required": true,
+      "type": "string"
+    }
+  ]
+}

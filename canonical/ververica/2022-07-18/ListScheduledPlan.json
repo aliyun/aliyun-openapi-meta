@@ -1,0 +1,547 @@
+{
+  "camel_example": "aliyun ververica GET /api/v2/namespaces/default-namespace/scheduled-plans --region cn-hangzhou --header \"workspace=a14bd5d90a0000\" --header \"Content-Type=application/json\"",
+  "cmd_full_name": "ververica list-scheduled-plan",
+  "cmd_name": "list-scheduled-plan",
+  "components": {
+    "schemas": {
+      "BasicResourceSetting": {
+        "description_en": "The basic mode resource configuration commonly used in the community edition, which differs from the expert mode resource configuration provided in the commercial edition",
+        "description_zh": "本数据结构表示用户使用的社区版本常用的基础模式资源配置，有别于商业版本提供的专家模式资源配置",
+        "properties": {
+          "jobmanagerResourceSettingSpec": {
+            "$ref": "#/components/schemas/BasicResourceSettingSpec",
+            "backendName": "jobmanagerResourceSettingSpec",
+            "description_en": "The JobManager resource settings",
+            "description_zh": "JobManager资源设置",
+            "title": "JobManager资源设置"
+          },
+          "parallelism": {
+            "backendName": "parallelism",
+            "description_en": "The concurrency",
+            "description_zh": "并发度",
+            "example": "4",
+            "format": "int64",
+            "title": "并发度",
+            "type": "integer"
+          },
+          "taskmanagerResourceSettingSpec": {
+            "$ref": "#/components/schemas/BasicResourceSettingSpec",
+            "backendName": "taskmanagerResourceSettingSpec",
+            "description_en": "The TaskManager resource settings",
+            "description_zh": "TaskManager资源设置",
+            "title": "TaskManager资源设置"
+          }
+        },
+        "title": "作业通用资源设置",
+        "type": "object"
+      },
+      "BasicResourceSettingSpec": {
+        "description_en": "The configurations of CPU and memory resources for a deployment. A coarse-grained description of the JobManager or TaskManager resources can be generated based on the data structure",
+        "description_zh": "本数据结构表示对作业使用CPU和内存资源的包装，依据本数据结构可以生成对JM/TM资源的粗粒度的描述",
+        "properties": {
+          "cpu": {
+            "backendName": "cpu",
+            "description_en": "The number of CPU cores",
+            "description_zh": "CPU核数",
+            "example": "2.0",
+            "format": "double",
+            "title": "CPU",
+            "type": "number"
+          },
+          "memory": {
+            "backendName": "memory",
+            "description_en": "The capacity of the memory. Unit: GiB",
+            "description_zh": "内存，单位GiB",
+            "example": "4 GiB",
+            "title": "内存",
+            "type": "string"
+          }
+        },
+        "title": "作业基础源",
+        "type": "object"
+      },
+      "BatchResourceSetting": {
+        "description_en": "The resource parameters for a deployment in batch mode",
+        "description_zh": "本数据结构代表批模式资源设置信息",
+        "properties": {
+          "basicResourceSetting": {
+            "$ref": "#/components/schemas/BasicResourceSetting",
+            "backendName": "basicResourceSetting",
+            "description_en": "The resource parameters in basic mode",
+            "description_zh": "基础模式资源设置",
+            "title": "基础资源设置"
+          },
+          "maxSlot": {
+            "backendName": "maxSlot",
+            "description_en": "The maximum number of slots",
+            "description_zh": "最大slot数",
+            "example": "10",
+            "format": "int64",
+            "title": "最大slot数",
+            "type": "integer"
+          }
+        },
+        "title": "批作业资源设置",
+        "type": "object"
+      },
+      "BriefResourceSetting": {
+        "description_en": "The data structure that describes the resources available to a job in streaming or batch mode",
+        "description_zh": "本数据结构用来描述作业在流/批两种模式下能使用的资源情况",
+        "properties": {
+          "batchResourceSetting": {
+            "$ref": "#/components/schemas/BatchResourceSetting",
+            "backendName": "batchResourceSetting",
+            "description_en": "The resource settings for running in batch mode. This parameter is required when batch mode is selected",
+            "description_zh": "运行批模式的资源设置，选择批模式时必填",
+            "title": "批作业资源设置"
+          },
+          "flinkConf": {
+            "backendName": "flinkConf",
+            "description_en": "The Flink configuration",
+            "description_zh": "Flink配置",
+            "example": "“execution.checkpointing.interval: 180s”",
+            "title": "flink配置设置",
+            "type": "object"
+          },
+          "streamingResourceSetting": {
+            "$ref": "#/components/schemas/StreamingResourceSetting",
+            "backendName": "streamingResourceSetting",
+            "description_en": "The resource settings for running in streaming mode. This parameter is required when streaming mode is selected",
+            "description_zh": "运行流模式的资源设置，选择流模式时必填",
+            "title": "流作业资源设置"
+          }
+        },
+        "title": "作业资源设置",
+        "type": "object"
+      },
+      "ExpertResourceSetting": {
+        "description_en": "The information about the resource configuration of a deployment in expert mode",
+        "description_zh": "本数据结构代表作业专家模式资源配置的信息",
+        "properties": {
+          "jobmanagerResourceSettingSpec": {
+            "$ref": "#/components/schemas/BasicResourceSettingSpec",
+            "backendName": "jobmanagerResourceSettingSpec",
+            "description_en": "The basic resource configuration of the JobManager",
+            "description_zh": "JobManager基础资源设置",
+            "title": "JobManager基础资源设置"
+          },
+          "resourcePlan": {
+            "backendName": "resourcePlan",
+            "description_en": "The resource configuration plan of the deployment in expert mode",
+            "description_zh": "专家模式资源配置计划",
+            "example": "{\\\"ssgProfiles\\\":[{\\\"name\\\":\\\"default\\\",\\\"cpu\\\":1.13,\\\"heap\\\":\\\"1 gb\\\",\\\"offHeap\\\":\\\"32 mb\\\",\\\"managed\\\":{},\\\"extended\\\":{}}],\\\"nodes\\\":[{\\\"id\\\":1,\\\"type\\\":\\\"StreamExecTableSourceScan\\\",\\\"desc\\\":\\\"Source: datagen_source[78]\\\",\\\"profile\\\":{\\\"group\\\":\\\"default\\\",\\\"parallelism\\\":1,\\\"maxParallelism\\\":32768,\\\"minParallelism\\\":1}},{\\\"id\\\":2,\\\"type\\\":\\\"StreamExecSink\\\",\\\"desc\\\":\\\"Sink: blackhole_sink[79]\\\",\\\"profile\\\":{\\\"group\\\":\\\"default\\\",\\\"parallelism\\\":1,\\\"maxParallelism\\\":32768,\\\"minParallelism\\\":1}}],\\\"edges\\\":[{\\\"source\\\":1,\\\"target\\\":2,\\\"mode\\\":\\\"PIPELINED\\\",\\\"strategy\\\":\\\"FORWARD\\\"}],\\\"vertices\\\":{\\\"717c7b8afebbfb7137f6f0f99beb2a94\\\":[1,2]}}",
+            "title": "细粒度资源计划",
+            "type": "string"
+          }
+        },
+        "title": "细粒度资源设置",
+        "type": "object"
+      },
+      "PeriodicSchedulingPolicy": {
+        "description_en": "定时计划策略",
+        "description_zh": "定时计划策略",
+        "properties": {
+          "isFinished": {
+            "backendName": "isFinished",
+            "description_zh": "单次触发是否完成",
+            "title": "单次触发是否完成",
+            "type": "boolean"
+          },
+          "onlyOnceTriggerTime": {
+            "backendName": "onlyOnceTriggerTime",
+            "description_zh": "单次触发时间",
+            "example": "1723195800000",
+            "format": "int64",
+            "title": "单次触发时间",
+            "type": "integer"
+          },
+          "onlyOnceTriggerTimeIsExpired": {
+            "backendName": "onlyOnceTriggerTimeIsExpired",
+            "description_zh": "单次触发是否过期",
+            "example": "true",
+            "title": "单次触发是否过期",
+            "type": "boolean"
+          },
+          "periodicSchedulingLevel": {
+            "backendName": "periodicSchedulingLevel",
+            "description_zh": "触发周期",
+            "example": "DAY",
+            "title": "触发周期",
+            "type": "string"
+          },
+          "periodicSchedulingValues": {
+            "backendName": "periodicSchedulingValues",
+            "description_zh": "周期触发值",
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "title": "周期触发值",
+            "type": "array"
+          },
+          "periodicTriggerTime": {
+            "backendName": "periodicTriggerTime",
+            "description_zh": "周期触发时间",
+            "example": "1723199340000",
+            "format": "int64",
+            "title": "周期触发时间",
+            "type": "integer"
+          },
+          "resourceSetting": {
+            "$ref": "#/components/schemas/BriefResourceSetting",
+            "backendName": "resourceSetting",
+            "description_zh": "作业资源设置",
+            "title": "作业资源设置"
+          }
+        },
+        "title": "定时计划策略",
+        "type": "object"
+      },
+      "ScheduledPlan": {
+        "description_en": "定时计划策略",
+        "description_zh": "定时计划策略",
+        "properties": {
+          "createdAt": {
+            "backendName": "createdAt",
+            "description_zh": "创建时间",
+            "example": "1723197248",
+            "title": "创建时间",
+            "type": "string"
+          },
+          "creator": {
+            "backendName": "creator",
+            "description_zh": "创建者",
+            "example": "27846363877456****",
+            "title": "创建者",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "creatorName": {
+            "backendName": "creatorName",
+            "description_zh": "创建者名称",
+            "example": "****@streamcompute.onaliyun.com",
+            "title": "创建者名称",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "deploymentId": {
+            "backendName": "deploymentId",
+            "description_zh": "作业实例ID",
+            "example": "00000000-0000-0000-0000-000000000001",
+            "title": "作业实例ID",
+            "type": "string"
+          },
+          "modifiedAt": {
+            "backendName": "modifiedAt",
+            "description_zh": "修改时间",
+            "example": "1723197248",
+            "title": "修改时间",
+            "type": "string"
+          },
+          "modifier": {
+            "backendName": "modifier",
+            "description_zh": "修改者",
+            "example": "27846363877456****",
+            "title": "修改者",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "modifierName": {
+            "backendName": "modifierName",
+            "description_zh": "修改者名称",
+            "example": "****@streamcompute.onaliyun.com",
+            "title": "修改者名称",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "name": {
+            "backendName": "name",
+            "description_zh": "定时计划名称",
+            "example": "test-scheduled-plan",
+            "title": "定时计划名称",
+            "type": "string"
+          },
+          "namespace": {
+            "backendName": "namespace",
+            "description_zh": "项目空间ID",
+            "example": "default-namespace",
+            "title": "项目空间ID",
+            "type": "string"
+          },
+          "origin": {
+            "backendName": "origin",
+            "description_zh": "定时计划来源",
+            "example": "USER_DEFINED",
+            "title": "定时计划来源",
+            "type": "string"
+          },
+          "periodicSchedulingPolicies": {
+            "backendName": "periodicSchedulingPolicies",
+            "description_zh": "周期执行策略",
+            "items": {
+              "$ref": "#/components/schemas/PeriodicSchedulingPolicy"
+            },
+            "title": "周期执行策略",
+            "type": "array"
+          },
+          "scheduledPlanId": {
+            "backendName": "scheduledPlanId",
+            "description_zh": "定时计划ID",
+            "example": "f3b4ec1e-85dc-4b1d-9726-1d7f4c37****",
+            "title": "定时计划ID",
+            "type": "string"
+          },
+          "status": {
+            "backendName": "status",
+            "description_zh": "定时计划状态",
+            "example": "FINISHED",
+            "title": "定时计划状态",
+            "type": "string"
+          },
+          "updatedByUser": {
+            "backendName": "updatedByUser",
+            "description_zh": "是否由用户更新",
+            "example": "true",
+            "title": "是否由用户更新",
+            "type": "boolean"
+          },
+          "workspace": {
+            "backendName": "workspace",
+            "description_zh": "工作空间ID",
+            "example": "edcef******b4f",
+            "title": "工作空间ID",
+            "type": "string"
+          }
+        },
+        "title": "定时计划",
+        "type": "object"
+      },
+      "StreamingResourceSetting": {
+        "description_en": "The resource settings for a job running in stream mode",
+        "description_zh": "本数据结构代表作业运行流模式时的资源设置",
+        "properties": {
+          "basicResourceSetting": {
+            "$ref": "#/components/schemas/BasicResourceSetting",
+            "backendName": "basicResourceSetting",
+            "description_en": "The resource settings for basic mode",
+            "description_zh": "基础模式资源设置",
+            "title": "基础资源设置"
+          },
+          "expertResourceSetting": {
+            "$ref": "#/components/schemas/ExpertResourceSetting",
+            "backendName": "expertResourceSetting",
+            "description_en": "The resource settings for expert mode",
+            "description_zh": "专家模式资源设置",
+            "title": "细粒度资源设置"
+          },
+          "resourceSettingMode": {
+            "backendName": "resourceSettingMode",
+            "description_en": "The resource mode used in stream mode. Valid values:\nEXPERT: expert mode.\nBASIC: basic mode",
+            "description_zh": "流模式使用的资源模式。\nEXPERT：专家模式。\nBASIC：基础模式",
+            "enum": [
+              "BASIC",
+              "EXPERT"
+            ],
+            "example": "EXPERT",
+            "title": "流作业资源模式",
+            "type": "string"
+          }
+        },
+        "title": "流作业资源设置",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Lists scheduled plans",
+  "description_zh": "获取定时计划的列表信息",
+  "kebab_example": "aliyun ververica list-scheduled-plan --workspace a14bd5d90a0000 --namespace default-namespace --api-version 2022-07-18 --region cn-hangzhou",
+  "method": "GET",
+  "multi_version": false,
+  "name": "ListScheduledPlan",
+  "operation": {
+    "action": "ListScheduledPlan",
+    "api_style": "ROA",
+    "api_version": "2022-07-18",
+    "method": "GET",
+    "protocol": "HTTPS",
+    "system_operation_type": "list",
+    "url": "/api/v2/namespaces/{namespace}/scheduled-plans"
+  },
+  "parameters": [
+    {
+      "example": "a14bd5d90a****",
+      "help_en": "The workspace ID",
+      "help_zh": "工作空间ID",
+      "location": "header",
+      "name": "workspace",
+      "options": [
+        "--workspace"
+      ],
+      "raw_name": "workspace",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "default-namespace",
+      "help_en": "The name of the namespace",
+      "help_zh": "项目空间名称",
+      "location": "path",
+      "name": "namespace",
+      "options": [
+        "--namespace"
+      ],
+      "raw_name": "namespace",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "10",
+      "help_en": "The number of entries to return on each page. The default value is 10. The maximum value is 100",
+      "help_zh": "分页参数，所请求页码的元素数量，默认值为10，最大值100",
+      "location": "query",
+      "maximum": "100",
+      "minimum": "1",
+      "name": "page_size",
+      "options": [
+        "--page-size"
+      ],
+      "raw_name": "pageSize",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "1",
+      "help_en": "The page number to return. The default value is 1",
+      "help_zh": "分页参数，页码索引，表示所请求页码，默认值为1",
+      "location": "query",
+      "minimum": "1",
+      "name": "page_index",
+      "options": [
+        "--page-index"
+      ],
+      "raw_name": "pageIndex",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "737d0921-c5ac-47fc-9ba9-07a1e0b4****",
+      "help_en": "The ID of the job",
+      "help_zh": "已部署作业ID",
+      "location": "query",
+      "name": "deployment_id",
+      "options": [
+        "--deployment-id"
+      ],
+      "raw_name": "deploymentId",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/api/v2/namespaces/[namespace]/scheduled-plans",
+  "product_code": "ververica",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "The response data",
+        "description_zh": "响应数据",
+        "properties": {
+          "data": {
+            "backendName": "data",
+            "description_en": "The list of scheduled plans that meet the filter criteria. This parameter is returned only if the request is successful. If the request fails, this parameter is empty",
+            "description_zh": "当success为true，返回满足条件的作业列表；当success为false，该值为空",
+            "itemName": "scheduledPlan",
+            "items": {
+              "$ref": "#/components/schemas/ScheduledPlan",
+              "description_en": "A scheduled plan",
+              "description_zh": "本数据结构代表定时计划"
+            },
+            "title_en": "当success为true，返回满足条件的作业列表；当success为false，该值为空。",
+            "title_zh": "当success为true，返回满足条件的作业列表；当success为false，该值为空。",
+            "type": "array"
+          },
+          "errorCode": {
+            "backendName": "errorCode",
+            "description_en": "The error code returned if the request fails. This parameter is empty if the request is successful",
+            "description_zh": "当success为false时，该值不为空，表示业务错误码；当success为true时，该值为空",
+            "example": "\"\"",
+            "title_en": "当success为false时，该值不为空，表示业务错误码；当success为true时，该值为空。",
+            "title_zh": "当success为false时，该值不为空，表示业务错误码；当success为true时，该值为空。",
+            "type": "string"
+          },
+          "errorMessage": {
+            "backendName": "errorMessage",
+            "description_en": "The error message returned if the request fails. This parameter is empty if the request is successful",
+            "description_zh": "当success为false时，该值不为空，表示业务错误信息；当success为true时，该值为空",
+            "example": "\"\"",
+            "title_en": "当success为false时，该值不为空，表示业务错误信息；当success为true时，该值为空。",
+            "title_zh": "当success为false时，该值不为空，表示业务错误信息；当success为true时，该值为空。",
+            "type": "string"
+          },
+          "httpCode": {
+            "backendName": "httpCode",
+            "description_en": "The HTTP status code. The value is always 200. Use the \\`success\\` parameter to determine if the request was successful",
+            "description_zh": "业务状态码，统一为200；使用success表示业务请求是否成功",
+            "example": "200",
+            "format": "int32",
+            "title_en": "业务状态码，统一为200；使用success表示业务请求是否成功。",
+            "title_zh": "业务状态码，统一为200；使用success表示业务请求是否成功。",
+            "type": "integer"
+          },
+          "pageIndex": {
+            "backendName": "pageIndex",
+            "description_en": "A paging parameter that specifies the page index to return",
+            "description_zh": "分页参数，页码索引，表示所请求页码",
+            "example": "1",
+            "format": "int32",
+            "title_en": "分页参数，页码索引，表示所请求页码。",
+            "title_zh": "分页参数，页码索引，表示所请求页码。",
+            "type": "integer"
+          },
+          "pageSize": {
+            "backendName": "pageSize",
+            "description_en": "The number of entries on the returned page",
+            "description_zh": "分页参数，所请求页码的元素数量",
+            "example": "10",
+            "format": "int32",
+            "title_en": "分页参数，所请求页码的元素数量。",
+            "title_zh": "分页参数，所请求页码的元素数量。",
+            "type": "integer"
+          },
+          "requestId": {
+            "backendName": "requestId",
+            "description_en": "The request ID",
+            "description_zh": "请求ID",
+            "example": "CBC799F0-AS7S-1D30-8A4F-882ED4DD****",
+            "title_en": "请求ID。",
+            "title_zh": "请求ID。",
+            "type": "string"
+          },
+          "success": {
+            "backendName": "success",
+            "description_en": "Indicates whether the request was successful",
+            "description_zh": "表示业务请求是否成功",
+            "example": "true",
+            "title_en": "表示业务请求是否成功。",
+            "title_zh": "表示业务请求是否成功。",
+            "type": "boolean"
+          },
+          "totalSize": {
+            "backendName": "totalSize",
+            "description_en": "The total number of entries that match the query",
+            "description_zh": "满足查询条件的所有元素的数量",
+            "example": "4",
+            "format": "int32",
+            "title_en": "满足查询条件的所有元素的数量。",
+            "title_zh": "满足查询条件的所有元素的数量。",
+            "type": "integer"
+          }
+        },
+        "title_en": "响应数据。",
+        "title_zh": "响应数据。",
+        "type": "object"
+      }
+    }
+  }
+}

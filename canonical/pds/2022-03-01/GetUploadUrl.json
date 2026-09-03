@@ -1,0 +1,443 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "pds get-upload-url",
+  "cmd_name": "get-upload-url",
+  "components": {
+    "schemas": {
+      "UploadFormInfo": {
+        "description_en": "The required information for a form upload",
+        "description_zh": "表单上传信息",
+        "properties": {
+          "endpoint": {
+            "description_en": "The request endpoint for the upload",
+            "description_zh": "数据存储地址",
+            "title": "数据存储地址",
+            "type": "string"
+          },
+          "form_data": {
+            "additionalProperties": {
+              "description_en": "The key-value pairs for the form fields. The value for each key must be a string",
+              "description_zh": "",
+              "type": "string"
+            },
+            "description_en": "The form fields for the upload",
+            "description_zh": "表单上传信息",
+            "title": "表单上传信息",
+            "type": "object"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "UploadPartInfo": {
+        "description_en": "Part information",
+        "description_zh": "分段信息",
+        "properties": {
+          "etag": {
+            "description_en": "This field is deprecated. Do not use it",
+            "description_zh": "此字段已废弃，请勿使用",
+            "example": "\"0CC175B9C0F1B6A831C399E269772661\"",
+            "title": "etag",
+            "type": "string"
+          },
+          "internal_upload_url": {
+            "description_en": "The internal upload URL, which is used for access from within a VPC network. After you enable the intelligent data domain feature, this field is no longer used. The value of this parameter is adaptively returned in the upload_url field based on the request. If you need to use this field, contact PDS technical support",
+            "description_zh": "内网上传地址，用于VPC网络内部访问\n（开启智能数据域名后将不再使用该字段，根据请求该参数会自适应返回在upload_url字段值内，如需使用该字段请联系PDS技术支持）",
+            "example": "https://data-vpc.aliyunpds.com/xxx/xxx?Expires=xxx&OSSAccessKeyId=xxx&Signature=xxx&partNumber=1&uploadId=0CC175B9C0F1B6A831C399E269772661\n",
+            "title": "内网上传地址",
+            "type": "string"
+          },
+          "parallel_sha1_ctx": {
+            "description_en": "The SHA-1 context of the previous part. This field is valid only for parallel upload of multiple parts",
+            "description_zh": "上一个分段的sha1上下文，该字段只在多分片并发上传的模式下有效",
+            "properties": {
+              "h": {
+                "description_en": "The first five 32-bit variables of the SHA-1 hash of the previous data block. This field is valid only for parallel upload of multiple parts",
+                "description_zh": "上一个数据块SHA1的第1-5个32位变量，该字段只在多分片并发上传的模式下有效",
+                "items": {
+                  "description_en": "",
+                  "description_zh": "",
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "title": "上一个数据块SHA1的第1-5个32位变量",
+                "type": "array"
+              },
+              "part_offset": {
+                "description_en": "The total length of data up to the previous data block, in bytes. The value must be a multiple of 64. This field is valid only for parallel upload of multiple parts",
+                "description_zh": "到上一个数据块为止的总长度，字节，需要为64的倍数，该字段只在多分片并发上传的模式下有效",
+                "example": "10240",
+                "format": "int64",
+                "title": "到上一个数据块为止的总长度，字节，需要为64的倍数",
+                "type": "integer"
+              }
+            },
+            "title": "上一个分段的sha1上下文",
+            "type": "object"
+          },
+          "parallel_sha256_ctx": {
+            "description_en": "The SHA-256 context of the previous part",
+            "description_zh": "上一个分段的sha256上下文",
+            "properties": {
+              "h": {
+                "description_en": "The first eight 32-bit variables of the SHA-256 hash of the previous data block",
+                "description_zh": "上一个数据块SHA256的第1-8个32位变量",
+                "items": {
+                  "description_en": "",
+                  "description_zh": "",
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "title": "上一个数据块SHA256的第1-8个32位变量",
+                "type": "array"
+              },
+              "part_offset": {
+                "description_en": "The total length of data up to the previous data block, in bytes. The value must be a multiple of 64",
+                "description_zh": "到上一个数据块为止的总长度，字节，需要为64的倍数",
+                "format": "int64",
+                "title": "到上一个数据块为止的总长度，字节，需要为64的倍数",
+                "type": "integer"
+              }
+            },
+            "title": "上一个分段的sha256上下文",
+            "type": "object"
+          },
+          "part_number": {
+            "description_en": "The part number",
+            "description_zh": "段编号",
+            "example": "1",
+            "format": "int32",
+            "required": true,
+            "title": "段编号",
+            "type": "integer"
+          },
+          "part_size": {
+            "description_en": "This field is deprecated. Do not use it",
+            "description_zh": "此字段已废弃，请勿使用",
+            "example": "1024",
+            "format": "int64",
+            "title": "分段大小",
+            "type": "integer"
+          },
+          "upload_form_info": {
+            "$ref": "#/components/schemas/UploadFormInfo",
+            "description_en": "The form upload information",
+            "description_zh": "表单上传信息",
+            "title": "表单上传信息"
+          },
+          "upload_url": {
+            "description_en": "The upload URL. The URL is valid for 15 minutes by default. If the URL expires, you must call the GetUploadUrl operation again to obtain a new one. If you enable the intelligent data domain feature, the value of internal_upload_url is adaptively returned in this field based on the request",
+            "description_zh": "上传地址，默认有效时间15分钟，如果链接超时，需要重新调用GetUploadUrl进行获取\n（开启智能数据域名后，根据请求会自适应返回internal_upload_url值在该字段内）",
+            "example": "https://data.aliyunpds.com/xxx/xxx?Expires=xxx&OSSAccessKeyId=xxx&Signature=xxx&partNumber=1&uploadId=0CC175B9C0F1B6A831C399E269772661",
+            "required": true,
+            "title": "上传地址",
+            "type": "string"
+          }
+        },
+        "title": "分段信息",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Retrieves the upload address",
+  "description_zh": "获取上传地址",
+  "kebab_example": "aliyun pds get-upload-url --region cn-hangzhou",
+  "method": "POST",
+  "multi_version": false,
+  "name": "GetUploadUrl",
+  "operation": {
+    "action": "GetUploadUrl",
+    "api_style": "ROA",
+    "api_version": "2022-03-01",
+    "body_mapping": {
+      "drive_id": "drive_id",
+      "file_id": "file_id",
+      "part_info_list": "part_info_list",
+      "share_id": "share_id",
+      "upload_id": "upload_id"
+    },
+    "content_type": "application/json",
+    "method": "POST",
+    "protocol": "HTTPS",
+    "req_body_type": "json",
+    "system_operation_type": "none",
+    "url": "/v2/file/get_upload_url"
+  },
+  "parameters": [
+    {
+      "example": "1",
+      "help_en": "The drive ID",
+      "help_zh": "空间 id",
+      "location": "body",
+      "name": "drive_id",
+      "options": [
+        "--drive-id"
+      ],
+      "param_style": "json",
+      "raw_name": "drive_id",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "5d5b846942cf94fa72324c14a4bda34e81da635d",
+      "help_en": "The file ID",
+      "help_zh": "文件id",
+      "location": "body",
+      "name": "file_id",
+      "options": [
+        "--file-id"
+      ],
+      "param_style": "json",
+      "raw_name": "file_id",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "element": {
+        "fields": [
+          {
+            "help_en": "The content_md5",
+            "help_zh": "The content_md5",
+            "name": "content_md5",
+            "options": [
+              "--content-md5"
+            ],
+            "raw_name": "content_md5",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "help_en": "The content_type",
+            "help_zh": "The content_type",
+            "name": "content_type",
+            "options": [
+              "--content-type"
+            ],
+            "raw_name": "content_type",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "fields": [
+              {
+                "element": {
+                  "type": "int"
+                },
+                "help_en": "The five 32-bit state variables of the SHA1 context for all data preceding this part. This parameter applies only to parallel uploads",
+                "help_zh": "该分片前所有数据的SHA1上下文的第1-5个32位变量，该字段只在多分片并发上传的模式下有效",
+                "name": "h",
+                "options": [
+                  "--h"
+                ],
+                "raw_name": "h",
+                "required": false,
+                "type": "array"
+              },
+              {
+                "example": "10240",
+                "help_en": "The total size in bytes of all preceding parts. The value must be a multiple of 64. This parameter applies only to parallel uploads",
+                "help_zh": "到上一个数据块为止的总长度，单位为字节，需要为64的倍数，该字段只在多分片并发上传的模式下有效",
+                "name": "part_offset",
+                "options": [
+                  "--part-offset"
+                ],
+                "raw_name": "part_offset",
+                "required": false,
+                "type": "int"
+              }
+            ],
+            "help_en": "The SHA1 context for all data preceding this part. This parameter applies only to parallel uploads",
+            "help_zh": "该分片前所有数据的SHA1上下文，该字段只在多分片并发上传的模式下有效",
+            "name": "parallel_sha1_ctx",
+            "options": [
+              "--parallel-sha1-ctx"
+            ],
+            "raw_name": "parallel_sha1_ctx",
+            "required": false,
+            "type": "object"
+          },
+          {
+            "fields": [
+              {
+                "element": {
+                  "type": "int"
+                },
+                "help_en": "The h",
+                "help_zh": "The h",
+                "name": "h",
+                "options": [
+                  "--h"
+                ],
+                "raw_name": "h",
+                "required": false,
+                "type": "array"
+              },
+              {
+                "help_en": "The part_offset",
+                "help_zh": "The part_offset",
+                "name": "part_offset",
+                "options": [
+                  "--part-offset"
+                ],
+                "raw_name": "part_offset",
+                "required": false,
+                "type": "int"
+              }
+            ],
+            "help_en": "The parallel_sha256_ctx",
+            "help_zh": "The parallel_sha256_ctx",
+            "name": "parallel_sha_256_ctx",
+            "options": [
+              "--parallel-sha-256-ctx"
+            ],
+            "raw_name": "parallel_sha256_ctx",
+            "required": false,
+            "type": "object"
+          },
+          {
+            "example": "1",
+            "help_en": "The part number",
+            "help_zh": "段编号",
+            "name": "part_number",
+            "options": [
+              "--part-number"
+            ],
+            "raw_name": "part_number",
+            "required": false,
+            "type": "int"
+          }
+        ],
+        "type": "object"
+      },
+      "help_en": "A list of file parts",
+      "help_zh": "分片信息列表",
+      "location": "body",
+      "name": "part_info_list",
+      "options": [
+        "--part-info-list"
+      ],
+      "param_style": "json",
+      "raw_name": "part_info_list",
+      "required": true,
+      "type": "array"
+    },
+    {
+      "example": "7JQX1FswpQ8",
+      "help_en": "The share ID",
+      "help_zh": "分享id",
+      "location": "body",
+      "name": "share_id",
+      "options": [
+        "--share-id"
+      ],
+      "param_style": "json",
+      "raw_name": "share_id",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "10166D06127B413BA1EC8ABB1144D111",
+      "help_en": "The upload ID",
+      "help_zh": "上传 id",
+      "location": "body",
+      "name": "upload_id",
+      "options": [
+        "--upload-id"
+      ],
+      "param_style": "json",
+      "raw_name": "upload_id",
+      "required": true,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/v2/file/get_upload_url",
+  "product_code": "pds",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "The response object",
+        "description_zh": "Schema of Response",
+        "properties": {
+          "create_at": {
+            "description_en": "The creation time",
+            "description_zh": "创建时间",
+            "example": "2019-09-11T16:34:36.977Z",
+            "type": "string"
+          },
+          "domain_id": {
+            "description_en": "The domain ID",
+            "description_zh": "域id",
+            "example": "bj1",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          },
+          "drive_id": {
+            "description_en": "The drive ID",
+            "description_zh": "空间id",
+            "example": "1",
+            "type": "string"
+          },
+          "file_id": {
+            "description_en": "The file ID",
+            "description_zh": "文件id",
+            "example": "5d5b846942cf94fa72324c14a4bda34e81da635d",
+            "type": "string"
+          },
+          "part_info_list": {
+            "description_en": "The list of upload parts",
+            "description_zh": "分段信息列表",
+            "items": {
+              "$ref": "#/components/schemas/UploadPartInfo",
+              "description_en": "Information about a single part",
+              "description_zh": "分段信息"
+            },
+            "type": "array"
+          },
+          "upload_id": {
+            "description_en": "The upload ID",
+            "description_zh": "上传id",
+            "example": "10166D06127B413BA1EC8ABB1144D111",
+            "type": "string"
+          }
+        },
+        "title_en": "Schema of Response",
+        "title_zh": "Schema of Response",
+        "type": "object"
+      }
+    }
+  },
+  "tags": [
+    "api"
+  ],
+  "v1_body_parameters": [
+    {
+      "help_en": "The request body",
+      "help_zh": "请求体参数",
+      "name": "body",
+      "param_style": "json",
+      "position": "body",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "v1_parameters": [
+    {
+      "help_en": "The request body",
+      "help_zh": "请求体参数",
+      "name": "body",
+      "param_style": "json",
+      "position": "body",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "name": "domain_id",
+      "position": "host",
+      "required": true,
+      "type": "string"
+    }
+  ]
+}

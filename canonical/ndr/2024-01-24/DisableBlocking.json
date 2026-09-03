@@ -1,0 +1,184 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "ndr disable-blocking",
+  "cmd_name": "disable-blocking",
+  "deprecated": false,
+  "description_en": "批量解除封禁",
+  "description_zh": "为指定实体批量创建解封任务，保留已有封禁策略",
+  "kebab_example": "",
+  "method": "GET|POST",
+  "multi_version": false,
+  "name": "DisableBlocking",
+  "operation": {
+    "action": "DisableBlocking",
+    "api_style": "RPC",
+    "api_version": "2024-01-24",
+    "method": "POST",
+    "operation_type": "write",
+    "protocol": "HTTPS",
+    "system_operation_type": "update",
+    "url": "/"
+  },
+  "parameters": [
+    {
+      "element": {
+        "fields": [
+          {
+            "example": "203.0.113.10",
+            "help_en": "封禁的实体（IP 地址或域名）",
+            "help_zh": "必填。封禁对象。ip 类型须为单个 IPv4 地址，不支持 IPv6、CIDR 或 0.0.0.0；domain 类型须为域名，不支持 IP 字面值或通配符 *，须包含点，长度不超过 253 字节",
+            "name": "blocking_entity",
+            "options": [
+              "--blocking-entity"
+            ],
+            "raw_name": "BlockingEntity",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "ip",
+            "help_en": "封禁类型：ip / domain",
+            "help_zh": "必填。封禁对象类型，仅支持 ip（IPv4）或 domain（域名）",
+            "name": "blocking_type",
+            "options": [
+              "--blocking-type"
+            ],
+            "raw_name": "BlockingType",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "type": "object"
+      },
+      "help_en": "批量操作的实体列表，最多 100 个",
+      "help_zh": "待操作实体数组，必须包含 1～100 项；请勿重复提交相同类型和实体组合",
+      "location": "query",
+      "name": "entities",
+      "options": [
+        "--entities"
+      ],
+      "param_style": "flat",
+      "raw_name": "Entities",
+      "required": true,
+      "type": "array"
+    }
+  ],
+  "pathPattern": "/",
+  "product_code": "ndr",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "description_en": "操作成功",
+      "description_zh": "操作成功",
+      "schema": {
+        "description_en": "操作成功",
+        "description_zh": "本次请求的处理结果",
+        "properties": {
+          "Data": {
+            "backendName": "data",
+            "description_zh": "本次操作返回的业务结果",
+            "properties": {
+              "SuccessCount": {
+                "backendName": "successCount",
+                "description_zh": "本次成功创建解封任务的实体项数量，不是任务条数，也不表示已完成解封。双向实体计 1 项，但创建 2 条任务",
+                "example": "1",
+                "format": "int32",
+                "title_en": "成功数",
+                "title_zh": "成功数",
+                "type": "integer"
+              },
+              "TaskItems": {
+                "backendName": "taskItems",
+                "description_zh": "本次创建的解封任务列表，双向实体分别返回 in 和 out 两条任务",
+                "itemName": "taskItem",
+                "items": {
+                  "description_zh": "一条本次新建的异步任务信息",
+                  "properties": {
+                    "BlockingDirection": {
+                      "backendName": "blockingDirection",
+                      "description_zh": "本条异步任务的方向，in 表示入方向，out 表示出方向；双向操作拆成两条任务",
+                      "example": "in",
+                      "type": "string"
+                    },
+                    "BlockingEntity": {
+                      "backendName": "blockingEntity",
+                      "description_zh": "封禁对象的 IPv4 地址或域名",
+                      "example": "203.0.113.10",
+                      "type": "string"
+                    },
+                    "BlockingType": {
+                      "backendName": "blockingType",
+                      "description_zh": "封禁对象类型。ip 表示 IPv4 地址，domain 表示域名",
+                      "example": "ip",
+                      "type": "string"
+                    },
+                    "TaskType": {
+                      "backendName": "taskType",
+                      "description_zh": "本条任务的类型，固定为 2，表示手动解封",
+                      "example": "2",
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "TaskUuid": {
+                      "backendName": "taskUuid",
+                      "description_zh": "本条新建任务的 UUID，可传入 DescribeBlockingTaskStatus 的 TaskUuids 查询执行结果",
+                      "example": "11111111-2222-4333-8444-555555555555",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "TotalCount": {
+                "backendName": "totalCount",
+                "description_zh": "请求 Entities 中的实体项数量，包含本次被跳过的项",
+                "example": "2",
+                "format": "int32",
+                "title_en": "总实体数",
+                "title_zh": "总实体数",
+                "type": "integer"
+              }
+            },
+            "title_en": "数据对象",
+            "title_zh": "数据对象",
+            "type": "object"
+          },
+          "ErrorCode": {
+            "backendName": "errorCode",
+            "description_zh": "请求失败时的错误码；成功时为空字符串。示例 InvalidParam 表示请求参数无效，不代表成功响应的错误码",
+            "example": "InvalidParam",
+            "title_en": "错误码",
+            "title_zh": "错误码",
+            "type": "string"
+          },
+          "Message": {
+            "backendName": "message",
+            "description_zh": "本次请求的结果说明；成功时为 success，失败时返回错误说明",
+            "example": "success",
+            "title_en": "返回消息",
+            "title_zh": "返回消息",
+            "type": "string"
+          },
+          "RequestId": {
+            "backendName": "requestId",
+            "description_zh": "请求 ID，用于排查和定位本次请求",
+            "example": "11111111-2222-4333-8444-555555555555",
+            "title_en": "请求 ID",
+            "title_zh": "请求 ID",
+            "type": "string"
+          },
+          "Success": {
+            "backendName": "success",
+            "description_zh": "本次接口调用是否成功。true 表示请求处理成功，false 表示失败；异步接口的成功不表示任务已经执行完成",
+            "example": "true",
+            "title_en": "操作是否成功",
+            "title_zh": "操作是否成功",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

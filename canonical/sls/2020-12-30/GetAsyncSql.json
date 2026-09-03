@@ -1,0 +1,291 @@
+{
+  "camel_example": "aliyun sls GET /asyncsql/690C4F2A16FBD65C40000484_14 --project sls-demo-project --region cn-hangzhou --offset 0 --line 100 --header \"Content-Type=application/json\"",
+  "cmd_full_name": "sls get-async-sql",
+  "cmd_name": "get-async-sql",
+  "components": {
+    "schemas": {
+      "AsyncSqlResponseData": {
+        "description_en": "The data structure for the response of an asynchronous SQL query",
+        "description_zh": "异步SQL返回的数据结构",
+        "properties": {
+          "AsyncSqlMetaPB": {
+            "description_en": "The metadata of the SQL query",
+            "description_zh": "SQL相关的meta信息",
+            "properties": {
+              "cpu_cores": {
+                "description_en": "The number of CPU cores used",
+                "description_zh": "使用了多少个cpu core",
+                "example": "10",
+                "format": "int32",
+                "required": false,
+                "title": "使用了多少个cpu core",
+                "type": "integer"
+              },
+              "cpu_sec": {
+                "description_en": "The total CPU time consumed in seconds",
+                "description_zh": "消耗的cpu总时间（秒）",
+                "example": "0.2",
+                "format": "double",
+                "required": false,
+                "title": "消耗的cpu总时间（秒）",
+                "type": "number"
+              },
+              "elapsed_milli": {
+                "description_en": "The SQL query running time in milliseconds",
+                "description_zh": "SQL执行时间（毫秒）",
+                "example": "30000",
+                "format": "int64",
+                "required": false,
+                "title": "SQL执行时间（毫秒）",
+                "type": "integer"
+              },
+              "keys": {
+                "description_en": "The names of the columns in the SQL result. The keys correspond one-to-one with the fields in the SELECT statement",
+                "description_zh": "SQL结果对应的column名称，这里的keys和select中的字段是一一对应的",
+                "items": {
+                  "description_en": "The column name",
+                  "description_zh": "column名称",
+                  "example": "[\"name\", \"age\", \"gender\"]",
+                  "type": "string"
+                },
+                "title": "SQL结果对应的column名称，这里的keys和select中的字段是一一对应的。",
+                "type": "array"
+              },
+              "processed_rows": {
+                "description_en": "The number of raw data rows processed",
+                "description_zh": "处理的原始数据行数",
+                "example": "10000000",
+                "format": "int64",
+                "required": false,
+                "title": "处理的原始数据行数",
+                "type": "integer"
+              },
+              "progress": {
+                "description_en": "Indicates whether the SQL result is accurate. Valid values are:\n\nComplete: The result is accurate.\n\nIncomplete: The result is not accurate",
+                "description_zh": "SQL结果是否精确，它可以为以下两个值: \nComplete (表示结果精确)\nIncomplete (表示结果不精确)",
+                "example": "Complete",
+                "title": "SQL结果是否精确，它可以为以下两个值: ● Complete (表示结果精确) ● Incomplete (表示结果不精确)",
+                "type": "string"
+              },
+              "result_rows": {
+                "description_en": "The total number of rows in the result. When you read the results, the offset value must not exceed this value",
+                "description_zh": "结果总行数。读取结果是，offset值不应该超过这个值",
+                "example": "12000",
+                "format": "int32",
+                "required": false,
+                "title": "结果总行数。读取结果是，offset值不应该超过这个值。",
+                "type": "integer"
+              }
+            },
+            "required": false,
+            "title": "SQL相关的meta信息",
+            "type": "object"
+          },
+          "error_code": {
+            "description_en": "If the SQL query fails to execute, this parameter contains the specific error code",
+            "description_zh": "SQL执行失败后，error_code中包含了具体的错误码",
+            "example": "InvalidQuery",
+            "title": "SQL执行失败后，error_code中包含了具体的错误码",
+            "type": "string"
+          },
+          "error_message": {
+            "description_en": "If the SQL query fails to execute, this parameter contains the specific error message",
+            "description_zh": "SQL执行失败后，error_message中包含了具体的错误信息",
+            "example": "line 37:14: Column 'xyz' cannot be resolved",
+            "title": "SQL执行失败后，error_message中包含了具体的错误信息",
+            "type": "string"
+          },
+          "id": {
+            "description_en": "The ID of the asynchronous SQL query",
+            "description_zh": "异步SQL的ID",
+            "example": "690C4F2A16FBD65C40000484_14",
+            "required": true,
+            "title": "异步SQL的ID",
+            "type": "string"
+          },
+          "rows": {
+            "description_en": "The SQL result. Each element in the array is also an array that corresponds to a specific row of the result",
+            "description_zh": "SQL结果。array中的每个元素也是数组，对应具体的一行结果",
+            "items": {
+              "description_en": "A row of the result",
+              "description_zh": "某行结果",
+              "items": {
+                "description_en": "A column of the result",
+                "description_zh": "某列结果",
+                "example": "[\"Jimmy\", \"20\", \"male\"]",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "title": "SQL结果。array中的每个元素也是数组，对应具体的一行结果。",
+            "type": "array"
+          },
+          "state": {
+            "description_en": "The current execution state of the asynchronous SQL query. Valid values are:\n\nRUNNING\n\nFINISHED\n\nFAILED\n\nCANCELLED\n\nRUNNING is a temporary state that indicates the SQL query is still running. You can read the results only when the state is FINISHED. The error_code and error_message parameters are valid only when the state is FAILED",
+            "description_zh": "异步SQL的当前执行状态，可以为以下三个状态: \nRUNNING\nFINISHED\nFAILED\nCANCELLED\n\n其中，RUNNING是临时状态, 表示SQL还在执行过程中。仅当状态为FINISHED时，才表示请求执行成功，可以读取结果了。另外，只有状态为FAILED时，返回结果中的error_code和error_message才有意义",
+            "example": "FINISHED",
+            "required": true,
+            "title": "异步SQL的当前执行状态，可以为以下三个状态: ● RUNNING ● FINISHED ● FAILED ● CANCELLED 其中，RUNNING是临时状态, 表示SQL还在执行过程中。仅当状态为FINISHED时，才表示请求执行成功，可以读取结果了。",
+            "type": "string"
+          }
+        },
+        "title": "异步SQL返回的结果",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Retrieves the status and results of an asynchronous SQL query",
+  "description_zh": "获取异步SQL的状态以及结果",
+  "kebab_example": "aliyun sls get-async-sql --project sls-demo-project --query-id 690C4F2A16FBD65C40000484_14 --offset 0 --line 100 --region cn-hangzhou",
+  "method": "GET",
+  "multi_version": false,
+  "name": "GetAsyncSql",
+  "operation": {
+    "action": "GetAsyncSql",
+    "api_style": "ROA",
+    "api_version": "2020-12-30",
+    "method": "GET",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "none",
+    "url": "/asyncsql/{queryId}"
+  },
+  "parameters": [
+    {
+      "example": "sls-demo-project",
+      "help_en": "The name of the project",
+      "help_zh": "sls的project名称",
+      "location": "host",
+      "name": "project",
+      "options": [
+        "--project"
+      ],
+      "raw_name": "project",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "690C4F2A16FBD65C40000484_14",
+      "help_en": "The ID of the asynchronous SQL query. This ID is fixed throughout the SQL lifecycle",
+      "help_zh": "异步SQL对应的ID（整个SQL生命周期内固定）",
+      "location": "path",
+      "name": "query_id",
+      "options": [
+        "--query-id"
+      ],
+      "raw_name": "queryId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "0",
+      "help_en": "The offset for paginated results",
+      "help_zh": "分页结果的offset",
+      "location": "query",
+      "name": "offset",
+      "options": [
+        "--offset"
+      ],
+      "raw_name": "offset",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "100",
+      "help_en": "The number of results to return per page. The maximum value is 1000",
+      "help_zh": "分页结果的page大小，最大支持1000",
+      "location": "query",
+      "name": "line",
+      "options": [
+        "--line"
+      ],
+      "raw_name": "line",
+      "required": false,
+      "type": "int"
+    }
+  ],
+  "pathPattern": "/asyncsql/[queryId]",
+  "product_code": "Sls",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "headers": {
+        "Connection": {
+          "schema": {
+            "title_en": "是否长链接。取值包括：  close：不是长链接，则每个HTTP请求都会重新建立TCP连接。 keep-alive：长链接，TCP连接建立后保持连接状态，节省连接所需时间和带宽。",
+            "title_zh": "是否长链接。取值包括：  close：不是长链接，则每个HTTP请求都会重新建立TCP连接。 keep-alive：长链接，TCP连接建立后保持连接状态，节省连接所需时间和带宽。",
+            "type": "string"
+          }
+        },
+        "Content-Type": {
+          "schema": {
+            "title_en": "返回的响应体的内容格式。",
+            "title_zh": "返回的响应体的内容格式。",
+            "type": "string"
+          }
+        },
+        "Date": {
+          "schema": {
+            "title_en": "返回响应的时间。",
+            "title_zh": "返回响应的时间。",
+            "type": "string"
+          }
+        },
+        "Server": {
+          "schema": {
+            "title_en": "服务器名称。",
+            "title_zh": "服务器名称。",
+            "type": "string"
+          }
+        },
+        "x-log-requestid": {
+          "schema": {
+            "title_en": "服务端产生的标识，该请求的唯一ID。",
+            "title_zh": "服务端产生的标识，该请求的唯一ID。",
+            "type": "string"
+          }
+        }
+      },
+      "schema": {
+        "$ref": "#/components/schemas/AsyncSqlResponseData",
+        "description_en": "The data format of the response body. This corresponds to the protobuf format",
+        "description_zh": "body 中返回的数据格式（对应 protobuf 格式）"
+      }
+    }
+  },
+  "v1_parameters": [
+    {
+      "help_en": "The number of results to return per page. The maximum value is 1000",
+      "help_zh": "分页结果的page大小，最大支持1000",
+      "name": "line",
+      "position": "query",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "help_en": "The offset for paginated results",
+      "help_zh": "分页结果的offset",
+      "name": "offset",
+      "position": "query",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "help_en": "The name of the project",
+      "help_zh": "sls的project名称",
+      "name": "project",
+      "position": "host",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "help_en": "The ID of the asynchronous SQL query. This ID is fixed throughout the SQL lifecycle",
+      "help_zh": "异步SQL对应的ID（整个SQL生命周期内固定）",
+      "name": "queryId",
+      "position": "path",
+      "required": false,
+      "type": "string"
+    }
+  ]
+}

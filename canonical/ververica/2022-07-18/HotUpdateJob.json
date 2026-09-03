@@ -1,0 +1,472 @@
+{
+  "camel_example": "aliyun ververica POST /api/v2/namespaces/default-namespace/jobs/88a8fc49-e090-430a-85d8-3ee8c79c0000:hotUpdate --region cn-hangzhou --header \"workspace=a14bd5d90a0000\" --header \"Content-Type=application/json\"",
+  "cmd_full_name": "ververica hot-update-job",
+  "cmd_name": "hot-update-job",
+  "components": {
+    "schemas": {
+      "BasicResourceSetting": {
+        "description_en": "The basic mode resource configuration commonly used in the community edition, which differs from the expert mode resource configuration provided in the commercial edition",
+        "description_zh": "本数据结构表示用户使用的社区版本常用的基础模式资源配置，有别于商业版本提供的专家模式资源配置",
+        "properties": {
+          "jobmanagerResourceSettingSpec": {
+            "$ref": "#/components/schemas/BasicResourceSettingSpec",
+            "backendName": "jobmanagerResourceSettingSpec",
+            "description_en": "The JobManager resource settings",
+            "description_zh": "JobManager资源设置",
+            "title": "JobManager资源设置"
+          },
+          "parallelism": {
+            "backendName": "parallelism",
+            "description_en": "The concurrency",
+            "description_zh": "并发度",
+            "example": "4",
+            "format": "int64",
+            "title": "并发度",
+            "type": "integer"
+          },
+          "taskmanagerResourceSettingSpec": {
+            "$ref": "#/components/schemas/BasicResourceSettingSpec",
+            "backendName": "taskmanagerResourceSettingSpec",
+            "description_en": "The TaskManager resource settings",
+            "description_zh": "TaskManager资源设置",
+            "title": "TaskManager资源设置"
+          }
+        },
+        "title": "作业通用资源设置",
+        "type": "object"
+      },
+      "BasicResourceSettingSpec": {
+        "description_en": "The configurations of CPU and memory resources for a deployment. A coarse-grained description of the JobManager or TaskManager resources can be generated based on the data structure",
+        "description_zh": "本数据结构表示对作业使用CPU和内存资源的包装，依据本数据结构可以生成对JM/TM资源的粗粒度的描述",
+        "properties": {
+          "cpu": {
+            "backendName": "cpu",
+            "description_en": "The number of CPU cores",
+            "description_zh": "CPU核数",
+            "example": "2.0",
+            "format": "double",
+            "title": "CPU",
+            "type": "number"
+          },
+          "memory": {
+            "backendName": "memory",
+            "description_en": "The capacity of the memory. Unit: GiB",
+            "description_zh": "内存，单位GiB",
+            "example": "4 GiB",
+            "title": "内存",
+            "type": "string"
+          }
+        },
+        "title": "作业基础源",
+        "type": "object"
+      },
+      "BatchResourceSetting": {
+        "description_en": "The resource parameters for a deployment in batch mode",
+        "description_zh": "本数据结构代表批模式资源设置信息",
+        "properties": {
+          "basicResourceSetting": {
+            "$ref": "#/components/schemas/BasicResourceSetting",
+            "backendName": "basicResourceSetting",
+            "description_en": "The resource parameters in basic mode",
+            "description_zh": "基础模式资源设置",
+            "title": "基础资源设置"
+          },
+          "maxSlot": {
+            "backendName": "maxSlot",
+            "description_en": "The maximum number of slots",
+            "description_zh": "最大slot数",
+            "example": "10",
+            "format": "int64",
+            "title": "最大slot数",
+            "type": "integer"
+          }
+        },
+        "title": "批作业资源设置",
+        "type": "object"
+      },
+      "BriefResourceSetting": {
+        "description_en": "The data structure that describes the resources available to a job in streaming or batch mode",
+        "description_zh": "本数据结构用来描述作业在流/批两种模式下能使用的资源情况",
+        "properties": {
+          "batchResourceSetting": {
+            "$ref": "#/components/schemas/BatchResourceSetting",
+            "backendName": "batchResourceSetting",
+            "description_en": "The resource settings for running in batch mode. This parameter is required when batch mode is selected",
+            "description_zh": "运行批模式的资源设置，选择批模式时必填",
+            "title": "批作业资源设置"
+          },
+          "flinkConf": {
+            "backendName": "flinkConf",
+            "description_en": "The Flink configuration",
+            "description_zh": "Flink配置",
+            "example": "“execution.checkpointing.interval: 180s”",
+            "title": "flink配置设置",
+            "type": "object"
+          },
+          "streamingResourceSetting": {
+            "$ref": "#/components/schemas/StreamingResourceSetting",
+            "backendName": "streamingResourceSetting",
+            "description_en": "The resource settings for running in streaming mode. This parameter is required when streaming mode is selected",
+            "description_zh": "运行流模式的资源设置，选择流模式时必填",
+            "title": "流作业资源设置"
+          }
+        },
+        "title": "作业资源设置",
+        "type": "object"
+      },
+      "ExpertResourceSetting": {
+        "description_en": "The information about the resource configuration of a deployment in expert mode",
+        "description_zh": "本数据结构代表作业专家模式资源配置的信息",
+        "properties": {
+          "jobmanagerResourceSettingSpec": {
+            "$ref": "#/components/schemas/BasicResourceSettingSpec",
+            "backendName": "jobmanagerResourceSettingSpec",
+            "description_en": "The basic resource configuration of the JobManager",
+            "description_zh": "JobManager基础资源设置",
+            "title": "JobManager基础资源设置"
+          },
+          "resourcePlan": {
+            "backendName": "resourcePlan",
+            "description_en": "The resource configuration plan of the deployment in expert mode",
+            "description_zh": "专家模式资源配置计划",
+            "example": "{\\\"ssgProfiles\\\":[{\\\"name\\\":\\\"default\\\",\\\"cpu\\\":1.13,\\\"heap\\\":\\\"1 gb\\\",\\\"offHeap\\\":\\\"32 mb\\\",\\\"managed\\\":{},\\\"extended\\\":{}}],\\\"nodes\\\":[{\\\"id\\\":1,\\\"type\\\":\\\"StreamExecTableSourceScan\\\",\\\"desc\\\":\\\"Source: datagen_source[78]\\\",\\\"profile\\\":{\\\"group\\\":\\\"default\\\",\\\"parallelism\\\":1,\\\"maxParallelism\\\":32768,\\\"minParallelism\\\":1}},{\\\"id\\\":2,\\\"type\\\":\\\"StreamExecSink\\\",\\\"desc\\\":\\\"Sink: blackhole_sink[79]\\\",\\\"profile\\\":{\\\"group\\\":\\\"default\\\",\\\"parallelism\\\":1,\\\"maxParallelism\\\":32768,\\\"minParallelism\\\":1}}],\\\"edges\\\":[{\\\"source\\\":1,\\\"target\\\":2,\\\"mode\\\":\\\"PIPELINED\\\",\\\"strategy\\\":\\\"FORWARD\\\"}],\\\"vertices\\\":{\\\"717c7b8afebbfb7137f6f0f99beb2a94\\\":[1,2]}}",
+            "title": "细粒度资源计划",
+            "type": "string"
+          }
+        },
+        "title": "细粒度资源设置",
+        "type": "object"
+      },
+      "HotUpdateJobFailureInfo": {
+        "description_en": "The hot update status of the job",
+        "description_zh": "作业动态更新状态",
+        "properties": {
+          "failureSeverity": {
+            "backendName": "failureSeverity",
+            "description_en": "The error level",
+            "description_zh": "错误等级",
+            "enum": [
+              "CRITICAL",
+              "LOW"
+            ],
+            "example": "LOW",
+            "title": "错误等级",
+            "type": "string"
+          },
+          "message": {
+            "backendName": "message",
+            "description_en": "The error message",
+            "description_zh": "错误信息",
+            "example": "“”",
+            "title": "错误信息",
+            "type": "string"
+          },
+          "reason": {
+            "backendName": "reason",
+            "description_en": "The error cause",
+            "description_zh": "错误原因",
+            "example": "“”",
+            "title": "错误原因",
+            "type": "string"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "HotUpdateJobParams": {
+        "description_en": "The parameters for dynamically updating a job",
+        "description_zh": "作业动态更新参数",
+        "properties": {
+          "rescaleJobParam": {
+            "$ref": "#/components/schemas/RescaleJobParam",
+            "backendName": "rescaleJobParam",
+            "description_en": "The dynamic update of resources",
+            "description_zh": "资源动态更新"
+          },
+          "updateJobConfigParam": {
+            "$ref": "#/components/schemas/UpdateJobConfigParam",
+            "backendName": "updateJobConfigParam",
+            "description_en": "The dynamic update of runtime parameters",
+            "description_zh": "运行参数动态更新"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "HotUpdateJobResult": {
+        "description_en": "The job hot update result",
+        "description_zh": "作业动态更新结果",
+        "properties": {
+          "hotUpdateParams": {
+            "$ref": "#/components/schemas/HotUpdateJobParams",
+            "backendName": "hotUpdateParams",
+            "description_en": "The hot update parameters",
+            "description_zh": "动态更新参数",
+            "title": "动态更新参数"
+          },
+          "jobHotUpdateId": {
+            "backendName": "jobHotUpdateId",
+            "description_en": "The hot update ID",
+            "description_zh": "动态更新id",
+            "example": "123hashd****",
+            "title": "动态更新id",
+            "type": "string"
+          },
+          "jobId": {
+            "backendName": "jobId",
+            "description_en": "The job instance ID",
+            "description_zh": "作业实例id",
+            "example": "5af678c0-7db0-4650-94c2-d2604f0a****",
+            "title": "作业id",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/HotUpdateJobStatus",
+            "backendName": "status",
+            "description_en": "The hot update status",
+            "description_zh": "动态更新状态",
+            "title": "动态更新状态"
+          },
+          "targetResourceSetting": {
+            "$ref": "#/components/schemas/BriefResourceSetting",
+            "backendName": "targetResourceSetting",
+            "description_en": "The target job resource configuration",
+            "description_zh": "目标作业资源配置",
+            "title": "目标作业资源"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "HotUpdateJobStatus": {
+        "description_en": "The dynamic update status of the deployment",
+        "description_zh": "作业动态更新状态",
+        "properties": {
+          "failure": {
+            "$ref": "#/components/schemas/HotUpdateJobFailureInfo",
+            "backendName": "failure",
+            "description_en": "The error message of the dynamical update",
+            "description_zh": "动态更新错误信息",
+            "title": "动态更新错误信息"
+          },
+          "requestId": {
+            "backendName": "requestId",
+            "description_en": "The request ID",
+            "description_zh": "请求id",
+            "example": "CBC799F0-AS7S-1D30-8A4F-882ED4DD****",
+            "title": "请求id",
+            "type": "string"
+          },
+          "status": {
+            "backendName": "status",
+            "description_en": "The status of the dynamic update",
+            "description_zh": "动态更新状态",
+            "enum": [
+              "INIT",
+              "HOT_UPDATING",
+              "FAILED",
+              "HOT_UPDATED"
+            ],
+            "example": "HOT_UPDATED",
+            "title": "动态更新状态",
+            "type": "string"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "RescaleJobParam": {
+        "description_en": "The parameters for dynamically updating job resource configurations",
+        "description_zh": "动态更新作业资源配置",
+        "properties": {
+          "jobParallelism": {
+            "backendName": "jobParallelism",
+            "description_en": "The parallelism",
+            "description_zh": "并行度",
+            "example": "10",
+            "format": "int64",
+            "title": "并行度",
+            "type": "integer"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "StreamingResourceSetting": {
+        "description_en": "The resource settings for a job running in stream mode",
+        "description_zh": "本数据结构代表作业运行流模式时的资源设置",
+        "properties": {
+          "basicResourceSetting": {
+            "$ref": "#/components/schemas/BasicResourceSetting",
+            "backendName": "basicResourceSetting",
+            "description_en": "The resource settings for basic mode",
+            "description_zh": "基础模式资源设置",
+            "title": "基础资源设置"
+          },
+          "expertResourceSetting": {
+            "$ref": "#/components/schemas/ExpertResourceSetting",
+            "backendName": "expertResourceSetting",
+            "description_en": "The resource settings for expert mode",
+            "description_zh": "专家模式资源设置",
+            "title": "细粒度资源设置"
+          },
+          "resourceSettingMode": {
+            "backendName": "resourceSettingMode",
+            "description_en": "The resource mode used in stream mode. Valid values:\nEXPERT: expert mode.\nBASIC: basic mode",
+            "description_zh": "流模式使用的资源模式。\nEXPERT：专家模式。\nBASIC：基础模式",
+            "enum": [
+              "BASIC",
+              "EXPERT"
+            ],
+            "example": "EXPERT",
+            "title": "流作业资源模式",
+            "type": "string"
+          }
+        },
+        "title": "流作业资源设置",
+        "type": "object"
+      },
+      "UpdateJobConfigParam": {
+        "description_en": "The parameters for dynamically updating job runtime configurations",
+        "description_zh": "动态更新作业运行参数配置",
+        "properties": {
+          "newFlinkConf": {
+            "backendName": "newFlinkConf",
+            "description_en": "The job parameter configuration",
+            "description_zh": "作业参数配置",
+            "example": "{\"table.exec.parallelism：4\"}",
+            "title": "作业参数配置",
+            "type": "object"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Dynamically updates parameters or resources of a deployment that is running",
+  "description_zh": "对正在运行的作业进行参数或资源的动态更新",
+  "kebab_example": "aliyun ververica hot-update-job --workspace a14bd5d90a0000 --namespace default-namespace --job-id 88a8fc49-e090-430a-85d8-3ee8c79c0000 --api-version 2022-07-18 --region cn-hangzhou",
+  "method": "POST",
+  "multi_version": false,
+  "name": "HotUpdateJob",
+  "operation": {
+    "action": "HotUpdateJob",
+    "api_style": "ROA",
+    "api_version": "2022-07-18",
+    "method": "POST",
+    "protocol": "HTTPS",
+    "system_operation_type": "none",
+    "url": "/api/v2/namespaces/{namespace}/jobs/{jobId}:hotUpdate"
+  },
+  "parameters": [
+    {
+      "example": "a14bd5d90a****",
+      "help_en": "The workspace ID",
+      "help_zh": "工作空间ID",
+      "location": "header",
+      "name": "workspace",
+      "options": [
+        "--workspace"
+      ],
+      "raw_name": "workspace",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "default-namespace",
+      "help_en": "The name of the namespace",
+      "help_zh": "项目空间名称",
+      "location": "path",
+      "name": "namespace",
+      "options": [
+        "--namespace"
+      ],
+      "raw_name": "namespace",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "88a8fc49-e090-430a-85d8-3ee8c79c****",
+      "help_en": "The job ID",
+      "help_zh": "作业实例ID",
+      "location": "path",
+      "name": "job_id",
+      "options": [
+        "--job-id"
+      ],
+      "raw_name": "jobId",
+      "required": true,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/api/v2/namespaces/[namespace]/jobs/[jobId]:hotUpdate",
+  "product_code": "ververica",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "If the value of success was true, the dynamic update result was returned. If the value of success was false, a null value was returned",
+        "description_zh": "当success为true，返回动态更新结果；当success为false，该值为空",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/HotUpdateJobResult",
+            "backendName": "data",
+            "description_en": "The dynamic update result",
+            "description_zh": "动态更新结果"
+          },
+          "errorCode": {
+            "backendName": "errorCode",
+            "description_en": "If the value of success was false, an error code was returned.\n\nIf the value of success was true, a null value was returned",
+            "description_zh": "当success为false，返回业务错误码；\n \n当success为true，返回空值",
+            "example": "\"\"",
+            "title_en": "当success为false时，该值不为空，表示业务错误码；当success为true时，该值为空。",
+            "title_zh": "当success为false时，该值不为空，表示业务错误码；当success为true时，该值为空。",
+            "type": "string"
+          },
+          "errorMessage": {
+            "backendName": "errorMessage",
+            "description_en": "If the value of success was false, an error message was returned.\n\nIf the value of success was true, a null value was returned",
+            "description_zh": "当success为false，返回业务错误信息；\n\n当success为true，返回空值",
+            "example": "\"\"",
+            "title_en": "当success为false时，该值不为空，表示业务错误信息；当success为true时，该值为空。",
+            "title_zh": "当success为false时，该值不为空，表示业务错误信息；当success为true时，该值为空。",
+            "type": "string"
+          },
+          "httpCode": {
+            "backendName": "httpCode",
+            "description_en": "The status code returned. The value was fixed to 200. The status code 200 indicates that the request was successful",
+            "description_zh": "业务状态码，统一为200；使用success表示业务请求是否成功",
+            "example": "200",
+            "format": "int32",
+            "title_en": "业务状态码，统一为200；使用success表示业务请求是否成功。",
+            "title_zh": "业务状态码，统一为200；使用success表示业务请求是否成功。",
+            "type": "integer"
+          },
+          "requestId": {
+            "backendName": "requestId",
+            "description_en": "The request ID",
+            "description_zh": "请求ID",
+            "example": "CBC799F0-AS7S-1D30-8A4F-882ED4DD****",
+            "title_en": "请求ID。",
+            "title_zh": "请求ID。",
+            "type": "string"
+          },
+          "success": {
+            "backendName": "success",
+            "description_en": "Indicates whether the request was successful",
+            "description_zh": "表示业务请求是否成功",
+            "example": "true",
+            "title_en": "表示业务请求是否成功。",
+            "title_zh": "表示业务请求是否成功。",
+            "type": "boolean"
+          }
+        },
+        "title_en": "当success为true，返回创建的作业；当success为false，该值为空。",
+        "title_zh": "当success为true，返回创建的作业；当success为false，该值为空。",
+        "type": "object"
+      }
+    }
+  }
+}

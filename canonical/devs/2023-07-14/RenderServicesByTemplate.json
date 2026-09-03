@@ -1,0 +1,515 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "devs render-services-by-template",
+  "cmd_name": "render-services-by-template",
+  "components": {
+    "schemas": {
+      "ArtifactMeta": {
+        "description_en": "产物的元数据内容",
+        "description_zh": "产物的元数据内容",
+        "properties": {
+          "checksum": {
+            "backendName": "checksum",
+            "example": "CRC-64 code",
+            "title": "产物的CRC-64校验和。如果指定，则只有当制品当前的校验和指定的相同时才进行部署。",
+            "type": "string"
+          },
+          "name": {
+            "backendName": "name",
+            "example": "my-artifact",
+            "title": "产物的名称",
+            "type": "string"
+          }
+        },
+        "title": "产物的元数据内容，能唯一标识一个产物",
+        "type": "object"
+      },
+      "BranchFilter": {
+        "description_en": "分支过滤规则",
+        "description_zh": "分支过滤规则",
+        "properties": {
+          "name": {
+            "backendName": "name",
+            "example": "master",
+            "title": "目标分支发生变更则触发",
+            "type": "string"
+          }
+        },
+        "title": "分支过滤规则",
+        "type": "object"
+      },
+      "BuildCacheConfig": {
+        "description_en": "构建缓存配置",
+        "description_zh": "构建缓存配置",
+        "properties": {
+          "keyPath": {
+            "backendName": "keyPath",
+            "example": "{ \t\"3C75C832-0EAD-40D6-8FA1-2BA9171C926B\": \"~/.npm\", \t\"D256BB7A-1886-4A19-A75B-A1FDC23D5A00\": \"~/.cache\" }",
+            "title": "缓存唯一标识符与缓存路径的映射关系，可以由系统自动生成",
+            "type": "object"
+          },
+          "paths": {
+            "backendName": "paths",
+            "items": {
+              "example": "~/.npm",
+              "type": "string"
+            },
+            "title": "需要缓存的路径",
+            "type": "array"
+          }
+        },
+        "title": "构建时的缓存配置，拉取代码后，缓存文件会被放入指定位置，任务成功后，缓存文件将被更新",
+        "type": "object"
+      },
+      "BuildConfig": {
+        "description_en": "构架配置",
+        "description_zh": "构架配置",
+        "properties": {
+          "default": {
+            "$ref": "#/components/schemas/DefaultBuilderConfig",
+            "backendName": "default",
+            "title": "基于默认构建器的构建配置"
+          }
+        },
+        "title": "描述一个服务的代码应该如何被构建",
+        "type": "object"
+      },
+      "CodeVersionReference": {
+        "description_en": "代码版本引用",
+        "description_zh": "代码版本引用",
+        "properties": {
+          "branch": {
+            "backendName": "branch",
+            "example": "main",
+            "title": "仓库分支名称",
+            "type": "string"
+          },
+          "commitID": {
+            "backendName": "commitID",
+            "example": "12721ec262d03a93809ba2bbc717963cb298ceca",
+            "title": "仓库分支中某个commit的SHA值，为空时使用当前分支中最新的commit",
+            "type": "string"
+          }
+        },
+        "title": "代码版本引用",
+        "type": "object"
+      },
+      "DefaultBuilderConfig": {
+        "description_en": "构架配置",
+        "description_zh": "构架配置",
+        "properties": {
+          "cache": {
+            "$ref": "#/components/schemas/BuildCacheConfig",
+            "backendName": "cache",
+            "title": "缓存配置"
+          },
+          "languages": {
+            "backendName": "languages",
+            "items": {
+              "example": "Python3.9",
+              "type": "string"
+            },
+            "title": "执行环境需要设置的语言，例如Java11，Python3.9等",
+            "type": "array"
+          },
+          "rootPath": {
+            "backendName": "rootPath",
+            "example": "./src",
+            "title": "构建时使用的源码根目录，默认为代码仓库的根目录。构建时，会在源码根目录下执行所有构建步骤，并且将源码根目录进行打包。如果需要在打包时过滤指定文件，可以在源码根目录下增加.signore文件指定要打包时排除的文件",
+            "type": "string"
+          },
+          "steps": {
+            "backendName": "steps",
+            "items": {
+              "example": "{\"run\": \"npm build\"}",
+              "type": "any"
+            },
+            "title": "组件构建的步骤，步骤将被顺序执行。步骤的类型可以是命令类型(ServiceCommandStep)，插件类型(ServicePluginStep)以\\ 及组件类型(ServiceComponentStep)",
+            "type": "array"
+          }
+        },
+        "title": "描述一个服务的代码应该如何被构建",
+        "type": "object"
+      },
+      "EventFilterConfig": {
+        "description_en": "The event filtering configuration",
+        "description_zh": "事件过滤配置",
+        "properties": {
+          "branch": {
+            "$ref": "#/components/schemas/BranchFilter",
+            "backendName": "branch",
+            "description_en": "The branch where the change event occurs",
+            "description_zh": "分支发生变更事件",
+            "title": "分支发生变更事件"
+          }
+        },
+        "title": "事件过滤配置",
+        "type": "object"
+      },
+      "OssSourceConfig": {
+        "properties": {
+          "bucket": {
+            "backendName": "bucket",
+            "example": "demo-bucket",
+            "title": "OSS bucket名称",
+            "type": "string"
+          },
+          "object": {
+            "backendName": "object",
+            "example": "demo-object",
+            "title": "OSS 对象名称",
+            "type": "string"
+          }
+        },
+        "title": "OSS代码源对象",
+        "type": "object"
+      },
+      "RepositorySourceConfig": {
+        "description_en": "仓库源码配置，描述一个代码仓库中的一套源码",
+        "description_zh": "仓库源码配置，描述一个代码仓库中的一套源码",
+        "properties": {
+          "codeVersion": {
+            "$ref": "#/components/schemas/CodeVersionReference",
+            "backendName": "codeVersion",
+            "title": "代码版本引用，描述了代码仓库中一个具体的代码版本"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/EventFilterConfig",
+            "backendName": "filter"
+          },
+          "repositoryName": {
+            "backendName": "repositoryName",
+            "example": "my-repository",
+            "required": true,
+            "title": "关联的平台中的仓库绑定实体的名称，该实体描述了一个具体的代码仓库",
+            "type": "string"
+          }
+        },
+        "title": "仓库源码配置，描述一个代码仓库中的一套源码",
+        "type": "object"
+      },
+      "ServiceConfig": {
+        "description_en": "服务配置描述",
+        "description_zh": "服务配置描述",
+        "properties": {
+          "artifact": {
+            "$ref": "#/components/schemas/ArtifactMeta",
+            "backendName": "artifact",
+            "title": "交付物配置。配置后部署时会使用指定的交付物"
+          },
+          "build": {
+            "$ref": "#/components/schemas/BuildConfig",
+            "backendName": "build"
+          },
+          "component": {
+            "backendName": "component",
+            "example": "fc3@1.0.0",
+            "title": "组件名称，符合ServerlessDevs的规范",
+            "type": "string"
+          },
+          "props": {
+            "backendName": "props",
+            "title": "服务属性",
+            "type": "object"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceConfig",
+            "backendName": "source",
+            "title": "代码源配置"
+          },
+          "type": {
+            "backendName": "type",
+            "example": "Function",
+            "title": "服务的类型",
+            "type": "string"
+          },
+          "variables": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Variable"
+            },
+            "backendName": "variables",
+            "title": "服务变量",
+            "type": "object"
+          }
+        },
+        "title": "服务配置",
+        "type": "object"
+      },
+      "SourceConfig": {
+        "description_en": "代码源配置",
+        "description_zh": "代码源配置",
+        "properties": {
+          "oss": {
+            "$ref": "#/components/schemas/OssSourceConfig",
+            "backendName": "oss"
+          },
+          "repository": {
+            "$ref": "#/components/schemas/RepositorySourceConfig",
+            "backendName": "repository",
+            "title": "仓库源码配置，描述了一个代码仓库中的一套源码"
+          },
+          "template": {
+            "$ref": "#/components/schemas/TemplateSourceConfig",
+            "backendName": "template",
+            "title": "模板源码配置，描述Serverless Registry中一个模板代码仓库中的一套源代码"
+          }
+        },
+        "title": "源代码配置，Dipper平台会使用该配置定位一套源代码并进行后续的构建和部署",
+        "type": "object"
+      },
+      "TemplateSourceConfig": {
+        "description_en": "模板源码配置，描述Serverless Registry中一个模板代码仓库中的一套源代码",
+        "description_zh": "模板源码配置，描述Serverless Registry中一个模板代码仓库中的一套源代码",
+        "properties": {
+          "downloadUrl": {
+            "backendName": "downloadUrl",
+            "example": "https://api.devsapp.cn/v3/packages/start-modelscope-v3/zipball/0.1.6",
+            "title": "Serverless Registry中模板下载地址",
+            "type": "string"
+          },
+          "name": {
+            "backendName": "name",
+            "example": "start-springboot-cap",
+            "title": "模板名称",
+            "type": "string"
+          }
+        },
+        "title": "模板源码配置，描述Serverless Registry中一个模板代码仓库中的一套源代码",
+        "type": "object"
+      },
+      "Variable": {
+        "description_en": "变量",
+        "description_zh": "变量",
+        "properties": {
+          "encrypted": {
+            "backendName": "encrypted",
+            "description_zh": "变量是否被加密",
+            "example": "false",
+            "title": "变量是否被加密",
+            "type": "boolean"
+          },
+          "sensitive": {
+            "backendName": "sensitive",
+            "description_zh": "变量是否敏感",
+            "example": "false",
+            "title": "变量是否敏感",
+            "type": "boolean"
+          },
+          "value": {
+            "backendName": "value",
+            "description_zh": "变量的值",
+            "example": "object_value",
+            "title": "变量的值",
+            "type": "any"
+          }
+        },
+        "title": "变量",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Parses service and variable configurations from a template",
+  "description_zh": "解析模板中的服务以及变量配置",
+  "kebab_example": "aliyun devs render-services-by-template --template-name start-springboot --parameters '{\"region\":\"cn-hangzhou\"}' --variable-values example-string --service-name-changes svc1=svc2 --project-name my-project --region cn-hangzhou",
+  "method": "POST",
+  "multi_version": false,
+  "name": "RenderServicesByTemplate",
+  "operation": {
+    "action": "RenderServicesByTemplate",
+    "api_style": "ROA",
+    "api_version": "2023-07-14",
+    "body_mapping": {
+      "parameters": "parameters",
+      "project_name": "projectName",
+      "service_name_changes": "serviceNameChanges",
+      "template_name": "templateName",
+      "variable_values": "variableValues"
+    },
+    "content_type": "application/json",
+    "method": "POST",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "req_body_type": "json",
+    "system_operation_type": "none",
+    "url": "/2023-07-14/templates/action/renderServices"
+  },
+  "parameters": [
+    {
+      "example": "{\"region\":\"cn-hangzhou\"}",
+      "help_en": "Template parameters",
+      "help_zh": "模板参数",
+      "location": "body",
+      "name": "parameters",
+      "options": [
+        "--parameters"
+      ],
+      "param_style": "json",
+      "raw_name": "parameters",
+      "required": false,
+      "type": "map",
+      "value": {
+        "type": "any"
+      }
+    },
+    {
+      "example": "my-project",
+      "help_en": "The name of the project to which services will be added. When a project name is provided, the operation checks for naming conflicts between services in the template and those already in the project. If a conflict is found, the operation automatically generates a unique service name",
+      "help_zh": "项目名称，用于在已有项目中通过模板新增服务的场景。当指定时，会检测模板中的服务名和指定项目中的服务是否存在命名冲突，如果冲突时会自动生成新的服务名称",
+      "location": "body",
+      "name": "project_name",
+      "options": [
+        "--project-name"
+      ],
+      "param_style": "json",
+      "raw_name": "projectName",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "{\"svc1\":\"svc2\"}",
+      "help_en": "A map for renaming services. The key is the original service name from the template, and the value is the new service name",
+      "help_zh": "服务名称变化，key是模板原始服务名，value是需要修改的目标服务名",
+      "location": "body",
+      "name": "service_name_changes",
+      "options": [
+        "--service-name-changes"
+      ],
+      "param_style": "json",
+      "raw_name": "serviceNameChanges",
+      "required": false,
+      "type": "map",
+      "value": {
+        "type": "string"
+      }
+    },
+    {
+      "example": "start-springboot",
+      "help_en": "Template name",
+      "help_zh": "模板名称",
+      "location": "body",
+      "name": "template_name",
+      "options": [
+        "--template-name"
+      ],
+      "param_style": "json",
+      "raw_name": "templateName",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "fields": [
+        {
+          "help_en": "服务变量",
+          "help_zh": "服务变量",
+          "name": "services",
+          "options": [
+            "--services"
+          ],
+          "raw_name": "services",
+          "required": false,
+          "type": "map",
+          "value": {
+            "type": "map",
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "example": "{\"TEST_KEY\":\"new_value\"}",
+          "help_en": "共享变量",
+          "help_zh": "共享变量",
+          "name": "shared",
+          "options": [
+            "--shared"
+          ],
+          "raw_name": "shared",
+          "required": false,
+          "type": "map",
+          "value": {
+            "type": "any"
+          }
+        }
+      ],
+      "help_en": "Template variables",
+      "help_zh": "模板变量",
+      "location": "body",
+      "name": "variable_values",
+      "options": [
+        "--variable-values"
+      ],
+      "param_style": "json",
+      "raw_name": "variableValues",
+      "required": false,
+      "type": "object"
+    }
+  ],
+  "pathPattern": "/2023-07-14/templates/action/renderServices",
+  "product_code": "Devs",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "parseType": "struct",
+        "properties": {
+          "changedServiceNames": {
+            "additionalProperties": {
+              "description_en": "Original service name",
+              "description_zh": "原始服务名称",
+              "example": "demo-service",
+              "title_en": "原始服务名称",
+              "title_zh": "原始服务名称",
+              "type": "string"
+            },
+            "description_en": "A map of changed service names where the key is the new service name and the value is the original service name. This tracking enables you to modify names multiple times before deployment",
+            "description_zh": "变化后的服务名称。key是新的服务名称，value是原始服务名称。\n通过这个字段，可以记录模板的原始服务名称，实现部署前的不断修改名称",
+            "title_en": "变化后的服务名称。key是新的服务名称，value是原始服务名称。\n通过这个字段，可以记录模板的原始服务名称，实现部署前的不断修改名称",
+            "title_zh": "变化后的服务名称。key是新的服务名称，value是原始服务名称。\n通过这个字段，可以记录模板的原始服务名称，实现部署前的不断修改名称",
+            "type": "object"
+          },
+          "services": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ServiceConfig",
+              "description_en": "Service configuration",
+              "description_zh": "服务配置",
+              "title_en": "服务配置",
+              "title_zh": "服务配置"
+            },
+            "description_en": "A map of the parsed services",
+            "description_zh": "解析后的服务集合",
+            "title_en": "解析后的服务集合",
+            "title_zh": "解析后的服务集合",
+            "type": "object"
+          },
+          "variables": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Variable",
+              "description_en": "Variable configuration",
+              "description_zh": "变量配置",
+              "title_en": "变量配置",
+              "title_zh": "变量配置"
+            },
+            "description_en": "A map of the parsed variables",
+            "description_zh": "解析后的变量集合",
+            "title_en": "解析后的变量集合",
+            "title_zh": "解析后的变量集合",
+            "type": "object"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "v1_body_parameters": [
+    {
+      "help_en": "Template configuration",
+      "help_zh": "模板配置",
+      "name": "body",
+      "param_style": "json",
+      "position": "body",
+      "required": false,
+      "type": "string"
+    }
+  ]
+}

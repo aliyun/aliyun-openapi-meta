@@ -1,0 +1,383 @@
+{
+  "camel_example": "aliyun energyexpertexternal POST /api/v2/aidoc/document/chat/stream --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"question\":\"How_to_obtain_knowledge_base_Q_A_documents\",\"sessionId\":\"bfce2248-1546-4298-8bcf-70ac26e69646\",\"documentIds\":[3456]}'",
+  "cmd_full_name": "energyexpertexternal chat-stream",
+  "cmd_name": "chat-stream",
+  "components": {
+    "schemas": {
+      "ChatDocumentPageNum": {
+        "description_en": "Location information of Q&A-related content in the document",
+        "description_zh": "问答相关内容在文档的位置信息",
+        "properties": {
+          "num": {
+            "backendName": "num",
+            "description_en": "Page numbers of related documents",
+            "description_zh": "相关文档页码",
+            "example": "12",
+            "format": "int32",
+            "type": "integer"
+          },
+          "pos": {
+            "backendName": "pos",
+            "description_en": "Location information of the document",
+            "description_zh": "文档的位置信息",
+            "items": {
+              "description_en": "Related location coordinates, with each location consisting of 4 coordinate points",
+              "description_zh": "相关位置坐标，每个位置为4个坐标点",
+              "items": {
+                "$ref": "#/components/schemas/ChatRefDocPostion",
+                "description_en": "Document block location data",
+                "description_zh": "文档块位置数据"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ChatItem": {
+        "description_en": "Q&A details",
+        "description_zh": "问答详情",
+        "properties": {
+          "answer": {
+            "backendName": "answer",
+            "description_en": "The content of the answer to the question",
+            "description_zh": "提问的回答内容",
+            "example": "未找到相关内容",
+            "type": "string"
+          },
+          "createTime": {
+            "backendName": "createTime",
+            "description_en": "Q&A time, in milliseconds timestamp",
+            "description_zh": "问答时间，毫秒时间戳",
+            "example": "1747280158000",
+            "format": "int64",
+            "type": "integer"
+          },
+          "folderId": {
+            "backendName": "folderId",
+            "description_en": "Folder selected for the Q&A",
+            "description_zh": "问答选择的文件夹",
+            "example": "7708fddb-21dc-4403-a4ea-5b94eccce4c3",
+            "type": "string"
+          },
+          "folderName": {
+            "backendName": "folderName",
+            "description_en": "Name of the folder selected for the Q&A",
+            "description_zh": "问答选择的文件夹名称",
+            "example": "默认文件夹",
+            "type": "string"
+          },
+          "question": {
+            "backendName": "question",
+            "description_en": "Question content",
+            "description_zh": "提问内容",
+            "example": "如何使用知识库。",
+            "type": "string"
+          },
+          "refDocList": {
+            "backendName": "refDocList",
+            "description_en": "List of files related to the Q&A.\nIf streaming question answering is used, only the first shard contains data",
+            "description_zh": "与问答相关的文件列表。\n如果使用流式问答，只有第一个分片有数据",
+            "items": {
+              "$ref": "#/components/schemas/ChatRefDocItem",
+              "description_en": "Details of files related to the Q&A",
+              "description_zh": "问答相关文件详情"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ChatRefDocInfo": {
+        "description_en": "Page document information",
+        "description_zh": "页面文档信息",
+        "properties": {
+          "pageListInfo": {
+            "backendName": "pageListInfo",
+            "description_en": "Detailed information for each page of the document",
+            "description_zh": "文件每页具体信息",
+            "items": {
+              "$ref": "#/components/schemas/ChatRefDocPageInfo",
+              "description_en": "Detailed information for each page",
+              "description_zh": "每页具体信息"
+            },
+            "type": "array"
+          },
+          "pages": {
+            "backendName": "answer",
+            "description_en": "Total number of pages in the current document",
+            "description_zh": "当前文档总页数",
+            "example": "23",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ChatRefDocItem": {
+        "description_en": "Related document information",
+        "description_zh": "相关文档信息",
+        "properties": {
+          "docInfo": {
+            "$ref": "#/components/schemas/ChatRefDocInfo",
+            "backendName": "docInfo",
+            "description_en": "Related document information",
+            "description_zh": "相关文档信息"
+          },
+          "docName": {
+            "backendName": "docName",
+            "description_en": "Document name. If the original file is of types like doc, it will be converted to PDF for easier document location. This file should be used for document location information",
+            "description_zh": "文档名称，如果原始文件是doc等类型会转换为pdf，方便文档定位，对文档定位信息需要使用此文件",
+            "example": "a.pdf",
+            "type": "string"
+          },
+          "docUrl": {
+            "backendName": "docUrl",
+            "description_en": "Document link",
+            "description_zh": "文档链接",
+            "example": "https://carbon-aidoc.oss-accelerate.aliyuncs.com/jobs/42dbc7-3a9e-4e18-8939-3fd2d247bd3c/document/97178d94c75941d3b932883c810c5e.pdf",
+            "type": "string"
+          },
+          "originDocName": {
+            "backendName": "originDocName",
+            "description_en": "Original document name",
+            "description_zh": "原始文件名",
+            "example": "a.doc",
+            "type": "string"
+          },
+          "originDocUrl": {
+            "backendName": "originDocUrl",
+            "description_en": "Original document link",
+            "description_zh": "原始文档链接",
+            "example": "https://carbon-aidoc.oss-accelerate.aliyuncs.com/jobs/42dbc7-3a9e-4e18-8939-3fd2d247bd3c/document/97178d94c75941d3b932883c810c5e.doc",
+            "type": "string"
+          },
+          "pageNum": {
+            "backendName": "pageNum",
+            "description_en": "Page number information",
+            "description_zh": "页码信息",
+            "items": {
+              "$ref": "#/components/schemas/ChatDocumentPageNum",
+              "description_en": "Page information details",
+              "description_zh": "页面信息详情"
+            },
+            "type": "array"
+          },
+          "sourceType": {
+            "backendName": "sourceType",
+            "description_en": "Return file type: 'doc' for document files, 'web' for internet information",
+            "description_zh": "返回文件类型，\"doc\": 文件类型； \"web\"：互联网信息",
+            "example": "doc",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ChatRefDocPageInfo": {
+        "description_en": "Specific information for each page of the document",
+        "description_zh": "文件每页具体信息",
+        "properties": {
+          "angle": {
+            "backendName": "angle",
+            "description_en": "The rotation angle of the image after the page is converted to an image",
+            "description_zh": "页面转图片后的图片的旋转角度",
+            "example": "0.0",
+            "format": "double",
+            "type": "number"
+          },
+          "excelParseResult": {
+            "backendName": "excelParseResult",
+            "description_en": "Reserved, can be unused for now",
+            "description_zh": "预留，暂可不用",
+            "example": "null",
+            "type": "string"
+          },
+          "imageHeight": {
+            "backendName": "imageHeight",
+            "description_en": "The height of the page turns to image",
+            "description_zh": "页面转图的高",
+            "example": "22",
+            "format": "int32",
+            "type": "integer"
+          },
+          "imageUrl": {
+            "backendName": "imageUrl",
+            "description_en": "The image URL after the page is converted to an image. \nNote: The image URL will be inaccessible after 24 hours, so you need to save it promptly",
+            "description_zh": "页面转图片后的图片URL。\n注意：图片url超过24小时后将无法获取到图片，需要及时另存",
+            "example": "2",
+            "type": "string"
+          },
+          "imageWidth": {
+            "backendName": "imageWidth",
+            "description_en": "The width of the page turns to image",
+            "description_zh": "页面转图的宽",
+            "example": "23",
+            "format": "int32",
+            "type": "integer"
+          },
+          "pageIdCurDoc": {
+            "backendName": "pageIdCurDoc",
+            "description_en": "The page index in the current document, starting from 0",
+            "description_zh": "页面在当前文档的页索引，从0开始",
+            "example": "2",
+            "format": "int32",
+            "type": "integer"
+          },
+          "pdfParseResult": {
+            "backendName": "pdfParseResult",
+            "description_en": "Reserved, can be unused for now",
+            "description_zh": "预留，暂可不用",
+            "example": "null",
+            "type": "string"
+          },
+          "wordParseResult": {
+            "backendName": "wordParseResult",
+            "description_en": "Reserved, can be unused for now",
+            "description_zh": "预留，暂可不用",
+            "example": "null",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ChatRefDocPostion": {
+        "description_en": "Document coordinates",
+        "description_zh": "文档坐标",
+        "properties": {
+          "x": {
+            "backendName": "x",
+            "description_en": "The x-coordinate of the layout",
+            "description_zh": "版面的x坐标",
+            "example": "22",
+            "format": "int32",
+            "type": "integer"
+          },
+          "y": {
+            "backendName": "y",
+            "description_en": "The y-coordinate of the layout",
+            "description_zh": "版面的y坐标",
+            "example": "86",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "This operation performs streaming Q&A on selected documents in a knowledge base, using the conversation history from a specified session as context",
+  "description_zh": "本接口在用户选择的文档目录范围内，结合会话内的历史问答作为上下文，提供基于知识库文档的流式问答服务",
+  "kebab_example": "aliyun energyexpertexternal chat-stream --session-id bfce2248-1546-4298-8bcf-70ac26e69646 --question How_to_obtain_knowledge_base_Q_A_documents --document-ids 3456 --region cn-hangzhou",
+  "method": "POST",
+  "multi_version": false,
+  "name": "ChatStream",
+  "operation": {
+    "action": "ChatStream",
+    "api_style": "ROA",
+    "api_version": "2022-09-23",
+    "body_mapping": {
+      "document_ids": "documentIds",
+      "question": "question",
+      "session_id": "sessionId"
+    },
+    "content_type": "application/json",
+    "is_sse": true,
+    "method": "POST",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "req_body_type": "json",
+    "response_format": "binary",
+    "system_operation_type": "none",
+    "url": "/api/v2/aidoc/document/chat/stream"
+  },
+  "parameters": [
+    {
+      "element": {
+        "type": "int"
+      },
+      "help_en": "A list of document IDs for the Q\\&A.\n\n\n<notice>\n\n  If you specify document IDs, ensure the `sessionId` you provide is not associated with a folder. The session must have been created with an empty folder ID.\n\n</notice>",
+      "help_zh": "选择文件列表进行问答\n<notice>若用户选择传入此参数，请务必保证同时传入的sessionId在创建时填入的文件夹id为空串></notice>",
+      "location": "body",
+      "name": "document_ids",
+      "options": [
+        "--document-ids"
+      ],
+      "param_style": "json",
+      "raw_name": "documentIds",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "example": "How to obtain knowledge base Q&A documents",
+      "help_en": "The question or prompt",
+      "help_zh": "问答内容",
+      "location": "body",
+      "name": "question",
+      "options": [
+        "--question"
+      ],
+      "param_style": "json",
+      "raw_name": "question",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "bfce2248-1546-4298-8bcf-70ac26e69646",
+      "help_en": "The Q\\&A session ID.\n\nCall the `GetChatSessionList` operation to retrieve the IDs of existing sessions.\n\nAlternatively, call the `CreateChatSession` operation to create a new session",
+      "help_zh": "问答会话ID。\n可以通过GetSessionList获取历史会话。\n也可以通过CreateChatSession创建新的会话",
+      "location": "body",
+      "name": "session_id",
+      "options": [
+        "--session-id"
+      ],
+      "param_style": "json",
+      "raw_name": "sessionId",
+      "required": true,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/api/v2/aidoc/document/chat/stream",
+  "product_code": "energyExpertExternal",
+  "protocol": "HTTPS|SSE",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "The returned result",
+        "description_zh": "返回结果",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ChatItem",
+            "backendName": "data",
+            "description_en": "The details of the Q\\&A exchange",
+            "description_zh": "问答详情信息"
+          },
+          "requestId": {
+            "backendName": "requestId",
+            "description_en": "The request ID",
+            "description_zh": "请求ID",
+            "example": "83A5A7DD-8974-5769-952E-590A97BEA34E",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          }
+        },
+        "title_en": "Schema of Response",
+        "title_zh": "Schema of Response",
+        "type": "object"
+      }
+    }
+  },
+  "v1_body_parameters": [
+    {
+      "help_en": "The request body",
+      "help_zh": "请求参数",
+      "name": "body",
+      "param_style": "json",
+      "position": "body",
+      "required": false,
+      "type": "string"
+    }
+  ]
+}

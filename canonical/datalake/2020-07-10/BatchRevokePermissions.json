@@ -1,0 +1,734 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "datalake batch-revoke-permissions",
+  "cmd_name": "batch-revoke-permissions",
+  "components": {
+    "schemas": {
+      "Accesses": {
+        "description_en": "accesses 列表",
+        "description_zh": "accesses 列表",
+        "itemName": "Access",
+        "items": {
+          "example": "ALTER/SELECT/CREATE, etc.",
+          "type": "string"
+        },
+        "parseType": "struct",
+        "title": "A short description of struct",
+        "type": "array"
+      },
+      "BatchGrantRevokeFailureResult": {
+        "description_en": "批量授权错误时的结果",
+        "description_zh": "批量授权错误时的结果",
+        "itemName": "GrantRevokeFailureResult",
+        "items": {
+          "$ref": "#/components/schemas/GrantRevokeFailureEntry"
+        },
+        "parseType": "struct",
+        "title": "A short description of struct",
+        "type": "array"
+      },
+      "CatalogResource": {
+        "description_en": "Authentication resource structure: data directory",
+        "description_zh": "鉴权资源结构：数据目录",
+        "properties": {
+          "CatalogId": {
+            "backendName": "CatalogId",
+            "description_en": "The ID of the data directory",
+            "description_zh": "数据目录ID",
+            "example": "1344371",
+            "title": "Catalog id",
+            "type": "string"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "ColumnResource": {
+        "description_en": "Authentication resource structure-Column",
+        "description_zh": "鉴权资源结构-Column",
+        "properties": {
+          "ColumnNames": {
+            "backendName": "ColumnNames",
+            "description_en": "The list of field names",
+            "description_zh": "字段名列表",
+            "itemName": "ColumnName",
+            "items": {
+              "description_en": "The field name",
+              "description_zh": "字段名",
+              "example": "name",
+              "type": "string"
+            },
+            "title": "ColumnName",
+            "type": "array"
+          },
+          "DatabaseName": {
+            "backendName": "DatabaseName",
+            "description_en": "The database name",
+            "description_zh": "数据库的名称",
+            "example": "default",
+            "title": "DatabaseName",
+            "type": "string"
+          },
+          "TableName": {
+            "backendName": "TableName",
+            "description_en": "The name of the metatable",
+            "description_zh": "表的名称",
+            "example": "test",
+            "title": "TableName",
+            "type": "string"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "DatabaseResource": {
+        "description_en": "Authentication resource structure: database",
+        "description_zh": "鉴权资源结构：数据库",
+        "parseType": "struct",
+        "properties": {
+          "DatabaseName": {
+            "backendName": "DatabaseName",
+            "description_en": "The name of the queried database",
+            "description_zh": "数据库名称",
+            "example": "default",
+            "title": "Database name",
+            "type": "string"
+          },
+          "DatabaseWildcard": {
+            "backendName": "DatabaseWildcard",
+            "description_en": "Database wildcard",
+            "description_zh": "数据库通配符",
+            "example": "*",
+            "title": "A wildcard member representing every resource under a database",
+            "type": "string"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "ErrorDetail": {
+        "description_en": "ErrorDetail",
+        "description_zh": "ErrorDetail",
+        "properties": {
+          "Code": {
+            "description_en": "The error code",
+            "description_zh": "错误码",
+            "example": "401",
+            "title": "Code",
+            "type": "string"
+          },
+          "Message": {
+            "description_en": "The error message",
+            "description_zh": "错误信息",
+            "example": "auth failed",
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "title": "ErrorDetail",
+        "type": "object"
+      },
+      "FunctionResource": {
+        "description_en": "Authentication resource structure: Function",
+        "description_zh": "鉴权资源结构-Function",
+        "properties": {
+          "DatabaseName": {
+            "backendName": "DatabaseName",
+            "description_en": "The name of the database",
+            "description_zh": "数据库的名称",
+            "example": "default",
+            "title": "Database name",
+            "type": "string"
+          },
+          "FunctionName": {
+            "backendName": "FunctioName",
+            "description_en": "The name of the function",
+            "description_zh": "函数名称",
+            "example": "default",
+            "title": "Function name",
+            "type": "string"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "GrantRevokeEntry": {
+        "description_en": "A short description of struct",
+        "description_zh": "A short description of struct",
+        "properties": {
+          "Accesses": {
+            "$ref": "#/components/schemas/Accesses",
+            "backendName": "Accesses",
+            "description_en": "The permission Access list",
+            "description_zh": "权限Access列表",
+            "title": "授权的accesses列表"
+          },
+          "DelegateAccesses": {
+            "$ref": "#/components/schemas/Accesses",
+            "backendName": "DelegateAccesses",
+            "description_en": "Supported later through server-side extension",
+            "description_zh": "后期通过服务端扩展支持",
+            "title": "授权的grantable accesses列表"
+          },
+          "Id": {
+            "backendName": "Id",
+            "description_en": "The entry ID used to handle exception messages",
+            "description_zh": "entry id用于处理异常message",
+            "example": "CRW-7A1EC3D73BF419AF",
+            "title": "identifier for this entry",
+            "type": "string"
+          },
+          "MetaResource": {
+            "$ref": "#/components/schemas/MetaResource",
+            "backendName": "MetaResource",
+            "description_en": "The authorization resource structure",
+            "description_zh": "授权资源结构",
+            "title": "授权的资源"
+          },
+          "Principal": {
+            "$ref": "#/components/schemas/Principal",
+            "backendName": "Principal",
+            "description_en": "The unique identity ARN",
+            "description_zh": "身份唯一标识ARN",
+            "title": "授权的用户principal"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "GrantRevokeFailureEntry": {
+        "description_en": "批量授权错误时的结构",
+        "description_zh": "批量授权错误时的结构",
+        "properties": {
+          "ErrorDetail": {
+            "$ref": "#/components/schemas/ErrorDetail",
+            "backendName": "ErrorDetail"
+          },
+          "GrantRevokeEntry": {
+            "$ref": "#/components/schemas/GrantRevokeEntry",
+            "backendName": "GrantRevokeEntry"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "MetaResource": {
+        "description_en": "The resource structure for authentication",
+        "description_zh": "鉴权资源结构",
+        "properties": {
+          "CatalogResource": {
+            "$ref": "#/components/schemas/CatalogResource",
+            "backendName": "CatalogResource",
+            "description_en": "The catalog resource",
+            "description_zh": "Catalog资源",
+            "example": "参看字段结构",
+            "title": "catalog resource"
+          },
+          "ColumnResource": {
+            "$ref": "#/components/schemas/ColumnResource",
+            "backendName": "ColumnResource",
+            "description_en": "The column resource",
+            "description_zh": "列资源",
+            "example": "参看字段结构",
+            "title": "column resource"
+          },
+          "DatabaseResource": {
+            "$ref": "#/components/schemas/DatabaseResource",
+            "backendName": "DatabaseResource",
+            "description_en": "The database resource",
+            "description_zh": "数据库资源",
+            "example": "参看字段结构",
+            "title": "database resource"
+          },
+          "FunctionResource": {
+            "$ref": "#/components/schemas/FunctionResource",
+            "backendName": "FunctionResource",
+            "description_en": "The function resource",
+            "description_zh": "函数资源",
+            "example": "参看字段结构",
+            "title": "function resource"
+          },
+          "ResourceType": {
+            "backendName": "ResourceType",
+            "description_en": "The object type of the metadata resource",
+            "description_zh": "元数据资源对象类型",
+            "example": "TABLE",
+            "required": false,
+            "title": "CATALOG,DATABASE, TABLE, FUNCTION, COLUMN任选其一",
+            "type": "string"
+          },
+          "TableResource": {
+            "$ref": "#/components/schemas/TableResource",
+            "backendName": "TableResource",
+            "description_en": "The table resource",
+            "description_zh": "表资源",
+            "example": "参看字段结构",
+            "title": "table resource"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "Principal": {
+        "description_en": "The ARN of the unique identity",
+        "description_zh": "身份唯一标识ARN",
+        "properties": {
+          "PrincipalArn": {
+            "backendName": "PrincipalArn",
+            "description_en": "ram user/ram role principal, in the format of acs:ram::[accountId]:user/userName, acs:ram::[accountId]:role/roleName",
+            "description_zh": "ram user/ram role principal，格式为acs:ram::[accountId]:user/userName, acs:ram::[accountId]:role/roleName",
+            "example": "acs:ram::[AliyunAccountId]:user/username_abc",
+            "title": "身份标识",
+            "type": "string"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "TableResource": {
+        "description_en": "Authentication resource structure-Table",
+        "description_zh": "鉴权资源结构-Table",
+        "properties": {
+          "DatabaseName": {
+            "backendName": "DatabaseName",
+            "description_en": "The database name",
+            "description_zh": "数据库的名称",
+            "example": "database_test",
+            "title": "database name",
+            "type": "string"
+          },
+          "TableName": {
+            "backendName": "TableName",
+            "description_en": "The name of the queried table",
+            "description_zh": "表名称",
+            "example": "test_parquet",
+            "title": "tablename",
+            "type": "string"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Revokes one or more permissions on resources from DLF users and roles",
+  "description_zh": "批量取消对User/数据湖角色授予资源的操作权限",
+  "kebab_example": "aliyun datalake batch-revoke-permissions --region cn-hangzhou",
+  "method": "POST",
+  "multi_version": false,
+  "name": "BatchRevokePermissions",
+  "operation": {
+    "action": "BatchRevokePermissions",
+    "api_style": "ROA",
+    "api_version": "2020-07-10",
+    "body_mapping": {
+      "catalog_id": "CatalogId",
+      "grant_revoke_entries": "GrantRevokeEntries",
+      "type": "Type"
+    },
+    "content_type": "application/json",
+    "method": "POST",
+    "operation_type": "readAndWrite",
+    "protocol": "HTTPS",
+    "req_body_type": "json",
+    "system_operation_type": "update",
+    "url": "/api/metastore/auth/permissions/batchrevoke"
+  },
+  "parameters": [
+    {
+      "example": "1344371",
+      "help_en": "The catalog ID",
+      "help_zh": "数据目录ID",
+      "location": "body",
+      "name": "catalog_id",
+      "options": [
+        "--catalog-id"
+      ],
+      "param_style": "json",
+      "raw_name": "CatalogId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "element": {
+        "fields": [
+          {
+            "element": {
+              "type": "string"
+            },
+            "help_en": "accesses 列表",
+            "help_zh": "accesses 列表",
+            "name": "accesses",
+            "options": [
+              "--accesses"
+            ],
+            "raw_name": "Accesses",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "element": {
+              "type": "string"
+            },
+            "help_en": "accesses 列表",
+            "help_zh": "accesses 列表",
+            "name": "delegate_accesses",
+            "options": [
+              "--delegate-accesses"
+            ],
+            "raw_name": "DelegateAccesses",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "example": "CRW-7A1EC3D73BF419AF",
+            "help_en": "The entry ID used to handle exception messages",
+            "help_zh": "entry id用于处理异常message",
+            "name": "id",
+            "options": [
+              "--id"
+            ],
+            "raw_name": "Id",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "fields": [
+              {
+                "fields": [
+                  {
+                    "example": "1344371",
+                    "help_en": "The ID of the data directory",
+                    "help_zh": "数据目录ID",
+                    "name": "catalog_id",
+                    "options": [
+                      "--catalog-id"
+                    ],
+                    "raw_name": "CatalogId",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "help_en": "Authentication resource structure: data directory",
+                "help_zh": "鉴权资源结构：数据目录",
+                "name": "catalog_resource",
+                "options": [
+                  "--catalog-resource"
+                ],
+                "raw_name": "CatalogResource",
+                "required": false,
+                "type": "object"
+              },
+              {
+                "fields": [
+                  {
+                    "element": {
+                      "type": "string"
+                    },
+                    "help_en": "The list of field names",
+                    "help_zh": "字段名列表",
+                    "name": "column_names",
+                    "options": [
+                      "--column-names"
+                    ],
+                    "raw_name": "ColumnNames",
+                    "required": false,
+                    "type": "array"
+                  },
+                  {
+                    "example": "default",
+                    "help_en": "The database name",
+                    "help_zh": "数据库的名称",
+                    "name": "database_name",
+                    "options": [
+                      "--database-name"
+                    ],
+                    "raw_name": "DatabaseName",
+                    "required": false,
+                    "type": "string"
+                  },
+                  {
+                    "example": "test",
+                    "help_en": "The name of the metatable",
+                    "help_zh": "表的名称",
+                    "name": "table_name",
+                    "options": [
+                      "--table-name"
+                    ],
+                    "raw_name": "TableName",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "help_en": "Authentication resource structure-Column",
+                "help_zh": "鉴权资源结构-Column",
+                "name": "column_resource",
+                "options": [
+                  "--column-resource"
+                ],
+                "raw_name": "ColumnResource",
+                "required": false,
+                "type": "object"
+              },
+              {
+                "fields": [
+                  {
+                    "example": "default",
+                    "help_en": "The name of the queried database",
+                    "help_zh": "数据库名称",
+                    "name": "database_name",
+                    "options": [
+                      "--database-name"
+                    ],
+                    "raw_name": "DatabaseName",
+                    "required": false,
+                    "type": "string"
+                  },
+                  {
+                    "example": "*",
+                    "help_en": "Database wildcard",
+                    "help_zh": "数据库通配符",
+                    "name": "database_wildcard",
+                    "options": [
+                      "--database-wildcard"
+                    ],
+                    "raw_name": "DatabaseWildcard",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "help_en": "Authentication resource structure: database",
+                "help_zh": "鉴权资源结构：数据库",
+                "name": "database_resource",
+                "options": [
+                  "--database-resource"
+                ],
+                "raw_name": "DatabaseResource",
+                "required": false,
+                "type": "object"
+              },
+              {
+                "fields": [
+                  {
+                    "example": "default",
+                    "help_en": "The name of the database",
+                    "help_zh": "数据库的名称",
+                    "name": "database_name",
+                    "options": [
+                      "--database-name"
+                    ],
+                    "raw_name": "DatabaseName",
+                    "required": false,
+                    "type": "string"
+                  },
+                  {
+                    "example": "default",
+                    "help_en": "The name of the function",
+                    "help_zh": "函数名称",
+                    "name": "function_name",
+                    "options": [
+                      "--function-name"
+                    ],
+                    "raw_name": "FunctionName",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "help_en": "Authentication resource structure: Function",
+                "help_zh": "鉴权资源结构-Function",
+                "name": "function_resource",
+                "options": [
+                  "--function-resource"
+                ],
+                "raw_name": "FunctionResource",
+                "required": false,
+                "type": "object"
+              },
+              {
+                "example": "TABLE",
+                "help_en": "The object type of the metadata resource",
+                "help_zh": "元数据资源对象类型",
+                "name": "resource_type",
+                "options": [
+                  "--resource-type"
+                ],
+                "raw_name": "ResourceType",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "fields": [
+                  {
+                    "example": "database_test",
+                    "help_en": "The database name",
+                    "help_zh": "数据库的名称",
+                    "name": "database_name",
+                    "options": [
+                      "--database-name"
+                    ],
+                    "raw_name": "DatabaseName",
+                    "required": false,
+                    "type": "string"
+                  },
+                  {
+                    "example": "test_parquet",
+                    "help_en": "The name of the queried table",
+                    "help_zh": "表名称",
+                    "name": "table_name",
+                    "options": [
+                      "--table-name"
+                    ],
+                    "raw_name": "TableName",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "help_en": "Authentication resource structure-Table",
+                "help_zh": "鉴权资源结构-Table",
+                "name": "table_resource",
+                "options": [
+                  "--table-resource"
+                ],
+                "raw_name": "TableResource",
+                "required": false,
+                "type": "object"
+              }
+            ],
+            "help_en": "The resource structure for authentication",
+            "help_zh": "鉴权资源结构",
+            "name": "meta_resource",
+            "options": [
+              "--meta-resource"
+            ],
+            "raw_name": "MetaResource",
+            "required": false,
+            "type": "object"
+          },
+          {
+            "fields": [
+              {
+                "example": "acs:ram::[AliyunAccountId]:user/username_abc",
+                "help_en": "ram user/ram role principal, in the format of acs:ram::[accountId]:user/userName, acs:ram::[accountId]:role/roleName",
+                "help_zh": "ram user/ram role principal，格式为acs:ram::[accountId]:user/userName, acs:ram::[accountId]:role/roleName",
+                "name": "principal_arn",
+                "options": [
+                  "--principal-arn"
+                ],
+                "raw_name": "PrincipalArn",
+                "required": false,
+                "type": "string"
+              }
+            ],
+            "help_en": "The ARN of the unique identity",
+            "help_zh": "身份唯一标识ARN",
+            "name": "principal",
+            "options": [
+              "--principal"
+            ],
+            "raw_name": "Principal",
+            "required": false,
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "help_en": "The permissions to revoke",
+      "help_zh": "待撤销授权列表",
+      "location": "body",
+      "name": "grant_revoke_entries",
+      "options": [
+        "--grant-revoke-entries"
+      ],
+      "param_style": "json",
+      "raw_name": "GrantRevokeEntries",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "enum": [
+        "hive"
+      ],
+      "example": "Hive",
+      "help_en": "The authorization type. Currently, only Hive is supported",
+      "help_zh": "授权的类型，目前仅支持Hive",
+      "location": "body",
+      "name": "type",
+      "options": [
+        "--type"
+      ],
+      "param_style": "json",
+      "raw_name": "Type",
+      "required": true,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/api/metastore/auth/permissions/batchrevoke",
+  "product_code": "DataLake",
+  "protocol": "HTTP|HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "The response body",
+        "description_zh": "返回消息体",
+        "properties": {
+          "BatchGrantRevokeFailureResult": {
+            "$ref": "#/components/schemas/BatchGrantRevokeFailureResult",
+            "description_en": "The details of a failed revocation",
+            "description_zh": "批量授权撤销失败结果",
+            "example": "参考BatchGrantRevokeFailureResult结构",
+            "title_en": "result",
+            "title_zh": "result"
+          },
+          "Code": {
+            "description_en": "The status code of the response",
+            "description_zh": "状态码",
+            "example": "OK",
+            "title_en": "Response Code",
+            "title_zh": "Response Code",
+            "type": "string"
+          },
+          "Message": {
+            "description_en": "The response message",
+            "description_zh": "返回信息",
+            "example": ".",
+            "title_en": "Message Code",
+            "title_zh": "Message Code",
+            "type": "string"
+          },
+          "RequestId": {
+            "description_en": "The ID of the request",
+            "description_zh": "请求ID",
+            "example": "C9E535E1-F040-56F4-B4EE-592B555DAE19",
+            "title_en": "RequestId",
+            "title_zh": "RequestId",
+            "type": "string"
+          },
+          "Success": {
+            "description_en": "Indicates whether the request was successful. Valid values:\n\ntrue\n\nfalse",
+            "description_zh": "请求是否成功。取值如下：\ntrue：成功。\nfalse：失败",
+            "example": "true",
+            "title_en": "Success",
+            "title_zh": "Success",
+            "type": "boolean"
+          }
+        },
+        "title_en": "Response Object",
+        "title_zh": "Response Object",
+        "type": "object"
+      }
+    },
+    "5XX": {}
+  },
+  "v1_body_parameters": [
+    {
+      "help_en": "The request body in the JSON format",
+      "help_zh": "HTTP请求体，均采用JSON格式",
+      "name": "Body",
+      "param_style": "json",
+      "position": "body",
+      "required": false,
+      "type": "string"
+    }
+  ]
+}

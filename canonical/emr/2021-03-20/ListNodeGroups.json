@@ -1,0 +1,643 @@
+{
+  "camel_example": "aliyun emr ListNodeGroups --region cn-hangzhou --ClusterId 'c-b933c5aac8fe0000' --RegionId 'cn-hangzhou'",
+  "cmd_full_name": "emr list-node-groups",
+  "cmd_name": "list-node-groups",
+  "components": {
+    "schemas": {
+      "CostOptimizedConfig": {
+        "description_en": "The configurations of the cost optimization policy",
+        "description_zh": "成本优化模式配置",
+        "properties": {
+          "OnDemandBaseCapacity": {
+            "backendName": "onDemandBaseCapacity",
+            "description_en": "The minimum number of pay-as-you-go instances that are required for the node group. Valid values: 0 to 1000. If the number of pay-as-you-go instances is less than the value of this parameter, pay-as-you-go instances are preferentially created",
+            "description_zh": "按量实例个数的最小值。节点组所需要按量实例个数的最小值，取值范围：0~1000。当按量实例个数少于该值时，将优先创建按量实例",
+            "example": "80",
+            "format": "int32",
+            "required": true,
+            "title": "按量实例个数的最小值。",
+            "type": "integer"
+          },
+          "OnDemandPercentageAboveBaseCapacity": {
+            "backendName": "onDemandPercentageAboveBaseCapacity",
+            "description_en": "The percentage of pay-as-you-go instances among the instances that exceed the number specified by the OnDemandBaseCapacity parameter for the node group. Valid values: 0 to 100",
+            "description_zh": "节点组满足最小按量实例OnDemandBaseCapacity要求后，超出的实例中按量实例应占的比例，取值范围：0～100",
+            "example": "80",
+            "format": "int32",
+            "required": true,
+            "title": "超出的实例中按量实例应占的比例。",
+            "type": "integer"
+          },
+          "SpotInstancePools": {
+            "backendName": "spotInstancePools",
+            "description_en": "The number of instance types that are specified. Preemptible instances of multiple instance types that are provided at the lowest price are evenly created in the scaling group. Valid values: 0 to 10",
+            "description_zh": "指定可用实例规格的个数，伸缩组将按成本最低的多个规格均衡创建抢占式实例。取值范围：0~10",
+            "example": "2",
+            "format": "int32",
+            "required": true,
+            "title": "可用实例规格的个数。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "DataDisk": {
+        "properties": {
+          "Category": {
+            "backendName": "category",
+            "description_en": "The disk type. Valid values:\n\n`cloud_efficiency`: Ultra Disk.\n\n`cloud_ssd`: Standard SSD.\n\n`cloud_essd`: ESSD.\n\n`cloud`: Basic Disk",
+            "description_zh": "磁盘类型。取值范围：\ncloud_efficiency：高效云盘。\ncloud_ssd：SSD云盘。\ncloud_essd：ESSD云盘。\ncloud：普通云盘",
+            "example": "cloud_essd",
+            "required": true,
+            "title": "磁盘类型。",
+            "type": "string"
+          },
+          "Count": {
+            "backendName": "count",
+            "description_en": "The number of data disks",
+            "description_zh": "磁盘数量",
+            "example": "5",
+            "format": "int32",
+            "title": "每个节点磁盘数量。",
+            "type": "integer"
+          },
+          "PerformanceLevel": {
+            "backendName": "performanceLevel",
+            "description_en": "The performance level of an ESSD. This parameter applies only when the `Category` parameter is set to `cloud_essd`. Valid values:\n\nPL0: A maximum of 10,000 random read/write IOPS per disk.\n\nPL1: A maximum of 50,000 random read/write IOPS per disk.\n\nPL2: A maximum of 100,000 random read/write IOPS per disk.\n\nPL3: A maximum of 1,000,000 random read/write IOPS per disk.\n\nDefault value: PL1",
+            "description_zh": "创建ESSD云盘作为数据盘使用时，设置云盘的性能等级。取值范围：\nPL0：单盘最高随机读写IOPS 1万。\nPL1：单盘最高随机读写IOPS 5万。\nPL2：单盘最高随机读写IOPS 10万。\nPL3：单盘最高随机读写IOPS 100万。\n\n默认值：PL1",
+            "example": "PL1",
+            "title": "ESSD云盘性能级别。",
+            "type": "string"
+          },
+          "Size": {
+            "backendName": "size",
+            "description_en": "The size of each data disk, in GB",
+            "description_zh": "单位GB",
+            "example": "80",
+            "format": "int32",
+            "required": true,
+            "title": "磁盘大小。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "NodeGroup": {
+        "description_en": "The node group",
+        "description_zh": "节点组",
+        "properties": {
+          "AdditionalSecurityGroupIds": {
+            "backendName": "additionalSecurityGroupIds",
+            "description_en": "The security group IDs",
+            "description_zh": "安全组ID",
+            "example": "[\"sg-hp3abbae8lb6lmb1****\"]",
+            "itemName": "String",
+            "items": {
+              "type": "string"
+            },
+            "title": "额外安全组ID列表。",
+            "type": "array"
+          },
+          "CompensateWithOnDemand": {
+            "backendName": "compensateWithOnDemand",
+            "description_en": "Specifies whether to automatically create pay-as-you-go instances to meet the required number of ECS instances when nodeResizeStrategy is set to COST_OPTIMIZED and sufficient spot instances cannot be created due to price or inventory reasons",
+            "description_zh": "当 nodeResizeStrategy 取值为 COST_OPTIMIZED 时，如果因价格、库存等原因无法创建足够的抢占式实例，是否允许自动尝试创建按量实例满足ECS实例数量要求",
+            "example": "true",
+            "title": "当 nodeResizeStrategy 取值为 COST_OPTIMIZED 时，如果因价格、库存等原因无法创建足够的抢占式实例，是否允许自动尝试创建按量实例满足",
+            "type": "boolean"
+          },
+          "CostOptimizedConfig": {
+            "$ref": "#/components/schemas/CostOptimizedConfig",
+            "backendName": "costOptimizedConfig",
+            "description_en": "The cost-optimized mode configuration",
+            "description_zh": "成本优化模式配置",
+            "title": "成本优化模式配置。"
+          },
+          "DataDisks": {
+            "backendName": "dataDisks",
+            "description_en": "The data cloud disks",
+            "description_zh": "数据盘组",
+            "itemName": "DataDisk",
+            "items": {
+              "$ref": "#/components/schemas/DataDisk",
+              "description_en": "The data cloud disk",
+              "description_zh": "数据盘"
+            },
+            "title": "数据盘列表。",
+            "type": "array"
+          },
+          "DeploymentSetStrategy": {
+            "backendName": "deploymentSetStrategy",
+            "description_en": "The deployment set strategy. Valid values:\nNONE: does not use a deployment set.\nCLUSTER: uses a cluster-level deployment set.\nNODE_GROUP: uses a node group-level deployment set.\n\nDefault value: NONE",
+            "description_zh": "部署集策略。取值范围：\nNONE：不适用部署集。\nCLUSTER：使用集群级别部署集。\nNODE_GROUP：使用节点组级别部署集。\n\n默认值：NONE",
+            "example": "NONE",
+            "title": "部署集策略。",
+            "type": "string"
+          },
+          "GracefulShutdown": {
+            "backendName": "gracefulShutdown",
+            "description_en": "Specifies whether to enable graceful shutdown for components deployed on the node group. Valid values:\ntrue: Enabled.\nfalse: Not enabled",
+            "description_zh": "节点组上部署的组件是否开启优雅下线。取值范围：\ntrue：开启优雅下线。\nfalse：不开启优雅下线",
+            "example": "false",
+            "title": "是否开启优雅下线。",
+            "type": "boolean"
+          },
+          "InstanceTypes": {
+            "backendName": "instanceTypes",
+            "description_en": "The instance types",
+            "description_zh": "实例类型集合",
+            "example": "[\"ecs.g6.4xlarge\"]",
+            "itemName": "String",
+            "items": {
+              "description_en": "The instance type",
+              "description_zh": "实例类型",
+              "example": "ecs.g7.2xlarge",
+              "type": "string"
+            },
+            "title": "实例类型列表。",
+            "type": "array"
+          },
+          "NodeGroupId": {
+            "backendName": "nodeGroupId",
+            "description_en": "The node group ID",
+            "description_zh": "节点组ID",
+            "example": "ng-869471354ecd****",
+            "title": "节点组ID。",
+            "type": "string"
+          },
+          "NodeGroupName": {
+            "backendName": "nodeGroupName",
+            "description_en": "The node group name",
+            "description_zh": "节点组名",
+            "example": "core-1",
+            "title": "节点组名称。",
+            "type": "string"
+          },
+          "NodeGroupState": {
+            "backendName": "nodeGroupState",
+            "description_en": "The node group status",
+            "description_zh": "节点组状态",
+            "example": "RESIZING",
+            "title": "节点组状态。",
+            "type": "string"
+          },
+          "NodeGroupType": {
+            "backendName": "nodeGroupType",
+            "description_en": "The node group type. Valid values:\n\nMASTER: master node.\nCORE: core node.\nTASK: task node.\nGATEWAY: gateway node. This value is not supported for DATALAKE, OLAP, or DATASERVING",
+            "description_zh": "节点组类型。取值范围：\n\nMASTER：主节点。\nCORE：核心节点。\nTASK：任务节点。\nGATEWAY：网关节点。DATALAKE、OLAP、DATASERVING不支持该参数",
+            "example": "MASTER",
+            "title": "节点组类型。",
+            "type": "string"
+          },
+          "NodeResizeStrategy": {
+            "backendName": "nodeResizeStrategy",
+            "description_en": "COST_OPTIMIZED: cost-optimized strategy.\nPRIORITY: priority-based strategy",
+            "description_zh": "COST_OPTIMIZED：成本优化策略。\nPRIORITY：优先级策略",
+            "example": "PRIORITY",
+            "title": "节点扩容策略。取值范围：",
+            "type": "string"
+          },
+          "PaymentType": {
+            "backendName": "paymentType",
+            "description_en": "The billing type. Valid values:\nSubscription: subscription.\nPayAsYouGo: pay-as-you-go",
+            "description_zh": "付费类型。取值范围：\nSubscription： 包年包月。\nPayAsYouGo：按量付费",
+            "example": "Subscription",
+            "title": "节点组付费类型。",
+            "type": "string"
+          },
+          "PrivatePoolOptions": {
+            "$ref": "#/components/schemas/PrivatePoolOptions",
+            "backendName": "privatePoolOptions",
+            "description_en": "The node group private pool settings",
+            "description_zh": "节点组私有池设置",
+            "title": "节点组私有池设置"
+          },
+          "RunningNodeCount": {
+            "backendName": "runningNodeCount",
+            "description_en": "The number of running nodes",
+            "description_zh": "存活节点数量",
+            "example": "3",
+            "format": "int32",
+            "title": "存活节点数量。",
+            "type": "integer"
+          },
+          "SpotBidPrices": {
+            "backendName": "spotBidPrices",
+            "description_en": "The bid prices for spot instances. This parameter takes effect only when SpotStrategy is set to SpotWithPriceLimit. The number of array elements N ranges from 0 to 100",
+            "description_zh": "抢占式Spot实例出价价格。参数SpotStrategy取值为SpotWithPriceLimit时生效。数组元数个数N的取值范围：0~100",
+            "itemName": "SpotBidPrice",
+            "items": {
+              "$ref": "#/components/schemas/SpotBidPrice",
+              "description_en": "The bid price for a spot instance",
+              "description_zh": "抢占式Spot实例出价价格"
+            },
+            "title": "竞价参数",
+            "type": "array"
+          },
+          "SpotInstanceRemedy": {
+            "backendName": "spotInstanceRemedy",
+            "description_en": "Specifies whether to enable spot instance supplementation. After this feature is enabled, when the system sends a message that a spot instance will be reclaimed, the scaling group attempts to create a new instance to replace the spot instance that will be reclaimed. Valid values:\ntrue: Enabled.\nfalse: Not enabled.\n\nDefault value: false",
+            "description_zh": "开启补齐抢占式实例后，当收到抢占式实例将被回收的系统消息时，伸缩组将尝试创建新的实例，替换掉将被回收的抢占式实例。取值范围：\ntrue：开启补齐抢占式实例。\nfalse：不开启补齐抢占式实例。\n\n默认值：false",
+            "example": "false",
+            "title": "是否开启补齐抢占式实例。",
+            "type": "boolean"
+          },
+          "SpotStrategy": {
+            "backendName": "spotStrategy",
+            "description_en": "The spot instance strategy. Valid values:\n\nNoSpot: does not use spot instances.\nSpotWithPriceLimit: spot instance with a custom price limit.\nSpotAsPriceGo: spot instance with the system automatically adjusting the bid price. The maximum price does not exceed the pay-as-you-go instance price.\n\nDefault value: NoSpot",
+            "description_zh": "竞价实例使用策略。取值范围：\n\nNoSpot：不使用竞价实例。\nSpotWithPriceLimit：竞价实例，自定义价格上限。\nSpotAsPriceGo：竞价实例，系统自动调节竞价上限，最高价格不超过按量实例的价格。\n\n默认值：NoSpot",
+            "example": "NoSpot",
+            "title": "是否支持竞价实例。",
+            "type": "string"
+          },
+          "StateChangeReason": {
+            "$ref": "#/components/schemas/NodeGroupStateChangeReason",
+            "backendName": "stateChangeReason",
+            "description_en": "The state change reason",
+            "description_zh": "状态改变原因",
+            "example": "手动重启",
+            "title": "状态变化原因。"
+          },
+          "Status": {
+            "backendName": "status",
+            "description_en": "The node group status",
+            "description_zh": "节点组状态",
+            "example": "CREATED",
+            "title": "节点组状态。",
+            "type": "string"
+          },
+          "SystemDisk": {
+            "$ref": "#/components/schemas/SystemDisk",
+            "backendName": "systemDisk",
+            "description_en": "The system cloud disk",
+            "description_zh": "系统盘",
+            "title": "系统盘信息。"
+          },
+          "VSwitchIds": {
+            "backendName": "vSwitchIds",
+            "description_en": "The vSwitch IDs",
+            "description_zh": "交换机ID集合",
+            "example": "[\"vsw-hp35g7ya5ymw68mmg****\"]",
+            "itemName": "String",
+            "items": {
+              "description_en": "The vSwitch ID",
+              "description_zh": "交换机ID",
+              "example": "vsw-bp1opd2qejvhsabfe****",
+              "type": "string"
+            },
+            "title": "虚拟机交换机ID列表。",
+            "type": "array"
+          },
+          "WithPublicIp": {
+            "backendName": "withPublicIp",
+            "description_en": "Specifies whether to enable public IP addresses",
+            "description_zh": "是否开通公网IP",
+            "example": "true",
+            "title": "是否开公网IP。",
+            "type": "boolean"
+          },
+          "ZoneId": {
+            "backendName": "zoneId",
+            "description_en": "The zone ID",
+            "description_zh": "可用区ID",
+            "example": "cn-hangzhou",
+            "title": "可用区ID。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "NodeGroupStateChangeReason": {
+        "properties": {
+          "Code": {
+            "backendName": "code",
+            "description_en": "The status code for the state change. Valid values include:\n\n`UserRequest`: A user request triggered the change.\n\n`OutOfStock`: The requested ECS instance type is out of stock.\n\n`NotAuthorized`: The request lacks the required permissions.\n\n`QuotaExceeded`: The request exceeds the resource quota.\n\n`OperationDenied`: The system denied the operation.\n\n`AccountException`: An account exception occurred.\n\n`NodeFailure`: An ECS node failed.\n\n`BootstrapFailure`: The bootstrap process failed.\n\n`ValidationFail`: The request parameters failed validation.\n\n`ServiceFailure`: A dependent service failed.\n\n`InternalError`: An unexpected internal error occurred",
+            "description_zh": "状态码。取值范围：\nUserRequest：用户请求。\nOutOfStock：请求的ECS实例类型无库存。\nNotAuthorized：无权限。\nQuotaExceeded：Quota超出。\nOperationDenied：操作被拒绝。\nAccountException：账号异常。\nNodeFailure：ECS节点异常。\nBootstrapFailure：引导失败。\nValidationFail：业务逻辑校验失败。\nServiceFailure：依赖的其他服务失败。\nInternalError：内部错误",
+            "example": "UserRequest",
+            "title": "状态码。",
+            "type": "string"
+          },
+          "Message": {
+            "backendName": "message",
+            "description_en": "A human-readable message that provides details about the state change",
+            "description_zh": "状态变化详细描述信息",
+            "example": "The instance type is required.",
+            "title": "描述信息。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PrivatePoolOptions": {
+        "description_en": "The information about the private pool",
+        "description_zh": "PrivatePoolOptions",
+        "properties": {
+          "MatchCriteria": {
+            "backendName": "matchCriteria",
+            "description_en": "The type of private pool that you want to use to start ECS instances. A private pool is generated when an elasticity assurance or a capacity reservation takes effect. You can select a private pool for starting ECS instances. Valid values: Open, Target, and None. If you set the parameter to Open, the system selects an open private pool to start instances. If no matching open private pools exist, the resources in the public pool are used. In this case, you do not need to specify the ID of the private pool. If you set the parameter to Target, the resources in the specified private pool are used to start ECS instances. If the specified private pool does not exist, ECS instances cannot be started. You must specify the ID of the private pool when you set the parameter to Target. If you set the parameter to None, the resources in private pools are not used to start instances. Default value: None",
+            "description_zh": "实例启动的私有池容量选项。弹性保障服务或容量预定服务在生效后会生成私有池容量，供实例启动时选择。取值范围：  \nOpen：开放模式。将自动匹配开放类型的私有池容量。如果没有符合条件的私有池容量，则使用公共池资源启动。该模式下无需设置PrivatePoolIds参数。\nTarget：指定模式。使用指定的私有池容量启动实例，如果该私有池容量不可用，则实例会启动失败。该模式下必须指定私有池 ID，即PrivatePoolIds参数为必填项。 \nNone：不使用模式。实例启动将不使用私有池容量。 默认值：None",
+            "example": "Open",
+            "title": "实例启动的私有池容量选项。弹性保障服务或容量预定服务在生效后会生成私有池容量，供实例启动时选择。取值范围：  Open：开放模式。将自动匹配开放类型的私有池容量。如果没有符合条件的私有池容量，则使用公共池资源启动。该模式下无需设置PrivatePoolOptions.Id参数。 Target：指定模式。使用指定的私有池容量启动实例，如果该私有池容量不可用，则实例会启动失败。该模式下必须指定私有池 ID，即PrivatePoolOptions.Id参数为必填项。 None：不使用模式。实例启动将不使用私有池容量。 默认值：None。",
+            "type": "string"
+          },
+          "PrivatePoolIds": {
+            "backendName": "privatePoolIds",
+            "description_en": "The IDs of the private pools",
+            "description_zh": "私有池 ID列表",
+            "example": "eap-bp67acfmxazb4****",
+            "items": {
+              "description_en": "The ID of private pool. The ID of a private pool is the same as the ID of the elasticity assurance or capacity reservation that is associated with the private pool",
+              "description_zh": "私有池 ID。即弹性保障服务 ID 或容量预定服务 ID",
+              "example": "crp-xxxx",
+              "type": "string"
+            },
+            "title": "私有池 ID。即弹性保障服务 ID 或容量预定服务 ID。",
+            "type": "array"
+          }
+        },
+        "title": "私有池设置",
+        "type": "object"
+      },
+      "SpotBidPrice": {
+        "properties": {
+          "BidPrice": {
+            "backendName": "bidPrice",
+            "description_en": "The maximum hourly bid price for the instance, with up to three decimal places. This parameter applies only when `SpotStrategy` is set to `SpotWithPriceLimit`",
+            "description_zh": "实例的每小时最高出价。支持最大3位小数，参数SpotStrategy=SpotWithPriceLimit时，该参数生效",
+            "example": "1000.0",
+            "format": "double",
+            "title": "实例的每小时最高出价。",
+            "type": "number"
+          },
+          "InstanceType": {
+            "backendName": "instanceType",
+            "description_en": "The ECS instance type",
+            "description_zh": "ECS实例类型",
+            "example": "ecs.g7.2xlarge",
+            "title": "实例类型。",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SystemDisk": {
+        "properties": {
+          "Category": {
+            "backendName": "category",
+            "description_en": "The type of the system disk. Valid values:\n\n`cloud_efficiency`: Ultra Disk.\n\n`cloud_ssd`: SSD Cloud Disk.\n\n`cloud_essd`: ESSD.\n\n`cloud`: Basic Disk",
+            "description_zh": "磁盘类型。取值范围：\ncloud_efficiency：高效云盘。\ncloud_ssd：SSD云盘。\ncloud_essd：ESSD云盘。\ncloud：普通云盘",
+            "example": "cloud_essd",
+            "required": true,
+            "title": "磁盘类型。",
+            "type": "string"
+          },
+          "Count": {
+            "backendName": "count",
+            "description_en": "Specifies the number of system disks on each node. Default value: 1",
+            "description_zh": "每个节点系统盘数量，默认值为1",
+            "example": "1",
+            "format": "int32",
+            "title": "每个节点磁盘数量。",
+            "type": "integer"
+          },
+          "PerformanceLevel": {
+            "backendName": "performanceLevel",
+            "description_en": "The performance level of the ESSD. This parameter is valid only when `Category` is set to `cloud_essd`. Valid values:\n\n`PL0`: Up to 10,000 random read/write IOPS per disk.\n\n`PL1` (default): Up to 50,000 random read/write IOPS per disk.\n\n`PL2`: Up to 100,000 random read/write IOPS per disk.\n\n`PL3`: Up to 1,000,000 random read/write IOPS per disk",
+            "description_zh": "创建ESSD云盘作为系统盘使用时，设置云盘的性能等级。取值范围：\nPL0：单盘最高随机读写IOPS 1万。\nPL1（默认）：单盘最高随机读写IOPS 5万。\nPL2：单盘最高随机读写IOPS 10万。\nPL3：单盘最高随机读写IOPS 100万。\n\n默认值：PL1",
+            "example": "PL1",
+            "title": "ESSD云盘性能级别。",
+            "type": "string"
+          },
+          "Size": {
+            "backendName": "size",
+            "description_en": "The size of the system disk, in GB",
+            "description_zh": "单位GB",
+            "example": "60",
+            "format": "int32",
+            "required": true,
+            "title": "磁盘大小。",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Queries the node groups in an EMR cluster",
+  "description_zh": "查询EMR集群节点组列表",
+  "kebab_example": "aliyun emr list-node-groups --biz-region-id cn-hangzhou --cluster-id c-b933c5aac8fe0000 --region cn-hangzhou",
+  "method": "GET|POST",
+  "multi_version": false,
+  "name": "ListNodeGroups",
+  "operation": {
+    "action": "ListNodeGroups",
+    "api_style": "RPC",
+    "api_version": "2021-03-20",
+    "method": "POST",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "list",
+    "url": ""
+  },
+  "parameters": [
+    {
+      "example": "cn-hangzhou",
+      "help_en": "The region ID",
+      "help_zh": "地域ID",
+      "location": "query",
+      "name": "region_id",
+      "options": [
+        "--biz-region-id"
+      ],
+      "raw_name": "RegionId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "c-b933c5aac8fe****",
+      "help_en": "The cluster ID",
+      "help_zh": "集群ID",
+      "location": "query",
+      "name": "cluster_id",
+      "options": [
+        "--cluster-id"
+      ],
+      "raw_name": "ClusterId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "DD6B1B2A-5837-5237-ABE4-FF0C89568980",
+      "help_en": "The token that marks the start of the query. Leave this parameter empty to start from the beginning",
+      "help_zh": "标记当前开始读取的位置，置空表示从头开始",
+      "location": "query",
+      "name": "next_token",
+      "options": [
+        "--next-token"
+      ],
+      "raw_name": "NextToken",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "20",
+      "help_en": "The maximum number of records to return in a single request. Valid values: 1 to 100",
+      "help_zh": "一次获取的最大记录数。取值范围：1~100",
+      "location": "query",
+      "name": "max_results",
+      "options": [
+        "--max-results"
+      ],
+      "raw_name": "MaxResults",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "element": {
+        "type": "string"
+      },
+      "example": "c-b933c5aac8fe****",
+      "help_en": "A list of node group IDs. The number of array elements N can range from 1 to 100",
+      "help_zh": "节点组ID列表。数组元素个数N取值范围：1~100",
+      "location": "query",
+      "name": "node_group_ids",
+      "options": [
+        "--node-group-ids"
+      ],
+      "param_style": "flat",
+      "raw_name": "NodeGroupIds",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "element": {
+        "type": "string"
+      },
+      "example": "DD6B1B2A-5837-5237-ABE4-FF0C89568980",
+      "help_en": "A list of node group names. The number of array elements N can range from 1 to 100",
+      "help_zh": "节点组名称列表。数组元素个数N取值范围：1~100",
+      "location": "query",
+      "name": "node_group_names",
+      "options": [
+        "--node-group-names"
+      ],
+      "param_style": "flat",
+      "raw_name": "NodeGroupNames",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "element": {
+        "type": "string"
+      },
+      "example": "20",
+      "help_en": "A list of node group types. The number of array elements N can range from 1 to 100",
+      "help_zh": "节点组类型列表。数组元素个数N取值范围：1~100",
+      "location": "query",
+      "name": "node_group_types",
+      "options": [
+        "--node-group-types"
+      ],
+      "param_style": "flat",
+      "raw_name": "NodeGroupTypes",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "element": {
+        "type": "string"
+      },
+      "example": "[\"CORE\"]",
+      "help_en": "The state of the node group. The number of array elements N can range from 1 to 100",
+      "help_zh": "节点组状态。数组元素个数N取值范围：1~100",
+      "location": "query",
+      "name": "node_group_states",
+      "options": [
+        "--node-group-states"
+      ],
+      "param_style": "flat",
+      "raw_name": "NodeGroupStates",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "help_en": "The ZoneId",
+      "help_zh": "The ZoneId",
+      "location": "query",
+      "name": "zone_id",
+      "options": [
+        "--zone-id"
+      ],
+      "raw_name": "ZoneId",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "",
+  "product_code": "Emr",
+  "protocol": "HTTP|HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "The response data",
+        "description_zh": "返回数据",
+        "properties": {
+          "MaxResults": {
+            "backendName": "maxResults",
+            "description_en": "The maximum number of entries returned for the request",
+            "description_zh": "本次请求所返回的最大记录条数",
+            "example": "20",
+            "format": "int32",
+            "title_en": "本次请求所返回的最大记录条数。",
+            "title_zh": "本次请求所返回的最大记录条数。",
+            "type": "integer"
+          },
+          "NextToken": {
+            "backendName": "nextToken",
+            "description_en": "The token to retrieve the next page of results. An empty value indicates that all results have been returned",
+            "description_zh": "返回读取到的数据位置。空代表数据已经读取完毕",
+            "example": "DD6B1B2A-5837-5237-ABE4-FF0C89568980",
+            "title_en": "返回读取到的数据位置。",
+            "title_zh": "返回读取到的数据位置。",
+            "type": "string"
+          },
+          "NodeGroups": {
+            "backendName": "data",
+            "description_en": "An array of node groups",
+            "description_zh": "节点组数组",
+            "itemName": "NodeGroup",
+            "items": {
+              "$ref": "#/components/schemas/NodeGroup",
+              "description_en": "The node group",
+              "description_zh": "节点组"
+            },
+            "type": "array"
+          },
+          "RequestId": {
+            "backendName": "requestId",
+            "description_en": "The request ID",
+            "description_zh": "请求ID",
+            "example": "DD6B1B2A-5837-5237-ABE4-FF0C8944****",
+            "title_en": "请求ID。",
+            "title_zh": "请求ID。",
+            "type": "string"
+          },
+          "TotalCount": {
+            "backendName": "totalCount",
+            "description_en": "The total number of entries that match the query conditions",
+            "description_zh": "本次请求条件下的数据总量",
+            "example": "200",
+            "format": "int32",
+            "title_en": "本次请求条件下的数据总量。",
+            "title_zh": "本次请求条件下的数据总量。",
+            "type": "integer"
+          }
+        },
+        "title_en": "返回数据",
+        "title_zh": "返回数据",
+        "type": "object"
+      }
+    }
+  }
+}

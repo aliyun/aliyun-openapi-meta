@@ -1,0 +1,2243 @@
+{
+  "camel_example": "aliyun cs GET /clusters/cc0f87de0b8fb403f86e10e204f830000/nodepools --region cn-hangzhou --header \"Content-Type=application/json\"",
+  "cmd_full_name": "cs describe-cluster-node-pools",
+  "cmd_name": "describe-cluster-node-pools",
+  "components": {
+    "schemas": {
+      "DiskInit": {
+        "description_en": "块设备初始化配置",
+        "description_zh": "块设备初始化配置",
+        "properties": {
+          "disk_name": {
+            "backendName": "disk_name",
+            "description_zh": "唯一标识该节点池中的一块盘。\n当local_disk为false时，必须与scaling_group.data_disks中的某一个disk_name匹配；\n当local_disk为true时，必须与scaling_group.data_disks中的任意disk_name不同",
+            "example": "disk0",
+            "required": true,
+            "title": "唯一标识该节点池中的一块盘。\n- 当local_disk为false时，必须与scaling_group.data_disks中的某一个disk_name匹配；\n- 当local_disk为true时，必须与scaling_group.data_disks中的任意disk_name不同。",
+            "type": "string"
+          },
+          "local_disk": {
+            "backendName": "local_disk",
+            "description_zh": "该配置为本地盘的配置。设置为true时\n通过ECS DiskName和符号链接匹配不上时，可匹配本地盘，\n开机时若检测到未初始化则会重新初始化，\n要求mount_target和mkfs_type必须同时设置或不设置。\n当和mount_for_runtime组合使用时，若本地盘重新初始化，该节点需要移出再重新导入节点池",
+            "title": "该配置为本地盘的配置。设置为true时\n- 通过ECS DiskName和符号链接匹配不上时，可匹配本地盘，\n- 开机时若检测到未初始化则会重新初始化，\n- 要求mount_target和mkfs_type必须同时设置或不设置。\n- 当和mount_for_runtime组合使用时，若本地盘重新初始化，该节点需要移出再重新导入节点池。",
+            "type": "boolean"
+          },
+          "mkfs_type": {
+            "backendName": "mkfs_type",
+            "description_zh": "自动格式化文件系统的类型。留空表示不格式化",
+            "example": "ext4",
+            "title": "自动格式化文件系统的类型。留空表示不格式化。",
+            "type": "string"
+          },
+          "mount_for_runtime": {
+            "backendName": "mount_for_runtime",
+            "description_zh": "容器运行时数据存储到该盘",
+            "title": "容器运行时数据存储到该盘。",
+            "type": "boolean"
+          },
+          "mount_target": {
+            "backendName": "mount_target",
+            "description_zh": "挂载目录，留空则不挂载",
+            "example": "/mnt/disk0",
+            "title": "挂载目录，留空则不挂载。",
+            "type": "string"
+          }
+        },
+        "title": "块设备初始化配置",
+        "type": "object"
+      },
+      "Hugepage": {
+        "properties": {
+          "khugepagedAllocSleepMillisecs": {
+            "backendName": "khugepagedAllocSleepMillisecs",
+            "format": "int64",
+            "type": "integer"
+          },
+          "khugepagedDefrag": {
+            "backendName": "khugepagedDefrag",
+            "format": "int64",
+            "type": "integer"
+          },
+          "khugepagedPagesToScan": {
+            "backendName": "khugepagedPagesToScan",
+            "format": "int64",
+            "type": "integer"
+          },
+          "khugepagedScanSleepMillisecs": {
+            "backendName": "khugepagedScanSleepMillisecs",
+            "format": "int64",
+            "type": "integer"
+          },
+          "transparentDefrag": {
+            "backendName": "transparentDefrag",
+            "type": "string"
+          },
+          "transparentEnabled": {
+            "backendName": "transparentEnabled",
+            "title": "",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "data_disk": {
+        "description_en": "The configurations of the node data disk",
+        "description_zh": "节点数据盘配置",
+        "properties": {
+          "auto_format": {
+            "backendName": "auto_format",
+            "deprecated": true,
+            "description_en": "Specifies whether to automatically mount the data disk",
+            "description_zh": "是否挂载",
+            "example": "true",
+            "title": "是否挂载。",
+            "type": "boolean"
+          },
+          "auto_snapshot_policy_id": {
+            "backendName": "auto_snapshot_policy_id",
+            "description_en": "The ID of the automatic snapshot policy. The system performs automatic backup for a cloud disk based on the specified automatic snapshot policy.\n\nBy default, this parameter is empty, which indicates that automatic backup is disabled",
+            "description_zh": "选择自动快照策略ID，云盘会按照快照策略自动备份。\n\n默认值：空，不自动备份",
+            "example": "sp-2zej1nogjvovnz4z****",
+            "title": "开启云盘备份时的自动备份策略。",
+            "type": "string"
+          },
+          "bursting_enabled": {
+            "backendName": "bursting_enabled",
+            "description_en": "Specifies whether to enable the burst feature for the data disk. Valid values:\n\n`true`: enables the burst feature.\n`false`: disables the burst feature for the data disk.\n\nThis parameter is available only if `DiskCategory` is set to `cloud_auto`. For more information, see [ESSD AutoPL disks]（https://help.aliyun.com/document_detail/368372.html）",
+            "description_zh": "数据盘是否开启Burst（性能突发）。\n取值：\n`true`：是。\n`false`：否。\n\n当`DiskCategory`取值为`cloud_auto`时才支持设置该参数。更多信息，请参见[ESSD AutoPL云盘]（https://help.aliyun.com/document_detail/368372.html）",
+            "example": "true",
+            "title": "数据盘是否开启Burst（性能突发），磁盘类型为cloud_auto时配置。",
+            "type": "boolean"
+          },
+          "category": {
+            "backendName": "category",
+            "description_en": "The category of data disk. Valid values:\n\n`cloud`: basic disk.\n`cloud_efficiency`: ultra disk\n`cloud_ssd`: standard SSD.\n`cloud_essd`: Enterprise ESSD (ESSD).\n`cloud_auto`: ESSD AutoPL disk.\n`cloud_essd_entry`: ESSD Entry disk.\n`elastic_ephemeral_disk_premium`: premium elastic ephemeral disk.\n`elastic_ephemeral_disk_standard`: standard elastic ephemeral disk.\n\nDefault value: `cloud_efficiency`",
+            "description_zh": "数据盘类型。取值：\n\n`cloud`：普通云盘。\n`cloud_efficiency`：高效云盘。\n`cloud_ssd`：SSD云盘。\n`cloud_essd`：ESSD云盘。\n`cloud_auto`：ESSD AutoPL云盘。\n`cloud_essd_entry`：ESSD Entry 云盘。\n`elastic_ephemeral_disk_premium`：弹性临时盘高级版。\n`elastic_ephemeral_disk_standard`：弹性临时盘标准版。\n\n默认值：`cloud_efficiency`",
+            "example": "cloud_ssd",
+            "title": "数据盘类型",
+            "type": "string"
+          },
+          "device": {
+            "backendName": "device",
+            "description_en": "The mount target of the data disk. If you do not specify this parameter, the system automatically assigns a mount target when you create an Elastic Compute Service (ECS) instance. Valid values: /dev/xvdb to /dev/xvdz",
+            "description_zh": "数据盘的挂载点。如果您没有指定该参数，则默认在自动创建ECS实例时由系统分配，从/dev/xvdb开始，到/dev/xvdz结束",
+            "example": "/dev/xvdb",
+            "title": "数据盘的挂载点。如果您没有指定该参数，则默认在自动创建ECS实例时由系统分配，从/dev/xvdb开始，到/dev/xvdz结束。",
+            "type": "string"
+          },
+          "disk_name": {
+            "backendName": "disk_name",
+            "description_en": "The data disk name. The name must be 2 to 128 characters in length. It must start with a letter and cannot start with http:// or https://. The name can contain letters, digits, colons (:), underscores (_), and hyphens (-)",
+            "description_zh": "数据盘名称。长度为2~128个英文或中文字符。必须以大小字母或中文开头，不能以http://或https://开头。可以包含数字、半角冒号（:）、下划线（_）或者短划线（-）",
+            "example": "DataDiskName",
+            "title": "数据盘名称。长度为2~128个英文或中文字符。必须以大小字母或中文开头，不能以http://或https://开头。可以包含数字、半角冒号（:）、下划线（_）或者短划线（-）。",
+            "type": "string"
+          },
+          "encrypted": {
+            "backendName": "encrypted",
+            "description_en": "Specifies whether to encrypt the data disk. Valid values:\n\n`true`: encrypts the data disk.\n`false`: does not encrypt the data disk.\n\nDefault value: `false`",
+            "description_zh": "是否对数据盘加密。取值：\n\n`true`：对数据盘加密。\n`false`：不对数据盘加密。\n\n默认值：`false`",
+            "example": "true",
+            "title": "是否对数据盘加密。",
+            "type": "string"
+          },
+          "file_system": {
+            "backendName": "file_system",
+            "deprecated": true,
+            "description_en": "The file system that is mounted. This parameter takes effect only if auto_format is set to true. Valid values: ext4 and xfs",
+            "description_zh": "挂载文件系统类型。auto_format为true时生效，可选值：[ext4,xfs]",
+            "example": "ext4",
+            "title": "挂载文件系统类型。auto_format为true时生效，可选值：[ext4,xfs]",
+            "type": "string"
+          },
+          "kms_key_id": {
+            "backendName": "kms_key_id",
+            "description_en": "The ID of the Key Management Service (KMS) key that is used to encrypt the data disk",
+            "description_zh": "数据盘对应的KMS密钥ID",
+            "example": "0e478b7a-4262-4802-b8cb-00d3fb40****",
+            "title": "数据盘对应的KMS密钥ID",
+            "type": "string"
+          },
+          "mount_target": {
+            "backendName": "mount_target",
+            "deprecated": true,
+            "description_en": "The path to which the data disk is mounted. You must specify a valid path",
+            "description_zh": "挂载路径。需要为合法文件路径",
+            "example": "/mnt/path1",
+            "title": "挂载路径。auto_format为true时生效",
+            "type": "string"
+          },
+          "performance_level": {
+            "backendName": "performance_level",
+            "description_en": "The performance level (PL) of the data disk. This parameter takes effect only for an ESSD. This parameter is related to the disk size. For more information, see [ESSDs]（https://help.aliyun.com/document_detail/122389.html）",
+            "description_zh": "节点数据盘磁盘性能等级，仅对ESSD磁盘生效。磁盘性能等级和磁盘大小有关。更多信息，请参见[ESSD云盘]（https://help.aliyun.com/document_detail/122389.html）",
+            "example": "PL1",
+            "title": "数据盘磁盘性能，只针对ESSD磁盘生效",
+            "type": "string"
+          },
+          "provisioned_iops": {
+            "backendName": "provisioned_iops",
+            "description_en": "The preset IOPS of the data disk. Valid values: 0 to min{50,000, 1,000 × Capacity - Baseline IOPS}. Baseline IOPS = min{1,800 + 50 × Capacity, 50,000}.\n\nThis parameter is available only if `DiskCategory` is set to `cloud_auto`. For more information, see [ESSD AutoPL disks]（https://help.aliyun.com/document_detail/368372.html）",
+            "description_zh": "数据盘预配置的读写IOPS。可能值：0~min{50,000, 1000*容量-基准性能}。\n基准性能=min{1,800+50*容量, 50000}。\n\n当`DiskCategory`取值为`cloud_auto`时才支持设置该参数。更多信息，请参见[ESSD AutoPL云盘]（https://help.aliyun.com/document_detail/368372.html）",
+            "example": "1000",
+            "format": "int64",
+            "title": "数据盘预配置的读写IOPS，磁盘类型为cloud_auto时配置。",
+            "type": "integer"
+          },
+          "size": {
+            "backendName": "size",
+            "description_en": "The size of the data disk. Unit: GiB.\n\nValid values: 40 to 32768.\n\nDefault value: `120`",
+            "description_zh": "数据盘大小，单位为GiB。\n\n取值范围：[40,32768]。\n\n默认值：`120`",
+            "example": "40",
+            "format": "int64",
+            "title": "数据盘大小，取值范围：40～32767",
+            "type": "integer"
+          },
+          "snapshot_id": {
+            "backendName": "snapshot_id",
+            "description_en": "The ID of the snapshot that you want to use to create the data disk. If this parameter is specified, the specified size of the data disk is ignored. The size of the disk equals the size of the specified snapshot. If the snapshot was created on or before July 15, 2013, the API request is rejected and the InvalidSnapshot.TooOld message is returned",
+            "description_zh": "创建数据盘时使用的快照。指定该参数后，DataDisks.Size会被忽略，实际创建的磁盘大小为指定快照的大小。如果该快照创建于2013年7月15日或之前，调用会被拒绝，返回参数中会提示InvalidSnapshot.TooOld",
+            "example": "s-280s7****",
+            "title": "创建数据盘时使用的快照。指定该参数后，DataDisks.Size会被忽略，实际创建的磁盘大小为指定快照的大小。如果该快照创建于2013年7月15日或之前，调用会被拒绝，返回参数中会提示InvalidSnapshot.TooOld。",
+            "type": "string"
+          }
+        },
+        "title": "节点数据盘配置",
+        "type": "object"
+      },
+      "instance_patterns": {
+        "description_en": "The instance attribute configuration object",
+        "description_zh": "实例属性",
+        "properties": {
+          "architectures": {
+            "backendName": "architectures",
+            "deprecated": true,
+            "description_en": "[This parameter is deprecated and replaced by cpu_architectures] The architectures of instance types",
+            "description_zh": "【该参数已废弃，使用cpu_architectures参数替代】实例规格所属的架构类型",
+            "items": {
+              "description_en": "[This parameter is deprecated and replaced by cpu_architectures] The architecture of the instance type",
+              "description_zh": "【该参数已废弃，使用cpu_architectures参数替代】实例规格所属的架构类型",
+              "example": "X86",
+              "type": "string"
+            },
+            "title": "【该参数已废弃，请使用cpu_architectures参数替代】实例规格所属的架构类型。",
+            "type": "array"
+          },
+          "burst_performance_option": {
+            "backendName": "burst_performance_option",
+            "deprecated": true,
+            "description_en": "[This parameter is deprecated] Specifies whether to include burstable instance types",
+            "description_zh": "【该参数已废弃，请勿使用】是否为性能突发实例规格",
+            "example": "Exclude",
+            "title": "【该参数已废弃】是否为性能突发实例规格。",
+            "type": "string"
+          },
+          "core": {
+            "backendName": "core",
+            "deprecated": true,
+            "description_en": "[This parameter is deprecated and replaced by cores] The number of vCores provided by the instance type",
+            "description_zh": "【该参数已废弃，使用cores参数替代】实例规格的 vCPU 内核数目",
+            "example": "4",
+            "format": "int64",
+            "title": "【该参数已废弃，请使用cores参数替代】实例规格的 vCPU 内核数目。",
+            "type": "integer",
+            "visibility": "Public"
+          },
+          "cores": {
+            "backendName": "cores",
+            "description_en": "The number of vCPU cores for the instance type",
+            "description_zh": "实例规格的 vCPU 内核数目",
+            "example": "4",
+            "format": "int64",
+            "title": "实例规格的 vCPU 内核数目。",
+            "type": "integer"
+          },
+          "cpu_architectures": {
+            "backendName": "cpu_architectures",
+            "description_en": "The CPU architecture of the instance type",
+            "description_zh": "实例的CPU架构",
+            "items": {
+              "description_en": "The CPU architecture of the instance type",
+              "description_zh": "实例的CPU架构",
+              "example": "X86",
+              "type": "string"
+            },
+            "title": "实例的CPU架构",
+            "type": "array"
+          },
+          "excluded_instance_types": {
+            "backendName": "excluded_instance_types",
+            "description_en": "The instance type that you want to exclude",
+            "description_zh": "需要排除的实例规格",
+            "items": {
+              "description_en": "The instance type that you want to exclude",
+              "description_zh": "需要排除的实例规格",
+              "example": "ecs.c6.large",
+              "type": "string"
+            },
+            "title": "需要排除的实例规格。",
+            "type": "array"
+          },
+          "instance_categories": {
+            "backendName": "instance_categories",
+            "description_en": "The type of the instance",
+            "description_zh": "实例分类",
+            "items": {
+              "description_en": "The type of the instance",
+              "description_zh": "实例分类",
+              "example": "General-purpose",
+              "type": "string"
+            },
+            "title": "实例分类",
+            "type": "array"
+          },
+          "instance_family_level": {
+            "backendName": "instance_family_level",
+            "description_en": "The instance family level",
+            "description_zh": "实例规格族级别",
+            "example": "EnterpriseLevel",
+            "title": "实例规格族级别。",
+            "type": "string"
+          },
+          "instance_type_families": {
+            "backendName": "instance_type_families",
+            "description_en": "The specified instance family",
+            "description_zh": "指定实例规格族",
+            "items": {
+              "description_en": "The specified instance family",
+              "description_zh": "指定实例规格族",
+              "example": "ecs.c6",
+              "type": "string"
+            },
+            "title": "指定实例规格族。",
+            "type": "array"
+          },
+          "max_cpu_cores": {
+            "backendName": "max_cpu_cores",
+            "description_en": "The maximum vCPU cores allowed for the instance type",
+            "description_zh": "实例规格的最大vCPU内核数目",
+            "example": "8",
+            "format": "int64",
+            "title": "实例规格的最大vCPU内核数目",
+            "type": "integer"
+          },
+          "max_memory_size": {
+            "backendName": "max_memory_size",
+            "description_en": "The maximum allowed memory size. Unit: GiB",
+            "description_zh": "实例规格的最大内存。单位：GiB",
+            "example": "16",
+            "format": "float",
+            "title": "实例规格的最大内存。单位：GiB。",
+            "type": "number"
+          },
+          "max_price": {
+            "backendName": "max_price",
+            "deprecated": true,
+            "description_en": "[This parameter is deprecated] The maximum hourly price of the instance",
+            "description_zh": "【该参数已废弃，请勿使用】实例每小时最高价格",
+            "example": "2",
+            "format": "float",
+            "title": "【该参数已废弃】实例每小时最高价格。",
+            "type": "number"
+          },
+          "maximum_gpu_amount": {
+            "backendName": "maximum_gpu_amount",
+            "description_en": "The maximum allowed number of GPUs per instance",
+            "description_zh": "期望最大 GPU 数目",
+            "example": "8",
+            "format": "int64",
+            "title": "期望最大 GPU 数目。",
+            "type": "integer"
+          },
+          "memory": {
+            "backendName": "memory",
+            "description_en": "The memory size of the instance type. Unit: GiB",
+            "description_zh": "实例规格的内存大小，单位为 GiB",
+            "example": "8",
+            "format": "float",
+            "title": "实例规格的内存大小，单位为 GiB。",
+            "type": "number"
+          },
+          "min_cpu_cores": {
+            "backendName": "min_cpu_cores",
+            "description_en": "The minimum vCPU cores required for the instance type",
+            "description_zh": "实例规格的最小vCPU内核数目",
+            "example": "4",
+            "format": "int64",
+            "title": "实例规格的最小vCPU内核数目",
+            "type": "integer"
+          },
+          "min_memory_size": {
+            "backendName": "min_memory_size",
+            "description_en": "The minimum required memory size. Unit: GiB",
+            "description_zh": "实例规格的最小内存。单位：GiB",
+            "example": "8",
+            "format": "float",
+            "title": "实例规格的最小内存。单位：GiB。",
+            "type": "number"
+          },
+          "minimum_eni_ipv6_address_quantity": {
+            "backendName": "minimum_eni_ipv6_address_quantity",
+            "description_en": "The minimum required number of IPv6 addresses per ENI",
+            "description_zh": "期望最小单块弹性网卡的 IPv6 地址数",
+            "example": "1",
+            "format": "int64",
+            "title": "期望最小单块弹性网卡的 IPv6 地址数。",
+            "type": "integer"
+          },
+          "minimum_eni_private_ip_address_quantity": {
+            "backendName": "minimum_eni_private_ip_address_quantity",
+            "description_en": "The minimum required number of IPv4 addresses per ENI",
+            "description_zh": "期望最小单块弹性网卡的 IPv4 地址数",
+            "example": "10",
+            "format": "int64",
+            "title": "期望最小单块弹性网卡的 IPv4 地址数。",
+            "type": "integer"
+          },
+          "minimum_eni_quantity": {
+            "backendName": "minimum_eni_quantity",
+            "description_en": "The minimum required number of elastic network interfaces (ENIs) per instance",
+            "description_zh": "期望最小支持挂载的弹性网卡数",
+            "example": "3",
+            "format": "int64",
+            "title": "期望最小支持挂载的弹性网卡数。",
+            "type": "integer"
+          }
+        },
+        "title": "实例属性配置。",
+        "type": "object"
+      },
+      "kubelet_config": {
+        "description_en": "The supported kubelet configurations",
+        "description_zh": "支持的kubelet配置",
+        "properties": {
+          "allowedUnsafeSysctls": {
+            "backendName": "allowedUnsafeSysctls",
+            "description_en": "The whitelisted unsafe sysctls",
+            "description_zh": "允许的sysctl模式白名单",
+            "items": {
+              "description_en": "The whitelisted unsafe sysctls",
+              "description_zh": "允许的sysctl模式白名单",
+              "example": "net.core.somaxconn",
+              "type": "string"
+            },
+            "title": "允许的sysctl模式白名单。",
+            "type": "array"
+          },
+          "clusterDNS": {
+            "backendName": "clusterDNS",
+            "description_en": "The list of IP addresses of the DNS servers",
+            "description_zh": "集群 DNS 服务器的 IP 地址的列表",
+            "items": {
+              "description_en": "A DNS server IP address",
+              "description_zh": "集群 DNS 服务器的 IP 地址",
+              "example": "127.0.xx.xx",
+              "type": "string"
+            },
+            "title": "集群 DNS 服务器的 IP 地址的列表。",
+            "type": "array"
+          },
+          "containerLogMaxFiles": {
+            "backendName": "containerLogMaxFiles",
+            "description_en": "The maximum number of log files that can be stored in each container",
+            "description_zh": "每个容器可以存在的日志文件个数上限",
+            "example": "5",
+            "format": "int64",
+            "title": "每个容器可以存在的日志文件个数上限。",
+            "type": "integer"
+          },
+          "containerLogMaxSize": {
+            "backendName": "containerLogMaxSize",
+            "description_en": "The maximum size that a log file can reach before it is rotated",
+            "description_zh": "日志文件被轮转之前可以到达的最大大小",
+            "example": "10Mi",
+            "title": "日志文件被轮转之前可以到达的最大大小。",
+            "type": "string"
+          },
+          "containerLogMaxWorkers": {
+            "backendName": "containerLogMaxWorkers",
+            "description_en": "The maximum number of concurrent programs that rotate logs",
+            "description_zh": "指定执行日志轮换操作所需的并发工作程序的最大数量",
+            "example": "1",
+            "format": "int32",
+            "title": "指定执行日志轮换操作所需的并发工作程序的最大数量。",
+            "type": "integer"
+          },
+          "containerLogMonitorInterval": {
+            "backendName": "containerLogMonitorInterval",
+            "description_en": "The duration at which the container logs are monitored for rotating logs",
+            "description_zh": "指定监视容器日志以执行日志轮转操作的持续时间",
+            "example": "10s",
+            "title": "指定监视容器日志以执行日志轮转操作的持续时间。",
+            "type": "string"
+          },
+          "cpuCFSQuota": {
+            "backendName": "cpuCFSQuota",
+            "description_en": "Specifies whether to use Completely Fair Scheduler (CFS) quota to enforce pod CPU limits",
+            "description_zh": "CPU CFS配额约束开关",
+            "example": "true",
+            "title": "CPU CFS配额约束开关。",
+            "type": "boolean"
+          },
+          "cpuCFSQuotaPeriod": {
+            "backendName": "cpuCFSQuotaPeriod",
+            "description_en": "The duration for the CPU CFS quota",
+            "description_zh": "CPU CFS配额周期值",
+            "example": "100ms",
+            "title": "CPU CFS配额周期值。",
+            "type": "string"
+          },
+          "cpuManagerPolicy": {
+            "backendName": "cpuManagerPolicy",
+            "description_en": "The CPU management policy used by kubelet",
+            "description_zh": "CPU管理器策略",
+            "example": "none",
+            "title": "CPU管理器策略。",
+            "type": "string"
+          },
+          "eventBurst": {
+            "backendName": "eventBurst",
+            "description_en": "The maximum number of burst peaks for the event records",
+            "description_zh": "事件记录的个数的突发峰值上限",
+            "example": "10",
+            "format": "int64",
+            "title": "事件记录的个数的突发峰值上限。",
+            "type": "integer"
+          },
+          "eventRecordQPS": {
+            "backendName": "eventRecordQPS",
+            "description_en": "Specifies the maximum number of events that can be generated per second",
+            "description_zh": "每秒可生成的事件数量",
+            "example": "5",
+            "format": "int64",
+            "title": "每秒可生成的事件数量。",
+            "type": "integer"
+          },
+          "evictionHard": {
+            "backendName": "evictionHard",
+            "description_en": "A set of eviction thresholds that will trigger a pod eviction if met",
+            "description_zh": "触发Pod驱逐操作的一组硬性门限",
+            "title": "触发Pod驱逐操作的一组硬性门限。",
+            "type": "object"
+          },
+          "evictionSoft": {
+            "backendName": "evictionSoft",
+            "description_en": "A set of eviction thresholds that will trigger a pod eviction if met over a corresponding grace period",
+            "description_zh": "设置一组驱逐阈值",
+            "title": "设置一组驱逐阈值。",
+            "type": "object"
+          },
+          "evictionSoftGracePeriod": {
+            "backendName": "evictionSoftGracePeriod",
+            "description_en": "A set of grace periods for eviction thresholds",
+            "description_zh": "设置一组驱逐宽限期",
+            "title": "设置一组驱逐宽限期。",
+            "type": "object"
+          },
+          "featureGates": {
+            "backendName": "featureGates",
+            "description_en": "A feature gate that is used to enable an experimental feature",
+            "description_zh": "特性开关，用来开启实验性功能的配置",
+            "title": "特性开关，用来开启实验性功能的配置。",
+            "type": "object"
+          },
+          "imageGCHighThresholdPercent": {
+            "backendName": "imageGCHighThresholdPercent",
+            "description_en": "The percentage of disk usage after which image garbage collection always runs",
+            "description_zh": "镜像用量超过此阈值，则镜像垃圾回收会持续执行",
+            "example": "85",
+            "format": "int32",
+            "title": "镜像用量超过此阈值，则镜像垃圾回收会持续执行。",
+            "type": "integer"
+          },
+          "imageGCLowThresholdPercent": {
+            "backendName": "imageGCLowThresholdPercent",
+            "description_en": "The percentage of disk usage before which image garbage collection never runs",
+            "description_zh": "镜像用量低于此阈值时不会执行镜像垃圾回收操作",
+            "example": "80",
+            "format": "int32",
+            "title": "镜像用量低于此阈值时不会执行镜像垃圾回收操作。",
+            "type": "integer"
+          },
+          "kubeAPIBurst": {
+            "backendName": "kubeAPIBurst",
+            "description_en": "The maximum number of burst requests sent to the API server per second",
+            "description_zh": "每秒发送到API Server的突发请求数量上限",
+            "example": "10",
+            "format": "int64",
+            "title": "每秒发送到API Server的突发请求数量上限。",
+            "type": "integer"
+          },
+          "kubeAPIQPS": {
+            "backendName": "kubeAPIQPS",
+            "description_en": "The QPS when kubelet communicates with the Kubernetes API server",
+            "description_zh": "与API Server通信的每秒查询个数",
+            "example": "5",
+            "format": "int64",
+            "title": "与API Server通信的每秒查询个数。",
+            "type": "integer"
+          },
+          "kubeReserved": {
+            "backendName": "kubeReserved",
+            "description_en": "A set of configurations that specify resources reserved for the Kubernetes system",
+            "description_zh": "kubernetes系统预留的资源配置",
+            "title": "kubernetes系统预留的资源配置。",
+            "type": "object"
+          },
+          "maxPods": {
+            "backendName": "maxPods",
+            "description_en": "The maximum number of running pods",
+            "description_zh": "运行的Pod个数上限",
+            "example": "110",
+            "format": "int64",
+            "title": "运行的Pod个数上限。",
+            "type": "integer"
+          },
+          "memoryManagerPolicy": {
+            "backendName": "memoryManagerPolicy",
+            "description_en": "The name of the policy to be used by the memory manager",
+            "description_zh": "内存管理器要使用的策略",
+            "example": "none",
+            "title": "内存管理器要使用的策略。",
+            "type": "string"
+          },
+          "podPidsLimit": {
+            "backendName": "podPidsLimit",
+            "description_en": "The maximum number of processes per pod",
+            "description_zh": "Pod 中可使用的 PID 个数上限",
+            "example": "-1",
+            "format": "int64",
+            "title": "Pod 中可使用的 PID 个数上限。",
+            "type": "integer"
+          },
+          "readOnlyPort": {
+            "backendName": "readOnlyPort",
+            "description_en": "The read-only port",
+            "description_zh": "只读端口号",
+            "example": "0",
+            "format": "int64",
+            "title": "只读端口号。",
+            "type": "integer"
+          },
+          "registryBurst": {
+            "backendName": "registryBurst",
+            "description_en": "The maximum number of images that can be pulled from bursty image pulls",
+            "description_zh": "突发性镜像拉取的个数上限",
+            "example": "10",
+            "format": "int64",
+            "title": "突发性镜像拉取的个数上限。",
+            "type": "integer"
+          },
+          "registryPullQPS": {
+            "backendName": "registryPullQPS",
+            "description_en": "The maximum queries per second (QPS) of the image repository",
+            "description_zh": "镜像仓库的QPS上限",
+            "example": "5",
+            "format": "int64",
+            "title": "镜像仓库的QPS上限。",
+            "type": "integer"
+          },
+          "reservedMemory": {
+            "backendName": "reservedMemory",
+            "description_en": "A list of configurations that specify memory reservations for non-uniform memory access (NUMA) nodes",
+            "description_zh": "为NUMA节点预留内存",
+            "items": {
+              "description_en": "The memory limit",
+              "description_zh": "内存资源限制",
+              "properties": {
+                "limits": {
+                  "backendName": "limits",
+                  "description_en": "The memory limit",
+                  "description_zh": "内存资源限制",
+                  "example": "{\"memory\": \"1Gi\"}",
+                  "title": "资源列表。",
+                  "type": "object"
+                },
+                "numaNode": {
+                  "backendName": "numaNode",
+                  "description_en": "The NUMA node identifier",
+                  "description_zh": "NUMA 节点",
+                  "example": "0",
+                  "format": "int32",
+                  "title": "NUMA 节点。",
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
+            "title": "为NUMA节点预留内存。",
+            "type": "array"
+          },
+          "serializeImagePulls": {
+            "backendName": "serializeImagePulls",
+            "description_en": "Specifies whether to pull one image at a time",
+            "description_zh": "是否逐一拉取镜像",
+            "example": "true",
+            "title": "是否逐一拉取镜像。",
+            "type": "boolean"
+          },
+          "serverTLSBootstrap": {
+            "backendName": "serverTLSBootstrap",
+            "description_zh": "启用 kubelet 服务端证书的自动签发与轮换功能。启用时，需同时在 kubelet 的 featureGates 中配置 \"RotateKubeletServerCertificate\": true\n\n仅 1.30 及以上版本的集群可用。\n1.30 至 v1.33 版本的集群需提交工单申请",
+            "example": "true",
+            "type": "boolean"
+          },
+          "systemReserved": {
+            "backendName": "systemReserved",
+            "description_en": "A set of configurations that specify reserved resources for the system",
+            "description_zh": "系统预留的资源配置",
+            "title": "系统预留的资源配置。",
+            "type": "object"
+          },
+          "topologyManagerPolicy": {
+            "backendName": "topologyManagerPolicy",
+            "description_en": "The name of the Topology Manager policy that you want to use",
+            "description_zh": "使用的拓扑管理器策略名称",
+            "example": "restricted",
+            "title": "使用的拓扑管理器策略名称。",
+            "type": "string"
+          },
+          "tracing": {
+            "backendName": "tracing",
+            "description_en": "The versioned configuration information for the Managed Service for OpenTelemetry client",
+            "description_zh": "OpenTelemetry 追踪客户端设置版本化的配置信息",
+            "properties": {
+              "endpoint": {
+                "backendName": "endpoint",
+                "description_en": "The endpoint of the collector",
+                "description_zh": "采集器的端点",
+                "example": "localhost:4317",
+                "title": "采集器的端点。",
+                "type": "string"
+              },
+              "samplingRatePerMillion": {
+                "backendName": "samplingRatePerMillion",
+                "description_en": "The number of samples to be collected per million spans",
+                "description_zh": "每百万 span 要采集的样本数",
+                "example": "200000",
+                "format": "int32",
+                "title": "每百万 span 要采集的样本数。",
+                "type": "integer"
+              }
+            },
+            "title": "OpenTelemetry 追踪客户端设置版本化的配置信息。",
+            "type": "object"
+          }
+        },
+        "title": "Kubelet参数配置。",
+        "type": "object"
+      },
+      "tag": {
+        "description_en": "The configuration of the label",
+        "description_zh": "标签配置",
+        "properties": {
+          "key": {
+            "backendName": "key",
+            "description_en": "The `key` of the label",
+            "description_zh": "标签`key`值",
+            "example": "env",
+            "title": "key值。",
+            "type": "string"
+          },
+          "value": {
+            "backendName": "value",
+            "description_en": "The `value` of the label",
+            "description_zh": "标签`value`值",
+            "example": "prod",
+            "title": "value值。",
+            "type": "string"
+          }
+        },
+        "title": "集群Tag配置",
+        "type": "object"
+      },
+      "taint": {
+        "description_en": "The configuration of the node taint",
+        "description_zh": "节点污点配置",
+        "properties": {
+          "effect": {
+            "backendName": "effect",
+            "description_en": "The scheduling policy. Valid values:\n\n`NoSchedule`: This taint is not tolerated. However, pods that are already scheduled to the node are not affected.\n`NoExecute`: Pods that do not tolerate this taint are evicted after this taint is added to the node.\n`PreferNoSchedule`: This value specifies a soft limit on pods. Existing pods on the node are not affected. The scheduler attempts to avoid scheduling pods that cannot tolerate the taint to the node.\n\nDefault value: `NoSchedule`",
+            "description_zh": "调度策略。取值：\n\n`NoSchedule`：不能容忍，但仅影响调度过程，已被调度的Pod不受影响，仅对新增加的Pod生效。\n\n`NoExecute`：不能容忍，当污点变动时，Pod对象会被驱逐。\n\n`PreferNoSchedule`：柔性约束，节点现存Pod不受影响。尽量不去满足不合要求的Pod调度到节点上。\n\n默认策略：`NoSchedule`",
+            "example": "NoSchedule",
+            "title": "污点生效策略。",
+            "type": "string"
+          },
+          "key": {
+            "backendName": "key",
+            "description_en": "The `key` of the taint",
+            "description_zh": "污点`key`值",
+            "example": "key",
+            "title": "key值。",
+            "type": "string"
+          },
+          "value": {
+            "backendName": "value",
+            "description_en": "The `value` of the taint",
+            "description_zh": "污点`value`值",
+            "example": "value",
+            "title": "value值。",
+            "type": "string"
+          }
+        },
+        "title": "节点污点配置",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Queries the list of all node pools in a cluster",
+  "description_zh": "查询集群内所有节点池列表",
+  "kebab_example": "aliyun cs describe-cluster-node-pools --cluster-id cc0f87de0b8fb403f86e10e204f830000 --region cn-hangzhou",
+  "method": "GET",
+  "multi_version": false,
+  "name": "DescribeClusterNodePools",
+  "operation": {
+    "action": "DescribeClusterNodePools",
+    "api_style": "ROA",
+    "api_version": "2015-12-15",
+    "method": "GET",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "get",
+    "url": "/clusters/{ClusterId}/nodepools"
+  },
+  "parameters": [
+    {
+      "example": "cc0f87de0b8fb403f86e10e204f83****",
+      "help_en": "The cluster ID",
+      "help_zh": "集群ID",
+      "location": "path",
+      "name": "cluster_id",
+      "options": [
+        "--cluster-id"
+      ],
+      "raw_name": "ClusterId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "nodepool-test\n",
+      "help_en": "The node pool name",
+      "help_zh": "节点池名称",
+      "location": "query",
+      "name": "nodepool_name",
+      "options": [
+        "--nodepool-name"
+      ],
+      "raw_name": "NodepoolName",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/clusters/[ClusterId]/nodepools",
+  "product_code": "CS",
+  "protocol": "HTTP|HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "The node pool details",
+        "description_zh": "节点池详情",
+        "properties": {
+          "nodepools": {
+            "description_en": "The list of node pool instances",
+            "description_zh": "节点池实例列表",
+            "itemName": "nodepools",
+            "items": {
+              "description_en": "The node pool instance details",
+              "description_zh": "节点池实例详情",
+              "properties": {
+                "auto_mode": {
+                  "description_en": "The intelligent managed configuration",
+                  "description_zh": "智能托管配置",
+                  "properties": {
+                    "enable": {
+                      "description_en": "Indicates whether intelligent managed mode is enabled",
+                      "description_zh": "是否开启智能托管",
+                      "example": "true",
+                      "title_en": "是否开启智能托管。",
+                      "title_zh": "是否开启智能托管。",
+                      "type": "boolean"
+                    }
+                  },
+                  "title_en": "智能托管配置。",
+                  "title_zh": "智能托管配置。",
+                  "type": "object"
+                },
+                "auto_scaling": {
+                  "description_en": "The auto scaling configuration",
+                  "description_zh": "自动伸缩配置",
+                  "properties": {
+                    "eip_bandwidth": {
+                      "description_en": "The EIP peak bandwidth.\n\nValid values: [1,100]. Unit: Mbit/s",
+                      "description_zh": "EIP带宽峰值。\n\n取值范围：[1,100]，单位：Mbps",
+                      "example": "5",
+                      "format": "int64",
+                      "title_en": "EIP带宽峰值。",
+                      "title_zh": "EIP带宽峰值。",
+                      "type": "integer"
+                    },
+                    "eip_internet_charge_type": {
+                      "description_en": "The EIP billing type. Valid values:\n\n`PayByBandwidth`: pay-by-fixed-bandwidth.\n`PayByTraffic`: pay-by-data-transfer",
+                      "description_zh": "EIP计费类型，取值：\n\n`PayByBandwidth`：按固定带宽计费。\n`PayByTraffic`：按使用流量计费",
+                      "example": "PayByBandwidth",
+                      "title_en": "EIP实例付费类型。",
+                      "title_zh": "EIP实例付费类型。",
+                      "type": "string"
+                    },
+                    "enable": {
+                      "description_en": "Specifies whether to enable elastic scaling. Valid values:\n\n`true`: Enables the elastic scaling feature for the node pool. When the cluster capacity planning cannot meet application pod scheduling requirements, ACK automatically scales node resources based on the configured minimum and maximum instance counts. Clusters of version 1.24 or later use instant node scaling by default. Clusters of versions earlier than 1.24 use node elastic scaling by default. For more information, see [Node scaling]（https://help.aliyun.com/document_detail/2746785.html）.\n\n`false`: Disables elastic scaling. ACK adjusts the number of nodes in the node pool based on the configured desired node count and maintains the node count at the desired value.\n\nWhen this parameter is set to false, other configuration parameters in `auto_scaling` do not take effect",
+                      "description_zh": "是否启用自动伸缩，取值：\n\n`true`：开启节点池自动伸缩功能。当集群的容量规划无法满足应用Pod调度时，ACK会根据配置的最小和最大实例数自动扩缩节点资源。1.24及以上版本的集群默认启用节点即时弹性；\n1.24以下版本的集群默认启用节点自动伸缩。更多信息，请参见[节点伸缩]（https://help.aliyun.com/document_detail/2746785.html）。\n\n`false`：不开启自动伸缩，ACK会根据配置的期望节点数调整节点池中的节点数，将节点数始终维持在期望节点数。\n\n当取值为false时，`auto_scaling`内的其他配置参数将不生效",
+                      "example": "true",
+                      "title_en": "是否启用自动伸缩。",
+                      "title_zh": "是否启用自动伸缩。",
+                      "type": "boolean"
+                    },
+                    "is_bond_eip": {
+                      "description_en": "Specifies whether to associate an EIP. Valid values:\n\n`true`: Associate an EIP.\n`false`: Do not associate an EIP",
+                      "description_zh": "是否绑定EIP，取值：\n\n`true`：绑定EIP。\n`false`：不绑定EIP",
+                      "example": "true",
+                      "title_en": "是否绑定EIP。",
+                      "title_zh": "是否绑定EIP。",
+                      "type": "boolean"
+                    },
+                    "max_instances": {
+                      "description_en": "The maximum number of scalable instances in the node pool, excluding your existing instances",
+                      "description_zh": "节点池中可伸缩的最大实例数，不包含您已有的实例",
+                      "example": "10",
+                      "format": "int64",
+                      "title_en": "最大实例数。",
+                      "title_zh": "最大实例数。",
+                      "type": "integer"
+                    },
+                    "min_instances": {
+                      "description_en": "The minimum number of scalable instances in the node pool, excluding your existing instances",
+                      "description_zh": "节点池中可伸缩的最小实例数，不包含您已有的实例",
+                      "example": "2",
+                      "format": "int64",
+                      "title_en": "最小实例数。",
+                      "title_zh": "最小实例数。",
+                      "type": "integer"
+                    },
+                    "type": {
+                      "description_en": "The auto scaling type, categorized by instance type. Valid values:\n\n`cpu`: standard instance type.\n`gpu`: GPU instance type.\n`gpushare`: GPU sharing type.\n`spot`: spot instance type",
+                      "description_zh": "自动伸缩类型，按照自动伸缩实例类型划分。取值：\n\n`cpu`：普通实例型。\n`gpu`：GPU实例型。\n`gpushare`：GPU共享型。\n`spot`：抢占式实例型",
+                      "example": "cpu",
+                      "title_en": "扩容组类型",
+                      "title_zh": "扩容组类型",
+                      "type": "string"
+                    }
+                  },
+                  "title_en": "节点池自动伸缩信息。",
+                  "title_zh": "节点池自动伸缩信息。",
+                  "type": "object"
+                },
+                "eflo_node_group": {
+                  "description_en": "The Lingjun node group information",
+                  "description_zh": "灵骏节点组信息",
+                  "properties": {
+                    "auto_attach_enabled": {
+                      "description_en": "Indicates whether automatic node addition is enabled for the Lingjun node pool (not effective)",
+                      "description_zh": "是否开启灵骏节点池自动添加 (不生效)",
+                      "title_en": "是否开启灵骏节点池自动添加",
+                      "title_zh": "是否开启灵骏节点池自动添加",
+                      "type": "boolean"
+                    },
+                    "cluster_id": {
+                      "description_en": "The Lingjun cluster ID",
+                      "description_zh": "灵骏集群ID",
+                      "example": "i113790071760688002461",
+                      "title_en": "灵骏集群ID。",
+                      "title_zh": "灵骏集群ID。",
+                      "type": "string"
+                    },
+                    "group_id": {
+                      "description_en": "The Lingjun group ID",
+                      "description_zh": "灵骏分组ID",
+                      "example": "i128147721760688002463",
+                      "title_en": "灵骏分组ID。",
+                      "title_zh": "灵骏分组ID。",
+                      "type": "string"
+                    },
+                    "worker_ram_role_name": {
+                      "description_en": "The worker RAM role used by the Lingjun node pool",
+                      "description_zh": "灵骏节点池所使用的Worker Ram Role",
+                      "title_en": "灵骏节点池所使用的Worker Ram Role",
+                      "title_zh": "灵骏节点池所使用的Worker Ram Role",
+                      "type": "string"
+                    }
+                  },
+                  "title_en": "灵骏节点组信息。",
+                  "title_zh": "灵骏节点组信息。",
+                  "type": "object"
+                },
+                "interconnect_config": {
+                  "description_en": "[Deprecated]\n\nThe network-related configuration for edge node pools. This value is meaningful only for edge-type node pools",
+                  "description_zh": "【该字段已废弃】\n\n边缘节点池网络相关的配置。该值只对edge类型的节点池有意义",
+                  "properties": {
+                    "bandwidth": {
+                      "description_en": "[Deprecated]\n\nThe network bandwidth of the enhanced edge node pool. Unit: Mbps",
+                      "description_zh": "【该字段已废弃】\n\n边缘增强型节点池的网络带宽，单位：Mbps",
+                      "example": "10",
+                      "format": "int64",
+                      "title_en": "边缘增强型节点池的网络带宽，单位M",
+                      "title_zh": "边缘增强型节点池的网络带宽，单位M",
+                      "type": "integer"
+                    },
+                    "ccn_id": {
+                      "description_en": "[Deprecated]\n\nThe Cloud Connect Network (CCN) instance ID bound to the enhanced edge node pool",
+                      "description_zh": "【该字段已废弃】\n\n边缘增强型节点池绑定的云连接网实例ID(CCNID)",
+                      "example": "ccn-qm5i0i0q9yi*******",
+                      "title_en": "边缘增强型节点池绑定的云连接网实例ID(CCNID)",
+                      "title_zh": "边缘增强型节点池绑定的云连接网实例ID(CCNID)",
+                      "type": "string"
+                    },
+                    "ccn_region_id": {
+                      "description_en": "[Deprecated]\n\nThe region of the Cloud Connect Network instance bound to the enhanced edge node pool",
+                      "description_zh": "【该字段已废弃】\n\n边缘增强型节点池绑定的云连接网实例所属的区域",
+                      "example": "cn-shanghai",
+                      "title_en": "边缘增强型节点池绑定的云连接网实例所属的区域",
+                      "title_zh": "边缘增强型节点池绑定的云连接网实例所属的区域",
+                      "type": "string"
+                    },
+                    "cen_id": {
+                      "description_en": "[Deprecated]\n\nThe Cloud Enterprise Network (CEN) instance ID bound to the enhanced edge node pool",
+                      "description_zh": "【该字段已废弃】\n\n边缘增强型节点池绑定的云企业网实例ID(CENID)",
+                      "example": "cen-ey9k9nfhz0f*******",
+                      "title_en": "边缘增强型节点池绑定的云企业网实例ID(CENID)",
+                      "title_zh": "边缘增强型节点池绑定的云企业网实例ID(CENID)",
+                      "type": "string"
+                    },
+                    "improved_period": {
+                      "description_en": "[Deprecated]\n\nThe purchase duration of the enhanced edge node pool. Unit: months",
+                      "description_zh": "【该字段已废弃】\n\n边缘增强型节点池的购买时长，单位：月",
+                      "example": "1",
+                      "title_en": "边缘增强型节点池的购买时长，单位月",
+                      "title_zh": "边缘增强型节点池的购买时长，单位月",
+                      "type": "string"
+                    }
+                  },
+                  "title_en": "边缘节点池网络相关的配置。该值只对edge类型的节点池有意义",
+                  "title_zh": "边缘节点池网络相关的配置。该值只对edge类型的节点池有意义",
+                  "type": "object"
+                },
+                "interconnect_mode": {
+                  "description_en": "The network type of the edge node pool. This parameter takes effect only for node pools whose `type` is `edge`. Valid values:\n\n`basic`: Public network. Nodes in cloud node pool interact with cloud nodes over the Internet. Applications in cloud node pool cannot directly access the cloud VPC internal network.\n`private`: Private network. Nodes in cloud node pool connect to the cloud through Express Connect, VPN, or CEN, providing higher cloud-edge communication quality and more effective security",
+                  "description_zh": "边缘节点池的网络类型，该参数仅对`type`为`edge`类型的节点池生效，取值范围：\n\n`basic`：公网。节点池内的节点通过公网与云端节点进行交互，节点池内应用不能直接访问云端VPC内网。\n`private`：专用网络。节点池内的节点通过专线、VPN或CEN等方式实现云上与云下网络打通，拥有更高的云边通信质量，提供更有效的安全保障",
+                  "example": "basic",
+                  "title_en": "边缘节点池的网络类型。basic：基础型；improved：增强型。该值只对edge类型的节点池有意义",
+                  "title_zh": "边缘节点池的网络类型。basic：基础型；improved：增强型。该值只对edge类型的节点池有意义",
+                  "type": "string"
+                },
+                "kubernetes_config": {
+                  "description_en": "The cluster-related configuration",
+                  "description_zh": "集群相关配置",
+                  "properties": {
+                    "cms_enabled": {
+                      "description_en": "Specifies whether to install the CloudMonitor agent on ECS nodes. After installation, you can view monitoring information of the created ECS instances in the CloudMonitor console. We recommend that you enable this feature. Valid values:\n\n`true`: Installs the CloudMonitor agent on ECS nodes.\n`false`: Does not install the CloudMonitor agent on ECS nodes",
+                      "description_zh": "是否在ECS节点上安装云监控，安装后可以在云监控控制台查看所创建ECS实例的监控信息，推荐开启。取值：\n\n`true`：在ECS节点上安装云监控。\n`false`：不在ECS节点上安装云监控",
+                      "example": "true",
+                      "title_en": "是否开启云监控。",
+                      "title_zh": "是否开启云监控。",
+                      "type": "boolean"
+                    },
+                    "cpu_policy": {
+                      "description_en": "The node CPU management policy. The following two policies are supported for clusters of version 1.12.6 and later:\n\n`static`: Allows pods with certain resource characteristics on the node to be granted enhanced CPU affinity and exclusivity.\n`none`: Enables the existing default CPU affinity scheme",
+                      "description_zh": "节点CPU管理策略。当集群版本在1.12.6及以上时支持以下两种策略：\n\n`static`：允许为节点上具有某些资源特征Pod增强其CPU亲和性和独占性。\n`none`：表示启用现有的默认CPU亲和性方案",
+                      "example": "none",
+                      "title_en": "CPU管理策略。",
+                      "title_zh": "CPU管理策略。",
+                      "type": "string"
+                    },
+                    "labels": {
+                      "description_en": "The node tag",
+                      "description_zh": "节点标签",
+                      "itemName": "label",
+                      "items": {
+                        "$ref": "#/components/schemas/tag",
+                        "description_en": "The label configuration",
+                        "description_zh": "标签配置",
+                        "example": "{}"
+                      },
+                      "title_en": "节点标签。",
+                      "title_zh": "节点标签。",
+                      "type": "array"
+                    },
+                    "node_name_mode": {
+                      "description_en": "The custom node name.\n\nA node name consists of three parts: prefix + node IP address substring + suffix:\n \nBoth the prefix and suffix can consist of one or more parts separated by \".\". Each part can contain lowercase letters, digits, and hyphens (-). The node name must start and end with a lowercase letter or digit.\nThe IP address segment length specifies the number of digits to extract from the end of the node IP address. Valid values: 5 to 12.\n \nFor example, if the node IP address is 192.168.0.55, the prefix is aliyun.com, the IP address segment length is 5, and the suffix is test, the node name is aliyun.com00055test",
+                      "description_zh": "自定义节点名称。\n\n节点名称由三部分组成：前缀 + 节点 IP 地址子串 + 后缀：\n \n前缀和后缀均可由“.”分隔的一个或多个部分构成，每个部分可以使用小写字母、数字和“-”，节点名称首尾必须为小写字母和数字。\nIP 地址段长度指截取节点 IP 地址末尾的位数，取值范围 5-12。\n \n例如，节点 IP 地址为：192.168.0.55，指定前缀为 aliyun.com，IP 地址段长度为 5，后缀为 test，则节点名称为aliyun.com00055test",
+                      "example": "aliyun.com192.XX.YY.55test",
+                      "title_en": "自定义节点名称",
+                      "title_zh": "自定义节点名称",
+                      "type": "string"
+                    },
+                    "pre_user_data": {
+                      "description_en": "The node pool pre-custom data, which is a script that runs before node initialization. For more information, see [Generate instance user data]（https://help.aliyun.com/document_detail/49121.html）",
+                      "description_zh": "节点池预自定义数据，即运行于节点初始化之前的脚本。更多详情，请参见[生成实例自定义数据]（https://help.aliyun.com/document_detail/49121.html）",
+                      "example": "IyEvYmluL3NoCmVjaG8gIkhlbGxvIEFD",
+                      "type": "string"
+                    },
+                    "runtime": {
+                      "description_en": "The container runtime name. ACK supports the following three container runtimes:\n\ncontainerd: Recommended. Supported by all cluster versions.\nSandboxed-Container.runv: Sandboxed container that provides higher isolation. Supported by clusters of version 1.31 and earlier.\ndocker: No longer maintained. Supported by clusters of version 1.22 and earlier",
+                      "description_zh": "容器运行时名称，ACK 支持以下三种容器运行时。\n\ncontainerd：推荐使用，支持所有集群版本。\nSandboxed-Container.runv：安全沙箱容器，提供更高的隔离性，支持 1.31 及以下版本集群。\ndocker：已停止维护，支持1.22及以下版本集群",
+                      "example": "containerd",
+                      "title_en": "容器运行时。",
+                      "title_zh": "容器运行时。",
+                      "type": "string"
+                    },
+                    "runtime_version": {
+                      "description_en": "The container runtime version",
+                      "description_zh": "容器运行时版本",
+                      "example": "1.6.38",
+                      "title_en": "容器运行时版本。",
+                      "title_zh": "容器运行时版本。",
+                      "type": "string"
+                    },
+                    "taints": {
+                      "description_en": "The node taint information. Taints and tolerations work together to prevent pods from being scheduled to inappropriate nodes. For more information, see taint-and-toleration (https://kubernetes.io/zh/docs/concepts/scheduling-eviction/taint-and-toleration/)",
+                      "description_zh": "节点污点信息。污点和容忍度（Toleration）相互配合，可以用来避免Pod被分配到不合适的节点上。更多信息，请参见taint-and-toleration (https://kubernetes.io/zh/docs/concepts/scheduling-eviction/taint-and-toleration/)",
+                      "itemName": "taints",
+                      "items": {
+                        "$ref": "#/components/schemas/taint",
+                        "description_en": "The node taint information",
+                        "description_zh": "节点污点信息"
+                      },
+                      "title_en": "污点信息。",
+                      "title_zh": "污点信息。",
+                      "type": "array"
+                    },
+                    "unschedulable": {
+                      "description_en": "Specifies whether scaled-out nodes are unschedulable.\n\ntrue: Unschedulable.\n\nfalse: Schedulable",
+                      "description_zh": "扩容后的节点是否不可调度。\n\ntrue：不可调度。\n\nfalse：可调度",
+                      "example": "true",
+                      "title_en": "扩容后的节点是否可调度。",
+                      "title_zh": "扩容后的节点是否可调度。",
+                      "type": "boolean"
+                    },
+                    "user_data": {
+                      "description_en": "The node pool custom data, which is a script that runs after node initialization. For more information, see [Generate instance user data]（https://help.aliyun.com/document_detail/49121.html）",
+                      "description_zh": "节点池自定义数据，即运行于节点初始化之后的脚本。更多详情，请参见[生成实例自定义数据]（https://help.aliyun.com/document_detail/49121.html）",
+                      "example": "IyEvYmluL3NoCmVjaG8gIkhlbGxvIEFD****",
+                      "title_en": "节点自定义数据。",
+                      "title_zh": "节点自定义数据。",
+                      "type": "string"
+                    }
+                  },
+                  "title_en": "集群配置",
+                  "title_zh": "集群配置",
+                  "type": "object"
+                },
+                "management": {
+                  "description_en": "The managed node pool configuration. This configuration takes effect only in professional managed clusters",
+                  "description_zh": "托管节点池配置，当前只在专业托管集群中生效",
+                  "properties": {
+                    "auto_fault_diagnosis": {
+                      "description_en": "Specifies whether to enable ECS fault detection for node self-healing",
+                      "description_zh": "是否开启节点自愈ECS故障检测",
+                      "title_en": "是否开启节点自愈ECS故障检测。",
+                      "title_zh": "是否开启节点自愈ECS故障检测。",
+                      "type": "boolean"
+                    },
+                    "auto_repair": {
+                      "description_en": "Specifies whether to enable auto repair. This parameter takes effect only when `enable=true`.\n\n`true`: Enable auto repair.\n`false`: Disable auto repair",
+                      "description_zh": "自动修复，仅当`enable=true`时生效。\n\n`true`：自动修复。\n`false`：不自动修复",
+                      "example": "true",
+                      "title_en": "自动修复。",
+                      "title_zh": "自动修复。",
+                      "type": "boolean"
+                    },
+                    "auto_repair_policy": {
+                      "backendName": "auto_repair_policy",
+                      "description_en": "The auto repair node policy",
+                      "description_zh": "自动修复节点策略",
+                      "properties": {
+                        "approval_required": {
+                          "description_en": "Indicates whether manual approval is required for node repair",
+                          "description_zh": "节点修复是否需要人工审批",
+                          "example": "false",
+                          "title_en": "节点修复是否需要人工审批。",
+                          "title_zh": "节点修复是否需要人工审批。",
+                          "type": "boolean"
+                        },
+                        "auto_repair_policy_id": {
+                          "description_en": "The ID of the auto repair policy",
+                          "description_zh": "自动修复策略的ID",
+                          "example": "r-xxxxxxxxx",
+                          "title_en": "自动修复策略的ID",
+                          "title_zh": "自动修复策略的ID",
+                          "type": "string",
+                          "visibility": "Public"
+                        },
+                        "max_parallel_repairing_nodes": {
+                          "description_en": "The maximum number of parallel repairs. When a large number of abnormal nodes exist in the node pool, this specifies the maximum number or percentage of nodes that can be repaired simultaneously",
+                          "description_zh": "最大并行修复数，节点池中存在大量异常节点，最多允许同时修复的节点数或节点比例",
+                          "example": "1",
+                          "title_en": "最大并行修复数，节点池中存在大量异常节点，最多允许同时修复的节点数或节点比例。",
+                          "title_zh": "最大并行修复数，节点池中存在大量异常节点，最多允许同时修复的节点数或节点比例。",
+                          "type": "string"
+                        },
+                        "max_unhealthy_nodes_threshold": {
+                          "description_en": "The self-healing circuit breaker condition. When the number or percentage of faulty nodes exceeds this threshold, self-healing enters a circuit breaker state and stops initiating new repair actions",
+                          "description_zh": "自愈熔断条件，当发生故障的节点数或节点比例大于该阈值时，自愈进入熔断状态，并停止新增自愈修复动作",
+                          "example": "10%",
+                          "title_en": "自愈熔断条件，当发生故障的节点数或节点比例大于该阈值时，自愈进入熔断状态，并停止新增自愈修复动作。",
+                          "title_zh": "自愈熔断条件，当发生故障的节点数或节点比例大于该阈值时，自愈进入熔断状态，并停止新增自愈修复动作。",
+                          "type": "string"
+                        },
+                        "restart_node": {
+                          "backendName": "restart_node",
+                          "description_en": "Specifies whether to allow node restart. This parameter takes effect only when `auto_repair=true`.\n\n`true`: Allow node restart.\n`false`: Do not allow node restart",
+                          "description_zh": "是否允许重启节点。仅当`auto_repair=true`时生效。\n\n`true`：允许重启节点。\n`false`：不允许重启节点",
+                          "example": "true",
+                          "title_en": "是否允许重启节点。",
+                          "title_zh": "是否允许重启节点。",
+                          "type": "boolean"
+                        }
+                      },
+                      "title_en": "自动修复节点策略。",
+                      "title_zh": "自动修复节点策略。",
+                      "type": "object"
+                    },
+                    "auto_upgrade": {
+                      "backendName": "auto_upgrade",
+                      "description_en": "Specifies whether to enable auto upgrade for nodes. This parameter takes effect only when `enable=true`. Valid values:\n`true`: Auto upgrade is enabled.\n`false`: Auto upgrade is not enabled",
+                      "description_zh": "是否自动升级节点，仅当`enable=true`时生效。\n`true`：启用自动升级。\n`false`：不启用自动升级",
+                      "example": "true",
+                      "title_en": "是否自动升级。",
+                      "title_zh": "是否自动升级。",
+                      "type": "boolean"
+                    },
+                    "auto_upgrade_policy": {
+                      "backendName": "auto_upgrade_policy",
+                      "description_en": "The auto upgrade policy",
+                      "description_zh": "自动升级策略",
+                      "properties": {
+                        "auto_upgrade_kubelet": {
+                          "backendName": "auto_upgrade_kubelet",
+                          "description_en": "Specifies whether to allow auto upgrade of kubelet. This parameter takes effect only when `auto_upgrade=true`. Valid values:\n`true`: Auto upgrade of kubelet is allowed.\n`false`: Auto upgrade of kubelet is not allowed",
+                          "description_zh": "是否允许自动升级kubelet，仅当`auto_upgrade=true`时生效。取值：\n`true`：允许自动升级kubelet。\n`false`：不允许自动升级kubelet",
+                          "example": "true",
+                          "title_en": "是否允许自动升级kubelet。",
+                          "title_zh": "是否允许自动升级kubelet。",
+                          "type": "boolean"
+                        }
+                      },
+                      "title_en": "自动升级策略。",
+                      "title_zh": "自动升级策略。",
+                      "type": "object"
+                    },
+                    "auto_vul_fix": {
+                      "backendName": "auto_vul_fix",
+                      "description_en": "Specifies whether to automatically fix CVEs. This parameter takes effect only when `enable=true`.\n\n`true`: Allow automatic CVE fixes.\n`false`: Do not allow automatic CVE fixes",
+                      "description_zh": "是否自动修复CVE。仅当`enable=true`时生效。\n\n`true`：允许自动修复CVE。\n`false`：不允许自动修复CVE",
+                      "example": "true",
+                      "title_en": "是否自动修复CVE。",
+                      "title_zh": "是否自动修复CVE。",
+                      "type": "boolean"
+                    },
+                    "auto_vul_fix_policy": {
+                      "backendName": "auto_vul_fix_policy",
+                      "description_en": "The auto CVE fix policy",
+                      "description_zh": "自动修复CVE策略",
+                      "properties": {
+                        "exclude_packages": {
+                          "description_en": "The packages to exclude during vulnerability fix",
+                          "description_zh": "指定在漏洞修复过程中应排除的包",
+                          "example": "kernel",
+                          "title_en": "指定在漏洞修复过程中应排除的包。",
+                          "title_zh": "指定在漏洞修复过程中应排除的包。",
+                          "type": "string"
+                        },
+                        "restart_node": {
+                          "backendName": "restart_node",
+                          "description_en": "Specifies whether to allow node restarts. This parameter takes effect only when `auto_vul_fix=true`. Valid values:\n`true`: Node restarts are allowed.\n`false`: Node restarts are not allowed",
+                          "description_zh": "是否允许重启节点，仅当`auto_vul_fix=true`时生效。取值：\n`true`：允许重启节点。\n`false`：不允许重启节点",
+                          "example": "true",
+                          "title_en": "是否允许重启节点。",
+                          "title_zh": "是否允许重启节点。",
+                          "type": "boolean"
+                        },
+                        "vul_level": {
+                          "backendName": "vul_level",
+                          "description_en": "The vulnerability levels allowed for automatic fix, separated by commas. Valid values:\n\n`asap`: high\n`later`: medium\n`nntf`: low",
+                          "description_zh": "允许自动修复的漏洞级别，以逗号分隔。\n\n`asap`：高\n`later`：中\n`nntf`：低",
+                          "example": "asap,nntf",
+                          "title_en": "允许自动修复的漏洞级别，以逗号分隔。",
+                          "title_zh": "允许自动修复的漏洞级别，以逗号分隔。",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "自动修复CVE策略。",
+                      "title_zh": "自动修复CVE策略。",
+                      "type": "object"
+                    },
+                    "drift_enabled": {
+                      "description_en": "Specifies whether to enable node rotation. Only intelligent managed node pools support this feature, and it is enabled by default. Common node pools do not support this feature",
+                      "description_zh": "是否启用节点轮转能力。仅智能托管节点池支持，且默认开启；普通节点池暂不支持",
+                      "title_en": "是否启用节点轮转能力。仅智能托管节点池支持，且默认开启；普通节点池暂不支持。",
+                      "title_zh": "是否启用节点轮转能力。仅智能托管节点池支持，且默认开启；普通节点池暂不支持。",
+                      "type": "boolean",
+                      "visibility": "Public"
+                    },
+                    "enable": {
+                      "description_en": "Specifies whether to enable the managed node pool. Valid values:\n\n`true`: Enable the managed node pool.\n`false`: Disable the managed node pool. Other related configurations take effect only when `enable=true`",
+                      "description_zh": "是否开启托管版节点池，取值：\n\n`true`：开启托管节点池。\n`false`：不开启托管节点池，只有当`enable=true`时，其他相关配置才生效",
+                      "example": "true",
+                      "title_en": "是否开启托管版节点池。",
+                      "title_zh": "是否开启托管版节点池。",
+                      "type": "boolean"
+                    },
+                    "upgrade_config": {
+                      "description_en": "The auto upgrade configuration. This parameter takes effect only when `enable=true`",
+                      "description_zh": "自动升级配置，仅当`enable=true`时生效",
+                      "properties": {
+                        "auto_upgrade": {
+                          "description_en": "Specifies whether to enable auto upgrade. Valid values:\n\n`true`: Auto upgrade is enabled.\n`false`: Auto upgrade is not enabled",
+                          "description_zh": "是否启用自动升级，取值：\n\n`true`：启用自动升级。\n`false`：不启用自动升级",
+                          "example": "true",
+                          "title_en": "是否启用自动升级，自修复。",
+                          "title_zh": "是否启用自动升级，自修复。",
+                          "type": "boolean"
+                        },
+                        "max_unavailable": {
+                          "description_en": "The maximum number of unavailable nodes. Valid values: [1,1000].\n\nDefault value: 1",
+                          "description_zh": "最大不可用节点数量，取值范围：[1,1000]\n\n默认值：1",
+                          "example": "1",
+                          "format": "int64",
+                          "title_en": "最大不可用节点数量。",
+                          "title_zh": "最大不可用节点数量。",
+                          "type": "integer"
+                        },
+                        "surge": {
+                          "description_en": "The number of extra nodes. You must set this parameter or `surge_percentage`",
+                          "description_zh": "额外节点数量。和`surge_percentage`二选一",
+                          "example": "5",
+                          "format": "int64",
+                          "title_en": "额外节点数量。",
+                          "title_zh": "额外节点数量。",
+                          "type": "integer"
+                        },
+                        "surge_percentage": {
+                          "description_en": "The percentage of extra nodes. You must set this parameter or `surge`.\n\nNumber of extra nodes = Extra node percentage × Number of nodes. For example, if the extra node percentage is set to 50% and there are 6 existing nodes, the number of extra nodes = 50% × 6, which means 3 extra nodes are created",
+                          "description_zh": "额外节点数的百分比，和`surge`二选一。\n\n额外节点数=额外节点数比例×节点数，例如，设置额外节点数比例为50%，存在的节点数为6，那么将产生的额外节点数=50%×6，也就是将产生3个额外节点数",
+                          "example": "50",
+                          "format": "int64",
+                          "title_en": "额外节点比例， 和surge 二选一。",
+                          "title_zh": "额外节点比例， 和surge 二选一。",
+                          "type": "integer"
+                        }
+                      },
+                      "title_en": "自动升级配置。",
+                      "title_zh": "自动升级配置。",
+                      "type": "object"
+                    }
+                  },
+                  "title_en": "托管版节点池配置。",
+                  "title_zh": "托管版节点池配置。",
+                  "type": "object"
+                },
+                "max_nodes": {
+                  "description_en": "The maximum number of nodes allowed in the edge node pool. This parameter specifies the maximum number of nodes that the node pool can contain and must be greater than or equal to 0. A value of 0 indicates no additional limit (limited only by the total number of nodes the cluster can contain, with no additional limit on the node pool itself). This parameter is typically greater than 0 for edge node pools. For ess-type node pools and default edge-type node pools, this parameter is 0",
+                  "description_zh": "边缘节点池允许容纳的最大节点数量. 节点池内可以容纳的最大节点数量，该参数大于等于0。0表示无额外限制（仅受限于集群整体可以容纳的节点数，节点池本身无额外限制）。边缘节点池该参数值往往大于0；ess类型节点池和默认的edge类型节点池该参数值为0",
+                  "example": "10",
+                  "format": "int64",
+                  "title_en": "边缘节点池允许容纳的最大节点数量. 节点池内可以容纳的最大节点数量，该参数大于等于0。0表示无额外限制(仅受限于集群整体可以容纳的节点数，节点池本身无额外限制)。边缘节点池该参数值往往大于0；ess类型节点池和默认的edge类型节点池该参数值为0",
+                  "title_zh": "边缘节点池允许容纳的最大节点数量. 节点池内可以容纳的最大节点数量，该参数大于等于0。0表示无额外限制(仅受限于集群整体可以容纳的节点数，节点池本身无额外限制)。边缘节点池该参数值往往大于0；ess类型节点池和默认的edge类型节点池该参数值为0",
+                  "type": "integer"
+                },
+                "node_components": {
+                  "description_en": "The node component list",
+                  "description_zh": "节点组件列表",
+                  "itemName": "node_components",
+                  "items": {
+                    "description_en": "The node component",
+                    "description_zh": "节点组件",
+                    "properties": {
+                      "config": {
+                        "description_en": "The node component configuration",
+                        "description_zh": "节点组件配置",
+                        "properties": {
+                          "custom_config": {
+                            "additionalProperties": {
+                              "description_en": "The node component custom configuration string",
+                              "description_zh": "节点组件自定义配置字符串",
+                              "example": "cpuManagerPolicy",
+                              "type": "any"
+                            },
+                            "description_en": "The node component custom configuration",
+                            "description_zh": "节点组件自定义配置",
+                            "example": "{\"cpuManagerPolicy\":\"static\"}",
+                            "title_en": "节点组件自定义配置。",
+                            "title_zh": "节点组件自定义配置。",
+                            "type": "object"
+                          },
+                          "envs": {
+                            "description_en": "The node component environment variables",
+                            "description_zh": "节点组件环境变量",
+                            "items": {
+                              "properties": {
+                                "name": {
+                                  "description_en": "The environment variable name",
+                                  "description_zh": "环境变量名称",
+                                  "example": "LOG_LEVEL",
+                                  "title_en": "环境变量名称。",
+                                  "title_zh": "环境变量名称。",
+                                  "type": "string",
+                                  "visibility": "Public"
+                                },
+                                "value": {
+                                  "description_en": "The environment variable value",
+                                  "description_zh": "环境变量值",
+                                  "example": "info",
+                                  "title_en": "环境变量值。",
+                                  "title_zh": "环境变量值。",
+                                  "type": "string",
+                                  "visibility": "Public"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "title_en": "节点组件环境变量。",
+                            "title_zh": "节点组件环境变量。",
+                            "type": "array",
+                            "visibility": "Public"
+                          }
+                        },
+                        "title_en": "节点组件配置。",
+                        "title_zh": "节点组件配置。",
+                        "type": "object"
+                      },
+                      "config_revision": {
+                        "description_en": "The node component custom configuration version number",
+                        "description_zh": "节点组件自定义配置版本号",
+                        "example": "1",
+                        "title_en": "节点组件自定义配置版本号。",
+                        "title_zh": "节点组件自定义配置版本号。",
+                        "type": "string",
+                        "visibility": "Public"
+                      },
+                      "name": {
+                        "description_en": "The node component name",
+                        "description_zh": "节点组件名称",
+                        "example": "kubelet",
+                        "title_en": "节点组件名称。",
+                        "title_zh": "节点组件名称。",
+                        "type": "string"
+                      },
+                      "version": {
+                        "description_en": "The node component version",
+                        "description_zh": "节点组件版本",
+                        "example": "1.33.3-aliyun.1",
+                        "title_en": "节点组件版本。",
+                        "title_zh": "节点组件版本。",
+                        "type": "string"
+                      }
+                    },
+                    "title_en": "节点组件。",
+                    "title_zh": "节点组件。",
+                    "type": "object"
+                  },
+                  "title_en": "节点组件列表。",
+                  "title_zh": "节点组件列表。",
+                  "type": "array"
+                },
+                "node_config": {
+                  "description_en": "The node configuration",
+                  "description_zh": "节点配置",
+                  "properties": {
+                    "kubelet_configuration": {
+                      "$ref": "#/components/schemas/kubelet_config",
+                      "description_en": "The Kubelet parameter settings",
+                      "description_zh": "Kubelet参数配置",
+                      "title_en": "Kubelet参数配置。",
+                      "title_zh": "Kubelet参数配置。"
+                    },
+                    "node_os_config": {
+                      "description_en": "The node operating system configuration",
+                      "description_zh": "节点操作系统配置",
+                      "properties": {
+                        "hugepage": {
+                          "$ref": "#/components/schemas/Hugepage",
+                          "description_en": "The hugepage configuration",
+                          "description_zh": "Hugepage配置"
+                        }
+                      },
+                      "type": "object"
+                    }
+                  },
+                  "title_en": "节点配置",
+                  "title_zh": "节点配置",
+                  "type": "object"
+                },
+                "nodepool_info": {
+                  "description_en": "The node pool information",
+                  "description_zh": "节点池信息",
+                  "properties": {
+                    "created": {
+                      "description_en": "The time when the node pool was created",
+                      "description_zh": "节点池创建时间",
+                      "example": "2025-04-15T16:33:29.362888807+08:00",
+                      "title_en": "节点池创建时间。",
+                      "title_zh": "节点池创建时间。",
+                      "type": "string"
+                    },
+                    "is_default": {
+                      "description_en": "Indicates whether this is the default node pool. Typically, a cluster has only one default node pool. Valid values:\n\n`true`: Default node pool.\n`false`: Non-default node pool",
+                      "description_zh": "是否为默认节点池，通常一个集群仅有一个默认节点池。取值：\n\n`true`：默认节点池。\n`false`：非默认节点池",
+                      "example": "true",
+                      "title_en": "是否为默认节点池。",
+                      "title_zh": "是否为默认节点池。",
+                      "type": "boolean"
+                    },
+                    "name": {
+                      "description_en": "The node pool name",
+                      "description_zh": "节点池名称",
+                      "example": "default-nodepool",
+                      "title_en": "节点池名称。",
+                      "title_zh": "节点池名称。",
+                      "type": "string"
+                    },
+                    "nodepool_id": {
+                      "description_en": "The node pool ID",
+                      "description_zh": "节点池ID",
+                      "example": "np615c0e0966124216a0412e10afe0****",
+                      "title_en": "节点池ID。",
+                      "title_zh": "节点池ID。",
+                      "type": "string"
+                    },
+                    "region_id": {
+                      "description_en": "The region ID",
+                      "description_zh": "地域ID",
+                      "example": "cn-beijing",
+                      "title_en": "节点池所属地域ID。",
+                      "title_zh": "节点池所属地域ID。",
+                      "type": "string"
+                    },
+                    "resource_group_id": {
+                      "description_en": "The resource group ID",
+                      "description_zh": "资源组ID",
+                      "example": "rg-acfmyvw3wjm****",
+                      "title_en": "节点池所属资源组ID。",
+                      "title_zh": "节点池所属资源组ID。",
+                      "type": "string"
+                    },
+                    "type": {
+                      "description_en": "The node pool type. Valid values:\n\n`ess`: standard node pool (includes managed features and elastic scaling).\n`edge`: edge node pool.\n`lingjun`: Lingjun node pool",
+                      "description_zh": "节点池类型。取值：\n\n`ess`：普通节点池（包含托管功能和自动弹性伸缩功能）。\n`edge`：边缘节点池。\n`lingjun`：灵骏节点池",
+                      "example": "ess",
+                      "title_en": "节点池类型。",
+                      "title_zh": "节点池类型。",
+                      "type": "string"
+                    },
+                    "updated": {
+                      "description_en": "The time when the node pool was last updated",
+                      "description_zh": "节点池更新时间",
+                      "example": "2025-04-15T16:33:32.823+08:00",
+                      "title_en": "节点池更新时间。",
+                      "title_zh": "节点池更新时间。",
+                      "type": "string"
+                    }
+                  },
+                  "title_en": "节点池详情。",
+                  "title_zh": "节点池详情。",
+                  "type": "object"
+                },
+                "scaling_group": {
+                  "description_en": "The scaling group configuration of the node pool",
+                  "description_zh": "节点池伸缩组配置",
+                  "properties": {
+                    "auto_renew": {
+                      "description_en": "Specifies whether to enable auto-renewal for nodes. This parameter takes effect only when `instance_charge_type` is set to `PrePaid`. Valid values:\n\n`true`: Auto-renewal is enabled.\n`false`: Auto-renewal is not enabled",
+                      "description_zh": "节点是否开启自动续费，当`instance_charge_type`取值为`PrePaid`时才生效，取值：\n\n`true`：自动续费。\n`false`：不自动续费",
+                      "example": "false",
+                      "title_en": "节点是否开启自动续费",
+                      "title_zh": "节点是否开启自动续费",
+                      "type": "boolean"
+                    },
+                    "auto_renew_period": {
+                      "description_en": "The duration of each auto-renewal cycle. Valid values:\nPeriodUnit=Week: 1, 2, 3.\nPeriodUnit=Month: 1, 2, 3, 6, 12, 24, 36, 48, 60",
+                      "description_zh": "单次自动续费的续费时长。取值范围：\nPeriodUnit=Week 时：1、2、3。\nPeriodUnit=Month 时：1、2、3、6、12、24、36、48、60",
+                      "example": "0",
+                      "format": "int64",
+                      "title_en": "节点自动续费周期",
+                      "title_zh": "节点自动续费周期",
+                      "type": "integer"
+                    },
+                    "cis_enabled": {
+                      "deprecated": true,
+                      "description_en": "[Deprecated]\n\nUse the security_hardening_os parameter instead",
+                      "description_zh": "【该字段已废弃】\n\n请使用参数security_hardening_os替代",
+                      "example": "false",
+                      "title_en": "【已废弃】请使用security_hardening_os参数代替",
+                      "title_zh": "【已废弃】请使用security_hardening_os参数代替",
+                      "type": "boolean"
+                    },
+                    "compensate_with_on_demand": {
+                      "description_en": "When `multi_az_policy` is set to `COST_OPTIMIZED`, specifies whether to allow automatic creation of pay-as-you-go instances to meet ECS instance quantity requirements when spot instances cannot be created due to price or inventory reasons. Valid values:\n\n`true`: Allows automatic creation of pay-as-you-go instances to meet ECS instance quantity requirements.\n`false`: Does not allow automatic creation of pay-as-you-go instances to meet ECS instance quantity requirements",
+                      "description_zh": "当`multi_az_policy`取值为`COST_OPTIMIZED`时，如果因价格、库存等原因无法创建足够的抢占式实例，是否允许自动尝试创建按量实例满足ECS实例数量要求。取值：\n\n`true`：允许自动尝试创建按量实例满足ECS实例数量要求。\n`false`：不允许自动尝试创建按量实例满足ECS实例数量要求",
+                      "example": "true",
+                      "title_en": "当MultiAZPolicy取值为COST_OPTIMIZED时，如果因价格、库存等原因无法创建足够的抢占式实例，是否允许自动尝试创建按量实例满足ECS实例数量要求。取值范围：true：允许。false：不允许。默认值：true",
+                      "title_zh": "当MultiAZPolicy取值为COST_OPTIMIZED时，如果因价格、库存等原因无法创建足够的抢占式实例，是否允许自动尝试创建按量实例满足ECS实例数量要求。取值范围：true：允许。false：不允许。默认值：true",
+                      "type": "boolean"
+                    },
+                    "cpu_options": {
+                      "description_en": "The CPU configuration options",
+                      "description_zh": "CPU 相关配置选项",
+                      "properties": {
+                        "nested_virtualization": {
+                          "description_en": "Specifies whether nested virtualization is enabled. Valid values:\n\ndisabled: Nested virtualization is disabled.\nenabled: Nested virtualization is enabled",
+                          "description_zh": "是否开启嵌套虚拟化。取值范围：\ndisabled：关闭嵌套虚拟化。\nenabled：开启嵌套虚拟化",
+                          "enum": [
+                            "disabled",
+                            "enabled"
+                          ],
+                          "example": "enabled",
+                          "title_en": "是否开启嵌套虚拟化。取值范围：\ndisabled：关闭嵌套虚拟化。\nenabled：开启嵌套虚拟化。",
+                          "title_zh": "是否开启嵌套虚拟化。取值范围：\ndisabled：关闭嵌套虚拟化。\nenabled：开启嵌套虚拟化。",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "CPU 相关配置选项。",
+                      "title_zh": "CPU 相关配置选项。",
+                      "type": "object"
+                    },
+                    "data_disks": {
+                      "description_en": "The configurations of node data cloud disks, including type and size",
+                      "description_zh": "节点数据盘类型、大小等配置的组合",
+                      "itemName": "data_disks",
+                      "items": {
+                        "$ref": "#/components/schemas/data_disk",
+                        "description_en": "The configuration of a node data cloud disk",
+                        "description_zh": "节点数据盘配置"
+                      },
+                      "title_en": "数据盘配置。",
+                      "title_zh": "数据盘配置。",
+                      "type": "array"
+                    },
+                    "deploymentset_id": {
+                      "description_en": "The deployment set ID",
+                      "description_zh": "部署集ID",
+                      "example": "ds-bp1d19mmbsv3jf6xxxxx",
+                      "title_en": "部署集ID。",
+                      "title_zh": "部署集ID。",
+                      "type": "string"
+                    },
+                    "desired_size": {
+                      "description_en": "The desired number of nodes in the node pool",
+                      "description_zh": "节点池期望节点数",
+                      "example": "2",
+                      "format": "int64",
+                      "title_en": "节点池期望节点数",
+                      "title_zh": "节点池期望节点数",
+                      "type": "integer"
+                    },
+                    "disk_init": {
+                      "description_en": "The block device initialization configuration",
+                      "description_zh": "块设备初始化配置",
+                      "itemName": "disk_init",
+                      "items": {
+                        "$ref": "#/components/schemas/DiskInit",
+                        "description_en": "The DiskInit configuration",
+                        "description_zh": "DiskInit配置"
+                      },
+                      "title_en": "块设备初始化配置。",
+                      "title_zh": "块设备初始化配置。",
+                      "type": "array"
+                    },
+                    "enable_high_density_mode": {
+                      "description_en": "Specifies whether to enable high-density cloud disk mode. This is supported only when the node pool uses instance types. When enabled, the total number of system disks and data cloud disks does not exceed the maximum number of high-density cloud disks supported by the instance type",
+                      "description_zh": "是否开启高密云盘模式。仅在节点池使用实例规格时支持，开启后系统盘与数据盘之和不超过规格支持的高密云盘数量",
+                      "example": "false",
+                      "title_en": "是否开启高密云盘模式。仅在节点池使用实例规格时支持，开启后系统盘与数据盘之和不超过规格支持的高密云盘数量。",
+                      "title_zh": "是否开启高密云盘模式。仅在节点池使用实例规格时支持，开启后系统盘与数据盘之和不超过规格支持的高密云盘数量。",
+                      "type": "boolean"
+                    },
+                    "image_id": {
+                      "description_en": "The custom image ID. You can call `DescribeKubernetesVersionMetadata` to query the images supported by the system",
+                      "description_zh": "自定义镜像ID，可通过`DescribeKubernetesVersionMetadata`查询系统支持的镜像",
+                      "example": "aliyun_3_x64_20G_alibase_20241218.vhd",
+                      "title_en": "自定义镜像。",
+                      "title_zh": "自定义镜像。",
+                      "type": "string"
+                    },
+                    "image_type": {
+                      "description_en": "The operating system image type. Valid values:\n`AliyunLinux`: Alinux2 image.\n`AliyunLinuxSecurity`: Alinux2 UEFI image.\n`AliyunLinux3`: Alinux3 image.\n`AliyunLinux3Arm64`: Alinux3 ARM image.\n`AliyunLinux3Security`: Alinux3 UEFI image.\n`CentOS`: CentOS image.\n`Windows`: Windows image.\n`WindowsCore`: WindowsCore image.\n`ContainerOS`: container-optimized image.\n`AliyunLinux3ContainerOptimized`: Alinux3 container-optimized image",
+                      "description_zh": "操作系统镜像类型。\n`AliyunLinux`：Alinux2镜像。\n`AliyunLinuxSecurity`：Alinux2镜像UEFI版。\n`AliyunLinux3`：Alinux3镜像。\n`AliyunLinux3Arm64`：Alinux3镜像ARM版。\n`AliyunLinux3Security`：Alinux3镜像UEFI版。\n`CentOS`：CentOS镜像。\n`Windows`：Windows镜像。\n`WindowsCore`：WindowsCore镜像。\n`ContainerOS`：容器优化镜像。\n`AliyunLinux3ContainerOptimized`: Alinux3镜像容器优化版",
+                      "example": "AliyunLinux3",
+                      "title_en": "操作系统发行版类型，推荐使用该字段指定节点操作系统。取值：CentOS、AliyunLinux、AliyunLinux Qboot、AliyunLinuxUEFI、AliyunLinux3、Windows、WindowsCore、AliyunLinux3Arm64、ContainerOS。",
+                      "title_zh": "操作系统发行版类型，推荐使用该字段指定节点操作系统。取值：CentOS、AliyunLinux、AliyunLinux Qboot、AliyunLinuxUEFI、AliyunLinux3、Windows、WindowsCore、AliyunLinux3Arm64、ContainerOS。",
+                      "type": "string"
+                    },
+                    "instance_charge_type": {
+                      "description_en": "The billing method of nodes in the node pool. Valid values:\n\n`PrePaid`: subscription.\n`PostPaid`: pay-as-you-go",
+                      "description_zh": "节点池节点付费类型，取值：\n\n`PrePaid`：预付费。\n`PostPaid`：按量付费",
+                      "example": "PostPaid",
+                      "title_en": "节点付费类型",
+                      "title_zh": "节点付费类型",
+                      "type": "string"
+                    },
+                    "instance_patterns": {
+                      "description_en": "The instance attribute configurations",
+                      "description_zh": "实例属性配置",
+                      "itemName": "instance_pattern",
+                      "items": {
+                        "$ref": "#/components/schemas/instance_patterns",
+                        "description_en": "The instance attributes",
+                        "description_zh": "实例属性",
+                        "title_en": "实例属性",
+                        "title_zh": "实例属性"
+                      },
+                      "title_en": "实例属性",
+                      "title_zh": "实例属性",
+                      "type": "array"
+                    },
+                    "instance_types": {
+                      "description_en": "The list of node instance types. You can select multiple instance types as alternatives. When each node is created, the system attempts to purchase instances starting from the first specification until the creation succeeds. The actual instance type purchased may vary depending on inventory availability",
+                      "description_zh": "节点实例规格列表，您可以选择多个实例规格作为备选，每个节点创建时，将从第一个规格开始尝试购买，直到创建成功。最终购买的实例规格可能随库存变化而不同",
+                      "example": "ecs.n4.large",
+                      "itemName": "instance_types",
+                      "items": {
+                        "description_en": "The node instance type",
+                        "description_zh": "节点实例规格",
+                        "example": "ecs.n4.large",
+                        "type": "string"
+                      },
+                      "title_en": "实例规格。",
+                      "title_zh": "实例规格。",
+                      "type": "array"
+                    },
+                    "internet_charge_type": {
+                      "description_en": "The billing method for the public IP addresses of nodes.\n\nPayByBandwidth: billed by fixed bandwidth.\nPayByTraffic: billed by traffic usage",
+                      "description_zh": "节点公网IP网络计费类型。\n\nPayByBandwidth：按固定带宽计费。\nPayByTraffic：按使用流量计费",
+                      "example": "PayByBandwidth",
+                      "title_en": "节点公网IP网络计费类型",
+                      "title_zh": "节点公网IP网络计费类型",
+                      "type": "string"
+                    },
+                    "internet_max_bandwidth_out": {
+                      "description_en": "The maximum outbound public bandwidth for nodes, in Mbps (Mega bit per second). Valid values: 1 to 100",
+                      "description_zh": "节点公网IP出带宽最大值，单位为Mbps（Mega bit per second），取值范围：1~100",
+                      "example": "10",
+                      "format": "int64",
+                      "title_en": "节点公网IP出带宽最大值，单位为Mbps（Mega bit per second），取值范围：1~100",
+                      "title_zh": "节点公网IP出带宽最大值，单位为Mbps（Mega bit per second），取值范围：1~100",
+                      "type": "integer"
+                    },
+                    "key_pair": {
+                      "description_en": "The name of the key pair, mutually exclusive with `login_password`.\n\nFor managed node pools, only `key_pair` is supported",
+                      "description_zh": "密钥对名称，和`login_password`二选一。\n\n当节点池为托管版节点池时，只支持`key_pair`",
+                      "example": "pro-nodepool",
+                      "title_en": "密钥对名称，和login_password二选一。",
+                      "title_zh": "密钥对名称，和login_password二选一。",
+                      "type": "string"
+                    },
+                    "login_as_non_root": {
+                      "description_en": "Specifies whether the scaled-out ECS instances use a non-root user for logon.\n\ntrue: Log on as a non-root user (ecs-user).\n\nfalse: Log on as the root user",
+                      "description_zh": "弹出的ECS实例是否使用以非root用户登录。\n\ntrue：以非root用户（ecs-user）登录。\n\nfalse：以root用户登录",
+                      "example": "true",
+                      "title_en": "弹出的ECS实例是否使用以非root用户登陆。",
+                      "title_zh": "弹出的ECS实例是否使用以非root用户登陆。",
+                      "type": "boolean"
+                    },
+                    "login_password": {
+                      "description_en": "The SSH logon password, mutually exclusive with `key_pair`. The password must be 8 to 30 characters in length and must contain at least three of the following character types: uppercase letters, lowercase letters, digits, and special characters.\n\nFor security purposes, the password returned in the query result is encrypted",
+                      "description_zh": "SSH登录密码，和`key_pair`二选一。密码规则为8~30个字符，且至少同时包含三项（大小写字母、数字和特殊符号）。\n\n出于安全性考虑，密码查询结果经过加密处理",
+                      "example": "******",
+                      "title_en": "SSH登录密码。",
+                      "title_zh": "SSH登录密码。",
+                      "type": "string"
+                    },
+                    "multi_az_policy": {
+                      "description_en": "The multi-zone scaling policy for ECS instances in the scaling group. Valid values:\n\n`PRIORITY`: Scales based on the vSwitches (VSwitchIds.N) you define. When ECS instances cannot be created in the zone of the highest-priority vSwitch, the system automatically uses the next-priority vSwitch to create ECS instances.\n\n`COST_OPTIMIZED`: Creates instances by vCPU unit price from low to high. When the scaling configuration sets multiple instance types with the preemptible billing method, spot instances are created first. You can use the `CompensateWithOnDemand` parameter to specify whether to automatically create pay-as-you-go instances when spot instances cannot be created due to insufficient inventory.\n\n`COST_OPTIMIZED` takes effect only when multiple instance types are specified in the scaling configuration or spot instances are selected.\n\n`BALANCE`: Evenly allocates ECS instances across the multiple zones specified in the scaling group. If the zones become unbalanced due to insufficient inventory, you can call the [RebalanceInstances]（https://help.aliyun.com/document_detail/71516.html） API operation to rebalance resources",
+                      "description_zh": "多可用区伸缩组ECS实例扩缩容策略。取值：\n\n`PRIORITY`：根据您定义的虚拟交换机（VSwitchIds.N）扩缩容。当优先级较高的虚拟交换机所在可用区无法创建ECS实例时，自动使用下一优先级的虚拟交换机创建ECS实例。\n\n`COST_OPTIMIZED`：按vCPU单价从低到高进行尝试创建。当伸缩配置设置了抢占式计费方式的多实例规格时，优先创建对应抢占式实例。您可以继续通过`CompensateWithOnDemand`参数指定当抢占式实例由于库存等原因无法创建时，是否自动尝试以按量付费的方式创建。\n\n`COST_OPTIMIZED`仅在伸缩配置设置了多实例规格或者选用了抢占式实例的情况下生效。\n\n`BALANCE`：在伸缩组指定的多可用区之间均匀分配ECS实例。如果由于库存不足等原因可用区之间变得不平衡，您可以通过API `RebalanceInstances`平衡资源。更多信息，请参见[RebalanceInstances]（https://help.aliyun.com/document_detail/71516.html）",
+                      "example": "COST_OPTIMIZED",
+                      "title_en": "多可用区伸缩组ECS实例扩缩容策略",
+                      "title_zh": "多可用区伸缩组ECS实例扩缩容策略",
+                      "type": "string"
+                    },
+                    "on_demand_base_capacity": {
+                      "description_en": "The minimum number of pay-as-you-go instances required in the scaling group. Valid values: [0,1000]. When the number of pay-as-you-go instances is less than this value, pay-as-you-go instances are created first",
+                      "description_zh": "伸缩组所需要按量实例个数的最小值，取值范围：[0,1000]。当按量实例个数少于该值时，将优先创建按量实例",
+                      "example": "0",
+                      "format": "int64",
+                      "title_en": "伸缩组所需要按量实例个数的最小值，取值范围：0~1000。当按量实例个数少于该值时，将优先创建按量实例。",
+                      "title_zh": "伸缩组所需要按量实例个数的最小值，取值范围：0~1000。当按量实例个数少于该值时，将优先创建按量实例。",
+                      "type": "integer"
+                    },
+                    "on_demand_percentage_above_base_capacity": {
+                      "description_en": "The percentage of pay-as-you-go instances among the excess instances after the minimum number of pay-as-you-go instances (`on_demand_base_capacity`) is met. Valid values: [0,100]",
+                      "description_zh": "伸缩组满足最小按量实例数（`on_demand_base_capacity`）要求后，超出的实例中按量实例应占的比例。取值范围：[0,100]",
+                      "example": "20",
+                      "format": "int64",
+                      "title_en": "伸缩组满足最小按量实例数（OnDemandBaseCapacity）要求后，超出的实例中按量实例应占的比例，取值范围：0～100。",
+                      "title_zh": "伸缩组满足最小按量实例数（OnDemandBaseCapacity）要求后，超出的实例中按量实例应占的比例，取值范围：0～100。",
+                      "type": "integer"
+                    },
+                    "period": {
+                      "description_en": "The subscription duration of nodes. This parameter takes effect and is required only when `instance_charge_type` is set to `PrePaid`.\n\nWhen `period_unit=Week`, valid values of `period`: {1, 2, 3, 4}.\nWhen `period_unit=Month`, valid values of `period`: {1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 24, 36, 48, 60}",
+                      "description_zh": "节点包年包月时长，当`instance_charge_type`取值为`PrePaid`时才生效且为必选值。\n\n当`period_unit=Week`时，`period`取值范围：{ 1、2、3、4}。\n当`period_unit=Month`时，`period` 取值范围：{1、2、3、4、5、6、7、8、9、12、24、36、48、60}",
+                      "example": "1",
+                      "format": "int64",
+                      "title_en": "节点包年包月时长。",
+                      "title_zh": "节点包年包月时长。",
+                      "type": "integer"
+                    },
+                    "period_unit": {
+                      "description_en": "The billing epoch of nodes. This parameter must be specified when `instance_charge_type` is set to `PrePaid`. Valid values:\n\n`Month`: month as the compute unit (CU).\n`Week`: week as the compute unit (CU)",
+                      "description_zh": "节点付费周期，当`instance_charge_type`取值为`PrePaid`时时候需要指定周期。\n\n`Month`：以月为计时单位。\n`Week`：以周为计算单位",
+                      "example": "Month",
+                      "title_en": "节点包年包月周期。",
+                      "title_zh": "节点包年包月周期。",
+                      "type": "string"
+                    },
+                    "platform": {
+                      "description_en": "[Deprecated]\n\nThe operating system distribution. Valid values:\n\n`CentOS`\n`AliyunLinux`\n`Windows`\n`WindowsCore`",
+                      "description_zh": "【该字段已废弃】\n\n操作系统发行版。取值：\n\n`CentOS`\n`AliyunLinux`\n`Windows`\n`WindowsCore`",
+                      "example": "AliyunLinux",
+                      "title_en": "【该字段已废弃】请使用image_type替代\n操作系统发行版，和image_type二选一",
+                      "title_zh": "【该字段已废弃】请使用image_type替代\n操作系统发行版，和image_type二选一",
+                      "type": "string"
+                    },
+                    "private_pool_options": {
+                      "description_en": "The private pool options",
+                      "description_zh": "私有池选项",
+                      "properties": {
+                        "id": {
+                          "description_en": "The private pool ID, which is the elasticity assurance ID or capacity reservation ID",
+                          "description_zh": "私有池ID。即弹性保障服务ID或容量预定服务ID",
+                          "example": "eap-bp67acfmxazb4****",
+                          "title_en": "私有池ID。即弹性保障服务ID或容量预定服务ID。",
+                          "title_zh": "私有池ID。即弹性保障服务ID或容量预定服务ID。",
+                          "type": "string"
+                        },
+                        "match_criteria": {
+                          "description_en": "The private node pool type. Specifies the capacity option for the private pool used to launch instances. After an elasticity assurance or capacity reservation takes effect, a private pool is generated for instance launch. Valid values:\n\n`Open`: Open mode. Automatically matches open-type private pool capacity. If no matching private pool capacity is available, public pool resources are used.\n\n`Target`: Specified mode. Uses the specified private pool capacity to launch instances. If the private pool capacity is unavailable, the instance fails to launch.\n\n`None`: Do not use mode. The instance launch does not use private pool capacity",
+                          "description_zh": "私有节点池类型，实例启动的私有池容量选项。弹性保障服务或容量预定服务在生效后会生成私有池容量，供实例启动时选择。取值：\n\n`Open`：开放模式。将自动匹配开放类型的私有池容量。如果没有符合条件的私有池容量，则使用公共池资源启动。\n\n`Target`：指定模式。使用指定的私有池容量启动实例，如果该私有池容量不可用，则实例会启动失败。\n\n`None`：不使用模式。实例启动将不使用私有池容量",
+                          "example": "Open",
+                          "title_en": "实例启动的私有池容量选项。弹性保障服务或容量预定服务在生效后会生成私有池容量，供实例启动时选择。取值范围：  Open：开放模式。将自动匹配开放类型的私有池容量。如果没有符合条件的私有池容量，则使用公共池资源启动。该模式下无需设置PrivatePoolOptions.Id参数。  Target：指定模式。使用指定的私有池容量启动实例，如果该私有池容量不可用，则实例会启动失败。该模式下必须指定私有池ID，即PrivatePoolOptions.Id参数为必填项。  None：不使用模式。实例启动将不使用私有池容量。",
+                          "title_zh": "实例启动的私有池容量选项。弹性保障服务或容量预定服务在生效后会生成私有池容量，供实例启动时选择。取值范围：  Open：开放模式。将自动匹配开放类型的私有池容量。如果没有符合条件的私有池容量，则使用公共池资源启动。该模式下无需设置PrivatePoolOptions.Id参数。  Target：指定模式。使用指定的私有池容量启动实例，如果该私有池容量不可用，则实例会启动失败。该模式下必须指定私有池ID，即PrivatePoolOptions.Id参数为必填项。  None：不使用模式。实例启动将不使用私有池容量。",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "私有池选项。",
+                      "title_zh": "私有池选项。",
+                      "type": "object"
+                    },
+                    "ram_policy": {
+                      "description_en": "This field is deprecated. Use ram_role_name instead",
+                      "description_zh": "该字段已废弃，请使用ram_role_name替代",
+                      "example": "KubernetesWorkerRole-021dc54f-929b-437a-8ae0-34c24d3e****",
+                      "title_en": "该字段已废弃，请改为使用 ram_role_name 字段。",
+                      "title_zh": "该字段已废弃，请改为使用 ram_role_name 字段。",
+                      "type": "string"
+                    },
+                    "ram_role_name": {
+                      "description_en": "The Worker RAM role name",
+                      "description_zh": "Worker RAM角色名称",
+                      "example": "KubernetesWorkerRole-4a4fa089-80c1-48a5-b3c6-9349311f****",
+                      "title_en": "Worker RAM角色名称。",
+                      "title_zh": "Worker RAM角色名称。",
+                      "type": "string"
+                    },
+                    "rds_instances": {
+                      "description_en": "If RDS instances are specified, the ECS instances in the cluster node pool are automatically added to the RDS access whitelist",
+                      "description_zh": "如果指定了RDS实例列表，集群节点ECS会自动加入RDS访问白名单",
+                      "itemName": "rds_instance",
+                      "items": {
+                        "description_en": "The RDS instance",
+                        "description_zh": "RDS实例",
+                        "example": "rm-xxx",
+                        "type": "string"
+                      },
+                      "title_en": "RDS实例列表。",
+                      "title_zh": "RDS实例列表。",
+                      "type": "array"
+                    },
+                    "resource_pool_options": {
+                      "description_en": "The resource pool and resource pool policy used when creating instances",
+                      "description_zh": "创建实例时使用的资源池及资源池策略",
+                      "properties": {
+                        "private_pool_ids": {
+                          "description_en": "The list of private pool IDs",
+                          "description_zh": "私有池 ID列表",
+                          "itemName": "private_pool_id",
+                          "items": {
+                            "description_en": "The private pool ID",
+                            "description_zh": "私有池 ID",
+                            "example": "eap-bp1c1fohub5jccwi****",
+                            "title_en": "私有池 ID。",
+                            "title_zh": "私有池 ID。",
+                            "type": "string"
+                          },
+                          "title_en": "私有池 ID列表。",
+                          "title_zh": "私有池 ID列表。",
+                          "type": "array"
+                        },
+                        "strategy": {
+                          "description_en": "The resource pool policy used when creating instances. Valid values:\nPrivatePoolFirst: Private pool first.\nPrivatePoolOnly: Private pool only.\nNone: Do not use a resource pool policy",
+                          "description_zh": "创建实例时使用的资源池策略。取值范围：\nPrivatePoolFirst：私有池优先。\nPrivatePoolOnly：仅限私有池。\nNone：不使用资源池策略",
+                          "enum": [
+                            "PrivatePoolFirst",
+                            "PrivatePoolOnly",
+                            "None"
+                          ],
+                          "example": "PrivatePoolFirst",
+                          "title_en": "创建实例时使用的资源池策略。取值范围：\nPrivatePoolFirst：私有池优先。\nPrivatePoolOnly：仅限私有池。\nNone：不使用资源池策略。",
+                          "title_zh": "创建实例时使用的资源池策略。取值范围：\nPrivatePoolFirst：私有池优先。\nPrivatePoolOnly：仅限私有池。\nNone：不使用资源池策略。",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "创建实例时使用的资源池及资源池策略。",
+                      "title_zh": "创建实例时使用的资源池及资源池策略。",
+                      "type": "object"
+                    },
+                    "scaling_group_id": {
+                      "description_en": "The scaling group ID",
+                      "description_zh": "伸缩组ID",
+                      "example": "asg-2ze8n5qw4atggut8****",
+                      "title_en": "扩容组ID",
+                      "title_zh": "扩容组ID",
+                      "type": "string"
+                    },
+                    "scaling_policy": {
+                      "description_en": "The scaling group mode. Valid values:\n\n`release`: Standard mode. Scales by creating and releasing ECS instances based on resource usage.\n`recycle`: Swift mode. Scales by creating, stopping, and starting ECS instances, which improves scaling speed. (Compute resources are not charged during the stopped state. Only storage fees are charged, except for local disk instance types.)",
+                      "description_zh": "伸缩组模式，取值：\n\n`release`：标准模式，根据申请资源值的使用量，通过创建、释放ECS的方式进行伸缩。\n`recycle`：极速模式，通过创建、停机、启动的方式进行伸缩，提高再次伸缩的速度（停机时计算资源不收费，只收取存储费用，本地盘机型除外）",
+                      "example": "release",
+                      "title_en": "扩容策略。",
+                      "title_zh": "扩容策略。",
+                      "type": "string"
+                    },
+                    "security_group_id": {
+                      "description_en": "[Deprecated]\n\nThe security group ID of the node pool. When the node pool is associated with multiple security groups, this is the first value in `security_group_ids`",
+                      "description_zh": "【该字段已废弃】\n\n节点池安全组ID，当节点池绑定多个安全组时，为`security_group_ids`中的第一个值",
+                      "example": "sg-2ze1iuk12m2sb4c4****",
+                      "title_en": "【该字段已废弃】请使用security_group_ids替代\n安全组ID。",
+                      "title_zh": "【该字段已废弃】请使用security_group_ids替代\n安全组ID。",
+                      "type": "string"
+                    },
+                    "security_group_ids": {
+                      "description_en": "The list of security group IDs for the node pool",
+                      "description_zh": "节点池安全组ID列表",
+                      "itemName": "security_group_ids",
+                      "items": {
+                        "description_en": "The list of security group IDs for the node pool",
+                        "description_zh": "节点池安全组ID列表",
+                        "example": "sg-2ze1iuk12m2sb4c4****",
+                        "type": "string"
+                      },
+                      "title_en": "多安全组ID",
+                      "title_zh": "多安全组ID",
+                      "type": "array"
+                    },
+                    "security_hardening_os": {
+                      "description_en": "Alibaba Cloud OS security hardening. Valid values:\n\n`true`: Enables Alibaba Cloud OS security hardening.\n`false`: Does not enable Alibaba Cloud OS security hardening.\n\nDefault value: `false`",
+                      "description_zh": "阿里云OS安全加固。取值：\n\n`true`：开启阿里云OS安全加固。\n`false`：不开启阿里云OS安全加固。\n\n默认值：`false`",
+                      "example": "false",
+                      "title_en": "是否开启阿里云OS安全加固。",
+                      "title_zh": "是否开启阿里云OS安全加固。",
+                      "type": "boolean"
+                    },
+                    "soc_enabled": {
+                      "description_en": "Specifies whether to enable MLPS 2.0 security hardening. You can enable this feature only when the system image is Alibaba Cloud Linux 2 or Alibaba Cloud Linux 3. Alibaba Cloud provides classified protection compliance baseline check standards and scanning programs for Alibaba Cloud Linux 2 and Alibaba Cloud Linux 3 MLPS 2.0 Level 3 images",
+                      "description_zh": "是否开启等保加固，仅当系统镜像选择Alibaba Cloud Linux 2或Alibaba Cloud Linux 3时，可为节点开启等保加固。阿里云为Alibaba Cloud Linux 2和Alibaba Cloud Linux 3等保2.0三级版镜像提供等保合规的基线检查标准和扫描程序",
+                      "example": "false",
+                      "title_en": "是否开启等保加固，仅当系统镜像选择Alibaba Cloud Linux 2或Alibaba Cloud Linux 3时，可为节点开启等保加固。阿里云为Alibaba Cloud Linux 2和Alibaba Cloud Linux 3等保2.0三级版镜像提供等保合规的基线检查标准和扫描程序。",
+                      "title_zh": "是否开启等保加固，仅当系统镜像选择Alibaba Cloud Linux 2或Alibaba Cloud Linux 3时，可为节点开启等保加固。阿里云为Alibaba Cloud Linux 2和Alibaba Cloud Linux 3等保2.0三级版镜像提供等保合规的基线检查标准和扫描程序。",
+                      "type": "boolean"
+                    },
+                    "spot_instance_pools": {
+                      "description_en": "The number of available instance types. The scaling group creates spot instances across the lowest-cost instance types in a balanced manner. Valid values: [1,10]",
+                      "description_zh": "指定可用实例规格的个数，伸缩组将按成本最低的多个规格均衡创建抢占式实例。取值范围：[1,10]",
+                      "example": "5",
+                      "format": "int64",
+                      "title_en": "指定可用实例规格的个数，伸缩组将按成本最低的多个规格均衡创建抢占式实例。取值范围：1~10。",
+                      "title_zh": "指定可用实例规格的个数，伸缩组将按成本最低的多个规格均衡创建抢占式实例。取值范围：1~10。",
+                      "type": "integer"
+                    },
+                    "spot_instance_remedy": {
+                      "description_en": "Specifies whether to enable supplementing spot instances. When enabled, the scaling group attempts to create new instances to replace spot instances that are about to be reclaimed. Valid values:\n\n`true`: Enables supplementing spot instances.\n`false`: Does not enable supplementing spot instances",
+                      "description_zh": "是否开启补齐抢占式实例。开启后，当收到抢占式实例将被回收的系统消息时，伸缩组将尝试创建新的实例，替换掉将被回收的抢占式实例。取值：\n\n`true`：开启补齐抢占式实例。\n`false`：不开启补齐抢占式实例",
+                      "example": "false",
+                      "title_en": "是否开启补齐抢占式实例。开启后，当收到抢占式实例将被回收的系统消息时，伸缩组将尝试创建新的实例，替换掉将被回收的抢占式实例。",
+                      "title_zh": "是否开启补齐抢占式实例。开启后，当收到抢占式实例将被回收的系统消息时，伸缩组将尝试创建新的实例，替换掉将被回收的抢占式实例。",
+                      "type": "boolean"
+                    },
+                    "spot_price_limit": {
+                      "description_en": "The price range configurations for spot instances",
+                      "description_zh": "抢占式实例市场价格区间配置",
+                      "itemName": "spot_price_limit",
+                      "items": {
+                        "description_en": "The price range configuration for spot instances. You can set different price ranges for different instance types",
+                        "description_zh": "抢占实例市场价格区间配置，可为不同实例规格设置不同的价格区间",
+                        "properties": {
+                          "instance_type": {
+                            "description_en": "The spot instance type",
+                            "description_zh": "抢占式实例规格",
+                            "example": "ecs.c6.large",
+                            "title_en": "抢占实例规格。",
+                            "title_zh": "抢占实例规格。",
+                            "type": "string"
+                          },
+                          "price_limit": {
+                            "description_en": "The price range for a single instance.\n\n<props=\"china\">Unit: CNY/hour.</props>\n\n<props=\"intl\">Unit: USD/hour.</props>",
+                            "description_zh": "单台实例市场价格区间。\n\n<props=\"china\">单位：元/时。</props>\n\n<props=\"intl\">单位：美元/时。</props>",
+                            "example": "0.39",
+                            "title_en": "抢占实例单价。",
+                            "title_zh": "抢占实例单价。",
+                            "type": "string"
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "title_en": "抢占实例价格上限配置。",
+                      "title_zh": "抢占实例价格上限配置。",
+                      "type": "array"
+                    },
+                    "spot_strategy": {
+                      "description_en": "The type of spot instance. Valid values:\nNoSpot: non-spot instance.\nSpotWithPriceLimit: spot instance with a price limit.\nSpotAsPriceGo: system automatically bids at the current market price.\n\nFor more information, see [Spot instances]（https://help.aliyun.com/document_detail/157759.html）",
+                      "description_zh": "抢占式实例类型，取值：\nNoSpot：非抢占式实例。\nSpotWithPriceLimit：设置抢占实例价格上限。\nSpotAsPriceGo：系统自动出价，跟随当前市场实际价格。\n\n更多信息，请参见[抢占式实例]（https://help.aliyun.com/document_detail/157759.html）",
+                      "example": "NoSpot",
+                      "title_en": "抢占式实例类型",
+                      "title_zh": "抢占式实例类型",
+                      "type": "string"
+                    },
+                    "system_disk_bursting_enabled": {
+                      "description_en": "Specifies whether to enable burst performance for the node system cloud disk. Valid values:\ntrue: Enabled. When enabled, the cloud disk temporarily boosts performance during sudden data read/write pressure from fluctuating workloads until the workload stabilizes.\nfalse: Not enabled.\n\nThis parameter is supported only when `system_disk_category` is set to `cloud_auto`. For more information, see [ESSD AutoPL cloud disks]（https://help.aliyun.com/document_detail/368372.html）",
+                      "description_zh": "节点系统盘是否开启Burst（性能突发）。 取值：\ntrue：开启。开启后，波动性业务面临突发的数据读写压力时，云盘会根据业务实际情况临时提升云盘性能，直至业务恢复至平稳状态。\nfalse：不开启。\n\n当`system_disk_category`取值为`cloud_auto`时才支持设置该参数。更多信息，请参见[ESSD AutoPL云盘]（https://help.aliyun.com/document_detail/368372.html）",
+                      "example": "true",
+                      "title_en": "节点系统盘是否开启Burst（性能突发），磁盘类型为cloud_auto时配置。",
+                      "title_zh": "节点系统盘是否开启Burst（性能突发），磁盘类型为cloud_auto时配置。",
+                      "type": "boolean"
+                    },
+                    "system_disk_categories": {
+                      "description_en": "The multiple cloud disk types for the system cloud disk. When a higher-priority cloud disk type is unavailable, the system automatically attempts the next-priority cloud disk type to create the system cloud disk",
+                      "description_zh": "系统盘的多磁盘类型。当无法使用高优先级的磁盘类型时，自动尝试下一优先级的磁盘类型创建系统盘",
+                      "itemName": "system_disk_categories",
+                      "items": {
+                        "description_en": "The type of the node system cloud disk.\n\nValid values:\n`cloud_efficiency`: ultra cloud disk.\n`cloud_ssd`: standard SSD.\n`cloud_essd`: ESSD.\n`cloud_auto`: ESSD AutoPL cloud disk.\n`cloud_essd_entry`: ESSD Entry cloud disk",
+                        "description_zh": "节点系统盘类型。\n\n取值：\n`cloud_efficiency`：高效云盘。\n`cloud_ssd`：SSD云盘。\n`cloud_essd`：ESSD云盘。\n`cloud_auto`：ESSD AutoPL 云盘。\n`cloud_essd_entry`：ESSD Entry 云盘",
+                        "enum": [],
+                        "example": "EESSD云盘",
+                        "title_en": "节点系统盘类型",
+                        "title_zh": "节点系统盘类型",
+                        "type": "string"
+                      },
+                      "maxItems": 10,
+                      "required": false,
+                      "title_en": "系统盘的多磁盘类型。当无法使用高优先级的磁盘类型时，自动尝试下一优先级的磁盘类型创建系统盘。取值范围：cloud：普通云盘。cloud_efficiency：高效云盘。cloud_ssd：SSD云盘。cloud_essd：ESSD云盘。",
+                      "title_zh": "系统盘的多磁盘类型。当无法使用高优先级的磁盘类型时，自动尝试下一优先级的磁盘类型创建系统盘。取值范围：cloud：普通云盘。cloud_efficiency：高效云盘。cloud_ssd：SSD云盘。cloud_essd：ESSD云盘。",
+                      "type": "array"
+                    },
+                    "system_disk_category": {
+                      "description_en": "The type of the node system cloud disk. Valid values:\n`cloud_efficiency`: ultra cloud disk.\n`cloud_ssd`: standard SSD.\n`cloud_essd`: ESSD.\n`cloud_auto`: ESSD AutoPL cloud disk.\n`cloud_essd_entry`: ESSD Entry cloud disk",
+                      "description_zh": "节点系统盘类型，取值：\n`cloud_efficiency`：高效云盘。\n`cloud_ssd`：SSD云盘。\n`cloud_essd`：ESSD云盘。\n`cloud_auto`：ESSD AutoPL 云盘。\n`cloud_essd_entry`：ESSD Entry 云盘",
+                      "example": "cloud_efficiency",
+                      "title_en": "节点系统盘类型。",
+                      "title_zh": "节点系统盘类型。",
+                      "type": "string"
+                    },
+                    "system_disk_encrypt_algorithm": {
+                      "description_en": "The encryption algorithm used by the system cloud disk. Valid values: aes-256",
+                      "description_zh": "系统盘采用的加密算法。取值范围：aes-256",
+                      "enum": [],
+                      "example": "aes-256",
+                      "title_en": "系统盘采用的加密算法。取值范围：aes-256。",
+                      "title_zh": "系统盘采用的加密算法。取值范围：aes-256。",
+                      "type": "string"
+                    },
+                    "system_disk_encrypted": {
+                      "description_en": "Specifies whether to encrypt the system cloud disk. Valid values:\n\ntrue: Encrypted.\nfalse: Not encrypted",
+                      "description_zh": "是否加密系统盘。取值：\n\ntrue：加密。\nfalse：不加密",
+                      "example": "false",
+                      "title_en": "是否加密系统盘。取值范围：true：加密。false：不加密。",
+                      "title_zh": "是否加密系统盘。取值范围：true：加密。false：不加密。",
+                      "type": "boolean"
+                    },
+                    "system_disk_kms_key_id": {
+                      "description_en": "The KMS key ID used by the system cloud disk",
+                      "description_zh": "系统盘使用的KMS密钥ID",
+                      "example": "0e478b7a-4262-4802-b8cb-00d3fb40****",
+                      "title_en": "系统盘使用的KMS密钥ID。",
+                      "title_zh": "系统盘使用的KMS密钥ID。",
+                      "type": "string"
+                    },
+                    "system_disk_performance_level": {
+                      "description_en": "The performance level of the node system cloud disk. This parameter takes effect only for ESSD cloud disks. The performance level is related to the cloud disk size. For more information, see [ESSD cloud disks]（https://help.aliyun.com/document_detail/122389.html）.\nPL0: moderate maximum concurrent I/O performance with relatively stable read/write latency.\nPL1: moderate maximum concurrent I/O performance with relatively stable read/write latency.\nPL2: high maximum concurrent I/O performance with stable read/write latency.\nPL3: ultra-high maximum concurrent I/O performance with extremely stable read/write latency",
+                      "description_zh": "节点系统盘磁盘性能，只对ESSD磁盘生效。磁盘性能等级和磁盘大小有关。更多信息，请参见[ESSD云盘]（https://help.aliyun.com/document_detail/122389.html）。\nPL0：并发极限I/O性能中等，读写时延较为稳定。\nPL1：并发极限I/O性能中等，读写时延较为稳定。\nPL2：并发极限I/O性能较高，读写时延稳定。\nPL3：并发极限I/O性能极高，读写时延极稳定",
+                      "example": "PL1",
+                      "title_en": "节点系统盘磁盘性能，只针对ESSD磁盘生效",
+                      "title_zh": "节点系统盘磁盘性能，只针对ESSD磁盘生效",
+                      "type": "string"
+                    },
+                    "system_disk_provisioned_iops": {
+                      "description_en": "The provisioned read/write IOPS for the node system cloud disk. This parameter is applicable when the cloud disk type is cloud_auto",
+                      "description_zh": "节点系统盘预配置的读写IOPS，磁盘类型为cloud_auto时配置",
+                      "example": "1000",
+                      "format": "int64",
+                      "title_en": "节点系统盘预配置的读写IOPS，磁盘类型为cloud_auto时配置。",
+                      "title_zh": "节点系统盘预配置的读写IOPS，磁盘类型为cloud_auto时配置。",
+                      "type": "integer"
+                    },
+                    "system_disk_size": {
+                      "description_en": "The size of the node system cloud disk, in GiB.\n\nValid values: [20,2048]",
+                      "description_zh": "节点系统盘大小，单位为GiB。\n\n取值范围：[20,2048]",
+                      "example": "120",
+                      "format": "int64",
+                      "title_en": "节点系统盘大小。",
+                      "title_zh": "节点系统盘大小。",
+                      "type": "integer"
+                    },
+                    "system_disk_snapshot_policy_id": {
+                      "description_en": "The snapshot policy for the system cloud disk",
+                      "description_zh": "系统盘快照策略",
+                      "example": "sp-0jl6xnmme8v7o935****",
+                      "title_en": "系统盘快照策略",
+                      "title_zh": "系统盘快照策略",
+                      "type": "string"
+                    },
+                    "tags": {
+                      "description_en": "The labels of ECS instances",
+                      "description_zh": "ECS实例标签",
+                      "itemName": "tags",
+                      "items": {
+                        "$ref": "#/components/schemas/tag",
+                        "description_en": "The node tag",
+                        "description_zh": "节点标签",
+                        "example": "[{\\\"key\\\":\\\"pkg.E2EClient.ClusterId\\\",\\\"value\\\":\\\"troopers-\\\"}]"
+                      },
+                      "title_en": "ECS标签",
+                      "title_zh": "ECS标签",
+                      "type": "array"
+                    },
+                    "vswitch_ids": {
+                      "description_en": "The list of vSwitch IDs",
+                      "description_zh": "虚拟交换机ID列表",
+                      "itemName": "vswitch_ids",
+                      "items": {
+                        "description_en": "The vSwitch ID",
+                        "description_zh": "虚拟交换机ID",
+                        "example": "vsw-2ze3ds0mdip0hdz8i****",
+                        "type": "string"
+                      },
+                      "title_en": "虚拟交换机ID。",
+                      "title_zh": "虚拟交换机ID。",
+                      "type": "array"
+                    }
+                  },
+                  "title_en": "节点池扩容组信息。",
+                  "title_zh": "节点池扩容组信息。",
+                  "type": "object"
+                },
+                "status": {
+                  "description_en": "The node pool status",
+                  "description_zh": "节点池状态",
+                  "properties": {
+                    "failed_nodes": {
+                      "description_en": "The number of failed instances",
+                      "description_zh": "失败实例数",
+                      "example": "0",
+                      "format": "int64",
+                      "title_en": "失败节点数。",
+                      "title_zh": "失败节点数。",
+                      "type": "integer"
+                    },
+                    "healthy_nodes": {
+                      "description_en": "The number of healthy instances",
+                      "description_zh": "处于健康状态实例数",
+                      "example": "3",
+                      "format": "int64",
+                      "title_en": "处于健康状态节点数。",
+                      "title_zh": "处于健康状态节点数。",
+                      "type": "integer"
+                    },
+                    "initial_nodes": {
+                      "description_en": "The number of nodes being created",
+                      "description_zh": "正在创建的节点数",
+                      "example": "0",
+                      "format": "int64",
+                      "title_en": "正在初始化节点数。",
+                      "title_zh": "正在初始化节点数。",
+                      "type": "integer"
+                    },
+                    "offline_nodes": {
+                      "description_en": "The number of offline nodes",
+                      "description_zh": "离线节点数",
+                      "example": "0",
+                      "format": "int64",
+                      "title_en": "离线节点数量。",
+                      "title_zh": "离线节点数量。",
+                      "type": "integer"
+                    },
+                    "removing_nodes": {
+                      "description_en": "The number of nodes being removed",
+                      "description_zh": "正在被移除的节点数",
+                      "example": "0",
+                      "format": "int64",
+                      "title_en": "正在被移除节点数。",
+                      "title_zh": "正在被移除节点数。",
+                      "type": "integer"
+                    },
+                    "serving_nodes": {
+                      "description_en": "The number of nodes in the serving state",
+                      "description_zh": "处于工作状态的节点数",
+                      "example": "3",
+                      "format": "int64",
+                      "title_en": "工作节点数量。",
+                      "title_zh": "工作节点数量。",
+                      "type": "integer"
+                    },
+                    "state": {
+                      "description_en": "The node pool status. Valid values:\n\n`active`: Activated.\n`scaling`: Scaling in progress.\n`removing`: Nodes are being removed.\n`deleting`: Being deleted.\n`updating`: Being updated",
+                      "description_zh": "节点池状态，取值：\n\n`active`：已激活。\n`scaling`：伸缩中。\n`removing`：节点移除中。\n`deleting`：删除中。\n`updating`：更新中",
+                      "example": "active",
+                      "title_en": "节点池状态。",
+                      "title_zh": "节点池状态。",
+                      "type": "string"
+                    },
+                    "total_nodes": {
+                      "description_en": "The total number of nodes in the node pool",
+                      "description_zh": "节点池内节点数量",
+                      "example": "3",
+                      "format": "int64",
+                      "title_en": "总节点数。",
+                      "title_zh": "总节点数。",
+                      "type": "integer"
+                    }
+                  },
+                  "title_en": "节点池状态。",
+                  "title_zh": "节点池状态。",
+                  "type": "object"
+                },
+                "tee_config": {
+                  "description_en": "The confidential computing configuration",
+                  "description_zh": "加密计算配置",
+                  "properties": {
+                    "tee_enable": {
+                      "description_en": "Specifies whether to enable confidential computing for the cluster. Valid values:\n\n`true`: Enabled.\n`false`: Not enabled",
+                      "description_zh": "是否开启加密计算集群，取值：\n\n`true`：开启。\n`false`：不开启",
+                      "example": "false",
+                      "title_en": "是否为加密计算节点池。",
+                      "title_zh": "是否为加密计算节点池。",
+                      "type": "boolean"
+                    }
+                  },
+                  "title_en": "加密计算节点池信息。",
+                  "title_zh": "加密计算节点池信息。",
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "title_en": "节点池列表",
+            "title_zh": "节点池列表",
+            "type": "array"
+          }
+        },
+        "title_en": "返回数据体",
+        "title_zh": "返回数据体",
+        "type": "object"
+      }
+    },
+    "5XX": {}
+  }
+}

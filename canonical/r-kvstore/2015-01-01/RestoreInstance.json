@@ -1,0 +1,128 @@
+{
+  "camel_example": "aliyun r-kvstore RestoreInstance --region cn-hangzhou --InstanceId 'r-bp1zxszhcgatnx0000'",
+  "cmd_full_name": "r-kvstore restore-instance",
+  "cmd_name": "restore-instance",
+  "deprecated": false,
+  "description_en": "Restores data from a specified backup file to a Tair (Redis-compatible) instance",
+  "description_zh": "恢复指定备份文件中的数据到云数据库 Tair（兼容 Redis）实例中",
+  "kebab_example": "aliyun r-kvstore restore-instance --instance-id r-bp1zxszhcgatnx0000 --region cn-hangzhou",
+  "method": "GET|POST",
+  "multi_version": false,
+  "name": "RestoreInstance",
+  "operation": {
+    "action": "RestoreInstance",
+    "api_style": "RPC",
+    "api_version": "2015-01-01",
+    "method": "POST",
+    "operation_type": "write",
+    "protocol": "HTTPS",
+    "system_operation_type": "update",
+    "url": ""
+  },
+  "parameters": [
+    {
+      "doc_required": true,
+      "example": "r-bp1zxszhcgatnx****",
+      "help_en": "The ID of the instance",
+      "help_zh": "实例ID",
+      "location": "query",
+      "name": "instance_id",
+      "options": [
+        "--instance-id"
+      ],
+      "raw_name": "InstanceId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "78241****",
+      "help_en": "The ID of the backup file. You can find backup file IDs by calling the https://help.aliyun.com/document_detail/473823.html operation",
+      "help_zh": "实例的备份文件ID。您可以调用https://help.aliyun.com/document_detail/473823.html查询",
+      "location": "query",
+      "name": "backup_id",
+      "options": [
+        "--backup-id"
+      ],
+      "raw_name": "BackupId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "enum": [
+        "0",
+        "1"
+      ],
+      "example": "1",
+      "help_en": "The restore method. Valid values:\n\n0 (default): This value is deprecated.\n\n1: Restores data to a specific point in time. You can set this parameter to 1 only if the https://help.aliyun.com/document_detail/148479.html feature is enabled for the instance. If you set this parameter to 1, you must also specify the RestoreTime parameter",
+      "help_zh": "恢复类型，取值：\n0（默认）：参数已失效。\n1：恢复至指定的时间点，仅当实例开启了https://help.aliyun.com/document_detail/148479.html功能时，您才可以传入该值。传入为该值时，您还需要传入**RestoreTime**参数",
+      "location": "query",
+      "name": "restore_type",
+      "options": [
+        "--restore-type"
+      ],
+      "pattern": "^\\d+$",
+      "raw_name": "RestoreType",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "2021-07-06T07:25:57Z",
+      "help_en": "The restore point in time. Specify the time in the yyyy-MM-ddTHH:mm:ssZ format (UTC).\n\nThis point in time cannot be earlier than the time when the Data Flashback feature was enabled",
+      "help_zh": "要恢复的时间点，格式为<i>yyyy-MM-dd</i>T<i>HH:mm</i>Z（UTC时间）。\n该时间点不能早于开启数据闪回功能的时间点",
+      "location": "query",
+      "name": "restore_time",
+      "options": [
+        "--restore-time"
+      ],
+      "raw_name": "RestoreTime",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "key:00000007198*",
+      "help_en": "The keys to restore, which can be specified as a regular expression. To specify multiple keys, separate them with commas (,).\n\nIf you do not specify this parameter, the entire instance is restored.\n\nIf you specify this parameter, only the specified keys are restored. This feature is available only for instances that use the classic architecture.\n\nIn a regular expression, the asterisk (`*`) matches the preceding element zero or more times. For example, if you set this parameter to `h.*llo`, strings such as `hllo` and `heeeello` are matched",
+      "help_zh": "指定要恢复的Key，支持正则表达式，多个值使用英文逗号（,）分隔。\n当不传入该参数时，表示恢复整个实例。\n当传入该参数时，表示仅恢复相关Key。且仅经典版实例支持该功能。\n例如正则表达式中，星号（`*`）表示匹配前面子表达式任意次，本参数传入`h.*llo`，系统将匹配`hllo`或`heeeello`等字符串",
+      "location": "query",
+      "name": "filter_key",
+      "options": [
+        "--filter-key"
+      ],
+      "raw_name": "FilterKey",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "2021-07-06T08:25:57Z",
+      "help_en": "For instances that use the classic architecture, you can apply an offset to the expiration time of restored keys. This applies whether you restore the entire instance or only specific keys. The system calculates a key's remaining time-to-live (TTL) at the specified flashback point in time and then adds this TTL to the `TimeShift` value to set the key's new expiration time. Specify the time in the yyyy-MM-ddTHH:mm:ssZ format (UTC).\n\nThis feature adjusts the expiration time for top-level keys only. It does not apply to the expiration times of elements within Tair-specific data structures, such as fields in an exHash or secondary keys (Skeys) in a Time Series (TS) data structure.\n\nThe specified time must be later than `RestoreTime` and earlier than the task submission time",
+      "help_zh": "当恢复经典版实例时，不论您选择恢复全量数据或指定Key，您都可以对Key的过期时间进行偏移处理。格式为yyyy-MM-ddTHH:mmZ（UTC时间）。实例会将Key在指定闪回时间点所剩余的过期时长，偏移至设置的过期偏移时间点开始计算。\n该功能仅支持偏移Key级别的过期时间，不支持偏移Tair自研数据结构中Key内部的过期时间，例如exHash的Field、TS的Skey等。\n该时间点不能早于指定的闪回时间点，也不能晚于提交恢复任务的时间点",
+      "location": "query",
+      "name": "time_shift",
+      "options": [
+        "--time-shift"
+      ],
+      "raw_name": "TimeShift",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "",
+  "product_code": "R-kvstore",
+  "protocol": "HTTP|HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "properties": {
+          "RequestId": {
+            "backendName": "requestId",
+            "description_en": "The request ID",
+            "description_zh": "请求ID",
+            "example": "8D0C0AFC-E9CD-47A4-8395-5C31BF9B****",
+            "type": "string",
+            "visibility": "Public"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

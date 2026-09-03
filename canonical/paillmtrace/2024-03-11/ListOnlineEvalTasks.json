@@ -1,0 +1,500 @@
+{
+  "camel_example": "aliyun paillmtrace GET /api/v1/PAILLMTrace/onlineevaltasks --region cn-hangzhou --Status CREATED_RUNNING_FINISHED_USER_CANCELED --SamplingMethod Window_Ratio --PageSize 50 --Keyword foo --PageNumber 1 --SortBy CreateTime_Status_TaskId_TaskName --MaxTime '2025-04-07_13:24:25_2025-04-07' --SortOrder ASC_DESC --MinTime '2025-04-05_13:24:25_2025-04-05' --AppName 'my-foo-llm-app-1.0' --header \"Content-Type=application/json\"",
+  "cmd_full_name": "paillmtrace list-online-eval-tasks",
+  "cmd_name": "list-online-eval-tasks",
+  "components": {
+    "schemas": {
+      "EvaluationConfig": {
+        "description_en": "This configuration structure defines the JSON paths needed to extract specific values from trace data in JSON format. They are required for evaluation operations",
+        "description_zh": "从json格式的链路数据里要一些提取特定路径上的值，作为评估操作的输入。在这个EvaluationConfig结构体里定义这些json路径",
+        "properties": {
+          "Answer": {
+            "backendName": "answer",
+            "description_en": "The answer to the user's question from the LLM application",
+            "description_zh": "基于大语言模型的应用针对用户问题的回答",
+            "properties": {
+              "JsonPathInSpan": {
+                "backendName": "jsonPathInSpan",
+                "description_en": "The JSON path where the Answer is stored in the trace log",
+                "description_zh": "链路log里存放Answer的json path",
+                "example": "attributes.output.value",
+                "minLength": 1,
+                "type": "string"
+              },
+              "JsonPathInSpanValue": {
+                "backendName": "jsonPathInSpanValue",
+                "description_en": "If the value retrieved at the JSON path is itself a JSON string, a further JSON path must be defined within this JSON to obtain the actual value",
+                "description_zh": "如果json path处取到的值本身仍然是json string，那么需要进一步定义这个json里的json path以获取实际的值",
+                "example": "message/value",
+                "type": "string"
+              },
+              "SpanName": {
+                "backendName": "spanName",
+                "description_en": "The span name in the trace log",
+                "description_zh": "链路log的span名称",
+                "example": "query",
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "Context": {
+            "backendName": "context",
+            "description_en": "The context node information referenced when the model answers a question",
+            "description_zh": "大模型回答问题时参考的上下文节点信息",
+            "properties": {
+              "JsonPathInSpan": {
+                "backendName": "jsonPathInSpan",
+                "description_en": "The JSON path where the Context is stored in the trace log",
+                "description_zh": "链路log里存放Context的json path",
+                "example": "attributes.retrieval.documents[*].document.content",
+                "minLength": 1,
+                "type": "string"
+              },
+              "JsonPathInSpanValue": {
+                "backendName": "jsonPathInSpanValue",
+                "description_en": "If the value retrieved at the JSON path is itself a JSON string, a further JSON path must be defined within this JSON to obtain the actual value",
+                "description_zh": "如果json path处取到的值本身仍然是json string，那么需要进一步定义这个json里的json path以获取实际的值",
+                "example": "message/value",
+                "type": "string"
+              },
+              "SpanName": {
+                "backendName": "spanName",
+                "description_en": "The span name in the trace log",
+                "description_zh": "链路log的span名称",
+                "example": "retrieve",
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "Query": {
+            "backendName": "query",
+            "description_en": "The question from the user to the LLM application",
+            "description_zh": "用户向基于大语言模型的应用提出的问题",
+            "properties": {
+              "JsonPathInSpan": {
+                "backendName": "jsonPathInSpan",
+                "description_en": "The JSON path where the Query is stored in the trace log",
+                "description_zh": "链路log里存放Query的json path",
+                "example": "attributes.input.value",
+                "minLength": 1,
+                "type": "string"
+              },
+              "JsonPathInSpanValue": {
+                "backendName": "jsonPathInSpanValue",
+                "description_en": "If the value retrieved at the JSON path is itself a JSON string, a further JSON path must be defined within this JSON to obtain the actual value",
+                "description_zh": "如果json path处取到的值本身仍然是json string，那么需要进一步定义这个json里的json path以获取实际的值",
+                "example": "message/value",
+                "type": "string"
+              },
+              "SpanName": {
+                "backendName": "spanName",
+                "description_en": "The span name in the trace log",
+                "description_zh": "链路log的span名称",
+                "example": "query",
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "ModelConfig": {
+        "description_en": "The access configuration structure of the model used in the evaluation",
+        "description_zh": "评估任务内部使用的大模型的访问配置结构体",
+        "properties": {
+          "ApiKey": {
+            "backendName": "apiKey",
+            "description_en": "The authentication key required when the evaluation task calls a model which the user has permission to use, acting under the user's name",
+            "description_zh": "评估任务需要以用户名义调用用户有使用权的大模型时，需要填充的认证key",
+            "example": "lRQ6ny2BP1g73fsgf9O+Hr4DEedezQ",
+            "type": "string"
+          },
+          "Endpoint": {
+            "backendName": "endpoint",
+            "description_en": "The model service endpoint required when the evaluation task calls the model",
+            "description_zh": "评估任务需要以用户名义调用用户有使用权的大模型时，需要填充的模型服务地址",
+            "example": "https://aiservice.cn-hangzhou.aliyuncs.com/v1",
+            "type": "string"
+          },
+          "IsSelfHost": {
+            "backendName": "isSelfHost",
+            "description_en": "Whether the model service is provided by the user (True), or by Alibaba Cloud PAI (False)",
+            "description_zh": "用户的大模型服务是自己提供的(True)、还是阿里云PAI提供的(False)",
+            "example": "False",
+            "type": "boolean"
+          },
+          "Name": {
+            "backendName": "name",
+            "description_en": "The model name",
+            "description_zh": "大模型的名称",
+            "example": "pai-judge\nthemis\nqwen\ngpt",
+            "type": "string"
+          },
+          "Temperature": {
+            "backendName": "temperature",
+            "description_en": "Controls the randomness of the model output. Maximum value: 0.2",
+            "description_zh": "控制大模型输出随机性的温度参数。最大可设置到0.2",
+            "example": "0.1",
+            "format": "float",
+            "type": "number"
+          },
+          "TopP": {
+            "backendName": "topP",
+            "description_en": "Controls the randomness of the model output",
+            "description_zh": "控制大模型输出随机性的top p参数",
+            "example": "0.9",
+            "format": "float",
+            "type": "number"
+          },
+          "UseFunctionCall": {
+            "backendName": "useFunctionCall",
+            "description_en": "Whether the model is allowed to use external tools",
+            "description_zh": "评估任务需要以用户名义调用用户有使用权的大模型时，是否允许大模型调用外部工具",
+            "example": "True",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "View online evaluation tasks that meet the criteria",
+  "description_zh": "查找符合条件的链路评估任务",
+  "kebab_example": "aliyun paillmtrace list-online-eval-tasks --min-time 2025-04-05_13:24:25_2025-04-05 --max-time 2025-04-07_13:24:25_2025-04-07 --page-number 1 --page-size 50 --app-name my-foo-llm-app-1.0 --status CREATED_RUNNING_FINISHED_USER_CANCELED --keyword foo --sampling-method Window_Ratio --sort-by CreateTime_Status_TaskId_TaskName --sort-order ASC_DESC --region cn-hangzhou",
+  "method": "GET",
+  "multi_version": false,
+  "name": "ListOnlineEvalTasks",
+  "operation": {
+    "action": "ListOnlineEvalTasks",
+    "api_style": "ROA",
+    "api_version": "2024-03-11",
+    "method": "GET",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "list",
+    "url": "/api/v1/PAILLMTrace/onlineevaltasks"
+  },
+  "parameters": [
+    {
+      "example": "2025-04-05 13:24:25\n2025-04-05",
+      "help_en": "The UTC start time of the search time range",
+      "help_zh": "搜索时间范围的UTC开始时间",
+      "location": "query",
+      "name": "min_time",
+      "options": [
+        "--min-time"
+      ],
+      "raw_name": "MinTime",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "2025-04-07 13:24:25\n2025-04-07",
+      "help_en": "The UTC end time of the search time range",
+      "help_zh": "搜索时间范围的UTC截止时间",
+      "location": "query",
+      "name": "max_time",
+      "options": [
+        "--max-time"
+      ],
+      "raw_name": "MaxTime",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "1",
+      "help_en": "The current page number. Value range: integers greater than 0. Default value: 1",
+      "help_zh": "当前页数。取值范围：大于0的整数。默认值：1",
+      "location": "query",
+      "name": "page_number",
+      "options": [
+        "--page-number"
+      ],
+      "raw_name": "PageNumber",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "50",
+      "help_en": "Page size, default is 10",
+      "help_zh": "分页大小，默认为10，最大为50",
+      "location": "query",
+      "name": "page_size",
+      "options": [
+        "--page-size"
+      ],
+      "raw_name": "PageSize",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "my-foo-llm-app-1.0",
+      "help_en": "Name of the user application recorded in the trace data. Exact match",
+      "help_zh": "用户应用在链路数据里记录的名称。完全匹配",
+      "location": "query",
+      "name": "app_name",
+      "options": [
+        "--app-name"
+      ],
+      "raw_name": "AppName",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "CREATED\nRUNNING\nFINISHED\nUSER_CANCELED",
+      "help_en": "Job status. Exact match",
+      "help_zh": "任务状态。完全匹配",
+      "location": "query",
+      "name": "status",
+      "options": [
+        "--status"
+      ],
+      "raw_name": "Status",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "foo",
+      "help_en": "Search keyword. It will match on fields such as task name, application name (appName), task description, and evaluation metric name",
+      "help_zh": "搜索关键字。会在任务名称、任务id、任务描述这些字段上模糊匹配",
+      "location": "query",
+      "name": "keyword",
+      "options": [
+        "--keyword"
+      ],
+      "raw_name": "Keyword",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "Window\nRatio",
+      "help_en": "Sampling method for job data. Valid values are window or probability. Exact match",
+      "help_zh": "任务数据采样方式。窗口或者概率。精确匹配",
+      "location": "query",
+      "name": "sampling_method",
+      "options": [
+        "--sampling-method"
+      ],
+      "raw_name": "SamplingMethod",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "CreateTime\nStatus\nTaskId\nTaskName",
+      "help_en": "Field used to sort the return result. Supported fields: TaskId, CreateTime, TaskName, and Status. If not specified, results are sorted by CreateTime by default",
+      "help_zh": "用于排序返回结果的字段，目前支持TaskId, CreateTime，TaskName，和Status。不填则默认用CreateTime",
+      "location": "query",
+      "name": "sort_by",
+      "options": [
+        "--sort-by"
+      ],
+      "raw_name": "SortBy",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "ASC\nDESC",
+      "help_en": "Sort order of the return result. Valid values: ASC (ascending) or DESC (descending). If not specified, results are sorted in descending order by default",
+      "help_zh": "返回结果的排序方向。取值范围：ASC（升序）、DESC（降序）。不填则默认用DESC",
+      "location": "query",
+      "name": "sort_order",
+      "options": [
+        "--sort-order"
+      ],
+      "raw_name": "SortOrder",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/api/v1/PAILLMTrace/onlineevaltasks",
+  "product_code": "PaiLLMTrace",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "Schema of Response",
+        "description_zh": "Schema of Response",
+        "properties": {
+          "Code": {
+            "description_en": "Internal error code. Set only when the response has an error",
+            "description_zh": "内部错误码。只在响应出错时被设置",
+            "example": "InvalidInputParams",
+            "type": "string"
+          },
+          "Message": {
+            "description_en": "Response error message. Set only when the response has an error",
+            "description_zh": "响应错误信息。只在响应出错时被设置",
+            "example": "page number should be greater than 0",
+            "type": "string"
+          },
+          "RequestId": {
+            "description_en": "ID of the request",
+            "description_zh": "Id of the request",
+            "example": "6F352A02-9C0D-54A7-B57C-663CF71D5714",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          },
+          "Tasks": {
+            "description_en": "List of tasks",
+            "description_zh": "任务列表",
+            "itemName": "tasks",
+            "items": {
+              "description_en": "Detailed information about the task",
+              "description_zh": "任务的详细信息",
+              "properties": {
+                "AliyunUid": {
+                  "description_en": "The Alibaba Cloud account (primary account) of the task creator",
+                  "description_zh": "任务创建者的阿里云账号（主账号）",
+                  "example": "1512522691911111",
+                  "type": "string"
+                },
+                "AppName": {
+                  "description_en": "The name of the user application targeted by this task",
+                  "description_zh": "该任务针对的用户应用的名称",
+                  "example": "my-llm-app",
+                  "type": "string"
+                },
+                "Description": {
+                  "description_en": "Task description information",
+                  "description_zh": "任务描述信息",
+                  "example": "评估任务",
+                  "type": "string"
+                },
+                "EvalResults": {
+                  "description_en": "The aggregated assessment result obtained by aggregation computation from all evaluation results of this job.  ",
+                  "description_zh": "从该任务所有的评估结果，通过聚合计算得到的聚合评估结果",
+                  "example": "[{\"task_id\": \"00000\", \"result_type\": \"HasValidEvalResult\", \"record_count\": 8, \"faithfulness\": 0.5, \"correctness\": 0.5, \"ndcg\": null, \"mrr\": null, \"hit_rate\": null, \"precision\": null}, {\"task_id\": \"00000\", \"result_type\": \"FailedToExtractQCA\", \"record_count\": 3, \"faithfulness\": 0.0, \"correctness\": 0.0, \"ndcg\": null, \"mrr\": null, \"hit_rate\": null, \"precision\": null}]",
+                  "type": "string"
+                },
+                "EvaluationConfig": {
+                  "$ref": "#/components/schemas/EvaluationConfig",
+                  "description_en": "Extract specific path values from JSON-formatted trace data as input for the evaluation operation. These JSON paths are defined in this EvaluationConfig structure",
+                  "description_zh": "从json格式的链路数据里要一些提取特定路径上的值，作为评估操作的输入。在这个EvaluationConfig结构体里定义这些json路径"
+                },
+                "Filters": {
+                  "description_en": "The list define the search filter conditions for the evaluation task to search a certain amount of trace data generated by the user application, which serves as input data for the evaluation operation",
+                  "description_zh": "评估任务要搜索一定量的用户应用产生的链路数据，作为评估操作的输入数据。这是定义搜索筛选条件的列表",
+                  "itemName": "filters",
+                  "items": {
+                    "description_en": "Filter condition object",
+                    "description_zh": "过滤条件对象",
+                    "properties": {
+                      "Key": {
+                        "description_en": "The key of the filter condition",
+                        "description_zh": "过滤条件的key",
+                        "example": "ServiceId\nServiceName\nInput\nOutput\nStatus\nTraceType\nSpanType\nTraceName\nSpanName",
+                        "type": "string"
+                      },
+                      "Operator": {
+                        "description_en": "The matching operator of the filter condition",
+                        "description_zh": "过滤条件匹配操作符",
+                        "example": "=\nStartsWith\nContains",
+                        "type": "string"
+                      },
+                      "Value": {
+                        "description_en": "The value of the filter condition",
+                        "description_zh": "过滤条件的值",
+                        "example": "foo",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "GmtCreateTime": {
+                  "description_en": "The UTC creation time of the task",
+                  "description_zh": "任务UTC创建时间",
+                  "example": "2025-04-07 13:24:35",
+                  "type": "string"
+                },
+                "GmtEndTime": {
+                  "description_en": "Task UTC end time",
+                  "description_zh": "任务UTC结束时间",
+                  "example": "2025-04-09 13:24:35",
+                  "type": "string"
+                },
+                "GmtStartTime": {
+                  "description_en": "The UTC start time of the task",
+                  "description_zh": "任务UTC开始时间",
+                  "example": "2025-04-08 13:24:35",
+                  "type": "string"
+                },
+                "Id": {
+                  "description_en": "Task ID",
+                  "description_zh": "任务ID",
+                  "example": "9f50cd72efcf36535152ee811a911115",
+                  "type": "string"
+                },
+                "ModelConfig": {
+                  "$ref": "#/components/schemas/ModelConfig",
+                  "description_en": "Access configuration structure for the large model used internally by the evaluation task",
+                  "description_zh": "评估任务内部使用的大模型的访问配置结构体"
+                },
+                "Name": {
+                  "description_en": "Task name",
+                  "description_zh": "任务名称",
+                  "example": "my-foo-evaluation-task",
+                  "type": "string"
+                },
+                "RecordCount": {
+                  "description_en": "The number of assessment records.  ",
+                  "description_zh": "评估记录数量",
+                  "example": "11",
+                  "format": "int32",
+                  "type": "integer"
+                },
+                "SamplingFrequencyMinutes": {
+                  "description_en": "The evaluation task needs to search for a certain amount of trace data generated by the user's application as input data for the evaluation operation. This defines the time window for each data search",
+                  "description_zh": "评估任务要搜索一定量的用户应用产生的链路数据，作为评估操作的输入数据。这是定义任务每次搜索输入数据的时间窗口的宽度",
+                  "example": "12",
+                  "format": "int32",
+                  "type": "integer"
+                },
+                "SamplingRatio": {
+                  "description_en": "The percentage of the data searched within a time window that is used as input data for the evaluation. For example, 100 means all the searched data is used as input, 20 means 20% of the searched data is randomly selected as input",
+                  "description_zh": "评估任务在一个时间窗口里搜索到的数据，真正作为评估输入数据的百分比。比如100表示搜索到的所有数据都作为评估输入。又比如20表示从搜索到的数据里随机取20%作为评估输入",
+                  "example": "50",
+                  "format": "int32",
+                  "type": "integer"
+                },
+                "Status": {
+                  "description_en": "Task status",
+                  "description_zh": "任务状态",
+                  "example": "CREATED\nRUNNING\nFINISHED\nUSER_CANCELED",
+                  "type": "string"
+                },
+                "UserId": {
+                  "description_en": "The Alibaba Cloud sub-account of the task creator",
+                  "description_zh": "任务创建者的阿里云子账号",
+                  "example": "2222222222",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "TotalCount": {
+            "description_en": "Total number of tasks that meet the criteria",
+            "description_zh": "符合条件的任务的总数",
+            "example": "22",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "title_en": "Schema of Response",
+        "title_zh": "Schema of Response",
+        "type": "object"
+      }
+    }
+  }
+}

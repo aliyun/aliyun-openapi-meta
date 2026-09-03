@@ -1,0 +1,475 @@
+{
+  "camel_example": "aliyun fc-open PUT /2021-04-06/services/demo-service/aliases/alias_test --region cn-hangzhou --header \"X-Fc-Date=Wed,_11_May_2022_09:00:00_GMT\" --header \"X-Fc-Trace-Id=rid281s000000\" --header \"If-Match=e19d5cd5af0378da05f63f891c7467af\" --header \"X-Fc-Account-Id=1880770869020000\" --header \"Content-Type=application/json\" --body {\"versionId\":\"1\",\"description\":\"test_description\",\"additionalVersionWeight\":{\"key\":\"example-string\"},\"resolvePolicy\":\"Random\",\"routePolicy\":\"example-string\"}",
+  "cmd_full_name": "fc-open update-alias",
+  "cmd_name": "update-alias",
+  "components": {
+    "schemas": {
+      "PolicyItem": {
+        "description_en": "The policy details",
+        "description_zh": "规则项具体描述实体",
+        "properties": {
+          "key": {
+            "backendName": "key",
+            "description_en": "key specifies the name of the field that controls traffic of a canary release policy. For example, if you set key to `x-test-uid`, the value of the `x-test-uid` field in a request determines whether the request is routed to the canary release version",
+            "description_zh": "key指定控制流量灰度的字段名。 例如key为`x-test-uid`，则请求中`x-test-uid`字段的值将决定请求是否被路由到灰度版本上",
+            "example": "x-test-uid",
+            "required": true,
+            "title": "key指定控制流量灰度的字段名。 例如key为\"x-test-uid\"，则请求中\"x-test-uid\" 字段的值将决定请求是否被路由到灰度版本上",
+            "type": "string"
+          },
+          "operator": {
+            "backendName": "operator",
+            "description_en": "operator specifies the operator, which is used to compare the actual value of the field specified by key and the value specified by value in a request. Valid values:\n\n>, <, >=, <=, =, and !=: follows the lexicographic order of comparison.\nin: string inclusion relationship.\npercentage: the percentage value. Valid values: (0,100]. The value must be an integer. The system routes traffic of specified proportion based on actual values of key in requests. The field is specified by the key parameter, and the percentage is specified by the value parameter. For example, `{ type=Header, key=uid, value=20, operator=percent }` indicates that 20% of the requests are routed to the canary release version based on the distribution of values of the uid field in the request header",
+            "description_zh": "operator指定运算符。  将请求中由参数key指定的字段的实际值和参数value指定的值，按指定的运算符进行比较。取值如下：\n\n>、<、>=、<=、=和!=：大小比较规则遵循字典序。\nin：字符串包含关系。\npercent：百分比值，取值范围为 (0,100] 的整数。表示根据请求中指定字段key对应的实际值分布，按百分比灰度。其中字段由参数key指定，百分比值由参数value指定 。 例如，一条`{ type=Header, key=uid, value=20, operator=percent }`的规则，表示根据请求header中字段uid的值的分布，其中20%的请求路由到灰度版本上",
+            "enum": [
+              ">",
+              "<",
+              ">=",
+              "<=",
+              "=",
+              "!=",
+              "in",
+              "percent"
+            ],
+            "example": "=",
+            "required": true,
+            "title": "operator指定运算符。  将请求中由参数key指定的字段的实际值和参数 value 指定的值，按指定的运算符进行比较。  取值：    ● >, <, >=, <=, = 和 != ，大小比较规则遵循字典序；  ● in ：字符串包含关系；  ●  percent: 百分比值（取值范围 (0,100] 的整数)  表示根据请求中指定字段key对应的实际值分布，按百分比灰度。其中字段由参数key指定，百分比值由参数 value 指定 。 例如一条 { type=Header, key=uid, value=20, operator=percent } 的规则，表示根据请求 header 中字段 uid 的值的分布，其中 20% 的请求路由到灰度版本上。",
+            "type": "string"
+          },
+          "type": {
+            "backendName": "type",
+            "description_en": "The parameter types. You can use values in HTTP requests",
+            "description_zh": "参数类型。可以取HTTP请求中的有关值",
+            "enum": [
+              "Header",
+              "Cookie",
+              "Param"
+            ],
+            "example": "Header",
+            "required": true,
+            "title": "参数类型。可以取HTTP请求中的有关值。",
+            "type": "string"
+          },
+          "value": {
+            "backendName": "value",
+            "description_en": "value specifies the value of the field that controls traffic of canary releases. The actual value of the field specified by the key parameter in a request is compared with the value of the value parameter based on the specified operator to determine whether a request is routed to the canary release version",
+            "description_zh": "value指定控制流量灰度的字段值。 请求中由参数key指定的字段实际值会和参数value字段值，按指定的运算符进行比较，决定请求是否被路由到灰度版本上",
+            "example": "11111",
+            "required": true,
+            "title": "value指定控制流量灰度的字段值。 请求中由参数key指定的字段实际值会和参数value字段值，按指定的运算符进行比较，决定请求是否被路由到灰度版本上",
+            "type": "string"
+          }
+        },
+        "required": false,
+        "title": "灰度规则项",
+        "type": "object"
+      },
+      "RoutePolicy": {
+        "description_en": "The canary release rule. The traffic that meets the conditions of the canary release rule is diverted to the canary release instances",
+        "description_zh": "灰度规则：满足灰度规则条件的流量，打向灰度实例",
+        "parseType": "struct",
+        "properties": {
+          "condition": {
+            "backendName": "condition",
+            "description_en": "The condition mode, which specifies the logical operation of the canary release rule. Valid values:\n\nAND: The canary release rule is triggered when the conditions of all items are met.\nOR: The canary release rule is triggered when the condition of any item is met",
+            "description_zh": "条件模式：灰度规则项的逻辑运算。 取值如下： \nAND:  全部灰度规则项满足则命中。 \nOR: 任意一个灰度规则项满足则命中",
+            "example": "AND",
+            "required": true,
+            "title": "条件模式：灰度规则项的逻辑运算。 枚举值： AND:  全部灰度规则项满足则命中。 OR: 任意一个灰度规则项满足则命中。",
+            "type": "string"
+          },
+          "policyItems": {
+            "backendName": "policyItems",
+            "description_en": "The canary release rule items",
+            "description_zh": "灰度规则项数组",
+            "items": {
+              "$ref": "#/components/schemas/PolicyItem",
+              "description_en": "The canary release rule item",
+              "description_zh": "灰度规则项",
+              "required": true
+            },
+            "required": true,
+            "title": "灰度规则项数组",
+            "type": "array"
+          }
+        },
+        "title": "灰度规则：满足灰度规则的流量，将被路由至灰度实例",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Updates an alias",
+  "description_zh": "更新别名",
+  "kebab_example": "aliyun fc-open update-alias --service-name demo-service --alias-name alias_test --additional-version-weight key=example-string --description test_description --version-id 1 --resolve-policy Random --route-policy example-string --if-match e19d5cd5af0378da05f63f891c7467af --x-fc-account-id 1880770869020000 --x-fc-date Wed,_11_May_2022_09:00:00_GMT --x-fc-trace-id rid281s000000 --api-version 2021-04-06 --region cn-hangzhou",
+  "method": "PUT",
+  "multi_version": true,
+  "name": "UpdateAlias",
+  "operation": {
+    "action": "UpdateAlias",
+    "api_style": "ROA",
+    "api_version": "2021-04-06",
+    "body_mapping": {
+      "additional_version_weight": "additionalVersionWeight",
+      "description": "description",
+      "resolve_policy": "resolvePolicy",
+      "route_policy": "routePolicy",
+      "version_id": "versionId"
+    },
+    "content_type": "application/json",
+    "method": "PUT",
+    "operation_type": "readAndWrite",
+    "protocol": "HTTPS",
+    "req_body_type": "json",
+    "system_operation_type": "update",
+    "url": "/2021-04-06/services/{serviceName}/aliases/{aliasName}"
+  },
+  "parameters": [
+    {
+      "example": "demo-service",
+      "help_en": "The name of the service",
+      "help_zh": "服务名称",
+      "location": "path",
+      "name": "service_name",
+      "options": [
+        "--service-name"
+      ],
+      "raw_name": "serviceName",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "alias_test",
+      "help_en": "The name of the alias",
+      "help_zh": "别名的名称",
+      "location": "path",
+      "name": "alias_name",
+      "options": [
+        "--alias-name"
+      ],
+      "raw_name": "aliasName",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "help_en": "The canary release version to which the alias points and the weight of the canary release version.\n\nThe canary release version takes effect only when the function is invoked.\nThe value consists of a version number and the corresponding weight. For example, 2:0.05 indicates that Version 2 is the canary release version and 5% of the traffic is routed to the canary release version when the function is invoked. The remaining 95% traffic is routed to the main version",
+      "help_zh": "别名指向的灰度版本以及灰度权重。\n\n灰度版本只在调用函数时生效。\n由版本号和对应的权重组成，例如，2:0.05表明调用函数时，版本2为灰度版本，切5%的流量到灰度版本，95%的流量默认到主版本",
+      "location": "body",
+      "name": "additional_version_weight",
+      "options": [
+        "--additional-version-weight"
+      ],
+      "param_style": "json",
+      "raw_name": "additionalVersionWeight",
+      "required": false,
+      "type": "map",
+      "value": {
+        "type": "float"
+      }
+    },
+    {
+      "example": "test_description",
+      "help_en": "The description of the alias",
+      "help_zh": "别名的描述",
+      "location": "body",
+      "name": "description",
+      "options": [
+        "--description"
+      ],
+      "param_style": "json",
+      "raw_name": "description",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "Random",
+      "help_en": "The canary release mode. Default values: off. Valid values:\n\nRandom: random canary release.\nContent: rule-based canary release",
+      "help_zh": "灰度方式。取值如下：\n\nRandom：随机灰度，为默认值。\nContent：规则灰度",
+      "location": "body",
+      "name": "resolve_policy",
+      "options": [
+        "--resolve-policy"
+      ],
+      "param_style": "json",
+      "raw_name": "resolvePolicy",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "fields": [
+        {
+          "example": "AND",
+          "help_en": "The condition mode, which specifies the logical operation of the canary release rule. Valid values:\n\nAND: The canary release rule is triggered when the conditions of all items are met.\nOR: The canary release rule is triggered when the condition of any item is met",
+          "help_zh": "条件模式：灰度规则项的逻辑运算。 取值如下： \nAND:  全部灰度规则项满足则命中。 \nOR: 任意一个灰度规则项满足则命中",
+          "name": "condition",
+          "options": [
+            "--condition"
+          ],
+          "raw_name": "condition",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "element": {
+            "fields": [
+              {
+                "example": "x-test-uid",
+                "help_en": "key specifies the name of the field that controls traffic of a canary release policy. For example, if you set key to `x-test-uid`, the value of the `x-test-uid` field in a request determines whether the request is routed to the canary release version",
+                "help_zh": "key指定控制流量灰度的字段名。 例如key为`x-test-uid`，则请求中`x-test-uid`字段的值将决定请求是否被路由到灰度版本上",
+                "name": "key",
+                "options": [
+                  "--key"
+                ],
+                "raw_name": "key",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "enum": [
+                  ">",
+                  "<",
+                  ">=",
+                  "<=",
+                  "=",
+                  "!=",
+                  "in",
+                  "percent"
+                ],
+                "example": "=",
+                "help_en": "operator specifies the operator, which is used to compare the actual value of the field specified by key and the value specified by value in a request. Valid values:\n\n>, <, >=, <=, =, and !=: follows the lexicographic order of comparison.\nin: string inclusion relationship.\npercentage: the percentage value. Valid values: (0,100]. The value must be an integer. The system routes traffic of specified proportion based on actual values of key in requests. The field is specified by the key parameter, and the percentage is specified by the value parameter. For example, `{ type=Header, key=uid, value=20, operator=percent }` indicates that 20% of the requests are routed to the canary release version based on the distribution of values of the uid field in the request header",
+                "help_zh": "operator指定运算符。  将请求中由参数key指定的字段的实际值和参数value指定的值，按指定的运算符进行比较。取值如下：\n\n>、<、>=、<=、=和!=：大小比较规则遵循字典序。\nin：字符串包含关系。\npercent：百分比值，取值范围为 (0,100] 的整数。表示根据请求中指定字段key对应的实际值分布，按百分比灰度。其中字段由参数key指定，百分比值由参数value指定 。 例如，一条`{ type=Header, key=uid, value=20, operator=percent }`的规则，表示根据请求header中字段uid的值的分布，其中20%的请求路由到灰度版本上",
+                "name": "operator",
+                "options": [
+                  "--operator"
+                ],
+                "raw_name": "operator",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "enum": [
+                  "Header",
+                  "Cookie",
+                  "Param"
+                ],
+                "example": "Header",
+                "help_en": "The parameter types. You can use values in HTTP requests",
+                "help_zh": "参数类型。可以取HTTP请求中的有关值",
+                "name": "type",
+                "options": [
+                  "--type"
+                ],
+                "raw_name": "type",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "example": "11111",
+                "help_en": "value specifies the value of the field that controls traffic of canary releases. The actual value of the field specified by the key parameter in a request is compared with the value of the value parameter based on the specified operator to determine whether a request is routed to the canary release version",
+                "help_zh": "value指定控制流量灰度的字段值。 请求中由参数key指定的字段实际值会和参数value字段值，按指定的运算符进行比较，决定请求是否被路由到灰度版本上",
+                "name": "value",
+                "options": [
+                  "--value"
+                ],
+                "raw_name": "value",
+                "required": true,
+                "type": "string"
+              }
+            ],
+            "type": "object"
+          },
+          "help_en": "The canary release rule items",
+          "help_zh": "灰度规则项数组",
+          "name": "policy_items",
+          "options": [
+            "--policy-items"
+          ],
+          "raw_name": "policyItems",
+          "required": true,
+          "type": "array"
+        }
+      ],
+      "help_en": "The canary release rule. Traffic that meets the canary release rule is routed to the canary release instance",
+      "help_zh": "灰度规则。满足灰度规则条件的流量，会被路由至灰度实例",
+      "location": "body",
+      "name": "route_policy",
+      "options": [
+        "--route-policy"
+      ],
+      "param_style": "json",
+      "raw_name": "routePolicy",
+      "required": false,
+      "type": "object"
+    },
+    {
+      "example": "1",
+      "help_en": "The ID of the version to which the alias points",
+      "help_zh": "别名指向的版本ID",
+      "location": "body",
+      "name": "version_id",
+      "options": [
+        "--version-id"
+      ],
+      "param_style": "json",
+      "raw_name": "versionId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "e19d5cd5af0378da05f63f891c7467af",
+      "help_en": "If the ETag specified in the request matches the ETag value of the object, the object and 200 OK are returned. Otherwise, 412 Precondition Failed is returned.\n\nThe ETag value of an object is used to check data integrity of the object. This parameter is empty by default",
+      "help_zh": "如果传入的ETag和Object的ETag匹配，则正常传输Object，并返回200 OK；如果传入的ETag和Object的ETag不匹配，则返回412 Precondition Failed。\n\nObject的ETag值用于验证数据是否发生了更改，您可以基于ETag值验证数据完整性。默认值：无",
+      "location": "header",
+      "name": "if_match",
+      "options": [
+        "--if-match"
+      ],
+      "raw_name": "If-Match",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "188077086902****",
+      "help_en": "The ID of your Alibaba Cloud account",
+      "help_zh": "您的阿里云账号（主账号）ID",
+      "location": "header",
+      "name": "x_fc_account_id",
+      "options": [
+        "--x-fc-account-id"
+      ],
+      "raw_name": "X-Fc-Account-Id",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "Wed, 11 May 2022 09:00:00 GMT",
+      "help_en": "The time on which the function is invoked. The format of the value is: EEE,d MMM yyyy HH:mm:ss GMT",
+      "help_zh": "函数的调用开始日期，格式为EEE,d MMM yyyy HH:mm:ss GMT",
+      "location": "header",
+      "name": "x_fc_date",
+      "options": [
+        "--x-fc-date"
+      ],
+      "raw_name": "X-Fc-Date",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "rid281s******",
+      "help_en": "The trace ID of the invocation request of Function Compute",
+      "help_zh": "函数计算调用请求的调用链ID",
+      "location": "header",
+      "name": "x_fc_trace_id",
+      "options": [
+        "--x-fc-trace-id"
+      ],
+      "raw_name": "X-Fc-Trace-Id",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/2021-04-06/services/[serviceName]/aliases/[aliasName]",
+  "product_code": "FC-Open",
+  "protocol": "HTTP|HTTPS",
+  "responses": {
+    "200": {
+      "headers": {
+        "ETag": {
+          "schema": {
+            "type": "string"
+          }
+        }
+      },
+      "schema": {
+        "description_en": "The definition of the alias",
+        "description_zh": "别名的定义",
+        "properties": {
+          "additionalVersionWeight": {
+            "additionalProperties": {
+              "description_en": "The traffic weight. Valid values: 0 to 1",
+              "description_zh": "流量权重，取值范围[0,1]",
+              "example": "1",
+              "format": "float",
+              "type": "number"
+            },
+            "description_en": "The additional version to which the alias points and the weight of the additional version.\n\nThe additional version takes effect only when the function is invoked.\nThe value consists of a version number and a specific weight. For example, 2:0.05 indicates that when a function is invoked, Version 2 is the canary release version, 5% of the traffic is distributed to the canary release version, and 95% of the traffic is distributed to the major version",
+            "description_zh": "别名指向的灰度版本以及灰度权重。\n\n灰度版本只在调用函数时生效。\n由版本号和对应的权重组成，例如，2:0.05表明调用函数时，版本2为灰度版本，切5%的流量到灰度版本，95%的流量默认到主版本",
+            "title_en": "额外版本权重",
+            "title_zh": "额外版本权重",
+            "type": "object"
+          },
+          "aliasName": {
+            "description_en": "The name of the alias",
+            "description_zh": "别名名称",
+            "example": "test",
+            "title_en": "别名名称",
+            "title_zh": "别名名称",
+            "type": "string"
+          },
+          "createdTime": {
+            "description_en": "The time when the alias was created",
+            "description_zh": "别名的创建时间",
+            "example": "2016-08-15T16:06:05.000+0000",
+            "title_en": "创建时间",
+            "title_zh": "创建时间",
+            "type": "string"
+          },
+          "description": {
+            "description_en": "The description of the alias",
+            "description_zh": "别名的描述",
+            "example": "test_description",
+            "title_en": "别名描述",
+            "title_zh": "别名描述",
+            "type": "string"
+          },
+          "lastModifiedTime": {
+            "description_en": "The time when the alias was last modified",
+            "description_zh": "别名上一次被更新的时间",
+            "example": "2016-08-15T16:06:05.000+0000",
+            "title_en": "上次更新时间",
+            "title_zh": "上次更新时间",
+            "type": "string"
+          },
+          "resolvePolicy": {
+            "description_en": "The canary release mode. Default values: off. Valid values:\n\nRandom: random canary release.\nContent: rule-based canary release",
+            "description_zh": "灰度方式。取值如下：\n\nRandom：随机灰度，为默认值。\nContent：规则灰度",
+            "example": "Random",
+            "type": "string"
+          },
+          "routePolicy": {
+            "$ref": "#/components/schemas/RoutePolicy",
+            "description_en": "The canary release rule. The traffic that meets the conditions of the canary release rule is diverted to the canary release instances",
+            "description_zh": "灰度规则：满足灰度规则条件的流量，打向灰度实例"
+          },
+          "versionId": {
+            "description_en": "The ID of the version to which the alias points",
+            "description_zh": "别名指向的版本ID",
+            "example": "1",
+            "title_en": "版本ID",
+            "title_zh": "版本ID",
+            "type": "string"
+          }
+        },
+        "title_en": "别名定义",
+        "title_zh": "别名定义",
+        "type": "object"
+      }
+    },
+    "400": {},
+    "403": {},
+    "404": {},
+    "409": {},
+    "500": {}
+  },
+  "v1_body_parameters": [
+    {
+      "help_en": "The definition of the alias",
+      "help_zh": "别名的定义",
+      "name": "body",
+      "param_style": "json",
+      "position": "body",
+      "required": false,
+      "type": "string"
+    }
+  ]
+}

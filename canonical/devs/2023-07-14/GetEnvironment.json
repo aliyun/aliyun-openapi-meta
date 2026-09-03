@@ -1,0 +1,636 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "devs get-environment",
+  "cmd_name": "get-environment",
+  "components": {
+    "schemas": {
+      "ArtifactMeta": {
+        "description_en": "产物的元数据内容",
+        "description_zh": "产物的元数据内容",
+        "properties": {
+          "checksum": {
+            "backendName": "checksum",
+            "example": "CRC-64 code",
+            "title": "产物的CRC-64校验和。如果指定，则只有当制品当前的校验和指定的相同时才进行部署。",
+            "type": "string"
+          },
+          "name": {
+            "backendName": "name",
+            "example": "my-artifact",
+            "title": "产物的名称",
+            "type": "string"
+          }
+        },
+        "title": "产物的元数据内容，能唯一标识一个产物",
+        "type": "object"
+      },
+      "BranchFilter": {
+        "description_en": "分支过滤规则",
+        "description_zh": "分支过滤规则",
+        "properties": {
+          "name": {
+            "backendName": "name",
+            "example": "master",
+            "title": "目标分支发生变更则触发",
+            "type": "string"
+          }
+        },
+        "title": "分支过滤规则",
+        "type": "object"
+      },
+      "BuildCacheConfig": {
+        "description_en": "构建缓存配置",
+        "description_zh": "构建缓存配置",
+        "properties": {
+          "keyPath": {
+            "backendName": "keyPath",
+            "example": "{ \t\"3C75C832-0EAD-40D6-8FA1-2BA9171C926B\": \"~/.npm\", \t\"D256BB7A-1886-4A19-A75B-A1FDC23D5A00\": \"~/.cache\" }",
+            "title": "缓存唯一标识符与缓存路径的映射关系，可以由系统自动生成",
+            "type": "object"
+          },
+          "paths": {
+            "backendName": "paths",
+            "items": {
+              "example": "~/.npm",
+              "type": "string"
+            },
+            "title": "需要缓存的路径",
+            "type": "array"
+          }
+        },
+        "title": "构建时的缓存配置，拉取代码后，缓存文件会被放入指定位置，任务成功后，缓存文件将被更新",
+        "type": "object"
+      },
+      "BuildConfig": {
+        "description_en": "构架配置",
+        "description_zh": "构架配置",
+        "properties": {
+          "default": {
+            "$ref": "#/components/schemas/DefaultBuilderConfig",
+            "backendName": "default",
+            "title": "基于默认构建器的构建配置"
+          }
+        },
+        "title": "描述一个服务的代码应该如何被构建",
+        "type": "object"
+      },
+      "CodeVersionReference": {
+        "description_en": "代码版本引用",
+        "description_zh": "代码版本引用",
+        "properties": {
+          "branch": {
+            "backendName": "branch",
+            "example": "main",
+            "title": "仓库分支名称",
+            "type": "string"
+          },
+          "commitID": {
+            "backendName": "commitID",
+            "example": "12721ec262d03a93809ba2bbc717963cb298ceca",
+            "title": "仓库分支中某个commit的SHA值，为空时使用当前分支中最新的commit",
+            "type": "string"
+          }
+        },
+        "title": "代码版本引用",
+        "type": "object"
+      },
+      "DefaultBuilderConfig": {
+        "description_en": "构架配置",
+        "description_zh": "构架配置",
+        "properties": {
+          "cache": {
+            "$ref": "#/components/schemas/BuildCacheConfig",
+            "backendName": "cache",
+            "title": "缓存配置"
+          },
+          "languages": {
+            "backendName": "languages",
+            "items": {
+              "example": "Python3.9",
+              "type": "string"
+            },
+            "title": "执行环境需要设置的语言，例如Java11，Python3.9等",
+            "type": "array"
+          },
+          "rootPath": {
+            "backendName": "rootPath",
+            "example": "./src",
+            "title": "构建时使用的源码根目录，默认为代码仓库的根目录。构建时，会在源码根目录下执行所有构建步骤，并且将源码根目录进行打包。如果需要在打包时过滤指定文件，可以在源码根目录下增加.signore文件指定要打包时排除的文件",
+            "type": "string"
+          },
+          "steps": {
+            "backendName": "steps",
+            "items": {
+              "example": "{\"run\": \"npm build\"}",
+              "type": "any"
+            },
+            "title": "组件构建的步骤，步骤将被顺序执行。步骤的类型可以是命令类型(ServiceCommandStep)，插件类型(ServicePluginStep)以\\ 及组件类型(ServiceComponentStep)",
+            "type": "array"
+          }
+        },
+        "title": "描述一个服务的代码应该如何被构建",
+        "type": "object"
+      },
+      "Environment": {
+        "description_en": "An environment can be associated with a specific branch for development, or with an infrastructure stack to deploy services",
+        "description_zh": "环境可以与用于开发迭代的特定分支相关联，也可以与基础结构堆栈相关联，以便将服务部署到指定的环境",
+        "properties": {
+          "createdTime": {
+            "backendName": "createdTime",
+            "description_en": "The server-side timestamp indicating when the resource was created. This property is read-only",
+            "description_zh": "创建此对象时服务器的时间，只读",
+            "example": "2021-11-19T09:34:38Z",
+            "title": "创建此对象时服务器的时间，只读",
+            "type": "string"
+          },
+          "description": {
+            "backendName": "description",
+            "description_en": "The description of the environment",
+            "description_zh": "资源描述",
+            "example": "test env",
+            "title": "资源描述",
+            "type": "string"
+          },
+          "generation": {
+            "backendName": "generation",
+            "description_en": "A system-generated, auto-incrementing number representing the configuration generation. This property is read-only and increments each time the `spec` is updated",
+            "description_zh": "当前配置的自增的序列号，由系统填充，只读。当spec更新时递增",
+            "example": "1",
+            "format": "int32",
+            "title": "当前资源的自增的序列号，由系统填充，只读，当spec、labels、description更新时递增。如果指定，系统会加入并发写校验，generation必须和系统中的状态值一致",
+            "type": "integer"
+          },
+          "kind": {
+            "backendName": "kind",
+            "description_en": "The type of the resource. This property is read-only",
+            "description_zh": "当前资源的类型，只读",
+            "example": "Environment",
+            "title": "当前资源的类型，只读",
+            "type": "string"
+          },
+          "labels": {
+            "additionalProperties": {
+              "example": "value to the label key.",
+              "type": "string"
+            },
+            "backendName": "labels",
+            "description_en": "The key-value labels for the environment",
+            "description_zh": "资源的标签",
+            "title": "资源的标签",
+            "type": "object"
+          },
+          "name": {
+            "backendName": "name",
+            "description_en": "The name of the environment. It must be unique within the project and cannot be changed",
+            "description_zh": "环境名称，项目下唯一，不可修改",
+            "example": "demo-env",
+            "required": true,
+            "title": "环境名称，项目下唯一，不可修改",
+            "type": "string"
+          },
+          "projectName": {
+            "backendName": "projectName",
+            "description_en": "The name of the project that contains the environment. This property is read-only",
+            "description_zh": "环境所属的项目名称，只读",
+            "example": "demo-project",
+            "title": "环境所属的项目名称，只读",
+            "type": "string"
+          },
+          "spec": {
+            "$ref": "#/components/schemas/EnvironmentSpec",
+            "backendName": "spec",
+            "description_en": "The environment configuration",
+            "description_zh": "环境配置",
+            "required": true,
+            "title": "环境配置"
+          },
+          "status": {
+            "$ref": "#/components/schemas/EnvironmentStatus",
+            "backendName": "status",
+            "description_en": "The current status of the environment",
+            "description_zh": "当前环境的状态",
+            "title": "当前环境的状态"
+          },
+          "uid": {
+            "backendName": "uid",
+            "description_en": "The ID of the owning Alibaba Cloud account. This property is read-only",
+            "description_zh": "当前阿里云主账号的ID，只读",
+            "example": "1455541096***548",
+            "required": false,
+            "title": "当前阿里云主账号的ID，只读",
+            "type": "string"
+          }
+        },
+        "title": "环境定义",
+        "type": "object"
+      },
+      "EnvironmentSpec": {
+        "description_en": "The configuration settings for the environment",
+        "description_zh": "环境配置",
+        "properties": {
+          "roleArn": {
+            "backendName": "roleArn",
+            "description_en": "The Alibaba Cloud Resource Name (ARN) of the environment role",
+            "description_zh": "环境角色",
+            "example": "acs:ram::*******:role/aliyundevsdefaultrole",
+            "title": "环境角色",
+            "type": "string"
+          },
+          "stagedConfigs": {
+            "$ref": "#/components/schemas/EnvironmentStagedConfigs",
+            "backendName": "stagedConfigs",
+            "description_en": "The staged configs for the environment, which can be applied by a deployment",
+            "description_zh": "环境下保存的配置，可以通过部署达到该配置状态",
+            "title": "环境下保存的配置，可以通过部署达到该配置状态"
+          },
+          "type": {
+            "backendName": "type",
+            "default": "Production",
+            "description_en": "The environment type. Valid values are testing, staging, and production",
+            "description_zh": "环境类型，只能在testing、staging、production中选择",
+            "enum": [
+              "Testing",
+              "Staging",
+              "Production"
+            ],
+            "example": "Testing",
+            "title": "环境类型，只能在testing、staging、production中选择",
+            "type": "string"
+          }
+        },
+        "title": "环境配置描述",
+        "type": "object"
+      },
+      "EnvironmentStagedConfigs": {
+        "description_en": "环境配置的变化",
+        "description_zh": "环境配置的变化",
+        "properties": {
+          "services": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ServiceConfig"
+            },
+            "backendName": "services",
+            "title": "环境中服务的配置",
+            "type": "object"
+          },
+          "variables": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Variable"
+            },
+            "backendName": "variables",
+            "title": "环境中共享变量的配置",
+            "type": "object"
+          }
+        },
+        "title": "环境中的一套可被部署的配置",
+        "type": "object"
+      },
+      "EnvironmentStatus": {
+        "description_en": "The current status of the environment",
+        "description_zh": "环境状态",
+        "properties": {
+          "latestEnvironmentDeploymentName": {
+            "backendName": "latestEnvironmentDeploymentName",
+            "description_en": "The name of the deployment plan for the most recent deployment. Each environment deployment generates a deployment plan that may include one or more services",
+            "description_zh": "最近一次部署计划的名称。每次环境部署都会产生一个部署计划，涉及若干个服务的部署",
+            "title": "最近一次部署计划的名称。每次环境部署都会产生一个部署计划，涉及若干个服务的部署",
+            "type": "string"
+          },
+          "observedGeneration": {
+            "backendName": "observedGeneration",
+            "description_en": "The most recent generation of the resource observed by the system",
+            "description_zh": "系统最新观测到的资源generation",
+            "example": "1",
+            "format": "int64",
+            "title": "资源最近的一次状态更新时的资源generation",
+            "type": "integer"
+          },
+          "observedTime": {
+            "backendName": "observedTime",
+            "description_en": "The timestamp when the status was last observed",
+            "description_zh": "资源最近的一次状态更新时间",
+            "example": "2021-11-19T09:34:38Z",
+            "title": "资源最近的一次状态更新时间",
+            "type": "string"
+          },
+          "servicesInstances": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/ServiceInstance"
+            },
+            "backendName": "servicesInstances",
+            "description_en": "Service instances created by deploying project services using the current environment's configuration",
+            "description_zh": "项目下的服务使用当前环境中的配置进行部署后产生的服务实例",
+            "title": "项目下的服务使用当前环境中的配置进行部署后产生的服务实例",
+            "type": "object"
+          },
+          "servicesWithPendingChanges": {
+            "backendName": "servicesWithPendingChanges",
+            "description_en": "A list of service names that have pending changes",
+            "description_zh": "存在未部署的变更的服务名称列表",
+            "items": {
+              "example": "服务名称",
+              "type": "string"
+            },
+            "title": "存在未部署的变更的服务名称列表",
+            "type": "array"
+          }
+        },
+        "title": "环境状态",
+        "type": "object"
+      },
+      "EventFilterConfig": {
+        "description_en": "The event filtering configuration",
+        "description_zh": "事件过滤配置",
+        "properties": {
+          "branch": {
+            "$ref": "#/components/schemas/BranchFilter",
+            "backendName": "branch",
+            "description_en": "The branch where the change event occurs",
+            "description_zh": "分支发生变更事件",
+            "title": "分支发生变更事件"
+          }
+        },
+        "title": "事件过滤配置",
+        "type": "object"
+      },
+      "OssSourceConfig": {
+        "properties": {
+          "bucket": {
+            "backendName": "bucket",
+            "example": "demo-bucket",
+            "title": "OSS bucket名称",
+            "type": "string"
+          },
+          "object": {
+            "backendName": "object",
+            "example": "demo-object",
+            "title": "OSS 对象名称",
+            "type": "string"
+          }
+        },
+        "title": "OSS代码源对象",
+        "type": "object"
+      },
+      "RepositorySourceConfig": {
+        "description_en": "仓库源码配置，描述一个代码仓库中的一套源码",
+        "description_zh": "仓库源码配置，描述一个代码仓库中的一套源码",
+        "properties": {
+          "codeVersion": {
+            "$ref": "#/components/schemas/CodeVersionReference",
+            "backendName": "codeVersion",
+            "title": "代码版本引用，描述了代码仓库中一个具体的代码版本"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/EventFilterConfig",
+            "backendName": "filter"
+          },
+          "repositoryName": {
+            "backendName": "repositoryName",
+            "example": "my-repository",
+            "required": true,
+            "title": "关联的平台中的仓库绑定实体的名称，该实体描述了一个具体的代码仓库",
+            "type": "string"
+          }
+        },
+        "title": "仓库源码配置，描述一个代码仓库中的一套源码",
+        "type": "object"
+      },
+      "ServiceConfig": {
+        "description_en": "服务配置描述",
+        "description_zh": "服务配置描述",
+        "properties": {
+          "artifact": {
+            "$ref": "#/components/schemas/ArtifactMeta",
+            "backendName": "artifact",
+            "title": "交付物配置。配置后部署时会使用指定的交付物"
+          },
+          "build": {
+            "$ref": "#/components/schemas/BuildConfig",
+            "backendName": "build"
+          },
+          "component": {
+            "backendName": "component",
+            "example": "fc3@1.0.0",
+            "title": "组件名称，符合ServerlessDevs的规范",
+            "type": "string"
+          },
+          "props": {
+            "backendName": "props",
+            "title": "服务属性",
+            "type": "object"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SourceConfig",
+            "backendName": "source",
+            "title": "代码源配置"
+          },
+          "type": {
+            "backendName": "type",
+            "example": "Function",
+            "title": "服务的类型",
+            "type": "string"
+          },
+          "variables": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Variable"
+            },
+            "backendName": "variables",
+            "title": "服务变量",
+            "type": "object"
+          }
+        },
+        "title": "服务配置",
+        "type": "object"
+      },
+      "ServiceInstance": {
+        "description_en": "服务在具体环境中部署所产生的服务实例",
+        "description_zh": "服务在具体环境中部署所产生的服务实例",
+        "properties": {
+          "config": {
+            "$ref": "#/components/schemas/ServiceConfig",
+            "backendName": "config",
+            "title": "服务在当前环境中的配置信息"
+          },
+          "latestDeployment": {
+            "backendName": "latestDeployment",
+            "properties": {
+              "finishedTime": {
+                "backendName": "finishedTime",
+                "title": "部署完成时间",
+                "type": "string"
+              },
+              "name": {
+                "backendName": "name",
+                "title": "服务部署（ServiceDeployment）的名称",
+                "type": "string"
+              },
+              "phase": {
+                "backendName": "phase",
+                "example": "Running",
+                "title": "本次服务部署的状态，包括：Initializing：初始化中、Running: 部署中、Finished: 已部署、Failed: 部署失败、Canceled: 已取消、HangUp：已挂起",
+                "type": "string"
+              },
+              "startTime": {
+                "backendName": "startTime",
+                "title": "部署开始时间，具体为状态从Initializing转换为Running的时刻的时间",
+                "type": "string"
+              }
+            },
+            "title": "最近一次服务部署的必要元数据信息",
+            "type": "object"
+          },
+          "outputs": {
+            "additionalProperties": {
+              "type": "any"
+            },
+            "backendName": "outputs",
+            "example": "{}",
+            "title": "服务的输出，可以被引用",
+            "type": "object"
+          },
+          "variables": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/Variable"
+            },
+            "backendName": "variables",
+            "title": "服务当前所使用的环境共享变量的快照，在服务每次成功部署时更新",
+            "type": "object"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "SourceConfig": {
+        "description_en": "代码源配置",
+        "description_zh": "代码源配置",
+        "properties": {
+          "oss": {
+            "$ref": "#/components/schemas/OssSourceConfig",
+            "backendName": "oss"
+          },
+          "repository": {
+            "$ref": "#/components/schemas/RepositorySourceConfig",
+            "backendName": "repository",
+            "title": "仓库源码配置，描述了一个代码仓库中的一套源码"
+          },
+          "template": {
+            "$ref": "#/components/schemas/TemplateSourceConfig",
+            "backendName": "template",
+            "title": "模板源码配置，描述Serverless Registry中一个模板代码仓库中的一套源代码"
+          }
+        },
+        "title": "源代码配置，Dipper平台会使用该配置定位一套源代码并进行后续的构建和部署",
+        "type": "object"
+      },
+      "TemplateSourceConfig": {
+        "description_en": "模板源码配置，描述Serverless Registry中一个模板代码仓库中的一套源代码",
+        "description_zh": "模板源码配置，描述Serverless Registry中一个模板代码仓库中的一套源代码",
+        "properties": {
+          "downloadUrl": {
+            "backendName": "downloadUrl",
+            "example": "https://api.devsapp.cn/v3/packages/start-modelscope-v3/zipball/0.1.6",
+            "title": "Serverless Registry中模板下载地址",
+            "type": "string"
+          },
+          "name": {
+            "backendName": "name",
+            "example": "start-springboot-cap",
+            "title": "模板名称",
+            "type": "string"
+          }
+        },
+        "title": "模板源码配置，描述Serverless Registry中一个模板代码仓库中的一套源代码",
+        "type": "object"
+      },
+      "Variable": {
+        "description_en": "变量",
+        "description_zh": "变量",
+        "properties": {
+          "encrypted": {
+            "backendName": "encrypted",
+            "description_zh": "变量是否被加密",
+            "example": "false",
+            "title": "变量是否被加密",
+            "type": "boolean"
+          },
+          "sensitive": {
+            "backendName": "sensitive",
+            "description_zh": "变量是否敏感",
+            "example": "false",
+            "title": "变量是否敏感",
+            "type": "boolean"
+          },
+          "value": {
+            "backendName": "value",
+            "description_zh": "变量的值",
+            "example": "object_value",
+            "title": "变量的值",
+            "type": "any"
+          }
+        },
+        "title": "变量",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Retrieves information about an environment",
+  "description_zh": "查询一个环境",
+  "kebab_example": "aliyun devs get-environment --project-name demo-project --name demo-env --region cn-hangzhou",
+  "method": "GET",
+  "multi_version": false,
+  "name": "GetEnvironment",
+  "operation": {
+    "action": "GetEnvironment",
+    "api_style": "ROA",
+    "api_version": "2023-07-14",
+    "method": "GET",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "get",
+    "url": "/2023-07-14/projects/{projectName}/environments/{name}"
+  },
+  "parameters": [
+    {
+      "example": "demo-project",
+      "help_en": "The project name",
+      "help_zh": "项目名称",
+      "location": "path",
+      "name": "project_name",
+      "options": [
+        "--project-name"
+      ],
+      "raw_name": "projectName",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "demo-env",
+      "help_en": "The environment name",
+      "help_zh": "环境名称",
+      "location": "path",
+      "name": "name",
+      "options": [
+        "--name"
+      ],
+      "raw_name": "name",
+      "required": true,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/2023-07-14/projects/[projectName]/environments/[name]",
+  "product_code": "Devs",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "$ref": "#/components/schemas/Environment",
+        "description_en": "The environment entity",
+        "description_zh": "环境实体",
+        "parseType": "struct",
+        "title_en": "环境实体",
+        "title_zh": "环境实体"
+      }
+    }
+  }
+}

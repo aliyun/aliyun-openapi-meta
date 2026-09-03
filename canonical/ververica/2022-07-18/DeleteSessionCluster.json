@@ -1,0 +1,512 @@
+{
+  "camel_example": "aliyun ververica DELETE /api/v2/namespaces/default-namespace/sessionclusters/test-session --region cn-hangzhou --header \"workspace=a14bd5d90a0000\" --header \"Content-Type=application/json\"",
+  "cmd_full_name": "ververica delete-session-cluster",
+  "cmd_name": "delete-session-cluster",
+  "components": {
+    "schemas": {
+      "BasicResourceSetting": {
+        "description_en": "The basic mode resource configuration commonly used in the community edition, which differs from the expert mode resource configuration provided in the commercial edition",
+        "description_zh": "本数据结构表示用户使用的社区版本常用的基础模式资源配置，有别于商业版本提供的专家模式资源配置",
+        "properties": {
+          "jobmanagerResourceSettingSpec": {
+            "$ref": "#/components/schemas/BasicResourceSettingSpec",
+            "backendName": "jobmanagerResourceSettingSpec",
+            "description_en": "The JobManager resource settings",
+            "description_zh": "JobManager资源设置",
+            "title": "JobManager资源设置"
+          },
+          "parallelism": {
+            "backendName": "parallelism",
+            "description_en": "The concurrency",
+            "description_zh": "并发度",
+            "example": "4",
+            "format": "int64",
+            "title": "并发度",
+            "type": "integer"
+          },
+          "taskmanagerResourceSettingSpec": {
+            "$ref": "#/components/schemas/BasicResourceSettingSpec",
+            "backendName": "taskmanagerResourceSettingSpec",
+            "description_en": "The TaskManager resource settings",
+            "description_zh": "TaskManager资源设置",
+            "title": "TaskManager资源设置"
+          }
+        },
+        "title": "作业通用资源设置",
+        "type": "object"
+      },
+      "BasicResourceSettingSpec": {
+        "description_en": "The configurations of CPU and memory resources for a deployment. A coarse-grained description of the JobManager or TaskManager resources can be generated based on the data structure",
+        "description_zh": "本数据结构表示对作业使用CPU和内存资源的包装，依据本数据结构可以生成对JM/TM资源的粗粒度的描述",
+        "properties": {
+          "cpu": {
+            "backendName": "cpu",
+            "description_en": "The number of CPU cores",
+            "description_zh": "CPU核数",
+            "example": "2.0",
+            "format": "double",
+            "title": "CPU",
+            "type": "number"
+          },
+          "memory": {
+            "backendName": "memory",
+            "description_en": "The capacity of the memory. Unit: GiB",
+            "description_zh": "内存，单位GiB",
+            "example": "4 GiB",
+            "title": "内存",
+            "type": "string"
+          }
+        },
+        "title": "作业基础源",
+        "type": "object"
+      },
+      "Log4jLogger": {
+        "description_en": "The configuration information about the output log of a job",
+        "description_zh": "本数据结构代表作业实例上日志输出的相关配置信息",
+        "properties": {
+          "loggerLevel": {
+            "backendName": "loggerLevel",
+            "description_en": "The level of the output log",
+            "description_zh": "输出日志的级别",
+            "enum": [
+              "TRACE",
+              "DEBUG",
+              "INFO",
+              "WARN",
+              "ERROR"
+            ],
+            "example": "ERROR",
+            "title": "输出日志的级别",
+            "type": "string"
+          },
+          "loggerName": {
+            "backendName": "loggerName",
+            "description_en": "The name of the class of the output log",
+            "description_zh": "输出日志的类的名称",
+            "example": "StdOutErrConsoleAppender",
+            "title": "输出日志的累的名称",
+            "type": "string"
+          }
+        },
+        "title": "日志log4j的配置",
+        "type": "object"
+      },
+      "LogReservePolicy": {
+        "description_en": "The configurations related to log archiving for a job",
+        "description_zh": "本数据结构代表作业实例上日志保存的相关配置",
+        "properties": {
+          "expirationDays": {
+            "backendName": "expirationDays",
+            "description_en": "The number of days for which logs are retained after you enable the\nlog archiving feature",
+            "description_zh": "开启日志保存后，日志保存天数",
+            "example": "7",
+            "format": "int64",
+            "title": "开启日志保存后，日志保存天数",
+            "type": "integer"
+          },
+          "openHistory": {
+            "backendName": "openHistory",
+            "description_en": "Specifies whether to enable the log archiving feature",
+            "description_zh": "是否开启日志保存",
+            "example": "true",
+            "title": "是否开启日志保存",
+            "type": "boolean"
+          }
+        },
+        "title": "日志保存策略",
+        "type": "object"
+      },
+      "Logging": {
+        "description_en": "The information about log configurations for a deployment",
+        "description_zh": "本数据结构代表作业日志配置的相关信息",
+        "properties": {
+          "log4j2ConfigurationTemplate": {
+            "backendName": "log4j2ConfigurationTemplate",
+            "description_en": "Custom log templates",
+            "description_zh": "自定义日志模版",
+            "example": "xml格式文本",
+            "title": "自定义日志模版",
+            "type": "string"
+          },
+          "log4jLoggers": {
+            "backendName": "log4jLoggers",
+            "description_en": "The Log4j configuration",
+            "description_zh": "log4j配置",
+            "items": {
+              "$ref": "#/components/schemas/Log4jLogger",
+              "description_en": "The log output configuration information about a job",
+              "description_zh": "作业实例上日志输出相关配置信息"
+            },
+            "title": "log4j配置",
+            "type": "array"
+          },
+          "logReservePolicy": {
+            "$ref": "#/components/schemas/LogReservePolicy",
+            "backendName": "logReservePolicy",
+            "description_en": "The log retention policy",
+            "description_zh": "日志保存策略",
+            "title": "日志保存策略"
+          },
+          "loggingProfile": {
+            "backendName": "loggingProfile",
+            "description_en": "The type of the system log template.\n\ndefault: The default template is used.\n\noss: Logs are delivered to Object Storage Service (OSS)",
+            "description_zh": "系统日志默认模版",
+            "enum": [
+              "default",
+              "oss"
+            ],
+            "example": "default",
+            "title": "系统日志模版类型",
+            "type": "string"
+          }
+        },
+        "title": "作业日志配置",
+        "type": "object"
+      },
+      "SessionCluster": {
+        "description_en": "SessionCluster",
+        "description_zh": "SessionCluster",
+        "properties": {
+          "basicResourceSetting": {
+            "$ref": "#/components/schemas/BasicResourceSetting",
+            "backendName": "basicResourceSetting",
+            "description_zh": "资源设置",
+            "title": "资源设置"
+          },
+          "createdAt": {
+            "backendName": "createdAt",
+            "description_zh": "创建时间",
+            "format": "int64",
+            "title": "创建时间",
+            "type": "integer"
+          },
+          "creator": {
+            "backendName": "creator",
+            "description_zh": "创建者",
+            "example": "27846363877456****",
+            "title": "创建者",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "creatorName": {
+            "backendName": "creatorName",
+            "description_zh": "创建者名称",
+            "example": "****@streamcompute.onaliyun.com",
+            "title": "创建者名称",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "deploymentTargetName": {
+            "backendName": "deploymentTargetName",
+            "description_zh": "部署目标",
+            "example": "default-queue",
+            "title": "部署目标",
+            "type": "string"
+          },
+          "engineVersion": {
+            "backendName": "engineVersion",
+            "description_zh": "引擎版本",
+            "example": "vvr-6.0.7-flink-1.15",
+            "title": "引擎版本",
+            "type": "string"
+          },
+          "flinkConf": {
+            "backendName": "flinkConf",
+            "description_zh": "Flink配置",
+            "example": "{\"taskmanager.numberOfTaskSlots\":\"1\"}",
+            "title": "Flink配置",
+            "type": "object"
+          },
+          "labels": {
+            "backendName": "labels",
+            "description_zh": "作业标签",
+            "title": "作业标签",
+            "type": "object"
+          },
+          "logging": {
+            "$ref": "#/components/schemas/Logging",
+            "backendName": "logging",
+            "description_zh": "日志配置",
+            "title": "日志配置"
+          },
+          "modifiedAt": {
+            "backendName": "modifiedAt",
+            "description_zh": "修改时间",
+            "format": "int64",
+            "title": "修改时间",
+            "type": "integer"
+          },
+          "modifier": {
+            "backendName": "modifier",
+            "description_zh": "修改者",
+            "example": "27846363877456****",
+            "title": "修改者",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "modifierName": {
+            "backendName": "modifierName",
+            "description_zh": "修改者名称",
+            "example": "****@streamcompute.onaliyun.com",
+            "title": "修改者名称",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "name": {
+            "backendName": "name",
+            "description_zh": "session集群名称",
+            "example": "test-sessionCluster",
+            "title": "session集群名称",
+            "type": "string"
+          },
+          "namespace": {
+            "backendName": "namespace",
+            "description_zh": "项目空间",
+            "example": "default-namespace",
+            "title": "项目空间",
+            "type": "string"
+          },
+          "sessionClusterId": {
+            "backendName": "sessionClusterId",
+            "description_zh": "session集群ID",
+            "example": "1f68a52c-1760-43c6-97fb-afe0674b****",
+            "title": "session集群ID",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SessionClusterStatus",
+            "backendName": "status",
+            "description_zh": "session集群状态信息",
+            "title": "session集群状态信息"
+          },
+          "workspace": {
+            "backendName": "workspace",
+            "description_zh": "工作空间",
+            "example": "edcef******b4f",
+            "title": "工作空间",
+            "type": "string"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "SessionClusterFailureInfo": {
+        "description_en": "session集群失败信息",
+        "description_zh": "session集群失败信息",
+        "properties": {
+          "failedAt": {
+            "backendName": "failedAt",
+            "description_zh": "失败时间",
+            "format": "int64",
+            "title": "失败时间",
+            "type": "integer"
+          },
+          "message": {
+            "backendName": "message",
+            "description_zh": "失败信息",
+            "title": "失败信息",
+            "type": "string"
+          },
+          "reason": {
+            "backendName": "reason",
+            "description_zh": "失败原因",
+            "title": "失败原因",
+            "type": "string"
+          }
+        },
+        "title": "session集群失败信息",
+        "type": "object"
+      },
+      "SessionClusterRunningInfo": {
+        "description_en": "session集群运行信息",
+        "description_zh": "session集群运行信息",
+        "properties": {
+          "lastUpdateTime": {
+            "backendName": "lastUpdateTime",
+            "description_zh": "更新时间",
+            "format": "int64",
+            "title": "更新时间",
+            "type": "integer"
+          },
+          "referenceDeploymentIds": {
+            "backendName": "referenceDeploymentIds",
+            "description_zh": "运行在session集群上的部署作业id",
+            "items": {
+              "type": "string"
+            },
+            "title": "运行在session集群上的部署作业id",
+            "type": "array"
+          },
+          "startedAt": {
+            "backendName": "startedAt",
+            "description_zh": "启动时间",
+            "format": "int64",
+            "title": "启动时间",
+            "type": "integer"
+          }
+        },
+        "title": "session集群运行信息",
+        "type": "object"
+      },
+      "SessionClusterStatus": {
+        "description_en": "session集群状态信息",
+        "description_zh": "session集群状态信息",
+        "properties": {
+          "currentSessionClusterStatus": {
+            "backendName": "currentSessionClusterStatus",
+            "description_zh": "session集群当前状态",
+            "enum": [
+              "STOPPED",
+              "STARTING",
+              "RUNNING",
+              "UPDATING",
+              "STOPPING",
+              "FAILED"
+            ],
+            "title": "session集群当前状态",
+            "type": "string"
+          },
+          "failure": {
+            "$ref": "#/components/schemas/SessionClusterFailureInfo",
+            "backendName": "failure",
+            "description_zh": "session集群失败信息",
+            "title": "session集群失败信息"
+          },
+          "running": {
+            "$ref": "#/components/schemas/SessionClusterRunningInfo",
+            "backendName": "running",
+            "description_zh": "session集群运行信息",
+            "title": "session集群运行信息"
+          }
+        },
+        "title": "session集群状态信息",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Deletes a session cluster",
+  "description_zh": "删除Session集群",
+  "kebab_example": "aliyun ververica delete-session-cluster --workspace a14bd5d90a0000 --namespace default-namespace --session-cluster-name test-session --api-version 2022-07-18 --region cn-hangzhou",
+  "method": "DELETE",
+  "multi_version": false,
+  "name": "DeleteSessionCluster",
+  "operation": {
+    "action": "DeleteSessionCluster",
+    "api_style": "ROA",
+    "api_version": "2022-07-18",
+    "method": "DELETE",
+    "protocol": "HTTPS",
+    "system_operation_type": "delete",
+    "url": "/api/v2/namespaces/{namespace}/sessionclusters/{sessionClusterName}"
+  },
+  "parameters": [
+    {
+      "example": "a14bd5d90a****",
+      "help_en": "The ID of the workspace",
+      "help_zh": "工作空间ID",
+      "location": "header",
+      "name": "workspace",
+      "options": [
+        "--workspace"
+      ],
+      "raw_name": "workspace",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "default-namespace",
+      "help_en": "The name of the namespace",
+      "help_zh": "项目空间名称",
+      "location": "path",
+      "name": "namespace",
+      "options": [
+        "--namespace"
+      ],
+      "raw_name": "namespace",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "test-session",
+      "help_en": "The name of the session cluster",
+      "help_zh": "Session集群名称",
+      "location": "path",
+      "name": "session_cluster_name",
+      "options": [
+        "--session-cluster-name"
+      ],
+      "raw_name": "sessionClusterName",
+      "required": true,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/api/v2/namespaces/[namespace]/sessionclusters/[sessionClusterName]",
+  "product_code": "ververica",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "The response data",
+        "description_zh": "响应数据",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/SessionCluster",
+            "backendName": "data",
+            "description_en": "The data structure of the deleted session cluster",
+            "description_zh": "本数据结构代表删除的Session集群"
+          },
+          "errorCode": {
+            "backendName": "errorCode",
+            "description_en": "This parameter is not empty and indicates the error code if \\`success\\` is \\`false\\`. This parameter is empty if \\`success\\` is \\`true\\`",
+            "description_zh": "当success为false时，该值不为空，表示业务错误码；当success为true时，该值为空",
+            "example": "\"\"",
+            "title_en": "当success为false时，该值不为空，表示业务错误码；当success为true时，该值为空。",
+            "title_zh": "当success为false时，该值不为空，表示业务错误码；当success为true时，该值为空。",
+            "type": "string"
+          },
+          "errorMessage": {
+            "backendName": "errorMessage",
+            "description_en": "This parameter is not empty and indicates the error message if \\`success\\` is \\`false\\`. This parameter is empty if \\`success\\` is \\`true\\`",
+            "description_zh": "当success为false时，该值不为空，表示业务错误信息；当success为true时，该值为空",
+            "example": "\"\"",
+            "title_en": "当success为false时，该值不为空，表示业务错误信息；当success为true时，该值为空。",
+            "title_zh": "当success为false时，该值不为空，表示业务错误信息；当success为true时，该值为空。",
+            "type": "string"
+          },
+          "httpCode": {
+            "backendName": "httpCode",
+            "description_en": "The HTTP status code. A value of 200 is returned. The \\`success\\` parameter indicates whether the request was successful",
+            "description_zh": "业务状态码，统一为200；使用success表示业务请求是否成功",
+            "example": "200",
+            "format": "int32",
+            "title_en": "业务状态码，统一为200；使用success表示业务请求是否成功。",
+            "title_zh": "业务状态码，统一为200；使用success表示业务请求是否成功。",
+            "type": "integer"
+          },
+          "requestId": {
+            "backendName": "requestId",
+            "description_en": "The request ID",
+            "description_zh": "请求ID",
+            "example": "CBC799F0-ABCD-1D30-8A4F-882ED4DD****",
+            "title_en": "请求ID。",
+            "title_zh": "请求ID。",
+            "type": "string"
+          },
+          "success": {
+            "backendName": "success",
+            "description_en": "Indicates whether the request was successful",
+            "description_zh": "表示业务请求是否成功",
+            "example": "true",
+            "title_en": "表示业务请求是否成功。",
+            "title_zh": "表示业务请求是否成功。",
+            "type": "boolean"
+          }
+        },
+        "title_en": "响应数据。",
+        "title_zh": "响应数据。",
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,1883 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "ice list-ai-agent-instance",
+  "cmd_name": "list-ai-agent-instance",
+  "components": {
+    "schemas": {
+      "AIAgentConfig": {
+        "description_en": "The parameters for the AI agent template",
+        "description_zh": "智能体模版参数",
+        "properties": {
+          "AmbientSoundConfig": {
+            "backendName": "ambientSoundConfig",
+            "description_en": "Configuration for ambient sound during the call",
+            "description_zh": "通话环境音配置",
+            "properties": {
+              "ResourceId": {
+                "backendName": "resourceId",
+                "description_en": "The ID of the ambient sound resource. You can obtain this ID from the advanced settings of the agent configuration in the console",
+                "description_zh": "通话环境音ID，可以在控制台上智能体配置的高级配置中获取",
+                "example": "f67901c595834************",
+                "type": "string"
+              },
+              "Volume": {
+                "backendName": "volume",
+                "description_en": "The volume of the ambient sound. Range: 0–100. A value of 0 disables the sound",
+                "description_zh": "通话背景音的音量，可选值：[0, 100]，0表示关闭",
+                "example": "50",
+                "format": "int32",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "AsrConfig": {
+            "backendName": "asrConfig",
+            "description_en": "Configuration for automatic speech recognition (ASR)",
+            "description_zh": "语音识别配置",
+            "properties": {
+              "AsrHotWords": {
+                "backendName": "asrHotWords",
+                "description_en": "A list of hotwords to improve ASR accuracy. You can specify a maximum of 128 hotwords",
+                "description_zh": "Asr 热词列表。热词列表最大支持 128 个词",
+                "items": {
+                  "description_en": "A hotword string. Length: 1 to 10 characters",
+                  "description_zh": "热词字符串。字符长度: [1,10]个字符",
+                  "example": "检查",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "AsrLanguageId": {
+                "backendName": "asrLanguageId",
+                "description_en": "The language for ASR. Valid values:\n\n`zh_mandarin`: Chinese (Mandarin)\n\n`en`: English\n\n`zh_en`: Chinese-English mixed\n\n`es`: Spanish\n\n`jp`: Japanese",
+                "description_zh": "asr 语种 Id。 可选：\n\nzh_mandarin 中文\n\nen 英文\n\nzh_en 中英混\n\nes 西班牙语\n\njp 日语",
+                "example": "zh_mandarin",
+                "type": "string"
+              },
+              "AsrMaxSilence": {
+                "backendName": "asrMaxSilence",
+                "description_en": "The maximum duration of silence in milliseconds before the ASR engine finalizes an utterance. A pause longer than this value signals a sentence break. Range: 200–1200. Default: 400",
+                "description_zh": "语音断句检测阈值，静音时长超过该阈值会被认为断句，参数范围 200ms～1200ms，默认值 400ms",
+                "example": "400",
+                "format": "int32",
+                "type": "integer"
+              },
+              "CustomParams": {
+                "backendName": "customParams",
+                "description_en": "Passthrough parameters for proprietary ASR integrations",
+                "description_zh": "asr自研接入透传参数",
+                "example": "mode=fast&sample=16000&format=wav",
+                "type": "string"
+              },
+              "VadDuration": {
+                "backendName": "vadDuration",
+                "description_en": "The minimum duration in milliseconds of continuous user speech required to trigger an interruption. This controls interruption sensitivity. A value of 0 disables this feature. Range: 200–2000. A common range is 200–500 ms, which typically corresponds to 1 to 4 Chinese characters. If omitted, this feature is disabled",
+                "description_zh": "语音活动检测的最短持续时间阈值，用于控制打断的灵敏度。0表示关闭此功能。有效范围：200到2000毫秒。常用[200,500] 对应1-4个字。默认为空，不生效",
+                "example": "300",
+                "format": "int32",
+                "type": "integer"
+              },
+              "VadLevel": {
+                "backendName": "vadLevel",
+                "description_en": "The Voice Activity Detection (VAD) threshold for interruptions. Range: 0–11. Default: 11.\n\n`0`: Disables VAD.\n\n`1`–`10`: Sets the interruption sensitivity. A higher value makes the agent harder to interrupt.\n\n`11`: An enhanced mode with lower audio distortion and stronger noise resistance",
+                "description_zh": "打断阈值参数。取值范围：[0,11], 默认值：11。\n\n0表示关闭 vad 功能。\n1-10设置数字越高表示越难打断。\n11与之前显著不同，前处理对话音损伤更低，抗干扰更强",
+                "example": "11",
+                "format": "int32",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "AutoSpeechConfig": {
+            "backendName": "autoSpeechConfig",
+            "description_en": "Configuration for the agent's automatic speech, including prompts for LLM latency and long periods of user silence",
+            "description_zh": "智能体自动说话配置模块，包括 LLM 等待提示和用户长时间静默问询",
+            "properties": {
+              "LlmPending": {
+                "backendName": "llmPending",
+                "description_en": "Configuration for prompts to play during LLM response latency",
+                "description_zh": "LLM 响应延迟时的播报配置",
+                "properties": {
+                  "Messages": {
+                    "backendName": "messages",
+                    "description_en": "A collection of prompt messages. A maximum of 10 messages are supported, each up to 100 characters. The sum of all probabilities must be 100%",
+                    "description_zh": "问询提示语集合，最大 10 条，每条长度 ≤ 100 字符，概率总和为100%",
+                    "items": {
+                      "description_en": "The structure of a prompt message",
+                      "description_zh": "问询词结构",
+                      "properties": {
+                        "Probability": {
+                          "backendName": "probability",
+                          "description_en": "The probability of this message being selected. Range: 0–1, corresponding to 0%–100%",
+                          "description_zh": "提示语的选择概率，范围 0–1，对应0%-100%",
+                          "example": "0.5",
+                          "format": "double",
+                          "type": "number"
+                        },
+                        "Text": {
+                          "backendName": "text",
+                          "description_en": "The text of the prompt message, up to 100 characters",
+                          "description_zh": "问询提示语文本，最长 100 字符",
+                          "example": "稍等一下",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "Mode": {
+                    "backendName": "mode",
+                    "type": "string"
+                  },
+                  "WaitTime": {
+                    "backendName": "waitTime",
+                    "description_en": "The wait time threshold for LLM responses. If the threshold is exceeded, a prompt is played. This is a required field. Unit: ms. Range: 500–10000. Set this value based on the actual performance of your LLM",
+                    "description_zh": "等待大模型回复时长阈值。超过此时长，触发播报提示。必填，单位毫秒，范围 500–10000ms。请用户根据大模型的实际使用",
+                    "example": "3000",
+                    "format": "int32",
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              },
+              "UserIdle": {
+                "backendName": "userIdle",
+                "description_en": "Configuration for prompts to play when the user is silent for an extended period",
+                "description_zh": "用户长时间静默时的问询播报配置",
+                "properties": {
+                  "HangupEndWord": {
+                    "backendName": "hangupEndWord",
+                    "description_en": "A farewell message played before hanging up due to user inactivity",
+                    "description_zh": "挂断结束语，用户长时间无响应后挂断前播报，最大长度 200",
+                    "example": "我挂了，再见",
+                    "type": "string"
+                  },
+                  "MaxRepeats": {
+                    "backendName": "maxRepeats",
+                    "description_en": "The maximum number of times the prompt can be repeated. Range: 0–10. This is a required field. If the limit is exceeded, the call is terminated",
+                    "description_zh": "最大问询次数，范围 0–10，必填。超过后不再触发，直接关闭通话",
+                    "example": "5",
+                    "format": "int32",
+                    "type": "integer"
+                  },
+                  "Messages": {
+                    "backendName": "messages",
+                    "description_en": "A collection of prompt messages. A maximum of 10 messages are supported, each up to 100 characters. The sum of all probabilities must be 100%",
+                    "description_zh": "问询提示语集合，最大 10 条，每条长度 ≤ 100 字符，概率总和为100%",
+                    "items": {
+                      "description_en": "The structure of a prompt message",
+                      "description_zh": "问询词结构",
+                      "properties": {
+                        "Probability": {
+                          "backendName": "probability",
+                          "description_en": "The probability of this message being selected. Range: 0–1, corresponding to 0%–100%",
+                          "description_zh": "提示语的选择概率，范围 0–1，对应0%-100%",
+                          "example": "0.5",
+                          "format": "double",
+                          "type": "number"
+                        },
+                        "Text": {
+                          "backendName": "text",
+                          "description_en": "The text of the prompt message, up to 100 characters",
+                          "description_zh": "问询提示语文本，最长 100 字符",
+                          "example": "您还在吗？",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "WaitTime": {
+                    "backendName": "waitTime",
+                    "description_en": "The silence duration threshold in milliseconds. If the user is silent for longer than this period, a prompt is triggered. Range: 5000–600000. This is a required field",
+                    "description_zh": "静默时长阈值，单位毫秒，必填。超过此时长触发问询。范围 5000–600000ms",
+                    "example": "5000",
+                    "format": "int32",
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "AvatarConfig": {
+            "backendName": "avatarConfig",
+            "description_en": "Configuration for the avatar. This takes effect only if the workflow includes an avatar node",
+            "description_zh": "数字人配置，只有当工作流中包含数字人节点才会生效",
+            "properties": {
+              "AvatarId": {
+                "backendName": "avatarId",
+                "description_en": "The model ID of the avatar",
+                "description_zh": "数字人的模型id",
+                "example": "5257",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "AvatarUrl": {
+            "backendName": "avatarUrl",
+            "description_en": "The URL of the avatar to display during voice calls. If omitted, no avatar is displayed",
+            "description_zh": "语音通话的智能体头像的头像链接。默认无",
+            "example": "http://example.com/a.jpg\n",
+            "type": "string"
+          },
+          "AvatarUrlType": {
+            "backendName": "avatarUrlType",
+            "description_en": "The type of the avatar URL. By default, this parameter is not set",
+            "description_zh": "智能体头像链接类型，默认无",
+            "example": "USER",
+            "type": "string"
+          },
+          "BackChannelingConfig": {
+            "backendName": "backChannelingConfig",
+            "deprecated": true,
+            "description_en": "<notice>\n\n已废弃，请使用 BackChannelingConfigs\n\n</notice>",
+            "description_zh": "<notice>已废弃，请使用BackChannelingConfigs></notice>",
+            "items": {
+              "description_en": "单个附和语配置",
+              "description_zh": "单个附和语配置",
+              "properties": {
+                "Enabled": {
+                  "backendName": "enabled",
+                  "description_en": "是否启用附和功能。必填，取值 true/false",
+                  "description_zh": "是否启用附和功能。必填，取值 true/false",
+                  "example": "true",
+                  "type": "boolean"
+                },
+                "Probability": {
+                  "backendName": "probability",
+                  "description_en": "功能触发概率。范围 0.0–1.0。必填",
+                  "description_zh": "功能触发概率。范围 0.0–1.0。必填",
+                  "example": "0.5",
+                  "format": "double",
+                  "type": "number"
+                },
+                "TriggerStage": {
+                  "backendName": "triggerStage",
+                  "description_en": "附和触发的时机。可选值：\n\npause_detected（检测到说话短暂停顿）",
+                  "description_zh": "附和触发的时机。可选值：\n\npause_detected（检测到说话短暂停顿）",
+                  "example": "pause_detected",
+                  "type": "string"
+                },
+                "Words": {
+                  "backendName": "words",
+                  "description_en": "附和短语集合。最大 10 条，每条短语长度 ≤ 20 字符，概率总和为 1.0",
+                  "description_zh": "附和短语集合。最大 10 条，每条短语长度 ≤ 20 字符，概率总和为1.0",
+                  "items": {
+                    "description_en": "附和短语配置",
+                    "description_zh": "附和短语配置",
+                    "properties": {
+                      "Probability": {
+                        "backendName": "probability",
+                        "description_en": "本短语的触发概率，范围 0.0–1.0，必填",
+                        "description_zh": "本短语的触发概率，范围 0.0–1.0，必填",
+                        "example": "0.3",
+                        "format": "double",
+                        "type": "number"
+                      },
+                      "Text": {
+                        "backendName": "text",
+                        "description_en": "短语文本，长度 ≤ 20 字符，支持多语言。必填",
+                        "description_zh": "短语文本，长度 ≤ 20 字符，支持多语言。必填",
+                        "example": "嗯嗯",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "BackChannelingConfigs": {
+            "backendName": "backChannelingConfigs",
+            "description_en": "Configuration for back-channeling. When enabled, the system plays short, responsive phrases at specific trigger points",
+            "description_zh": "附和语功能配置模块。开启后，系统会在特定触发时机随机播报简短的附和语",
+            "items": {
+              "description_en": "A single back-channeling configuration",
+              "description_zh": "单个附和语配置",
+              "properties": {
+                "Enabled": {
+                  "backendName": "enabled",
+                  "description_en": "Specifies whether to enable this back-channeling rule. This is a required field",
+                  "description_zh": "是否启用附和功能。必填，取值 true/false",
+                  "example": "true",
+                  "type": "boolean"
+                },
+                "Probability": {
+                  "backendName": "probability",
+                  "description_en": "The trigger probability. Range: 0.0–1.0. This is a required field",
+                  "description_zh": "功能触发概率。范围 0.0–1.0。必填",
+                  "example": "0.5",
+                  "format": "double",
+                  "type": "number"
+                },
+                "TriggerStage": {
+                  "backendName": "triggerStage",
+                  "description_en": "The trigger for the back-channeling. Valid value:\n\n`pause_detected`: Triggered when a short pause in speech is detected",
+                  "description_zh": "附和触发的时机。可选值：\n\npause_detected（检测到说话短暂停顿）",
+                  "example": "pause_detected",
+                  "type": "string"
+                },
+                "Words": {
+                  "backendName": "words",
+                  "description_en": "A collection of acknowledgment phrases. You can specify a maximum of 10 phrases. Each phrase must be 20 characters or less, and the sum of their probabilities must be 1.0",
+                  "description_zh": "附和短语集合。最大 10 条，每条短语长度 ≤ 20 字符，概率总和为1.0",
+                  "items": {
+                    "description_en": "Configuration for a responsive phrase",
+                    "description_zh": "附和短语配置",
+                    "properties": {
+                      "Probability": {
+                        "backendName": "probability",
+                        "description_en": "本短语的触发概率，范围 0.0–1.0，必填",
+                        "description_zh": "本短语的触发概率，范围 0.0–1.0，必填",
+                        "example": "0.3",
+                        "format": "double",
+                        "type": "number"
+                      },
+                      "Text": {
+                        "backendName": "text",
+                        "description_en": "短语文本，长度 ≤ 20 字符，支持多语言。必填",
+                        "description_zh": "短语文本，长度 ≤ 20 字符，支持多语言。必填",
+                        "example": "嗯嗯",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "EnableIntelligentSegment": {
+            "backendName": "enableIntelligentSegment",
+            "description_en": "Specifies whether to enable intelligent segmentation. When enabled, short user utterances are merged into a single sentence. Default: `true`",
+            "description_zh": "智能断句开关，开启智能断句后，用户说话的发生断句会智能合并成一句。默认为 true",
+            "example": "true",
+            "type": "boolean"
+          },
+          "EnablePushToTalk": {
+            "backendName": "enablePushToTalk",
+            "description_en": "Specifies whether to enable push-to-talk mode. Default: `false`",
+            "description_zh": "是否开启对讲机模式。默认值：false",
+            "example": "false",
+            "type": "boolean"
+          },
+          "ExperimentalConfig": {
+            "backendName": "experimentalConfig",
+            "description_en": "Parameters for experimental features. Contact support for assistance",
+            "description_zh": "实验功能参数，有需求请联系答疑",
+            "example": "\"\"",
+            "type": "string"
+          },
+          "GracefulShutdown": {
+            "backendName": "gracefulShutdown",
+            "description_en": "Specifies whether to enable graceful shutdown. Default: `false`.\n\nIf enabled, the AI agent completes its current utterance before disconnecting when the task is stopped. The agent will not speak for more than 10 seconds",
+            "description_zh": "是否优雅下线。默认 false。\n\n优雅下线：当智能体被停止的时候，播报完当前说的话再停止，最多播报 10 秒",
+            "example": "false\n",
+            "type": "boolean"
+          },
+          "Greeting": {
+            "backendName": "greeting",
+            "description_en": "The welcome message the AI agent plays when joining the session. Changes apply to subsequent sessions. If omitted, no welcome message is played",
+            "description_zh": "问候语，修改后下次入会生效。默认无",
+            "example": "你好",
+            "type": "string"
+          },
+          "InterruptConfig": {
+            "backendName": "interruptConfig",
+            "description_en": "Configuration for the speech interruption policy",
+            "description_zh": "语音打断策略配置",
+            "properties": {
+              "EnableVoiceInterrupt": {
+                "backendName": "enableVoiceInterrupt",
+                "description_en": "Specifies whether to enable speech interruption. Default: `true`",
+                "description_zh": "是否支持语音打断，默认 true",
+                "example": "true",
+                "type": "boolean"
+              },
+              "InterruptWords": {
+                "backendName": "interruptWords",
+                "description_en": "A list of specific words or phrases that trigger an interruption",
+                "description_zh": "触发对话中断的特定词汇或短语列表",
+                "items": {
+                  "description_en": "A specific word or phrase that triggers an interruption",
+                  "description_zh": "触发对话中断的特定词汇或短语",
+                  "example": "打断一下",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "KeepInterruptWordsForLLM": {
+                "backendName": "keepInterruptWordsForLLM",
+                "description_en": "Specifies whether to include the interrupt words in the text sent to the LLM. Default: `false` (words are discarded).\n\nFor example, if \"hold on\" is an interrupt word and the user says \"hold on, what is the weather like today?\", setting this to `false` results in only \"what is the weather like today?\" being sent to the LLM",
+                "description_zh": "是否保留打断词送 LLM，默认丢弃。\n\n举例：打断词是“稍等”。\"稍等今天天气怎么样\"丢弃打断词送 LLM后，变为\"今天天气怎么样\"",
+                "example": "true",
+                "type": "boolean"
+              },
+              "NoInterruptMode": {
+                "backendName": "noInterruptMode",
+                "description_en": "Specifies how to handle user speech that occurs during a non-interruptible section of the agent's utterance.\n\n`cache`: Caches the user's speech and processes it in the next conversational turn.\n\n`discard`: Discards the user's speech.\n\nDefault: `cache`",
+                "description_zh": "<No Interrupting> 模式下的 ASR 处理策略\n\ncache: 缓存ASR文本，当前轮次结束后，被缓存的asr文本会在下一个轮次一起被处理。\n\ndiscard: 直接丢弃ASR文本。\n\n默认处理是缓存ASR文本",
+                "example": "cache",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "LlmConfig": {
+            "backendName": "llmConfig",
+            "description_en": "Configuration for the large language model (LLM)",
+            "description_zh": "大语言模型配置",
+            "properties": {
+              "BailianAppParams": {
+                "backendName": "bailianAppParams",
+                "description_en": "Parameters for Alibaba Cloud Model Studio, provided as a JSON string. For the parameter format, see\n[Alibaba Cloud Model Studio Parameters]（https://help.aliyun.com/document_detail/2858132.html）",
+                "description_zh": "阿里云百炼应用中心参数，类型为JSON字符串。参数格式参考：\n[阿里云百炼应用中心参数]（https://help.aliyun.com/document_detail/2858132.html）",
+                "example": "\"{\\\"biz_params\\\":{\\\"user_defined_params\\\":{\\\"your_plugin_id\\\":{\\\"article_index\\\":2}}},\\\"memory_id\\\":\\\"your_memory_id\\\",\\\"image_list\\\":[\\\"https://your_image_url\\\"],\\\"rag_options\\\":{\\\"pipeline_ids\\\":[\\\"your_id\\\"],\\\"file_ids\\\":[\\\"文档ID1\\\",\\\"文档ID2\\\"],\\\"metadata_filter\\\":{\\\"name\\\":\\\"张三\\\"},\\\"structured_filter\\\":{\\\"key1\\\":\\\"value1\\\",\\\"key2\\\":\\\"value2\\\"},\\\"tags\\\":[\\\"标签1\\\",\\\"标签2\\\"]}}\"",
+                "type": "string"
+              },
+              "FunctionMap": {
+                "backendName": "functionMap",
+                "description_en": "Maps built-in agent functions to custom LLM functions. Currently, this only supports function calling for custom, OpenAI-compatible LLMs",
+                "description_zh": "功能映射列表，用于将智能体能力与LLM函数对应。当前只支持和用户自定义openai协议llm的函数调用",
+                "items": {
+                  "description_en": "A single mapping rule",
+                  "description_zh": "单个对应规则",
+                  "properties": {
+                    "Function": {
+                      "backendName": "function",
+                      "description_en": "The name of a built-in function provided by the AI agent system. Currently, only `hangup` is supported",
+                      "description_zh": "阿里智能体系统提供的内置功能名称。当前只支持hangup(挂断)",
+                      "example": "hangup",
+                      "type": "string"
+                    },
+                    "MatchFunction": {
+                      "backendName": "matchFunction",
+                      "description_en": "The name of the custom LLM function that maps to the agent's built-in function. For details on the custom LLM protocol, see [LLM Standard Interface]（https://help.aliyun.com/document_detail/2839094.html）",
+                      "description_zh": "要与该功能对应的LLM函数名称，由客户自定义，用于在LLM中调用对应功能。用户自定义llm协议参考：[LLM标准接口]（https://help.aliyun.com/document_detail/2839094.html）",
+                      "example": "hangup",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "HistorySyncWithTTS": {
+                "backendName": "historySyncWithTTS",
+                "description_en": "Specifies whether the LLM message history is synchronized with the content played by the TTS. Default: `false`. When enabled, the saved LLM messages match the content actually played by the TTS.\n\nWhen a user interrupts the agent, the `<ims_agent_interrupted>` tag is inserted into the message history at the point of interruption. This affects the next message sent to the LLM. For example:\n\n```\n[\n  {\"role\": \"user\", \"content\": \"Tell me a story.\"},\n  {\"role\": \"assistant\", \"content\": \"Okay, I can tell you a story about the Three Kingdoms. Would you<ims_agent_interrupted> like that?\"},\n  {\"role\": \"user\", \"content\": \"Tell me a different one.\"}\n]\n```",
+                "description_zh": "大模型消息历史，是否和tts播放内容保持一致。默认false。开启后，保存的大模型消息和tts播放内容保持一致。\n\n大模型消息历史中当用户打断Agent时，下次发送给大模型的 message 会在打断位置插入 <ims_agent_interrupted> 标签。比如：\n\n```\n[\n  {\"role\": \"user\", \"content\": \"给我讲一个故事。\"},\n  {\"role\": \"assistant\", \"content\": \"好的，我给你讲一个三国演义的故事吧，你<ims_agent_interrupted>想听吗？\"},\n  {\"role\": \"user\", \"content\": \"换一个吧。\"}\n]\n```",
+                "example": "false",
+                "type": "boolean"
+              },
+              "LlmCompleteReply": {
+                "backendName": "llmCompleteReply",
+                "description_en": "When set to `true`, the agent sends the entire LLM response in a single message after it is fully generated, rather than streaming it. This setting does not affect the streaming of subtitles",
+                "description_zh": "开启后，llm回复完整结果之后，智能体会向客户端发送完整llm结果。此开关不影响字幕的流式生成",
+                "example": "true",
+                "type": "boolean"
+              },
+              "LlmHistory": {
+                "backendName": "llmHistory",
+                "description_en": "The conversation history context for the LLM/MLLM",
+                "description_zh": "llm/mllm历史对话上下文",
+                "items": {
+                  "description_en": "A single conversational turn",
+                  "description_zh": "单个对话",
+                  "properties": {
+                    "Content": {
+                      "backendName": "content",
+                      "description_en": "The text content of the message from this role",
+                      "description_zh": "存储实际的对话内容文本，记录了该角色在对话中的具体表达或回应",
+                      "example": "你好",
+                      "type": "string"
+                    },
+                    "Role": {
+                      "backendName": "role",
+                      "description_en": "The role of the participant in the conversation. Valid values:\n\n`user`\n\n`assistant`\n\n`system`\n\n`function`\n\n`plugin`\n\n`tool`",
+                      "description_zh": "表示对话参与者的角色。可选值包括：\n\nuser: 用户\n\nassistant: 助手\n\n\n\nsystem: 系统\n\n\nfunction: 函数\n\n\n\nplugin: 插件\n\n\n\ntool: 工具",
+                      "example": "user",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "LlmHistoryLimit": {
+                "backendName": "llmHistoryLimit",
+                "description_en": "The maximum number of recent conversational turns to include in the LLM/MLLM context. Default: 10",
+                "description_zh": "llm/mllm 历史对话上下文最大保留轮次，默认 10 次",
+                "example": "10",
+                "format": "int32",
+                "type": "integer"
+              },
+              "LlmSystemPrompt": {
+                "backendName": "llmSystemPrompt",
+                "description_en": "The system prompt for the LLM after the call starts",
+                "description_zh": "启动通话后 llm 的系统提示词",
+                "example": "你是一位友好且乐于助人的助手，专注于为用户提供准确的信息和建议。\n",
+                "type": "string"
+              },
+              "OpenAIExtraQuery": {
+                "backendName": "openAIExtraQuery",
+                "description_en": "Additional query parameters for an OpenAI-compatible LLM. Parameters must be provided as a URL query string (e.g., `key1=value1&key2=value2`). All values must be strings",
+                "description_zh": "额外的 OpenAI协议LLM的查询参数, 参数必须使用 key=value 格式,多个参数用 & 连接,所有值必须为字符串类型",
+                "example": "api-version=2024-02-01&api-key=sk-xxx",
+                "type": "string"
+              },
+              "OutputMaxDelay": {
+                "backendName": "outputMaxDelay",
+                "description_en": "The maximum delay in milliseconds before buffered text is sent to the TTS engine, even if `OutputMinLength` is not met. Range: 1000–10000. A value of `0` or omitting this parameter disables the delay limit. Default: Not set",
+                "description_zh": "文本输出最大延迟时间（毫秒），超过该时间强制输出已缓存文本，。范围[1000,10000]，0或空表示不限制，默认空",
+                "example": "2000",
+                "format": "int32",
+                "type": "integer"
+              },
+              "OutputMinLength": {
+                "backendName": "outputMinLength",
+                "description_en": "The minimum number of characters in a text chunk before it is sent to the TTS engine. Shorter chunks are buffered. Range: 0–100. A value of `0` or omitting this parameter disables buffering. Default: Not set",
+                "description_zh": "文本输出最小长度（字符数），小于该长度的文本会被缓存等待拼接，范围[0, 100]，0或空表示不限制，默认空",
+                "example": "5",
+                "format": "int32",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "MaxIdleTime": {
+            "backendName": "maxIdleTime",
+            "description_en": "The maximum idle duration in seconds before the AI agent disconnects. If the agent receives no user interaction within this period, it ends the task. Default: 600",
+            "description_zh": "和智能体无互动的最大等待时间，超时智能体下线。单位：秒。默认：600 秒",
+            "example": "600",
+            "format": "int32",
+            "type": "integer"
+          },
+          "TtsConfig": {
+            "backendName": "ttsConfig",
+            "description_en": "Configuration for text-to-speech (TTS)",
+            "description_zh": "语音合成配置",
+            "properties": {
+              "Emotion": {
+                "backendName": "emotion",
+                "description_en": "This parameter applies only to the Minimax provider. Supported emotions include:\n\n`happy`\n\n`sad`\n\n`angry`\n\n`fearful`\n\n`disgusted`\n\n`surprised`\n\n`calm`",
+                "description_zh": "当前仅支持minimax，minimax当前支持7种情绪：\n\nhappy：高兴\nsad：悲伤\nangry：愤怒\nfearful：害怕\ndisgusted：厌恶\nsurprised：惊讶\ncalm：中性",
+                "example": "happy",
+                "type": "string"
+              },
+              "LanguageId": {
+                "backendName": "languageId",
+                "description_en": "This parameter is for the minimax provider only. It enhances recognition for specific low-resource languages and dialects. If the language is unknown, set this to `auto` for automatic detection. By default, this parameter is not set. Supported values include:\n\n<details>\n\n<summary>\n\nSupported languages\n\n</summary>\n\nChinese\n\nChinese,Yue: Cantonese\n\nEnglish\n\nArabic\n\nRussian\n\nSpanish\n\nFrench\n\nPortuguese\n\nGerman\n\nTurkish\n\nDutch\n\nUkrainian\n\nVietnamese\n\nIndonesian\n\nJapanese\n\nItalian\n\nKorean\n\nThai\n\nPolish\n\nRomanian\n\nGreek\n\nCzech\n\nFinnish\n\nHindi\n\nauto\n\n</details>",
+                "description_zh": "当前仅支持minimax，默认为空。增强对指定的小语种和方言的识别能力，设置后可以提升在指定小语种/方言场景下的语音表现。如果不明确小语种类型，则可以选择\"auto\"，模型将自主判断小语种类型。支持以下取值：\n<details>\n<summary>支持语种</summary>\n\nChinese：中文\nChinese,Yue：粤语\nEnglish：英语\nArabic：阿拉伯语\nRussian：俄语\nSpanish：西班牙语\nFrench：法语\nPortuguese：葡萄牙语\nGerman：德语\nTurkish：土耳其语\nDutch：荷兰语\nUkrainian：乌克兰语\nVietnamese：越南语\nIndonesian：印度尼西亚语\nJapanese：日语\nItalian：意大利语\nKorean：韩语\nThai：泰语\nPolish：波兰语\nRomanian：罗马尼亚语\nGreek：希腊语\nCzech：捷克语\nFinnish：芬兰语\nHindi：印地语\nauto：自动检测\n</details>",
+                "example": "Chinese",
+                "type": "string"
+              },
+              "ModelId": {
+                "backendName": "modelId",
+                "description_en": "This parameter applies only to the Minimax provider. Valid values:\n`speech-01-turbo`, `speech-02-turbo`",
+                "description_zh": "当前仅支持minimax，可选值：\nspeech-01-turbo / speech-02-turbo",
+                "example": "speech-01-turbo",
+                "type": "string"
+              },
+              "PronunciationRules": {
+                "backendName": "pronunciationRules",
+                "description_en": "A list of TTS pronunciation rules, executed in order. You can specify a maximum of 20 rules",
+                "description_zh": "TTS发音规则，数组长度不超过20个，规则按顺序执行",
+                "items": {
+                  "description_en": "A TTS pronunciation rule",
+                  "description_zh": "TTS发音规则",
+                  "properties": {
+                    "Pronunciation": {
+                      "backendName": "pronunciation",
+                      "description_en": "The replacement pronunciation. It must be 1 to 9 Chinese characters long and cannot contain spaces",
+                      "description_zh": "目标的发音， 长度小于10，必须是中文字符，不支持空格",
+                      "example": "幺幺零",
+                      "type": "string"
+                    },
+                    "Type": {
+                      "backendName": "type",
+                      "description_en": "The type of pronunciation rule.\nValid value:\n\n`replacement`: Replaces the specified `Word` with the `Pronunciation`",
+                      "description_zh": "具体发音规则类型。\n可选：\n\nreplacement 直接将Word替换为Pronunciation的规则",
+                      "example": "replacement",
+                      "type": "string"
+                    },
+                    "Word": {
+                      "backendName": "word",
+                      "description_en": "The word to be replaced. It must be 1 to 9 Chinese characters long and cannot contain spaces",
+                      "description_zh": "需要替换的词，长度小于10，必须是中文字符，不支持空格",
+                      "example": "一一零",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "SpeechRate": {
+                "backendName": "speechRate",
+                "description_en": "The speech rate, where a value of 1.0 is normal speed. The supported range can vary by provider. For CosyVoice, the range is 0.5 to 2.0 (default: 1.0). For Minimax, the range is 0.5 to 2.0 (default: 1.0)",
+                "description_zh": "支持全平台。\ncosyvoice默认1.0，取值范围：0.5-2.0。\nminimax默认1.0， 取值范围: 0.5-2.0",
+                "example": "1.0",
+                "format": "double",
+                "type": "number"
+              },
+              "VoiceId": {
+                "backendName": "voiceId",
+                "description_en": "The ID of the preset TTS voice. Changes apply to the next utterance. If omitted, the voice from the AI agent template is used. The ID can be a maximum of 64 characters. For available voices, see [Intelligent Voice Samples]（https://help.aliyun.com/document_detail/449563.html）",
+                "description_zh": "音色 ID，修改后下句话生效。不填写则使用智能体模版配置的音色 ID。仅针对预置 TTS 生效。输入长度不超过 64。可选值参考：[智能语音效果示例]（https://help.aliyun.com/document_detail/449563.html）",
+                "example": "longcheng_v2\n\n",
+                "type": "string"
+              },
+              "VoiceIdList": {
+                "backendName": "voiceIdList",
+                "description_en": "A list of available voices",
+                "description_zh": "可选音色列表",
+                "items": {
+                  "description_en": "A voice",
+                  "description_zh": "音色",
+                  "example": "zhixiaoxia",
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "TurnDetectionConfig": {
+            "backendName": "turnDetectionConfig",
+            "description_en": "Configuration for conversational turn detection",
+            "description_zh": "对话轮次检测配置",
+            "properties": {
+              "Eagerness": {
+                "backendName": "eagerness",
+                "description_en": "Controls the agent's response speed after detecting a user pause. This parameter applies only in `Semantic` mode. A higher setting results in a faster response but increases the risk of interrupting the user:\n\n`Low`: Waits patiently with a maximum wait time of 6 seconds, reducing the risk of interruption.\n\n`Medium`: A balanced wait time (up to 4 seconds), suitable for most scenarios.\n\n`High`: Responds quickly (up to 2 seconds), which improves speed but may increase the risk of incorrect turn-taking.\n\nThis field is empty by default",
+                "description_zh": "仅在 Semantic 模式下生效。控制 AI 检测到停顿后，启动回应的快慢程度：\n\"Low\"：耐心等待，最长等待时间6秒，减少被打断风险。\n\"Medium\"：平衡等待（最长等待时间4秒），适用大多数场景。\n\"High\"：快速响应（最长等待时间2秒），提升速度但可能增加误切风险。\n\n字段默认空",
+                "example": "High",
+                "type": "string"
+              },
+              "Mode": {
+                "backendName": "mode",
+                "description_en": "The conversational turn detection mode.\n\n`Normal` (Default): The agent relies on pauses to detect the end of a user's turn.\n\n`Semantic`: The agent uses AI to analyze conversational context to determine if the user has finished speaking",
+                "description_zh": "轮次检测的模式。\n\nNormal（默认值）：普通模式，不使用AI判断语义；\n\nSemantic：用AI根据上下文语义，判断是否说完话了",
+                "example": "Semantic",
+                "type": "string"
+              },
+              "SemanticWaitDuration": {
+                "backendName": "semanticWaitDuration",
+                "description_en": "The pause detection time in AI mode, in milliseconds. Default: -1.\n\n-1: The AI automatically determines a suitable wait time.\n\n0–10000: A custom wait time. A range of 0–1500 ms is recommended.\n\nThis parameter has no effect in `Normal` mode",
+                "description_zh": "AI模式下的停顿判定时间，单位:毫秒，默认值-1。\n\n-1: AI自动判断合适的等待时间\n\n0-10000: 自定义等待时间，建议设置在0-1500ms\n\n普通模式下此项无效",
+                "example": "-1",
+                "format": "int32",
+                "type": "integer"
+              },
+              "TurnEndWords": {
+                "backendName": "turnEndWords",
+                "description_en": "A list of keywords used to determine the end of a user's conversational turn",
+                "description_zh": "用于判断用户轮次结束的关键词列表",
+                "items": {
+                  "description_en": "A keyword used to determine the end of a user's conversational turn",
+                  "description_zh": "用于判断用户轮次结束的关键词",
+                  "example": "我说完了",
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "UserOfflineTimeout": {
+            "backendName": "userOfflineTimeout",
+            "description_en": "The duration in seconds the AI agent waits before terminating the task after a user leaves the session. Default: 5",
+            "description_zh": "用户退会后，智能体超时关闭任务的时间。单位：秒。默认值：5 秒",
+            "example": "5",
+            "format": "int32",
+            "type": "integer"
+          },
+          "UserOnlineTimeout": {
+            "backendName": "userOnlineTimeout",
+            "description_en": "The duration in seconds the AI agent waits for a user to join. If the user does not join within this time, the agent terminates the task. Default: 60",
+            "description_zh": "用户未入会，智能体超时关闭任务的时间。单位：秒。默认值：60 秒",
+            "example": "60",
+            "format": "int32",
+            "type": "integer"
+          },
+          "VcrConfig": {
+            "backendName": "vcrConfig",
+            "description_en": "Configuration for video content recognition. This enables the system to send callbacks to the client about events detected in the video stream",
+            "description_zh": "视频识别内容功能配置，支持向客户端回调算法在视频中识别的内容",
+            "properties": {
+              "Equipment": {
+                "backendName": "equipment",
+                "description_en": "Configuration for device identification",
+                "description_zh": "设备识别配置",
+                "properties": {
+                  "Enabled": {
+                    "backendName": "enabled",
+                    "description_en": "Specifies whether to enable device identification. Default: `false`",
+                    "description_zh": "是否开启禁用设备检查，默认false",
+                    "example": "false",
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "HeadMotion": {
+                "backendName": "headMotion",
+                "description_en": "Configuration for head motion detection",
+                "description_zh": "头部动作识别配置",
+                "properties": {
+                  "Enabled": {
+                    "backendName": "enabled",
+                    "description_en": "Specifies whether to enable head motion detection. Default: `false`",
+                    "description_zh": "是否开启头部动作识别检查。默认false",
+                    "example": "false",
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "InvalidFrameMotion": {
+                "backendName": "invalidFrameMotion",
+                "description_en": "Configuration for invalid frame detection",
+                "description_zh": "画面无效帧检查参数配置",
+                "properties": {
+                  "CallbackDelay": {
+                    "backendName": "callbackDelay",
+                    "description_en": "The duration in milliseconds that an invalid frame must persist before a notification is sent. If not specified, the setting from the console is used. Range: 200–5000",
+                    "description_zh": "画面无效帧检查延迟通知延时，设置后会在静止帧持续一段时间后，再触发通知。单位毫秒。默认为空，通话会使用控制台配置。取值范围[200,5000]",
+                    "example": "3000",
+                    "format": "int32",
+                    "type": "integer"
+                  },
+                  "Enabled": {
+                    "backendName": "enabled",
+                    "description_en": "Specifies whether to enable invalid frame detection",
+                    "description_zh": "是否开启无效帧检查",
+                    "example": "false",
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "LookAway": {
+                "backendName": "lookAway",
+                "description_en": "Configuration for look-away detection",
+                "description_zh": "视线偏移识别配置",
+                "properties": {
+                  "Enabled": {
+                    "backendName": "enabled",
+                    "description_en": "Specifies whether to enable look-away detection. Default: `false`",
+                    "description_zh": "是否开启视线偏移配置。默认false",
+                    "example": "true",
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "PeopleCount": {
+                "backendName": "peopleCount",
+                "description_en": "Configuration for the people counting feature",
+                "description_zh": "人数统计功能配置",
+                "properties": {
+                  "Enabled": {
+                    "backendName": "enabled",
+                    "description_en": "Specifies whether to enable people counting. Default: `false`",
+                    "description_zh": "开关，默认false",
+                    "example": "false",
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "StillFrameMotion": {
+                "backendName": "stillFrameMotion",
+                "description_en": "Configuration for still frame detection",
+                "description_zh": "画面静止帧检测配置",
+                "properties": {
+                  "CallbackDelay": {
+                    "backendName": "callbackDelay",
+                    "description_en": "The duration in milliseconds that a frame must remain still before a notification is sent. If not specified, the setting from the console is used. Range: 200–5000",
+                    "description_zh": "静止帧检查延迟通知延时，设置后会在静止帧持续一段时间后，再触发通知。单位毫秒。默认为空，通话会使用控制台配置。取值范围[200,5000]",
+                    "example": "3000",
+                    "format": "int32",
+                    "type": "integer"
+                  },
+                  "Enabled": {
+                    "backendName": "enabled",
+                    "description_en": "Specifies whether to enable still frame detection. Default: `false`",
+                    "description_zh": "是否开启静帧检查，默认false",
+                    "example": "false",
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "VoiceprintConfig": {
+            "backendName": "voiceprintConfig",
+            "description_en": "Configuration for voiceprint recognition",
+            "description_zh": "声纹配置",
+            "properties": {
+              "RegistrationMode": {
+                "backendName": "registrationMode",
+                "description_en": "The voiceprint registration mode. Default: `Explicit`.\n\n| Value      | Description                                                                                                         |\n| ---------- | ------------------------------------------------------------------------------------------------------------------- |\n| `Explicit` | In `Explicit` mode, the user must register their voiceprint in advance by using the voiceprint registration API.    |\n| `Implicit` | In `Implicit` mode, the system automatically collects user speech during the conversation to register a voiceprint. |",
+                "description_zh": "声纹注册模式。  默认值：Explicit\n\n  | 取值 | 说明 |\n  |------|------|\n  | Explicit | 显式注册模式，用户需提前通过声纹注册接口上传音频完成注册。 |\n  | Implicit | 无感注册模式，在对话过程中自动采集用户语音并生成声纹特征。 |",
+                "example": "Explicit",
+                "type": "string"
+              },
+              "UseVoiceprint": {
+                "backendName": "useVoiceprint",
+                "description_en": "Specifies whether to enable voiceprint recognition. Default: `false`. If set to `true`, you must also provide a valid `VoiceprintId`",
+                "description_zh": "是否使用声纹识别的开关。默认值：false。开启声纹时需要传入合法的声纹Id",
+                "example": "false",
+                "type": "boolean"
+              },
+              "VoiceprintId": {
+                "backendName": "voiceprintId",
+                "description_en": "The unique identifier for the voiceprint. This is not set by default. The ID must correspond to a voiceprint registered using the voiceprint registration API. For more information, see [Register a voiceprint]（https://help.aliyun.com/document_detail/2964738.html）",
+                "description_zh": "声纹识别的唯一身份 ID。默认值：不填。传入的声纹id必须已经通过声纹注册接口注册，接口文档参考：[注册人声声纹]（https://help.aliyun.com/document_detail/2964738.html）",
+                "example": "zhixiaoxia",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "Volume": {
+            "backendName": "volume",
+            "description_en": "The speaking volume of the AI agent.\n\nIf not set, the adaptive volume mode recommended by Alibaba Cloud is used by default.\n\nIf set, the value must be in the range of 0 to 400. The final output volume is calculated as: `(Workflow volume) * (volume / 100)`. For example:\n\nIf `volume` is 0, the output volume is 0.\n\nIf `volume` is 100, the output volume is the same as the original volume.\n\nIf `volume` is 200, the output volume is twice the original volume",
+            "description_zh": "智能体说话的音量。\n\n若不填：默认使用阿里云推荐的自适应音量模式\n\n若填写：填写范围为 0~400，输出音量=工作流中的语音输出音量 * volume/100。示例：\n若 volume=0，则代表输出音量为 0。\n\n若 volume=100，音量为原声音量。\n\n若 volume=200，音量等于原声音量的 2 倍",
+            "example": "100",
+            "format": "int64",
+            "type": "integer"
+          },
+          "WakeUpQuery": {
+            "backendName": "wakeUpQuery",
+            "description_en": "A user-provided command that the AI agent responds to immediately after the call starts",
+            "description_zh": "用户在通话启动前的指令，智能体在通话启动后立即响应这一句话",
+            "example": "今天天气怎么样？\n",
+            "type": "string"
+          },
+          "WorkflowOverrideParams": {
+            "backendName": "workflowOverrideParams",
+            "description_en": "A JSON string containing parameters to override the default workflow configuration",
+            "description_zh": "工作流覆盖参数，默认无",
+            "example": "{}",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AIAgentRuntimeConfig": {
+        "description_en": "The runtime configuration of the AI agent",
+        "description_zh": "ims AIAgent运行时参数",
+        "properties": {
+          "AgentUserId": {
+            "backendName": "agentUserId",
+            "description_en": "The name of the agent in the ARTC channel",
+            "description_zh": "ARTC频道内智能体名称",
+            "example": "877ae632caae49b1afc81c2e8194ffb4",
+            "type": "string"
+          },
+          "AuthToken": {
+            "backendName": "authToken",
+            "description_en": "The authentication token for the agent to join the channel. This must be generated using your AppKey",
+            "description_zh": "智能体的入会凭证，需要用户自己通过AppKey生成",
+            "example": "eyJhcHBpZCI6ICIxMjM0MTIzNxxxxx",
+            "type": "string"
+          },
+          "AvatarChat3D": {
+            "backendName": "avatarChat3D",
+            "deprecated": true,
+            "description_en": "The runtime parameters of the avatar call",
+            "description_zh": "3D数字人运行时参数",
+            "properties": {
+              "AgentUserId": {
+                "backendName": "agentUserId",
+                "description_en": "Required. The name of the agent in the ARTC channel",
+                "description_zh": "ARTC频道内智能体名称，必填",
+                "example": "877ae632caae49b1afc81c2e8194ffb4",
+                "title": "频道内智能体名称",
+                "type": "string"
+              },
+              "AuthToken": {
+                "backendName": "authToken",
+                "description_en": "Required. The authentication token for the agent to join the channel. This must be generated using your AppKey",
+                "description_zh": "智能体的入会凭证，需要用户自己通过AppKey生成，必填",
+                "example": "eyJhcHBpZCI6ICIxMjM0MTIzNxxxxx",
+                "title": "智能体的入会凭证，需要用户自己通过的AppKey生成",
+                "type": "string"
+              },
+              "ChannelId": {
+                "backendName": "channelId",
+                "description_en": "Required. The ID of the ARTC channel",
+                "description_zh": "ARTC频道，必填",
+                "example": "70f22d5784194938a7e387052f2b3208",
+                "title": "语音通话频道",
+                "type": "string"
+              }
+            },
+            "title": "3d数字人运行时参数",
+            "type": "object"
+          },
+          "ChannelId": {
+            "backendName": "channelId",
+            "description_en": "The ID of the ARTC channel",
+            "description_zh": "ARTC频道",
+            "example": "70f22d5784194938a7e387052f2b3208\n",
+            "type": "string"
+          },
+          "VisionChat": {
+            "backendName": "visionChat",
+            "deprecated": true,
+            "description_en": "The runtime parameters of the vision call",
+            "description_zh": "视觉智能体运行时参数",
+            "properties": {
+              "AgentUserId": {
+                "backendName": "agentUserId",
+                "description_en": "Required. The name of the agent in the ARTC channel",
+                "description_zh": "ARTC频道内智能体名称，必填",
+                "example": "877ae632caae49b1afc81c2e8194ffb4",
+                "type": "string"
+              },
+              "AuthToken": {
+                "backendName": "authToken",
+                "description_en": "Required. The authentication token for the agent to join the channel. This must be generated using your AppKey",
+                "description_zh": "智能体的入会凭证，需要用户自己通过AppKey生成，必填",
+                "example": "eyJhcHBpZCI6ICIxMjM0MTIzNxxxxx",
+                "type": "string"
+              },
+              "ChannelId": {
+                "backendName": "channelId",
+                "description_en": "Required. The ID of the ARTC channel",
+                "description_zh": "ARTC频道，必填",
+                "example": "70f22d5784194938a7e387052f2b3208",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "VoiceChat": {
+            "backendName": "voiceChat",
+            "deprecated": true,
+            "description_en": "The runtime parameters of the voice call",
+            "description_zh": "语音通话运行时参数",
+            "properties": {
+              "AgentUserId": {
+                "backendName": "agentUserId",
+                "description_en": "Required. The name of the agent in the ARTC channel",
+                "description_zh": "ARTC频道内智能体名称，必填",
+                "example": "877ae632caae49b1afc81c2e8194ffb4",
+                "title": "频道内智能体名称",
+                "type": "string"
+              },
+              "AuthToken": {
+                "backendName": "authToken",
+                "description_en": "Required. The authentication token for the agent to join the channel. This must be generated using your AppKey",
+                "description_zh": "智能体的入会凭证，需要用户自己通过AppKey生成，必填",
+                "example": "eyJhcHBpZCI6ICIxMjM0MTIzNxxxxx",
+                "title": "智能体的入会凭证，需要用户自己通过的AppKey生成",
+                "type": "string"
+              },
+              "ChannelId": {
+                "backendName": "channelId",
+                "description_en": "Required. The ID of the ARTC channel",
+                "description_zh": "ARTC频道，必填",
+                "example": "70f22d5784194938a7e387052f2b3208",
+                "title": "语音通话频道",
+                "type": "string"
+              }
+            },
+            "title": "语音通话运行时参数",
+            "type": "object"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "AIAgentTemplateConfig": {
+        "description_en": "Agent template parameters",
+        "description_zh": "智能体模版参数",
+        "properties": {
+          "AvatarChat3D": {
+            "backendName": "avatarChat3D",
+            "description_en": "3D avatar parameters",
+            "description_zh": "3d数字人参数",
+            "properties": {
+              "AsrHotWords": {
+                "backendName": "asrHotWords",
+                "description_en": "A list of hot words to improve ASR accuracy. A maximum of 128 words is supported",
+                "description_zh": "Asr热词列表。热词列表最大支持128个词",
+                "items": {
+                  "description_en": "A hot word. Must be 1 to 10 characters long",
+                  "description_zh": "热词字符串。字符长度: [1,10]个字符",
+                  "example": "检查",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "AsrLanguageId": {
+                "backendName": "asrLanguageId",
+                "description_en": "The language ID for Automatic Speech Recognition (ASR). Possible values:\n\n`zh_mandarin`: Chinese\n\n`en`: English\n\n`zh_en`: Chinese-English\n\n`es`: Spanish\n\n`jp`: Japanese",
+                "description_zh": "asr语种Id。\n可选：\nzh_mandarin 中文\nen 英文\nzh_en 中英混\nes 西班牙语\njp 日语",
+                "example": "zh_mandarin",
+                "type": "string"
+              },
+              "AsrMaxSilence": {
+                "backendName": "asrMaxSilence",
+                "description_en": "The maximum duration of silence in milliseconds before a sentence break is detected. Range: 200 to 1,200. Default: 400",
+                "description_zh": "语音断句检测阈值，静音时长超过该阈值会被认为断句，参数范围200ms～1200ms，默认值400ms",
+                "example": "400",
+                "format": "int32",
+                "type": "integer",
+                "visibility": "Public"
+              },
+              "AvatarId": {
+                "backendName": "avatarId",
+                "description_en": "The ID of the avatar model",
+                "description_zh": "数字人模型id",
+                "example": "1231",
+                "title": "数字人模型id",
+                "type": "string"
+              },
+              "BailianAppParams": {
+                "backendName": "bailianAppParams",
+                "description_en": "Parameters for Alibaba Cloud Bailian. For details, see [Bailian App Params]（https://help.aliyun.com/document_detail/2858132.html）",
+                "description_zh": "阿里云百炼应用中心参数。参数格式参考：[阿里云百炼应用中心参数]（https://help.aliyun.com/document_detail/2858132.html）",
+                "example": "{}",
+                "type": "string"
+              },
+              "CharBreak": {
+                "backendName": "charBreak",
+                "type": "boolean"
+              },
+              "EnableIntelligentSegment": {
+                "backendName": "enableIntelligentSegment",
+                "description_en": "Specifies whether to enable intelligent segmentation. If enabled, this feature intelligently merges pauses in a user's speech into a single, complete sentence. Default: `true`",
+                "description_zh": "智能断句开关，开启智能断句后，用户说话的发生断句会智能合并成一句。默认true",
+                "example": "true",
+                "type": "boolean",
+                "visibility": "Public"
+              },
+              "EnablePushToTalk": {
+                "backendName": "enablePushToTalk",
+                "description_en": "Specifies whether to enable Push-to-Talk mode. Default: `false`",
+                "description_zh": "是否开启对讲机模式。默认值：false",
+                "example": "false",
+                "type": "boolean"
+              },
+              "EnableVoiceInterrupt": {
+                "backendName": "enableVoiceInterrupt",
+                "description_en": "Specifies whether to enable voice interruption. Default: `true`",
+                "description_zh": "是否支持语音打断，默认true",
+                "example": "true",
+                "title": "是否支持语音打断",
+                "type": "boolean"
+              },
+              "GracefulShutdown": {
+                "backendName": "gracefulShutdown",
+                "description_en": "Specifies whether to enable graceful shutdown. Default: `false`.\n\nIf enabled, the agent finishes its current speech (up to 10 seconds) before stopping",
+                "description_zh": "是否优雅下线，默认false。\n\n优雅下线：当智能体被停止的时候，播报完当前说的话再停止，最多播报10秒",
+                "example": "false",
+                "title": "是否优雅下线",
+                "type": "boolean"
+              },
+              "Greeting": {
+                "backendName": "greeting",
+                "description_en": "The greeting message delivered when a user joins the session. If this parameter is omitted, the greeting configured in the agent template is used. Maximum length: 128 characters",
+                "description_zh": "问候语，入会时生效。不填写则使用智能体模版配置的问候语。输入长度不超过128",
+                "example": "早上好，我的朋友！",
+                "title": "问候语，修改后下次入会生效",
+                "type": "string"
+              },
+              "InterruptWords": {
+                "backendName": "interruptWords",
+                "description_en": "A list of specific words or phrases that trigger a conversation interruption",
+                "description_zh": "触发对话中断的特定词汇或短语列表",
+                "items": {
+                  "description_en": "A specific word or phrase that triggers a conversation interruption",
+                  "description_zh": "触发对话中断的特定词汇或短语",
+                  "example": "停止",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "LlmHistory": {
+                "backendName": "llmHistory",
+                "description_en": "The LLM/MLLM conversation history",
+                "description_zh": "llm/mllm历史对话上下文最大保留轮次，默认10次",
+                "items": {
+                  "properties": {
+                    "Content": {
+                      "backendName": "content",
+                      "description_en": "The text content of the message",
+                      "description_zh": "存储实际的对话内容文本，记录了该角色在对话中的具体表达或回应",
+                      "example": "你好",
+                      "type": "string"
+                    },
+                    "Role": {
+                      "backendName": "role",
+                      "description_en": "The role of the conversation participant. Valid values:\n\n`user`: The user.\n\n`assistant`: The AI assistant.\n\n`system`: The system.\n\n`function`: A function call.\n\n`plugin`: A plugin.\n\n`tool`: A tool",
+                      "description_zh": "表示对话参与者的角色。可选值包括：\n\nuser: 用户\n\nassistant: 助手\n\nsystem: 系统\n\nfunction: 函数\n\nplugin: 插件\n\ntool: 工具",
+                      "example": "user",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "LlmHistoryLimit": {
+                "backendName": "llmHistoryLimit",
+                "description_en": "The maximum number of conversation turns to retain in the LLM/MLLM history. Default: 10",
+                "description_zh": "llm/mllm历史对话上下文最大保留轮次，默认10次",
+                "example": "10",
+                "format": "int32",
+                "type": "integer"
+              },
+              "LlmSystemPrompt": {
+                "backendName": "llmSystemPrompt",
+                "description_en": "The system prompt for the LLM, applied when the call starts",
+                "description_zh": "启动通话后llm的系统提示词",
+                "example": "你是一位友好且乐于助人的助手，专注于为用户提供准确的信息和建议。",
+                "type": "string"
+              },
+              "MaxIdleTime": {
+                "backendName": "maxIdleTime",
+                "description_en": "The maximum idle time in seconds with no interaction before the agent goes offline. Default: 600",
+                "description_zh": "和智能体无互动的最大等待时间，超时智能体下线。单位：秒。默认：600秒",
+                "example": "600",
+                "format": "int32",
+                "type": "integer"
+              },
+              "UseVoiceprint": {
+                "backendName": "useVoiceprint",
+                "description_en": "Specifies whether to use voiceprint recognition. Default: `false`",
+                "description_zh": "是否使用声纹识别的开关。默认值：false",
+                "example": "false",
+                "type": "boolean"
+              },
+              "UserOfflineTimeout": {
+                "backendName": "userOfflineTimeout",
+                "description_en": "The time in seconds that the agent waits after a user leaves before closing the task. Default: 5",
+                "description_zh": "用户退会后，智能体超时关闭任务的时间。单位：秒。默认值：5秒",
+                "example": "5",
+                "format": "int32",
+                "type": "integer"
+              },
+              "UserOnlineTimeout": {
+                "backendName": "userOnlineTimeout",
+                "description_en": "The time in seconds that the agent waits for a user to join before closing the task. Default: 60",
+                "description_zh": "用户未入会，智能体超时关闭任务的时间。单位：秒。默认值：60秒",
+                "example": "60",
+                "format": "int32",
+                "type": "integer"
+              },
+              "VadLevel": {
+                "backendName": "vadLevel",
+                "description_en": "The interruption sensitivity threshold. A higher value makes it more difficult to interrupt the agent. Range: 0 to 11. Default: 11.\n\n`0`: Disables VAD.\n\n`1` to `10`: A higher value makes it more difficult to interrupt the agent.\n\n`11`: Offers lower audio distortion and stronger resistance to interference",
+                "description_zh": "打断阈值参数。取值范围：[0,11], 默认值：11。\n\n0表示关闭 vad 功能。\n1-10设置数字越高表示越难打断。\n11与之前显著不同，前处理对话音损伤更低，抗干扰更强",
+                "example": "0",
+                "format": "int32",
+                "type": "integer"
+              },
+              "VoiceId": {
+                "backendName": "voiceId",
+                "description_en": "The ID of the Text-to-Speech (TTS) voice. Changes take effect on the next utterance. If omitted, the default voice from the agent template is used. This parameter applies only to preset TTS voices. Maximum length: 64 characters. For available values, see [Intelligent voice effect samples]（https://help.aliyun.com/document_detail/449563.html）",
+                "description_zh": "音色ID，修改后下句话生效。不填写则使用智能体模版配置的音色ID。仅针对预置TTS生效。输入长度不超过64。可选值参考：[智能语音效果示例]（https://help.aliyun.com/document_detail/449563.html）",
+                "example": "zhixiaoxia",
+                "title": "音色名称，修改后下句话生效",
+                "type": "string"
+              },
+              "VoiceIdList": {
+                "backendName": "voiceIdList",
+                "description_en": "A list of available voices",
+                "description_zh": "可选音色列表",
+                "items": {
+                  "description_en": "A voice ID",
+                  "description_zh": "音色",
+                  "example": "zhixiaoxia",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "VoiceprintId": {
+                "backendName": "voiceprintId",
+                "description_en": "The unique ID for voiceprint recognition. Default: not specified",
+                "description_zh": "声纹识别的唯一身份ID。默认值：不填",
+                "example": "uniqueId",
+                "type": "string"
+              },
+              "Volume": {
+                "backendName": "volume",
+                "description_en": "The speaking volume of the agent.\n\nIf omitted, the system uses adaptive volume mode.\n\nIf specified, the valid range is 0 to 400. The output volume is calculated as: `Output Volume in Workflow` * (`volume`/100). For example:\n\nIf `volume` is `0`, the output is silent.\n\nIf `volume` is `100`, the output volume is the original volume.\n\nIf `volume` is `200`, the output volume is twice the original volume",
+                "description_zh": "智能体说话的音量。\n\n若不填：默认使用阿里云推荐的自适应音量模式\n\n若填写：填写范围为0~400，输出音量=工作流中的语音输出音量 * volume/100。示例：\n\n若volume=0，则代表输出音量为0。\n \n若volume=100，音量为原声音量。\n\n若volume=200，音量等于原声音量的2倍",
+                "example": "100",
+                "format": "int64",
+                "title": "音量",
+                "type": "integer"
+              },
+              "WakeUpQuery": {
+                "backendName": "wakeUpQuery",
+                "description_en": "An initial user query that the agent addresses immediately when the call starts",
+                "description_zh": "用户在通话启动前的指令，用于智能体在通话启动后立即响应",
+                "example": "今天天气怎么样？",
+                "type": "string"
+              },
+              "WorkflowOverrideParams": {
+                "backendName": "workflowOverrideParams",
+                "description_en": "Workflow override parameters. Default: empty",
+                "description_zh": "工作流覆盖参数，默认无",
+                "example": "{}",
+                "type": "string"
+              }
+            },
+            "title": "3d数字人参数",
+            "type": "object"
+          },
+          "VisionChat": {
+            "backendName": "visionChat",
+            "description_en": "Vision agent parameters",
+            "description_zh": "视觉智能体参数",
+            "properties": {
+              "AsrHotWords": {
+                "backendName": "asrHotWords",
+                "description_en": "A list of hot words to improve ASR accuracy. A maximum of 128 words is supported",
+                "description_zh": "Asr热词列表。热词列表最大支持128个词",
+                "items": {
+                  "description_en": "Hotword string. Character length: [1, 10] characters.  ",
+                  "description_zh": "热词字符串。字符长度: [1,10]个字符",
+                  "example": "检查",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "AsrLanguageId": {
+                "backendName": "asrLanguageId",
+                "description_en": "The language ID for Automatic Speech Recognition (ASR). Possible values:\n\n`zh_mandarin`: Chinese\n\n`en`: English\n\n`zh_en`: Chinese-English\n\n`es`: Spanish\n\n`jp`: Japanese",
+                "description_zh": "asr语种Id。\n可选：\nzh_mandarin 中文\nen 英文\nzh_en 中英混\nes 西班牙语\njp 日语",
+                "example": "zh_mandarin",
+                "type": "string"
+              },
+              "AsrMaxSilence": {
+                "backendName": "asrMaxSilence",
+                "description_en": "The maximum duration of silence in milliseconds before a sentence break is detected. Range: 200 to 1,200. Default: 400",
+                "description_zh": "语音断句检测阈值，静音时长超过该阈值会被认为断句，参数范围200ms～1200ms，默认值400ms",
+                "example": "400",
+                "format": "int32",
+                "type": "integer",
+                "visibility": "Public"
+              },
+              "BailianAppParams": {
+                "backendName": "bailianAppParams",
+                "description_en": "Parameters for Alibaba Cloud Bailian. For details, see [Bailian App Params]（https://help.aliyun.com/document_detail/2858132.html）",
+                "description_zh": "阿里云百炼应用中心参数。参数格式参考：[阿里云百炼应用中心参数]（https://help.aliyun.com/document_detail/2858132.html）",
+                "example": "{}",
+                "type": "string"
+              },
+              "CharBreak": {
+                "backendName": "charBreak",
+                "type": "boolean"
+              },
+              "EnableIntelligentSegment": {
+                "backendName": "enableIntelligentSegment",
+                "description_en": "Specifies whether to enable intelligent segmentation. If enabled, this feature intelligently merges pauses in a user's speech into a single, complete sentence. Default: `true`",
+                "description_zh": "智能断句开关，开启智能断句后，用户说话的发生断句会智能合并成一句。默认为true",
+                "example": "true",
+                "type": "boolean"
+              },
+              "EnablePushToTalk": {
+                "backendName": "enablePushToTalk",
+                "description_en": "Specifies whether to enable Push-to-Talk mode. Default: `false`",
+                "description_zh": "是否开启对讲机模式。默认值：false",
+                "example": "false",
+                "type": "boolean"
+              },
+              "EnableVoiceInterrupt": {
+                "backendName": "enableVoiceInterrupt",
+                "description_en": "Specifies whether to enable voice interruption. Default: `true`",
+                "description_zh": "是否支持语音打断，默认true",
+                "example": "true",
+                "type": "boolean"
+              },
+              "GracefulShutdown": {
+                "backendName": "gracefulShutdown",
+                "description_en": "Specifies whether to enable graceful shutdown. Default: `false`.\n\nIf enabled, the agent finishes its current speech (up to 10 seconds) before stopping",
+                "description_zh": "是否优雅下线，默认false。\n\n优雅下线：当智能体被停止的时候，播报完当前说的话再停止，最多播报10秒",
+                "example": "false",
+                "type": "boolean"
+              },
+              "Greeting": {
+                "backendName": "greeting",
+                "description_en": "The greeting message delivered when a user joins the session. If this parameter is omitted, the greeting configured in the agent template is used. Maximum length: 128 characters",
+                "description_zh": "问候语，入会时生效。不填写则使用智能体模版配置的问候语。长度不超过128",
+                "example": "早上好，我的朋友！\n",
+                "type": "string"
+              },
+              "InterruptWords": {
+                "backendName": "interruptWords",
+                "description_en": "A list of specific words or phrases that trigger a conversation interruption",
+                "description_zh": "触发对话中断的特定词汇或短语列表",
+                "items": {
+                  "description_en": "A specific word or phrase that triggers a conversation interruption",
+                  "description_zh": "触发对话中断的特定词汇或短语",
+                  "example": "停止",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "LlmHistory": {
+                "backendName": "llmHistory",
+                "description_en": "The LLM/MLLM conversation history",
+                "description_zh": "llm/mllm历史对话上下文最大保留轮次，默认10次",
+                "items": {
+                  "properties": {
+                    "Content": {
+                      "backendName": "content",
+                      "description_en": "The text content of the message",
+                      "description_zh": "存储实际的对话内容文本，记录了该角色在对话中的具体表达或回应",
+                      "example": "你好",
+                      "type": "string"
+                    },
+                    "Role": {
+                      "backendName": "role",
+                      "description_en": "The role of the conversation participant. Valid values:\n\n`user`: The user.\n\n`assistant`: The AI assistant.\n\n`system`: The system.\n\n`function`: A function call.\n\n`plugin`: A plugin.\n\n`tool`: A tool",
+                      "description_zh": "表示对话参与者的角色。可选值包括：\n\nuser: 用户\n\nassistant: 助手\n\nsystem: 系统\n\nfunction: 函数\n\nplugin: 插件\n\ntool: 工具",
+                      "example": "user",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "LlmHistoryLimit": {
+                "backendName": "llmHistoryLimit",
+                "description_en": "The maximum number of conversation turns to retain in the LLM/MLLM history. Default: 10",
+                "description_zh": "llm/mllm历史对话上下文最大保留轮次，默认10次",
+                "example": "10",
+                "format": "int32",
+                "type": "integer"
+              },
+              "LlmSystemPrompt": {
+                "backendName": "llmSystemPrompt",
+                "description_en": "The system prompt for the LLM, applied when the call starts",
+                "description_zh": "启动通话后llm的系统提示词",
+                "example": "你是一位友好且乐于助人的助手，专注于为用户提供准确的信息和建议。\n",
+                "type": "string"
+              },
+              "MaxIdleTime": {
+                "backendName": "maxIdleTime",
+                "description_en": "The maximum idle time in seconds with no interaction before the agent goes offline. Default: 600",
+                "description_zh": "和智能体无互动的最大等待时间，超时智能体下线。单位：秒。默认：600秒",
+                "example": "600",
+                "format": "int32",
+                "type": "integer"
+              },
+              "UseVoiceprint": {
+                "backendName": "useVoiceprint",
+                "description_en": "Specifies whether to use voiceprint recognition. Default: `false`",
+                "description_zh": "是否使用声纹识别的开关。默认值：false",
+                "example": "false",
+                "type": "boolean"
+              },
+              "UserOfflineTimeout": {
+                "backendName": "userOfflineTimeout",
+                "description_en": "The time in seconds that the agent waits after a user leaves before closing the task. Default: 5",
+                "description_zh": "用户退会后，智能体超时关闭任务的时间。单位：秒。默认值：5秒",
+                "example": "5",
+                "format": "int32",
+                "type": "integer"
+              },
+              "UserOnlineTimeout": {
+                "backendName": "userOnlineTimeout",
+                "description_en": "The time in seconds that the agent waits for a user to join before closing the task. Default: 60",
+                "description_zh": "用户未入会，智能体超时关闭任务的时间。单位：秒。默认值：60秒",
+                "example": "60",
+                "format": "int32",
+                "type": "integer"
+              },
+              "VadLevel": {
+                "backendName": "vadLevel",
+                "description_en": "The interruption sensitivity threshold. A higher value makes it more difficult to interrupt the agent. Range: 0 to 11. Default: 11.\n\n`0`: Disables VAD.\n\n`1` to `10`: A higher value makes it more difficult to interrupt the agent.\n\n`11`: Offers lower audio distortion and stronger resistance to interference",
+                "description_zh": "打断阈值参数。取值范围：[0,11], 默认值：11。\n\n0表示关闭 vad 功能。\n1-10设置数字越高表示越难打断。\n11与之前显著不同，前处理对话音损伤更低，抗干扰更强",
+                "example": "0",
+                "format": "int32",
+                "type": "integer"
+              },
+              "VoiceId": {
+                "backendName": "voiceId",
+                "description_en": "The ID of the Text-to-Speech (TTS) voice. Changes take effect on the next utterance. If omitted, the default voice from the agent template is used. This parameter applies only to preset TTS voices. Maximum length: 64 characters. For available values, see [Intelligent voice effect samples]（https://help.aliyun.com/document_detail/449563.html）",
+                "description_zh": "音色ID，修改后下句话生效。不填写则使用智能体模版配置的音色ID。仅针对预置TTS生效。输入长度不超过64。[智能语音效果示例]（https://help.aliyun.com/document_detail/449563.html）",
+                "example": "zhixiaoxia",
+                "type": "string"
+              },
+              "VoiceIdList": {
+                "backendName": "voiceIdList",
+                "description_en": "A list of available voices",
+                "description_zh": "可选音色列表",
+                "items": {
+                  "description_en": "A voice ID",
+                  "description_zh": "音色",
+                  "example": "zhixiaoxia",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "VoiceprintId": {
+                "backendName": "voiceprintId",
+                "description_en": "The unique ID for voiceprint recognition. Default: not specified",
+                "description_zh": "声纹识别的唯一身份ID。默认值：不填",
+                "example": "uniqueId",
+                "type": "string"
+              },
+              "Volume": {
+                "backendName": "volume",
+                "description_en": "The speaking volume of the agent.\n\nIf omitted, the system uses adaptive volume mode.\n\nIf specified, the valid range is 0 to 400. The output volume is calculated as: `Output Volume in Workflow` * (`volume`/100). For example:\n\nIf `volume` is `0`, the output is silent.\n\nIf `volume` is `100`, the output volume is the original volume.\n\nIf `volume` is `200`, the output volume is twice the original volume",
+                "description_zh": "智能体说话的音量。\n\n若不填：默认使用阿里云推荐的自适应音量模式\n\n若填写：填写范围为0~400，输出音量=工作流中的语音输出音量 * volume/100。示例：\n\n若volume=0，则代表输出音量为0。\n\n若volume=100，音量为原声音量。\n\n若volume=200，音量等于原声音量的2倍",
+                "example": "100",
+                "format": "int64",
+                "type": "integer"
+              },
+              "WakeUpQuery": {
+                "backendName": "wakeUpQuery",
+                "description_en": "An initial user query that the agent addresses immediately when the call starts",
+                "description_zh": "用户在通话启动前的指令，用于智能体在通话启动后立即响应",
+                "example": "今天天气怎么样？",
+                "type": "string"
+              },
+              "WorkflowOverrideParams": {
+                "backendName": "workflowOverrideParams",
+                "description_en": "Workflow override parameters. Default: empty",
+                "description_zh": "工作流覆盖参数，默认无",
+                "example": "{}",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "VoiceChat": {
+            "backendName": "voiceChat",
+            "description_en": "Voice chat parameters",
+            "description_zh": "语音通话参数",
+            "properties": {
+              "AsrHotWords": {
+                "backendName": "asrHotWords",
+                "description_en": "A list of hot words to improve ASR accuracy. A maximum of 128 words is supported",
+                "description_zh": "Asr热词列表。热词列表最大支持128个词",
+                "items": {
+                  "description_en": "A hot word. Must be 1 to 10 characters long",
+                  "description_zh": "热词字符串。字符长度: [1,10]个字符",
+                  "example": "检查",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "AsrLanguageId": {
+                "backendName": "asrLanguageId",
+                "description_en": "The language ID for Automatic Speech Recognition (ASR).\nPossible values:\n\n`zh_mandarin`: Chinese\n\n`en`: English\n\n`zh_en`: Chinese-English\n\n`es`: Spanish\n\n`jp`: Japanese",
+                "description_zh": "asr语种Id。\n可选：\nzh_mandarin 中文\nen 英文\nzh_en 中英混\nes 西班牙语\njp 日语",
+                "example": "zh_mandarin",
+                "type": "string"
+              },
+              "AsrMaxSilence": {
+                "backendName": "asrMaxSilence",
+                "description_en": "The maximum duration of silence in milliseconds before a sentence break is detected. Range: 200 to 1,200. Default: 400",
+                "description_zh": "语音断句检测阈值，静音时长超过该阈值会被认为断句，参数范围200ms～1200ms，默认值400ms",
+                "example": "400",
+                "format": "int32",
+                "type": "integer",
+                "visibility": "Public"
+              },
+              "AvatarUrl": {
+                "backendName": "avatarUrl",
+                "description_en": "The URL of the agent's avatar for voice chat. Default: none",
+                "description_zh": "语音通话的智能体头像的头像链接。默认无",
+                "example": "http://example.com/a.jpg",
+                "type": "string"
+              },
+              "AvatarUrlType": {
+                "backendName": "avatarUrlType",
+                "description_en": "The type of the agent's avatar URL. Default: none",
+                "description_zh": "智能体头像链接类型，默认无",
+                "example": "USER",
+                "type": "string"
+              },
+              "BailianAppParams": {
+                "backendName": "bailianAppParams",
+                "description_en": "Parameters for Alibaba Cloud Bailian. For details, see [Bailian App Params]（https://help.aliyun.com/document_detail/2858132.html）",
+                "description_zh": "阿里云百炼应用中心参数。参数格式参考：[阿里云百炼应用中心参数]（https://help.aliyun.com/document_detail/2858132.html）",
+                "example": "{}",
+                "type": "string"
+              },
+              "CharBreak": {
+                "backendName": "charBreak",
+                "type": "boolean"
+              },
+              "EnableIntelligentSegment": {
+                "backendName": "enableIntelligentSegment",
+                "description_en": "Specifies whether to enable intelligent segmentation. If enabled, this feature intelligently merges pauses in a user's speech into a single, complete sentence. Default: `true`",
+                "description_zh": "智能断句开关，开启智能断句后，用户说话的发生断句会智能合并成一句。默认true",
+                "example": "true",
+                "type": "boolean",
+                "visibility": "Public"
+              },
+              "EnablePushToTalk": {
+                "backendName": "enablePushToTalk",
+                "description_en": "Specifies whether to enable Push-to-Talk mode. Default: `false`",
+                "description_zh": "是否开启对讲机模式。默认值：false",
+                "example": "false",
+                "type": "boolean"
+              },
+              "EnableVoiceInterrupt": {
+                "backendName": "enableVoiceInterrupt",
+                "description_en": "Specifies whether to enable voice interruption. Default: `true`",
+                "description_zh": "是否支持语音打断，默认true",
+                "example": "true",
+                "title": "是否支持语音打断",
+                "type": "boolean"
+              },
+              "GracefulShutdown": {
+                "backendName": "gracefulShutdown",
+                "description_en": "Specifies whether to enable graceful shutdown. Default: `false`.\n\nIf enabled, the agent finishes its current speech (up to 10 seconds) before stopping",
+                "description_zh": "是否优雅下线，默认false。\n\n优雅下线：当智能体被停止的时候，播报完当前说的话再停止，最多播报10秒",
+                "example": "false",
+                "title": "是否优雅下线",
+                "type": "boolean"
+              },
+              "Greeting": {
+                "backendName": "greeting",
+                "description_en": "The greeting message delivered when a user joins the session. If this parameter is omitted, the greeting configured in the agent template is used. Maximum length: 128 characters",
+                "description_zh": "问候语，入会时生效。不填写则使用智能体模版配置的问候语。长度不超过128",
+                "example": "早上好，我的朋友",
+                "title": "问候语，修改后下次入会生效",
+                "type": "string"
+              },
+              "InterruptWords": {
+                "backendName": "interruptWords",
+                "description_en": "A list of specific words or phrases that trigger a conversation interruption",
+                "description_zh": "触发对话中断的特定词汇或短语列表",
+                "items": {
+                  "description_en": "Specific word or phrase that triggers conversation interruption.  ",
+                  "description_zh": "触发对话中断的特定词汇或短语",
+                  "example": "停止",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "LlmHistory": {
+                "backendName": "llmHistory",
+                "description_en": "The LLM/MLLM conversation history",
+                "description_zh": "llm/mllm历史对话上下文",
+                "items": {
+                  "properties": {
+                    "Content": {
+                      "backendName": "content",
+                      "description_en": "The text content of the message",
+                      "description_zh": "存储实际的对话内容文本，记录了该角色在对话中的具体表达或回应",
+                      "example": "你好",
+                      "type": "string"
+                    },
+                    "Role": {
+                      "backendName": "role",
+                      "description_en": "The role of the conversation participant. Valid values:\n\n`user`: The user.\n\n`assistant`: The AI assistant.\n\n`system`: The system.\n\n`function`: A function call.\n\n`plugin`: A plugin.\n\n`tool`: A tool",
+                      "description_zh": "表示对话参与者的角色。可选值包括：\n\nuser: 用户\n\nassistant: 助手\n\nsystem: 系统\nfunction: 函数\n\nplugin: 插件\n\ntool: 工具",
+                      "example": "user",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "LlmHistoryLimit": {
+                "backendName": "llmHistoryLimit",
+                "description_en": "The maximum number of conversation turns to retain in the LLM/MLLM history. Default: 10",
+                "description_zh": "llm/mllm历史对话上下文最大保留轮次，默认10次",
+                "example": "10",
+                "format": "int32",
+                "type": "integer"
+              },
+              "LlmSystemPrompt": {
+                "backendName": "llmSystemPrompt",
+                "description_en": "The system prompt for the LLM, applied when the call starts",
+                "description_zh": "启动通话后llm的系统提示词",
+                "example": "你是一位友好且乐于助人的助手，专注于为用户提供准确的信息和建议。",
+                "type": "string"
+              },
+              "MaxIdleTime": {
+                "backendName": "maxIdleTime",
+                "description_en": "The maximum idle time in seconds with no interaction before the agent goes offline. Default: 600",
+                "description_zh": "和智能体无互动的最大等待时间，超时智能体下线。单位：秒。默认：600秒",
+                "example": "600",
+                "format": "int32",
+                "type": "integer"
+              },
+              "UseVoiceprint": {
+                "backendName": "useVoiceprint",
+                "description_en": "Specifies whether to use voiceprint recognition. Default: `false`",
+                "description_zh": "是否使用声纹识别的开关。默认值：false",
+                "example": "false",
+                "type": "boolean"
+              },
+              "UserOfflineTimeout": {
+                "backendName": "userOfflineTimeout",
+                "description_en": "The time in seconds that the agent waits after a user leaves before closing the task. Default: 5",
+                "description_zh": "用户退会后，智能体超时关闭任务的时间。单位：秒。默认值：5秒",
+                "example": "5",
+                "format": "int32",
+                "type": "integer"
+              },
+              "UserOnlineTimeout": {
+                "backendName": "userOnlineTimeout",
+                "description_en": "The time in seconds that the agent waits for a user to join before closing the task. Default: 60",
+                "description_zh": "用户未入会，智能体超时关闭任务的时间。单位：秒。默认值：60秒",
+                "example": "60",
+                "format": "int32",
+                "type": "integer"
+              },
+              "VadLevel": {
+                "backendName": "vadLevel",
+                "description_en": "The interruption sensitivity threshold. A higher value makes it more difficult to interrupt the agent. Range: 0 to 11. Default: 11.\n\n`0`: Disables Voice Activity Detection (VAD).\n\n`1` to `10`: A higher value makes it more difficult to interrupt the agent.\n\n`11`: Offers lower audio distortion and stronger resistance to interference",
+                "description_zh": "打断阈值参数。取值范围：[0,11], 默认值：11。\n\n0表示关闭 vad 功能。\n1-10设置数字越高表示越难打断。\n11与之前显著不同，前处理对话音损伤更低，抗干扰更强",
+                "example": "11",
+                "format": "int32",
+                "type": "integer"
+              },
+              "VoiceId": {
+                "backendName": "voiceId",
+                "description_en": "The ID of the Text-to-Speech (TTS) voice. Changes take effect on the next utterance. If omitted, the default voice from the agent template is used. This parameter applies only to preset TTS voices. Maximum length: 64 characters. For available values, see [Intelligent voice effect samples]（https://help.aliyun.com/document_detail/449563.html）",
+                "description_zh": "音色ID，修改后下句话生效。不填写则使用智能体模版配置的音色ID。仅针对预置TTS生效。输入长度不超过64。可选值参考：[智能语音效果示例]（https://help.aliyun.com/document_detail/449563.html）",
+                "example": "zhixiaoxia",
+                "title": "音色名称，修改后下句话生效",
+                "type": "string"
+              },
+              "VoiceIdList": {
+                "backendName": "voiceIdList",
+                "description_en": "A list of available voices",
+                "description_zh": "可选音色列表",
+                "items": {
+                  "description_en": "Voice tone.  ",
+                  "description_zh": "音色",
+                  "example": "zhixiaoxia",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "VoiceprintId": {
+                "backendName": "voiceprintId",
+                "description_en": "The unique ID for voiceprint recognition. Default: not specified",
+                "description_zh": "声纹识别的唯一身份ID。默认值：不填",
+                "example": "uniqueId",
+                "type": "string"
+              },
+              "Volume": {
+                "backendName": "volume",
+                "description_en": "The speaking volume of the agent.\n\nIf omitted, the system uses adaptive volume mode.\n\nIf specified, the valid range is 0 to 400. The output volume is calculated as: `Output Volume in Workflow` * (`volume`/100). For example:\n\nIf `volume` is `0`, the output is silent.\n\nIf `volume` is `100`, the output volume is the original volume.\n\nIf `volume` is `200`, the output volume is twice the original volume",
+                "description_zh": "智能体说话的音量。\n\n若不填：默认使用阿里云推荐的自适应音量模式\n\n若填写：填写范围为0~400，输出音量=工作流中的语音输出音量 * volume/100。示例：\n\n若volume=0，则代表输出音量为0。\n \n若volume=100，音量为原声音量。\n\n若volume=200，音量等于原声音量的2倍",
+                "example": "100",
+                "format": "int64",
+                "title": "音量",
+                "type": "integer"
+              },
+              "WakeUpQuery": {
+                "backendName": "wakeUpQuery",
+                "description_en": "An initial user query that the agent addresses immediately when the call starts",
+                "description_zh": "用户在通话启动前的指令，用于智能体在通话启动后立即响应",
+                "example": "今天天气怎么样？",
+                "type": "string"
+              },
+              "WorkflowOverrideParams": {
+                "backendName": "workflowOverrideParams",
+                "description_en": "Workflow override parameters. Default: empty",
+                "description_zh": "工作流覆盖参数，默认无",
+                "example": "{}",
+                "type": "string"
+              }
+            },
+            "title": "语音通话参数",
+            "type": "object"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Queries the list of AI agent instances. You can retrieve all instances or filter by specified conditions",
+  "description_zh": "查询AI智能体实例列表，可以获取所有或指定条件下的智能体实例列表",
+  "kebab_example": "aliyun ice list-ai-agent-instance --ai-agent-id 39f8e0bc005e4f309379701645f4000 --region cn-hangzhou",
+  "method": "POST",
+  "multi_version": false,
+  "name": "ListAIAgentInstance",
+  "operation": {
+    "action": "ListAIAgentInstance",
+    "api_style": "RPC",
+    "api_version": "2020-11-09",
+    "method": "POST",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "none",
+    "url": ""
+  },
+  "parameters": [
+    {
+      "example": "39f8e0bc005e4f309379701645f4***",
+      "help_en": "The agent ID",
+      "help_zh": "智能体Id",
+      "location": "query",
+      "name": "ai_agent_id",
+      "options": [
+        "--ai-agent-id"
+      ],
+      "raw_name": "AIAgentId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "2023-01-01T00:00:00Z",
+      "help_en": "The start time of the query in ISO 8601 format. No default value",
+      "help_zh": "查询的开始时间（ISO 8601 格式）。默认无",
+      "location": "query",
+      "name": "start_time",
+      "options": [
+        "--start-time"
+      ],
+      "raw_name": "StartTime",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "2023-01-02T00:00:00Z",
+      "help_en": "The end time of the query in ISO 8601 format. No default value",
+      "help_zh": "查询的结束时间（ISO 8601 格式）。默认无",
+      "location": "query",
+      "name": "end_time",
+      "options": [
+        "--end-time"
+      ],
+      "raw_name": "EndTime",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "10",
+      "help_en": "The number of entries per page. Default value: 10. Valid values: 0 to 100",
+      "help_zh": "每页数量，默认10，取值范围0~100",
+      "location": "query",
+      "name": "page_size",
+      "options": [
+        "--page-size"
+      ],
+      "raw_name": "PageSize",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "1",
+      "help_en": "The page number. Default value: 1. Valid values: 1 to 100",
+      "help_zh": "当前页数，默认值1，取值范围1~100",
+      "location": "query",
+      "name": "page_number",
+      "options": [
+        "--page-number"
+      ],
+      "raw_name": "PageNumber",
+      "required": false,
+      "type": "int"
+    }
+  ],
+  "pathPattern": "",
+  "product_code": "ICE",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "Schema of Response",
+        "description_zh": "Schema of Response",
+        "properties": {
+          "Instances": {
+            "backendName": "data.instances",
+            "description_en": "The list of agent instance structs",
+            "description_zh": "智能体实例结构体列表",
+            "itemName": "Instances",
+            "items": {
+              "properties": {
+                "AgentConfig": {
+                  "$ref": "#/components/schemas/AIAgentConfig",
+                  "backendName": "aiAgentConfig",
+                  "description_en": "The template configuration used by the agent instance",
+                  "description_zh": "智能体实例所使用的模版配置"
+                },
+                "CallLogUrl": {
+                  "backendName": "callLogUrl",
+                  "description_en": "The URL of the agent conversation call log file. The file contains the CallLog struct in JSON format",
+                  "description_zh": "智能体对话通话记录文件URL，该文件内部是CallLog结构（Json格式）",
+                  "example": "https://example.com/call_logs/12345.json",
+                  "type": "string"
+                },
+                "RuntimeConfig": {
+                  "$ref": "#/components/schemas/AIAgentRuntimeConfig",
+                  "backendName": "runtimeConfig",
+                  "description_en": "The runtime configuration required by the agent",
+                  "description_zh": "智能体运行时所需要的配置",
+                  "example": "{\"VoiceChat\":{\"AgentUserId\":\"voice_agent_001\",\"ChannelId\":\"voice_channel_001\",\"AuthToken\":\"your_voice_chat_auth_token\"}}"
+                },
+                "Status": {
+                  "backendName": "status",
+                  "description_en": "The instance status. Valid values:\n\nCreated: The call is initiated but the connection between the two ends is not established.\n\nExecuting: The call is in progress and the connection between the two ends is established.\n\nFinished: The call has ended",
+                  "description_zh": "实例状态：\n\nCreated：通话启动但是双端未建立连接\n\nExecuting：通话执行中，双端已经建立连接\n\nFinished：通话结束",
+                  "example": "Finished",
+                  "type": "string"
+                },
+                "TemplateConfig": {
+                  "$ref": "#/components/schemas/AIAgentTemplateConfig",
+                  "backendName": "templateConfig",
+                  "deprecated": true,
+                  "description_en": "The template configuration used by the agent instance",
+                  "description_zh": "智能体实例所使用的模版配置",
+                  "example": "{\"VoiceChat\": {\"VoiceId\": \"zhixiaoxia\"}}"
+                },
+                "UserData": {
+                  "backendName": "userData",
+                  "description_en": "The user-defined data",
+                  "description_zh": "用户自定义信息",
+                  "example": "{\"Email\":\"johndoe@example.com\",\"Preferences\":{\"Language\":\"en\"}}",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "RequestId": {
+            "backendName": "requestId",
+            "description_en": "The request ID",
+            "description_zh": "请求 ID",
+            "example": "7B117AF5-2A16-412C-B127-FA6175ED1AD0",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          }
+        },
+        "title_en": "Schema of Response",
+        "title_zh": "Schema of Response",
+        "type": "object"
+      }
+    }
+  }
+}

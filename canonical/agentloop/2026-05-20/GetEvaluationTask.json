@@ -1,0 +1,419 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "agentloop get-evaluation-task",
+  "cmd_name": "get-evaluation-task",
+  "components": {
+    "schemas": {
+      "BackfillStrategy": {
+        "description_en": "The backfill evaluation policy for historical data, which specifies the time range and trigger method for a backfill run",
+        "description_zh": "历史数据回填评估策略，用于指定一次回填运行的时间范围和触发方式",
+        "example": "{\"enabled\":true,\"startTime\":1782816000000,\"endTime\":1782902400000,\"immediate\":false}",
+        "properties": {
+          "enabled": {
+            "backendName": "enabled",
+            "description_en": "Specifies whether the backfill policy is enabled. If this parameter is not specified or is set to true, the policy is enabled. If this parameter is set to false, the policy is disabled but the configuration is retained",
+            "description_zh": "是否启用回填策略。不传或 true 表示启用；false 表示关闭但保留配置",
+            "example": "true",
+            "type": "boolean"
+          },
+          "endTime": {
+            "backendName": "endTime",
+            "description_en": "The end of the backfill time range, in UNIX millisecond timestamp. Provide a complete time range when you need to manually start a backfill",
+            "description_zh": "回填时间范围终点，Unix 毫秒时间戳。需要手动启动回填时应提供完整时间范围",
+            "example": "1782902400000",
+            "format": "int64",
+            "type": "integer"
+          },
+          "startTime": {
+            "backendName": "startTime",
+            "description_en": "The start of the backfill time range, in UNIX millisecond timestamp. Provide a complete time range when you need to manually start a backfill",
+            "description_zh": "回填时间范围起点，Unix 毫秒时间戳。需要手动启动回填时应提供完整时间范围",
+            "example": "1782816000000",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ContinuousStrategy": {
+        "description_en": "The continuous evaluation policy, which is used to continuously evaluate new data within fixed time windows",
+        "description_zh": "持续评估策略，用于按固定时间窗口持续评估新增数据",
+        "example": "{\"enabled\":true,\"intervalUnit\":\"HOUR\",\"intervalValue\":1,\"dataDelayMinutes\":5}",
+        "properties": {
+          "dataDelayMinutes": {
+            "backendName": "dataDelayMinutes",
+            "description_en": "The data arrival delay in minutes. After a window ends, the system waits for this duration before creating a run to allow data to arrive completely. Default value: 0",
+            "description_zh": "数据到达延迟时间，单位为分钟。窗口结束后延迟该时间再创建运行，用于等待数据完整到达；不传默认为 0",
+            "example": "5",
+            "format": "int32",
+            "type": "integer"
+          },
+          "enabled": {
+            "backendName": "enabled",
+            "description_en": "Specifies whether to enable continuous evaluation. If this parameter is not specified or is set to true, continuous evaluation is enabled. If this parameter is set to false, continuous evaluation is disabled but the configuration is retained",
+            "description_zh": "是否启用持续评估。不传或 true 表示启用；false 表示关闭但保留配置",
+            "example": "true",
+            "type": "boolean"
+          },
+          "intervalUnit": {
+            "backendName": "intervalUnit",
+            "description_en": "The unit of the continuous evaluation window interval. This field is required for the current polling implementation",
+            "description_zh": "持续评估窗口间隔单位。当前轮询实现需要该字段",
+            "example": "HOUR",
+            "type": "string"
+          },
+          "intervalValue": {
+            "backendName": "intervalValue",
+            "description_en": "The size of the continuous evaluation window interval. This parameter is used together with intervalUnit. The value must be greater than 0",
+            "description_zh": "持续评估窗口间隔大小，需要与 intervalUnit 配合使用，取值应大于 0",
+            "example": "1",
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Evaluator": {
+        "description_en": "The evaluator configuration in an evaluation task. Used to reference a previously created evaluator or to describe an inline evaluator for the current task",
+        "description_zh": "评估任务中的评估器配置，用于引用已创建的评估器，或以内联方式描述本次任务使用的评估器",
+        "example": "{\"evaluatorRef\":\"Builtin.agent_task_completion\",\"resultName\":\"agent_task_completion\",\"resultType\":\"score\",\"variableMapping\":{\"input\":\"trace.input\",\"output\":\"trace.output\",\"agent_trajectory\":\"trace.agent_trajectory\"}}",
+        "properties": {
+          "config": {
+            "backendName": "config",
+            "description_en": "The runtime configuration of the evaluator. For inline LLM evaluators, this must include configurations such as prompt. When referencing an existing evaluator, this parameter is typically not required and should only be specified when runtime parameters such as version need to be set",
+            "description_zh": "评估器运行配置。内联 LLM 评估器需要包含 prompt 等配置；引用已有评估器时通常不传，仅在需要指定版本等运行时参数时传入",
+            "example": "{\"version\":\"1.0.0\"}",
+            "title": "评估器配置（如prompt等）",
+            "type": "object"
+          },
+          "evaluatorRef": {
+            "backendName": "evaluatorRef",
+            "description_en": "The reference name of a registered evaluator. When specified, the evaluator definition is loaded by this reference with higher priority. Both built-in evaluators and custom evaluators are supported",
+            "description_zh": "已注册评估器的引用名称。传入后优先按该引用加载评估器定义，支持内置评估器和自定义评估器",
+            "example": "Builtin.agent_task_completion",
+            "title": "评估器引用ID（引用已注册评估器时使用）",
+            "type": "string"
+          },
+          "filters": {
+            "backendName": "filters",
+            "description_en": "The evaluator-level data filter conditions. These take effect together with the task-level dataFilter.query",
+            "description_zh": "评估器级数据筛选条件，会与任务级 dataFilter.query 共同生效",
+            "example": "{\"query\":\"serviceName='checkout-service'\"}",
+            "title": "数据筛选条件",
+            "type": "object"
+          },
+          "name": {
+            "backendName": "name",
+            "description_en": "The evaluator name. Required for inline evaluators when evaluatorRef is not specified. The evaluatorRef or name must be unique within the same task",
+            "description_zh": "评估器名称。未传 evaluatorRef 的内联评估器场景必填；同一任务内 evaluatorRef 或 name 不能重复",
+            "example": "agent_task_completion",
+            "title": "评估器名称",
+            "type": "string"
+          },
+          "resultName": {
+            "backendName": "resultName",
+            "description_en": "The field name for the evaluation result. Required for inline evaluators. When referencing an existing evaluator, the metricName defined in the evaluator definition is used if this parameter is not specified",
+            "description_zh": "评估结果字段名。内联评估器场景必填；引用已有评估器时未传则使用评估器定义中的 metricName",
+            "example": "agent_task_completion",
+            "title": "评分名称",
+            "type": "string"
+          },
+          "resultType": {
+            "backendName": "resultType",
+            "description_en": "The evaluation result type. Required for inline evaluators. When referencing an existing evaluator, defaults to score if not specified",
+            "description_zh": "评估结果类型。内联评估器场景必填；引用已有评估器时未传默认为 score",
+            "example": "score",
+            "title": "结果类型：score / binary / text",
+            "type": "string"
+          },
+          "type": {
+            "backendName": "type",
+            "description_en": "The evaluator type. Defaults to LLM if not specified. Inline CODE evaluators are not currently supported. For the CODE type, reference a previously created evaluator by using evaluatorRef",
+            "description_zh": "评估器类型。未传时默认 LLM；内联 CODE 评估器当前不支持，CODE 类型请通过 evaluatorRef 引用已创建评估器",
+            "example": "AGENT",
+            "title": "评估器类型：LLM / CODE",
+            "type": "string"
+          },
+          "variableExtractorMapping": {
+            "additionalProperties": {
+              "description_en": "The extraction rule for a single variable. The key is the evaluator variable name, and the value consists of three parts: the source field originField, the extraction method type, and the extraction expression expression. Trace variables managed by the engine, such as agent_trajectory, agent_trajectory_full, session_trajectory, tool_context, and rag_context, do not support extraction rule configuration",
+              "description_zh": "单个变量的提取规则，键为评估器变量名，值由被提取字段 originField、提取方式 type 和提取表达式 expression 三部分组成。agent_trajectory、agent_trajectory_full、session_trajectory、tool_context、rag_context 等由引擎接管的轨迹变量不支持配置提取规则",
+              "properties": {
+                "expression": {
+                  "backendName": "expression",
+                  "description_en": "The extraction expression. Its meaning is determined by type. When type is jsonpath, specify a JSONPath expression. You can use either a relative path relative to originField (such as $.order.expected) or an absolute path from the root (such as $trace.output.order.expected). When type is regex, specify a regular expression. Note that backslashes must be escaped in JSON. The expression syntax is validated upon saving. For regular expressions, RE2 compatibility is additionally validated. Patterns such as lookahead assertions, lookbehind assertions, backreferences, named groups, atomic groups, and possessive quantifiers are rejected",
+                  "description_zh": "提取表达式，含义由 type 决定。type=jsonpath 时填 JSONPath，既可写相对于 originField 的相对路径（$.order.expected），也可写从根开始的绝对路径（$trace.output.order.expected）；type=regex 时填正则表达式，注意 JSON 中反斜杠需转义。保存时会校验表达式语法，正则还会额外校验 RE2 兼容性，前后向断言、反向引用、命名组、原子组、占有量词等写法会被拒绝",
+                  "example": "$.order.expected",
+                  "title": "提取表达式",
+                  "type": "string"
+                },
+                "originField": {
+                  "backendName": "originField",
+                  "description_en": "The evaluation data field from which content is extracted. The extraction expression is applied to the content of this field. Required when saving with the evaluation task. For the trial run API, this parameter can be omitted and the backend derives it from the expression. Multiple variables can share the same source field",
+                  "description_zh": "被提取的评估数据字段，提取表达式作用于该字段的内容。随评估任务保存时必填（试跑接口可缺省，由后端从表达式推导）；多个变量可以共用同一个源字段",
+                  "example": "trace.output",
+                  "title": "被提取的评估数据字段",
+                  "type": "string"
+                },
+                "type": {
+                  "backendName": "type",
+                  "description_en": "The extraction method. jsonpath extracts values from the JSON content of the field by using JSONPath. regex performs regular expression matching on the full text of the field. When capturing groups are present, the first capturing group is returned. When no capturing group is present, the entire match is returned",
+                  "description_zh": "提取方式。jsonpath 表示在字段的 JSON 内容上按 JSONPath 取值；regex 表示在字段的完整文本上按正则匹配，含捕获组时取第一个捕获组，不含捕获组时取整段匹配",
+                  "example": "jsonpath",
+                  "title": "提取方式：jsonpath / regex",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "backendName": "variableExtractorMapping",
+            "description_en": "The variable extraction rule mapping that maps evaluator variables to a portion of the content within an evaluation data field. This is applicable when the variable value is not the entire field but a subset of the field content. This parameter shares the same variable name key space as variableMapping. Each variable can use only one of the two. Duplicate configurations cause an error. When referencing an existing evaluator, the variable names must exist in the evaluator definition. Call ListTraceFieldExtractionsPreview to perform a trial run for validation before saving",
+            "description_zh": "变量提取规则映射关系，将评估器变量映射到评估数据字段内容中的一部分，适用于变量值不是整个字段、而是字段内容里的一小块的场景。与 variableMapping 共用同一变量名键空间，同一变量只能二选一，重复配置会报错；引用已有评估器时变量名必须存在于评估器定义中。可先调用 ListTraceFieldExtractionsPreview 试跑验证后再保存",
+            "type": "object"
+          },
+          "variableMapping": {
+            "additionalProperties": {
+              "description_en": "The value of a single variable mapping, indicating the evaluation data field path from which the evaluator variable reads",
+              "description_zh": "单个变量映射值，表示该评估器变量读取的评估数据字段路径",
+              "example": "trace.input",
+              "type": "string"
+            },
+            "backendName": "variableMapping",
+            "description_en": "The variable mapping that maps evaluator variables to evaluation data fields. Required for LLM/AGENT inline evaluators. When referencing an existing evaluator, the variable names must exist in the evaluator definition",
+            "description_zh": "变量映射关系，将评估器变量映射到评估数据字段。LLM/AGENT 内联评估器必填，引用已有评估器时变量名必须存在于评估器定义中",
+            "example": "{\"input\":\"trace.input\",\"output\":\"trace.output\",\"agent_trajectory\":\"trace.agent_trajectory\"}",
+            "title": "变量映射",
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "RunStrategies": {
+        "description_en": "The run policy container for evaluation tasks, used to configure historical data backfill evaluation and continuous incremental evaluation",
+        "description_zh": "评估任务的运行策略容器，用于配置历史数据回填评估和持续增量评估",
+        "example": "{\"backfill\":{\"enabled\":true,\"startTime\":1782816000000,\"endTime\":1782902400000,\"immediate\":false},\"continuous\":{\"enabled\":true,\"intervalUnit\":\"HOUR\",\"intervalValue\":1,\"dataDelayMinutes\":5}}",
+        "properties": {
+          "backfill": {
+            "$ref": "#/components/schemas/BackfillStrategy",
+            "backendName": "backfill",
+            "description_en": "The historical batch backfill policy. Backfill is enabled when the object exists and enabled is not explicitly set to false",
+            "description_zh": "历史批量回填策略。对象存在且 enabled 未显式为 false 时表示启用 backfill",
+            "example": "{\"enabled\":true,\"startTime\":1782816000000,\"endTime\":1782902400000,\"immediate\":false}"
+          },
+          "continuous": {
+            "$ref": "#/components/schemas/ContinuousStrategy",
+            "backendName": "continuous",
+            "description_en": "The continuous evaluation policy. Continuous evaluation is enabled when the object exists and enabled is not explicitly set to false",
+            "description_zh": "持续评估策略。对象存在且 enabled 未显式为 false 时表示启用 continuous",
+            "example": "{\"enabled\":true,\"intervalUnit\":\"HOUR\",\"intervalValue\":1,\"dataDelayMinutes\":5}"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Retrieves the details of an evaluation task",
+  "description_zh": "获取评估任务详情",
+  "kebab_example": "aliyun agentloop get-evaluation-task --agent-space prod-agentspace --task-id eval-task-8b36f2e2b1f94f9c91ce7a4b0f6d9c25 --region cn-hangzhou",
+  "method": "GET",
+  "multi_version": false,
+  "name": "GetEvaluationTask",
+  "operation": {
+    "action": "GetEvaluationTask",
+    "api_style": "ROA",
+    "api_version": "2026-05-20",
+    "method": "GET",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "get",
+    "url": "/api/v1/evaluation-task/{agentSpace}/{taskId}"
+  },
+  "parameters": [
+    {
+      "example": "prod-agentspace",
+      "help_en": "The AgentSpace name",
+      "help_zh": "AgentSpace 名称",
+      "location": "path",
+      "name": "agent_space",
+      "options": [
+        "--agent-space"
+      ],
+      "raw_name": "agentSpace",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "eval-task-8b36f2e2b1f94f9c91ce7a4b0f6d9c25",
+      "help_en": "The evaluation task ID",
+      "help_zh": "评估任务 ID",
+      "location": "path",
+      "name": "task_id",
+      "options": [
+        "--task-id"
+      ],
+      "raw_name": "taskId",
+      "required": true,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/api/v1/evaluation-task/[agentSpace]/[taskId]",
+  "product_code": "AgentLoop",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "Schema of Response",
+        "description_zh": "Schema of Response",
+        "properties": {
+          "agentSpace": {
+            "description_en": "The AgentSpace name",
+            "description_zh": "AgentSpace 名称",
+            "example": "prod-agentspace",
+            "type": "string"
+          },
+          "channel": {
+            "description_en": "The task source",
+            "description_zh": "任务来源",
+            "example": "default",
+            "type": "string"
+          },
+          "config": {
+            "additionalProperties": {
+              "description_en": "The value of a single configuration item. The key name is determined by the specific field convention",
+              "description_zh": "单个配置项的值，键名由具体字段约定决定",
+              "example": "trace",
+              "type": "string"
+            },
+            "description_en": "The data source and execution configuration. Tasks with `dataType=trace` typically contain `project`, `storeName`, and `dataScope` fields that are populated by the backend",
+            "description_zh": "数据源和执行配置。`dataType=trace` 任务通常包含后端补齐的 `project`、`storeName` 和 `dataScope`",
+            "example": "{\"project\":\"agentspace-project\",\"storeName\":\"logstore-tracing\",\"dataScope\":\"trace\"}",
+            "type": "object"
+          },
+          "createdAt": {
+            "description_en": "The creation time, in seconds-level UNIX timestamp",
+            "description_zh": "创建时间，秒级 Unix 时间戳",
+            "example": "1782816000",
+            "format": "int64",
+            "type": "integer"
+          },
+          "dataFilter": {
+            "description_en": "The evaluation data filter condition, returned by the backend as a JSON string",
+            "description_zh": "评估数据筛选条件，后端以 JSON 字符串形式返回",
+            "example": "{\"query\":\"serviceName='checkout-service'\",\"maxRecords\":10,\"samplingRate\":100}",
+            "type": "string"
+          },
+          "dataType": {
+            "description_en": "The data source type of the evaluation object",
+            "description_zh": "评估对象的数据来源类型",
+            "example": "trace",
+            "type": "string"
+          },
+          "description": {
+            "description_en": "The evaluation task description",
+            "description_zh": "评估任务描述",
+            "example": "评估线上 Agent 链路任务完成度",
+            "type": "string"
+          },
+          "evaluators": {
+            "description_en": "The list of evaluator configurations",
+            "description_zh": "评估器配置列表",
+            "example": "[{\"evaluatorRef\":\"Builtin.agent_task_completion\",\"resultName\":\"agent_task_completion\",\"resultType\":\"score\",\"variableMapping\":{\"input\":\"trace.input\",\"output\":\"trace.output\",\"agent_trajectory\":\"trace.agent_trajectory\"}}]",
+            "itemName": "evaluators",
+            "items": {
+              "$ref": "#/components/schemas/Evaluator",
+              "description_en": "The configuration object of a single evaluator",
+              "description_zh": "单个评估器配置对象",
+              "example": "{\"evaluatorRef\":\"Builtin.agent_task_completion\"}"
+            },
+            "type": "array"
+          },
+          "regionId": {
+            "description_en": "The region to which the task belongs",
+            "description_zh": "任务所属地域",
+            "example": "cn-hangzhou",
+            "type": "string"
+          },
+          "requestId": {
+            "description_en": "The request ID",
+            "description_zh": "请求 ID",
+            "example": "3FE4CD1E-FF41-56BE-B590-7A021D9C1524",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          },
+          "runStrategyConfig": {
+            "$ref": "#/components/schemas/RunStrategies",
+            "description_en": "The structured configuration of the run strategy, including the parsed backfill strategy and continuous evaluation strategy",
+            "description_zh": "运行策略结构化配置，解析后的回填策略和持续评估策略",
+            "example": "{\"backfill\":{\"enabled\":true,\"startTime\":1782816000000,\"endTime\":1782902400000},\"continuous\":{\"enabled\":true,\"intervalUnit\":\"HOUR\",\"intervalValue\":1,\"dataDelayMinutes\":5}}"
+          },
+          "status": {
+            "description_en": "The evaluation task status",
+            "description_zh": "评估任务状态",
+            "example": "Running",
+            "type": "string"
+          },
+          "tags": {
+            "additionalProperties": {
+              "description_en": "The value of a single task tag. The key name is customized by business dimension",
+              "description_zh": "单个任务标签值，键名按业务维度自定义",
+              "example": "prod",
+              "type": "string"
+            },
+            "description_en": "The key-value pairs of task tags. Empty if not set",
+            "description_zh": "任务标签键值对。未设置时为空",
+            "example": "{\"serviceId\":\"checkout-service\",\"env\":\"prod\"}",
+            "type": "object"
+          },
+          "taskId": {
+            "description_en": "The evaluation task ID",
+            "description_zh": "评估任务 ID",
+            "example": "eval-task-8b36f2e2b1f94f9c91ce7a4b0f6d9c25",
+            "type": "string"
+          },
+          "taskMode": {
+            "description_en": "The evaluation task mode",
+            "description_zh": "评估任务模式",
+            "example": "batch",
+            "type": "string"
+          },
+          "taskName": {
+            "description_en": "The task name",
+            "description_zh": "任务名称",
+            "example": "trace_task_completion_eval",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description_en": "The last update time, in seconds-level UNIX timestamp",
+            "description_zh": "最近更新时间，秒级 Unix 时间戳",
+            "example": "1782816600",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "title_en": "Schema of Response",
+        "title_zh": "Schema of Response",
+        "type": "object"
+      }
+    }
+  },
+  "v1_parameters": [
+    {
+      "help_en": "The AgentSpace name",
+      "help_zh": "AgentSpace 名称",
+      "name": "agentSpace",
+      "position": "path",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "help_en": "The evaluation task ID",
+      "help_zh": "评估任务 ID",
+      "name": "taskId",
+      "position": "path",
+      "required": false,
+      "type": "string"
+    }
+  ]
+}

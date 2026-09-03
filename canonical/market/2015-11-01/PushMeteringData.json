@@ -1,0 +1,65 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "market push-metering-data",
+  "cmd_name": "push-metering-data",
+  "deprecated": false,
+  "description_en": "Call PushMeteringData to push metering data",
+  "description_zh": "调用PushMeteringData推送计量数据",
+  "kebab_example": "aliyun market push-metering-data --metering '按小时/按天推量时：_InstanceId_:_1000001_,_StartTime_:_100000000_,_EndTime_:_100000010_,_Entities_:_Key_:_PeriodMin_,_Value_:_96_,_meteringAssit_:_cmapi00060317-PeriodMin-4_大模型场景实时推量时：_InstanceId_:_1000001_,_SerialNo_:_210f470417561055092582279ea052_,_StartTime_:_100000000_,_EndTime_:_100000010_,_Entities_:_Key_:_PeriodMin_,_Value_:_96_,_meteringAssit_:_cmapi00060317-PeriodMin-4' --region cn-hangzhou",
+  "method": "POST",
+  "multi_version": false,
+  "name": "PushMeteringData",
+  "operation": {
+    "action": "PushMeteringData",
+    "api_style": "RPC",
+    "api_version": "2015-11-01",
+    "method": "POST",
+    "operation_type": "write",
+    "protocol": "HTTPS",
+    "system_operation_type": "create",
+    "url": ""
+  },
+  "parameters": [
+    {
+      "example": "按小时/按天推量时：\n[{\"InstanceId\":\"1000001\",\"StartTime\":\"100000000\",\"EndTime\":\"100000010\",\"Entities\":[{\"Key\":\"PeriodMin\",\"Value\":\"96\",\"meteringAssit\":\"cmapi00060317-PeriodMin-4\"}]}]\n\n\n大模型场景实时推量时：\n[{\"InstanceId\":\"1000001\",\"SerialNo\":\"210f470417561055092582279ea052\",\"StartTime\":\"100000000\",\"EndTime\":\"100000010\",\"Entities\":[{\"Key\":\"PeriodMin\",\"Value\":\"96\",\"meteringAssit\":\"cmapi00060317-PeriodMin-4\"}]}]",
+      "help_en": "The parameters in the example are described as follows:\n\nInstanceId: The cloud marketplace instance ID. The parameter type is String.\nStartTime: The metering start time. Unit: seconds (in Unix timestamp format, e.g., 1723771200). The parameter type is Long.\nEndTime: The metering end time. Unit: seconds (in Unix timestamp format, e.g., 1723771800). The parameter type is Long.\nEntities: The metering entity objects. The parameter type is List<Map>.\n    - Key: The name of the metering item attribute. The parameter type is String.\n        - Frequency: The number of uses (count).\n        - Period: The usage duration in hours (seconds).\n         Note: The duration unit in the request parameter is seconds, while the billing unit is hours. Therefore, the value is converted to hours during billing. For example, if you push usage of 1800 for the period 19:00-20:00 and the billing price is 1 CNY/hour, the hourly bill for that period is 1800 / 3600 x 1 = 0.5 CNY. If the amount is a decimal, it is rounded to two decimal places with any digits beyond two truncated.\n\n        - Storage: The storage space used (Byte).\n\n         Note: The unit in the request parameter is Byte, while the billing unit is MB. Therefore, the value is converted to MB during billing. For example, if you push usage of 524288 for the period 19:00-20:00 and the billing price is 1 CNY/MB, the hourly bill for that period is 524288 / 1024 / 1024 x 1 = 0.5 CNY. If the amount is a decimal, it is rounded to two decimal places with any digits beyond two truncated.\n\n        - NetworkOut: The outbound traffic used (Bit).\n\n         Note: The unit in the request parameter is Bit, while the billing unit is Mb. Therefore, the value is converted to Mb during billing. For example, if you push usage of 524288 for the period 19:00-20:00 and the billing price is 1 CNY/Mb, the hourly bill for that period is 524288 / 1024 / 1024 x 1 = 0.5 CNY. If the amount is a decimal, it is rounded to two decimal places with any digits beyond two truncated.\n\n        - NetworkIn: The inbound traffic used (Bit).\n\n         Note: The unit in the request parameter is Bit, while the billing unit is Mb. Therefore, the value is converted to Mb during billing. For example, if you push usage of 524288 for the period 19:00-20:00 and the billing price is 1 CNY/Mb, the hourly bill for that period is 524288 / 1024 / 1024 x 1 = 0.5 CNY. If the amount is a decimal, it is rounded to two decimal places with any digits beyond two truncated.\n\n        - Character: The number of characters (count).\n        - DailyActiveUser: The number of daily active users (DAU).\n        - PeriodMin: The usage duration in minutes (minutes).\n        - VirtualCpu: The number of virtual CPU cores.\n        - Unit: Unit (count).\n        - Memory: Memory (GB).\n        - KTokens: The number of tokens used (token).\n         Note: The unit of KTokens in the request parameter is token. You do not need to convert the value to thousands of tokens. The billing unit is thousands of tokens. Therefore, the token value in the pushed metering parameter is converted to thousands of tokens during billing. For example, if you push usage of 1500 tokens for the period 19:00-20:00, example: {\"Key\":\"KTokens\",\"Value\":\"1500\",\"meteringAssit\":\"cmapi00071246-KTokens-1\"}, and the billing price is 1 CNY/thousand tokens, the hourly bill for that period is 1500 / 1000 x 1 = 1.5 CNY. If the amount is a decimal, it is rounded to two decimal places with any digits beyond two truncated.\n        - Suit: Suit (set). Note that the value passed in the parameter is in sets.\n        - StorageGigaByte: StorageGigaByte (storage space in GB). Note that the unit of the value passed in the parameter is directly GB, without needing to convert to Byte or other units.\n    - Value: The metering value (value >= 0). The parameter type is Integer.\n    - meteringAssit: The multi-dimensional metering item ID. The parameter type is String. This billing item ID can be found in the product publishing backend. Billing items such as Frequency may have one or more of these values. When pushing metering data for newly published products, this parameter must be included.\n    - SerialNo: Specific to large model invocation scenarios. When using HTTP calls, set this to the requestId. When using WebSocket, set this to the uid of the single task. This parameter is only required when the product is billed by the minute. It is not required in other cases.\n\nNote:\nMulti-dimensional metering capability: For the billing items mentioned above such as Frequency (count), Period (usage duration), PeriodMin, etc., multiple items can be supported when publishing a product. For example, a product can have multiple PeriodMin billing items, and each PeriodMin billing item generates a unique ID to identify the billing item. This billing item is generated when the product is published, and the format is like (cmapi00060317-PeriodMin-3, cmapi00060317-PeriodMin-4). When pushing metering data, the above ID must be included to enable the corresponding billing deduction. The metering data format for newly published products is as follows:\n[{\"InstanceId\":\"1000001\",\"StartTime\":\"100000000\",\"EndTime\":\"100000010\",\"Entities\":[{\"Key\":\"PeriodMin\",\"Value\":\"96\",\"meteringAssit\":\"cmapi00060317-PeriodMin-4\"}]}].\nThe pushed metering parameters should follow the example. All parameters in the example are required. Missing data will cause the metering push to fail",
+      "help_zh": "示例中的参数说明如下：\n\nInstanceId：云市场实例ID 。参数类型为String。\nStartTime：计量开始时间。单位秒（格式为Unix时间戳, 如1723771200）。参数类型为Long。\nEndTime：计量结束时间。单位秒（格式为Unix时间戳，如1723771800）。参数类型为Long。\nEntities：计量实体对象。参数类型为List<Map>。\n    - Key：计量项属性名称。参数类型为String。\n        - Frequency：使用次数（次）。\n        - Period：使用小时时长（秒）。\n         注意：请求参数中的时长单位为秒，而计费单位为小时，因此计费时会转换为小时，如推送19:00-20:00的用量1800，计费价格为1元/小时，按小时出账该时段费用为1800 / 3600 x 1 = 0.5元，费用如为小数，保留两位小数，超过两位舍弃。\n\n        - Storage：使用存储空间（Byte）。\n\n         注意：请求参数中的单位为Byte，而计费单位为MB，因此计费时会转换为MB，如推送19:00-20:00的用量524288，计费价格为1元/MB，按小时出账该时段费用为524288 / 1024 / 1024 x 1 = 0.5元，费用如为小数，保留两位小数，超过两位舍弃。\n\n        - NetworkOut：上行使用流量（Bit）。\n\n         注意：请求参数中的单位为Bit，而计费单位为Mb，因此计费时会转换为Mb，如推送19:00-20:00的用量524288，计费价格为1元/Mb，按小时出账该时段费用为524288 / 1024 / 1024 x 1 = 0.5元，费用如为小数，保留两位小数，超过两位舍弃。\n\n        - NetworkIn：下行使用流量（Bit）。\n\n         注意：请求参数中的单位为Bit，而计费单位为Mb，因此计费时会转换为Mb，如推送19:00-20:00的用量524288，计费价格为1元/Mb，按小时出账该时段费用为524288 / 1024 / 1024 x 1 = 0.5元，费用如为小数，保留两位小数，超过两位舍弃。\n\n        - Character：字符数（个）。\n        - DailyActiveUser：日活跃用户数（DAU）。\n        - PeriodMin：使用分钟时长（分钟）。\n        - VirtualCpu：虚拟CPU核数。\n        - Unit: Unit(个)。\n        - Memory: Memory(GB)。\n        - KTokens: 使用tokens数(token)。\n         注意：请求参数中的KTokens单位为token, 不需要转化为千tokens，而计费单位为千tokens，因此计费时会将推送计量参数中token值转化为千tokens，如推送19:00-20:00的用量1500 token，示例: {\"Key\":\"KTokens\",\"Value\":\"1500\",\"meteringAssit\":\"cmapi00071246-KTokens-1\"}，计费价格为1元/千tokens，按小时出账该时段费用为1500 / 1000 x 1 = 1.5元, 费用如为小数，保留两位小数，超过两位舍弃。\n        - Suit:Suit(套)，注意参数中传递的值是套。\n        - StorageGigaByte: StorageGigaByte(存储空间GB)，注意参数中直接传递的参数单位是GB，不需要转化为Byte等。\n    - Value：计量数值（取值 >= 0）。参数类型为Integer。\n    - meteringAssit: 多维度计量项Id。参数类型为String, 在商品发布的后台可以看到这个计费项id。Frequency等计费项有1个或多个都会有这个值，新发布的品推送计量时需要将这个参数传递过来。\n    - SerialNo：大模型调用场景特有，当是http调用的时候请设置为requestId，websocket的时候请设置为单次任务的uid，只有在商品是分钟出账的情况下，需要传递这个参数，其他情况下不需要传递这个参数。\n\n说明：\n多维度的计量能力，即对于上述的Frequency(次)、Period(使用时长)、PeriodMin等这些计费项在发布商品的时候可以支持多个，比如一个商品中可以有多个PeriodMin计费项，每个PeriodMin计费项会生成一个唯一的ID，用户标识计费项，这个计费项是在发布商品的时候生成的，格式如(cmapi00060317-PeriodMin-3， cmapi00060317-PeriodMin-4)。在推送计量的时候需要将上面的ID传递过来，以便进行相应的计费扣减。新发布品推送的计量数据格式如下所示:\n[{\"InstanceId\":\"1000001\",\"StartTime\":\"100000000\",\"EndTime\":\"100000010\",\"Entities\":[{\"Key\":\"PeriodMin\",\"Value\":\"96\",\"meteringAssit\":\"cmapi00060317-PeriodMin-4\"}]}]。\n推送的计量参数请参考示例，示例中的参数都是必要的，数据缺失会推送计量失败",
+      "location": "query",
+      "name": "metering",
+      "options": [
+        "--metering"
+      ],
+      "raw_name": "Metering",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "",
+  "product_code": "Market",
+  "protocol": "HTTP|HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "properties": {
+          "RequestId": {
+            "backendName": "requestId",
+            "description_en": "The request ID",
+            "description_zh": " 请求ID",
+            "example": "6EF60BEC-0242-43AF-BB20-270359FB54A7",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "Success": {
+            "backendName": "result",
+            "description_en": "The success status identifier",
+            "description_zh": "成功状态标识",
+            "example": "true",
+            "type": "boolean",
+            "visibility": "Public"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

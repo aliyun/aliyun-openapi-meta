@@ -1,0 +1,336 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "pds list-uploaded-parts",
+  "cmd_name": "list-uploaded-parts",
+  "components": {
+    "schemas": {
+      "UploadFormInfo": {
+        "description_en": "The required information for a form upload",
+        "description_zh": "表单上传信息",
+        "properties": {
+          "endpoint": {
+            "description_en": "The request endpoint for the upload",
+            "description_zh": "数据存储地址",
+            "title": "数据存储地址",
+            "type": "string"
+          },
+          "form_data": {
+            "additionalProperties": {
+              "description_en": "The key-value pairs for the form fields. The value for each key must be a string",
+              "description_zh": "",
+              "type": "string"
+            },
+            "description_en": "The form fields for the upload",
+            "description_zh": "表单上传信息",
+            "title": "表单上传信息",
+            "type": "object"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "UploadPartInfo": {
+        "description_en": "Part information",
+        "description_zh": "分段信息",
+        "properties": {
+          "etag": {
+            "description_en": "This field is deprecated. Do not use it",
+            "description_zh": "此字段已废弃，请勿使用",
+            "example": "\"0CC175B9C0F1B6A831C399E269772661\"",
+            "title": "etag",
+            "type": "string"
+          },
+          "internal_upload_url": {
+            "description_en": "The internal upload URL, which is used for access from within a VPC network. After you enable the intelligent data domain feature, this field is no longer used. The value of this parameter is adaptively returned in the upload_url field based on the request. If you need to use this field, contact PDS technical support",
+            "description_zh": "内网上传地址，用于VPC网络内部访问\n（开启智能数据域名后将不再使用该字段，根据请求该参数会自适应返回在upload_url字段值内，如需使用该字段请联系PDS技术支持）",
+            "example": "https://data-vpc.aliyunpds.com/xxx/xxx?Expires=xxx&OSSAccessKeyId=xxx&Signature=xxx&partNumber=1&uploadId=0CC175B9C0F1B6A831C399E269772661\n",
+            "title": "内网上传地址",
+            "type": "string"
+          },
+          "parallel_sha1_ctx": {
+            "description_en": "The SHA-1 context of the previous part. This field is valid only for parallel upload of multiple parts",
+            "description_zh": "上一个分段的sha1上下文，该字段只在多分片并发上传的模式下有效",
+            "properties": {
+              "h": {
+                "description_en": "The first five 32-bit variables of the SHA-1 hash of the previous data block. This field is valid only for parallel upload of multiple parts",
+                "description_zh": "上一个数据块SHA1的第1-5个32位变量，该字段只在多分片并发上传的模式下有效",
+                "items": {
+                  "description_en": "",
+                  "description_zh": "",
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "title": "上一个数据块SHA1的第1-5个32位变量",
+                "type": "array"
+              },
+              "part_offset": {
+                "description_en": "The total length of data up to the previous data block, in bytes. The value must be a multiple of 64. This field is valid only for parallel upload of multiple parts",
+                "description_zh": "到上一个数据块为止的总长度，字节，需要为64的倍数，该字段只在多分片并发上传的模式下有效",
+                "example": "10240",
+                "format": "int64",
+                "title": "到上一个数据块为止的总长度，字节，需要为64的倍数",
+                "type": "integer"
+              }
+            },
+            "title": "上一个分段的sha1上下文",
+            "type": "object"
+          },
+          "parallel_sha256_ctx": {
+            "description_en": "The SHA-256 context of the previous part",
+            "description_zh": "上一个分段的sha256上下文",
+            "properties": {
+              "h": {
+                "description_en": "The first eight 32-bit variables of the SHA-256 hash of the previous data block",
+                "description_zh": "上一个数据块SHA256的第1-8个32位变量",
+                "items": {
+                  "description_en": "",
+                  "description_zh": "",
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "title": "上一个数据块SHA256的第1-8个32位变量",
+                "type": "array"
+              },
+              "part_offset": {
+                "description_en": "The total length of data up to the previous data block, in bytes. The value must be a multiple of 64",
+                "description_zh": "到上一个数据块为止的总长度，字节，需要为64的倍数",
+                "format": "int64",
+                "title": "到上一个数据块为止的总长度，字节，需要为64的倍数",
+                "type": "integer"
+              }
+            },
+            "title": "上一个分段的sha256上下文",
+            "type": "object"
+          },
+          "part_number": {
+            "description_en": "The part number",
+            "description_zh": "段编号",
+            "example": "1",
+            "format": "int32",
+            "required": true,
+            "title": "段编号",
+            "type": "integer"
+          },
+          "part_size": {
+            "description_en": "This field is deprecated. Do not use it",
+            "description_zh": "此字段已废弃，请勿使用",
+            "example": "1024",
+            "format": "int64",
+            "title": "分段大小",
+            "type": "integer"
+          },
+          "upload_form_info": {
+            "$ref": "#/components/schemas/UploadFormInfo",
+            "description_en": "The form upload information",
+            "description_zh": "表单上传信息",
+            "title": "表单上传信息"
+          },
+          "upload_url": {
+            "description_en": "The upload URL. The URL is valid for 15 minutes by default. If the URL expires, you must call the GetUploadUrl operation again to obtain a new one. If you enable the intelligent data domain feature, the value of internal_upload_url is adaptively returned in this field based on the request",
+            "description_zh": "上传地址，默认有效时间15分钟，如果链接超时，需要重新调用GetUploadUrl进行获取\n（开启智能数据域名后，根据请求会自适应返回internal_upload_url值在该字段内）",
+            "example": "https://data.aliyunpds.com/xxx/xxx?Expires=xxx&OSSAccessKeyId=xxx&Signature=xxx&partNumber=1&uploadId=0CC175B9C0F1B6A831C399E269772661",
+            "required": true,
+            "title": "上传地址",
+            "type": "string"
+          }
+        },
+        "title": "分段信息",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Lists the parts that have been successfully uploaded for a specific multipart upload",
+  "description_zh": "列举已上传成功的多段",
+  "kebab_example": "aliyun pds list-uploaded-parts --part-number-marker 14112002 --limit 100 --upload-id 00166D06127B413BA1EC8ABB1144D101 --file-id 322fb07b975f4b0ae1b543fe8475eee4c19eb2b2 --drive-id 1 --share-id 7JQX1FswpQ8 --region cn-hangzhou",
+  "method": "POST",
+  "multi_version": false,
+  "name": "ListUploadedParts",
+  "operation": {
+    "action": "ListUploadedParts",
+    "api_style": "ROA",
+    "api_version": "2022-03-01",
+    "body_mapping": {
+      "drive_id": "drive_id",
+      "file_id": "file_id",
+      "limit": "limit",
+      "part_number_marker": "part_number_marker",
+      "share_id": "share_id",
+      "upload_id": "upload_id"
+    },
+    "content_type": "application/json",
+    "method": "POST",
+    "protocol": "HTTPS",
+    "req_body_type": "json",
+    "url": "/v2/file/list_uploaded_parts"
+  },
+  "parameters": [
+    {
+      "example": "1",
+      "help_en": "The drive ID. Required for all scenarios except uploads from a share",
+      "help_zh": "空间 id，除根据分享链接上传之外的其他场景，必填",
+      "location": "body",
+      "name": "drive_id",
+      "options": [
+        "--drive-id"
+      ],
+      "param_style": "json",
+      "raw_name": "drive_id",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "322fb07b975f4b0ae1b543fe8475eee4c19eb2b2",
+      "help_en": "The file ID",
+      "help_zh": "文件id",
+      "location": "body",
+      "name": "file_id",
+      "options": [
+        "--file-id"
+      ],
+      "param_style": "json",
+      "raw_name": "file_id",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "100",
+      "help_en": "The maximum number of parts to return. The value cannot exceed 100. The default is 100",
+      "help_zh": "限定此次返回资源的数量。如果不设定，默认返回100，最大不能超过100",
+      "location": "body",
+      "name": "limit",
+      "options": [
+        "--limit"
+      ],
+      "param_style": "json",
+      "raw_name": "limit",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "NWQ1Yjk4YmI1ZDRlYmU1Y2E0YWE0NmJhYWJmODBhNDQ2NzhlMTRhMg",
+      "help_en": "The marker that specifies the position after which to start listing parts. Obtain this value from the `next_part_number_marker` field in a previous response. If this parameter is omitted, the listing starts from the first part",
+      "help_zh": "设定结果从marker之后按字母排序的第一个开始返回。如果不设定，则从头开始返回数据。 默认值：无",
+      "location": "body",
+      "name": "part_number_marker",
+      "options": [
+        "--part-number-marker"
+      ],
+      "param_style": "json",
+      "raw_name": "part_number_marker",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "7JQX1FswpQ8",
+      "help_en": "The share ID. Required when uploading from a share",
+      "help_zh": "分享 id，当根据分享链接上传时必填",
+      "location": "body",
+      "name": "share_id",
+      "options": [
+        "--share-id"
+      ],
+      "param_style": "json",
+      "raw_name": "share_id",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "00166D06127B413BA1EC8ABB1144D101",
+      "help_en": "The upload ID",
+      "help_zh": "上传id",
+      "location": "body",
+      "name": "upload_id",
+      "options": [
+        "--upload-id"
+      ],
+      "param_style": "json",
+      "raw_name": "upload_id",
+      "required": true,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/v2/file/list_uploaded_parts",
+  "product_code": "pds",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "The response object",
+        "description_zh": "Schema of Response",
+        "properties": {
+          "file_id": {
+            "description_en": "The file ID",
+            "description_zh": "文件id",
+            "example": "322fb07b975f4b0ae1b543fe8475eee4c19eb2b2",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          },
+          "next_part_number_marker": {
+            "description_en": "The marker for the next page of results. This value is empty when there are no more results to return",
+            "description_zh": "下一页起始资源标识符, 最后一页该值为空",
+            "example": "NWQ1Yjk4YmI1ZDRlYmU1Y2E0YWE0NmJhYWJmODBhNDQ2NzhlMTRhMg",
+            "type": "string"
+          },
+          "parallel_upload": {
+            "description_en": "Indicates whether parallel upload is enabled",
+            "description_zh": "是否并行上传",
+            "example": "false",
+            "type": "boolean"
+          },
+          "upload_id": {
+            "description_en": "The upload ID",
+            "description_zh": "上传id",
+            "example": "00166D06127B413BA1EC8ABB1144D101",
+            "type": "string"
+          },
+          "uploaded_parts": {
+            "description_en": "A list of uploaded parts",
+            "description_zh": "分段信息列表",
+            "items": {
+              "$ref": "#/components/schemas/UploadPartInfo",
+              "description_en": "Information about a single part",
+              "description_zh": "分段信息"
+            },
+            "type": "array"
+          }
+        },
+        "title_en": "Schema of Response",
+        "title_zh": "Schema of Response",
+        "type": "object"
+      }
+    }
+  },
+  "tags": [
+    "api"
+  ],
+  "v1_body_parameters": [
+    {
+      "help_en": "The request body",
+      "help_zh": "请求体参数",
+      "name": "body",
+      "param_style": "json",
+      "position": "body",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "v1_parameters": [
+    {
+      "help_en": "The request body",
+      "help_zh": "请求体参数",
+      "name": "body",
+      "param_style": "json",
+      "position": "body",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "name": "domain_id",
+      "position": "host",
+      "required": true,
+      "type": "string"
+    }
+  ]
+}
