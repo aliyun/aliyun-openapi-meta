@@ -1,0 +1,542 @@
+{
+  "cmd_full_name": "cms list-notify-policies",
+  "cmd_name": "list-notify-policies",
+  "components": {
+    "schemas": {
+      "FilterSetting": {
+        "description_en": "The filter configuration",
+        "description_zh": "过滤配置",
+        "properties": {
+          "conditions": {
+            "backendName": "conditions",
+            "description_en": "The subscription conditions",
+            "description_zh": "订阅条件",
+            "items": {
+              "description_en": "The individual condition",
+              "description_zh": "单个条件",
+              "properties": {
+                "field": {
+                  "backendName": "field",
+                  "description_en": "The JSON path of the event field. Dot-notation nesting is supported",
+                  "description_zh": "事件字段的 JSON 路径，支持点号嵌套",
+                  "example": "labels.alertname\t",
+                  "title": "字段",
+                  "type": "string"
+                },
+                "op": {
+                  "backendName": "op",
+                  "description_en": "The comparison operator",
+                  "description_zh": "比较符",
+                  "example": "EQ",
+                  "title": "比较符",
+                  "type": "string"
+                },
+                "value": {
+                  "backendName": "value",
+                  "description_en": "The matching value. Separate multiple values with commas when using IN or NOT_IN",
+                  "description_zh": "匹配值，IN/NOT_IN 时逗号分隔多个值",
+                  "example": "CRITICAL",
+                  "title": "值",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "maxItems": 10,
+            "title": "订阅条件",
+            "type": "array"
+          },
+          "expression": {
+            "backendName": "expression",
+            "description_en": "Use either expression or relation. If expression is not empty, it takes precedence and relation is ignored. If expression is empty or not specified, relation (AND or OR) is used to perform a simple AND/OR operation on all conditions. Condition numbers correspond to the indexes of the conditions array (starting from 1). Each condition evaluates whether a single event field matches by using field (the event field path, which supports dot-notation nesting such as resource.tags.pod), op (the operator, such as CONTAIN, EQ, or IN), and value (the matching value)",
+            "description_zh": "expression 和 relation 二选一使用。如果 expression 非空，它优先生效，relation 被忽略；如果 expression 为空或不传，则用 relation（AND 或 OR）对所有条件做简单全量与/或运算。条件编号对应 conditions 数组的下标（从 1 开始），每个条件通过 field（事件字段路径，支持点号嵌套如 resource.tags.pod）、op（操作符，如 CONTAIN、EQ、IN 等）、value（匹配值）来评估单个事件字段是否匹配",
+            "example": "1 and 2 or 3",
+            "title": "表达式",
+            "type": "string"
+          },
+          "relation": {
+            "backendName": "relation",
+            "description_en": "The logical relationship between conditions. This parameter takes effect when expression is empty",
+            "description_zh": "条件间逻辑关系。expression 为空时生效",
+            "example": "AND",
+            "title": "条件间关系",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "NotifyPolicySummary": {
+        "description_en": "The lightweight view returned by ListNotifyPolicies, which contains only scalar fields and a notifyStrategy snapshot",
+        "description_zh": "ListNotifyPolicies 返回的轻量视图，仅含标量字段 + notifyStrategy 快照",
+        "properties": {
+          "createTime": {
+            "backendName": "createTime",
+            "description_en": "The creation time, represented as a UNIX millisecond timestamp string",
+            "description_zh": "创建时间（Unix 毫秒时间戳字符串）",
+            "example": "1700000000000",
+            "title": "创建时间（Unix 毫秒时间戳字符串）",
+            "type": "string"
+          },
+          "description": {
+            "backendName": "description",
+            "description_en": "The description of the notification policy",
+            "description_zh": "通知策略的描述信息",
+            "example": "用于测试的通知策略",
+            "type": "string"
+          },
+          "enabled": {
+            "backendName": "enabled",
+            "description_en": "Indicates whether the notification policy is enabled",
+            "description_zh": "是否启用",
+            "example": "true",
+            "title": "是否启用",
+            "type": "boolean"
+          },
+          "name": {
+            "backendName": "name",
+            "description_en": "The Policy Name of the notification policy",
+            "description_zh": "通知策略名称",
+            "example": "示例通知策略",
+            "type": "string"
+          },
+          "notifyStrategy": {
+            "$ref": "#/components/schemas/NotifyStrategyDetail",
+            "backendName": "notifyStrategy",
+            "description_en": "The configuration details of the notification policy",
+            "description_zh": "通知策略配置详情"
+          },
+          "updateTime": {
+            "backendName": "updateTime",
+            "description_en": "The update time, represented as a UNIX millisecond timestamp string",
+            "description_zh": "更新时间（Unix 毫秒时间戳字符串）",
+            "example": "1700000000000",
+            "title": "更新时间（Unix 毫秒时间戳字符串）",
+            "type": "string"
+          },
+          "userId": {
+            "backendName": "userId",
+            "description_en": "The Alibaba Cloud account UID",
+            "description_zh": "阿里云账号 UID",
+            "example": "1234567890",
+            "title": "阿里云账号 UID",
+            "type": "string"
+          },
+          "uuid": {
+            "backendName": "uuid",
+            "description_en": "The unique identifier of the notification policy",
+            "description_zh": "通知策略的唯一标识",
+            "example": "ns-uuid-001",
+            "type": "string"
+          },
+          "version": {
+            "backendName": "version",
+            "description_en": "The version number of the notification policy",
+            "description_zh": "通知策略版本号",
+            "example": "1",
+            "format": "int32",
+            "type": "integer"
+          },
+          "workspace": {
+            "backendName": "workspace",
+            "description_en": "The workspace identifier",
+            "description_zh": "工作空间标识",
+            "example": "default",
+            "type": "string"
+          }
+        },
+        "title": "通知策略列表项",
+        "type": "object"
+      },
+      "NotifyStrategyDetail": {
+        "description_en": "The notification policy details (read)",
+        "description_zh": "通知策略详情（读）",
+        "properties": {
+          "customTemplateEntries": {
+            "backendName": "customTemplateEntries",
+            "description_en": "The list of custom notification templates",
+            "description_zh": "自定义通知模板列表",
+            "example": "[]",
+            "items": {
+              "properties": {
+                "templateUuid": {
+                  "backendName": "templateUuid",
+                  "description_en": "The UUID of the notification template",
+                  "description_zh": "通知模板 UUID",
+                  "example": "template-uuid-xxx",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "title": "自定义通知模板",
+            "type": "array"
+          },
+          "description": {
+            "backendName": "description",
+            "description_en": "The description of the notification policy",
+            "description_zh": "通知策略描述",
+            "example": "生产环境告警通知策略",
+            "title": "描述",
+            "type": "string"
+          },
+          "groupingSetting": {
+            "backendName": "groupingSetting",
+            "description_en": "The grouping and merging settings",
+            "description_zh": "分组合并设置",
+            "properties": {
+              "groupingKeys": {
+                "backendName": "groupingKeys",
+                "description_en": "The event fields by which events are grouped for noise reduction. Events in the same group are merged into a single notification. An empty array indicates no grouping",
+                "description_zh": "按哪些事件字段分组合并，同组合并为一条通知。空数组表示不分组",
+                "example": "[\"alertname\"]",
+                "items": {
+                  "description_en": "The event field name. Events with the same value for this field are merged into a single notification",
+                  "description_zh": "事件字段名，同值事件会合并为一条通知",
+                  "example": "alertname",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "periodMin": {
+                "backendName": "periodMin",
+                "description_en": "The check period in minutes",
+                "description_zh": "检查周期分钟数",
+                "example": "0",
+                "format": "int32",
+                "type": "integer"
+              },
+              "silenceSec": {
+                "backendName": "silenceSec",
+                "description_en": "The silence duration in seconds",
+                "description_zh": "沉默秒数",
+                "example": "0",
+                "format": "int32",
+                "type": "integer"
+              },
+              "times": {
+                "backendName": "times",
+                "description_en": "The number of trigger times",
+                "description_zh": "触发次数",
+                "example": "0",
+                "format": "int32",
+                "type": "integer"
+              }
+            },
+            "title": "合并设置",
+            "type": "object"
+          },
+          "ignoreRestoredNotification": {
+            "backendName": "ignoreRestoredNotification",
+            "description_en": "Specifies whether to ignore notifications for recovery events. A value of true indicates that recovery notifications are not sent",
+            "description_zh": "恢复事件是否忽略通知（true=不发送恢复通知）",
+            "example": "true",
+            "title": "恢复是否忽略通知",
+            "type": "boolean"
+          },
+          "routes": {
+            "backendName": "routes",
+            "description_en": "The list of notification channel routing settings",
+            "description_zh": "通知渠道路由设置列表",
+            "example": "[]",
+            "items": {
+              "properties": {
+                "channels": {
+                  "backendName": "channels",
+                  "description_en": "The list of notification channels",
+                  "description_zh": "通知渠道列表",
+                  "example": "[]",
+                  "items": {
+                    "properties": {
+                      "channelType": {
+                        "backendName": "channelType",
+                        "description_en": "The channel type. Valid values: DING, WEIXIN, FEISHU, SLACK, TEAMS, WEBHOOK, CONTACT, GROUP, DUTY, and DING_COOL_APP",
+                        "description_zh": "渠道类型，大写枚举 DING/WEIXIN/FEISHU/SLACK/TEAMS/WEBHOOK/CONTACT/GROUP/DUTY/DING_COOL_APP",
+                        "enum": [
+                          "DING",
+                          "WEIXIN",
+                          "FEISHU",
+                          "SLACK",
+                          "TEAMS",
+                          "CONTACT",
+                          "GROUP",
+                          "DUTY",
+                          "DING_COOL_APP"
+                        ],
+                        "example": "WEBHOOK",
+                        "title": "渠道类型",
+                        "type": "string"
+                      },
+                      "enabledSubChannels": {
+                        "backendName": "enabledSubChannels",
+                        "description_en": "The enabled sub-channels. Valid values: EMAIL, SMS, VOICE, DING, WEIXIN, FEISHU, and WEBHOOK",
+                        "description_zh": "子渠道大写 EMAIL/SMS/VOICE/DING/WEIXIN/FEISHU/WEBHOOK",
+                        "example": "[\"EMAIL\",\"SMS\"]",
+                        "items": {
+                          "description_en": "The sub-channel type. Valid values: EMAIL, SMS, VOICE, DING, WEIXIN, FEISHU, and WEBHOOK",
+                          "description_zh": "子渠道类型大写枚举，如 EMAIL/SMS/VOICE/DING/WEIXIN/FEISHU/WEBHOOK",
+                          "example": "EMAIL",
+                          "type": "string"
+                        },
+                        "type": "array"
+                      },
+                      "receivers": {
+                        "backendName": "receivers",
+                        "description_en": "The list of receiver identifiers",
+                        "description_zh": "接收方标识列表",
+                        "example": "[\"webhook-uuid-xxx\"]",
+                        "items": {
+                          "description_en": "The receiver identifier, such as a webhook UUID, robot UUID, or contact ID",
+                          "description_zh": "接收方标识，如 webhook uuid、robot uuid 或联系人 ID",
+                          "example": "webhook-uuid-xxx",
+                          "type": "string"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "digitalEmployeeName": {
+                  "backendName": "digitalEmployeeName",
+                  "description_en": "The digital employee name. This parameter is required when enableRca is set to true",
+                  "description_zh": "数字员工名，enableRca 为 true 时必填",
+                  "example": "数字员工名",
+                  "title": "数字员工名",
+                  "type": "string"
+                },
+                "effectTimeRange": {
+                  "backendName": "effectTimeRange",
+                  "description_en": "The effective time range",
+                  "description_zh": "生效时段",
+                  "properties": {
+                    "dayInWeek": {
+                      "backendName": "dayInWeek",
+                      "description_en": "The effective days of the week. Valid values: 0 to 6 (0 = Sunday, 6 = Saturday). The value 7 is not supported",
+                      "description_zh": "生效天，取值 0-6（0=周日，6=周六），不支持 7",
+                      "example": "[0,1,2,3,4,5,6]",
+                      "items": {
+                        "description_en": "The effective day of the week. Valid values: 0 to 6 (0 = Sunday, 6 = Saturday)",
+                        "description_zh": "生效天，取值 0-6（0=周日，6=周六）",
+                        "example": "0",
+                        "format": "int32",
+                        "type": "integer"
+                      },
+                      "type": "array"
+                    },
+                    "endTimeInMinute": {
+                      "backendName": "endTimeInMinute",
+                      "description_en": "The end time of the day in minutes. Valid values: 0 to 1439",
+                      "description_zh": "当天结束时间分钟数，0-1439",
+                      "example": "1439",
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "startTimeInMinute": {
+                      "backendName": "startTimeInMinute",
+                      "description_en": "The start time of the day in minutes. Valid values: 0 to 1438",
+                      "description_zh": "当天开始时间分钟数，0-1438",
+                      "example": "0",
+                      "format": "int32",
+                      "type": "integer"
+                    },
+                    "timeZone": {
+                      "backendName": "timeZone",
+                      "description_en": "The IANA time zone identifier",
+                      "description_zh": "IANA 时区标识",
+                      "example": "Asia/Shanghai",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "enableRca": {
+                  "backendName": "enableRca",
+                  "description_en": "Specifies whether to enable root cause analysis (RCA)",
+                  "description_zh": "是否启用 RCA 根因分析",
+                  "example": "false",
+                  "title": "是否启用 RCA",
+                  "type": "boolean"
+                },
+                "filterSetting": {
+                  "$ref": "#/components/schemas/FilterSetting",
+                  "backendName": "filterSetting",
+                  "description_en": "The route-level event filter conditions",
+                  "description_zh": "路由级事件过滤条件",
+                  "example": "{}"
+                }
+              },
+              "type": "object"
+            },
+            "title": "通知渠道路由设置",
+            "type": "array"
+          }
+        },
+        "title": "通知策略详情（读）",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Lists notify policies",
+  "description_zh": "List NotifyPolicies",
+  "kebab_example": "aliyun cms list-notify-policies --workspace default-cms-xxxx-cn-hangzhou --api-version 2024-03-30 --region cn-hangzhou",
+  "method": "GET",
+  "multi_version": true,
+  "name": "ListNotifyPolicies",
+  "operation": {
+    "action": "ListNotifyPolicies",
+    "api_style": "ROA",
+    "api_version": "2024-03-30",
+    "method": "GET",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "list",
+    "url": "/api/eventbase/notify-policies"
+  },
+  "parameters": [
+    {
+      "example": "default-cms-xxxx-cn-hangzhou",
+      "help_en": "The workspace ID. This parameter is used to isolate notify policy resources across different business spaces",
+      "help_zh": "工作空间 ID，用于隔离不同业务空间的通知策略资源",
+      "location": "query",
+      "name": "workspace",
+      "options": [
+        "--workspace"
+      ],
+      "raw_name": "workspace",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "10",
+      "help_en": "The maximum number of entries to return in this request",
+      "help_zh": "本次请求期望返回的最大记录条数",
+      "location": "query",
+      "name": "max_results",
+      "options": [
+        "--max-results"
+      ],
+      "raw_name": "maxResults",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "eyJjdXJzb3IiOjEwfQ==",
+      "help_en": "The pagination token. Leave this parameter empty for the first page. For subsequent pages, set this parameter to the nextToken value returned in the previous response",
+      "help_zh": "分页凭证。首页不填，后续页传入上一页返回的 nextToken",
+      "location": "query",
+      "name": "next_token",
+      "options": [
+        "--next-token"
+      ],
+      "raw_name": "nextToken",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "prod-alert",
+      "help_en": "The policy name used for fuzzy filtering",
+      "help_zh": "按策略名称模糊过滤",
+      "location": "query",
+      "name": "name",
+      "options": [
+        "--name"
+      ],
+      "raw_name": "name",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "createTime",
+      "help_en": "The field used for sorting. Valid values: createTime, updateTime, and name",
+      "help_zh": "排序字段，支持 createTime、updateTime、name 等",
+      "location": "query",
+      "name": "order_by",
+      "options": [
+        "--order-by"
+      ],
+      "raw_name": "orderBy",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "true",
+      "help_en": "Specifies whether to sort results in descending order. Valid values:\ntrue: descending order.\nfalse: ascending order",
+      "help_zh": "是否倒序。true 为倒序，false 为正序",
+      "location": "query",
+      "name": "order_desc",
+      "options": [
+        "--order-desc"
+      ],
+      "raw_name": "orderDesc",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/api/eventbase/notify-policies",
+  "product_code": "Cms",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "Schema of Response",
+        "description_zh": "Schema of Response",
+        "properties": {
+          "maxResults": {
+            "backendName": "maxResults",
+            "description_en": "The maximum number of entries returned in this request",
+            "description_zh": "本次请求所返回的最大记录条数",
+            "example": "10",
+            "format": "int32",
+            "title_en": "MaxResults本次请求所返回的最大记录条数",
+            "title_zh": "MaxResults本次请求所返回的最大记录条数",
+            "type": "integer"
+          },
+          "nextToken": {
+            "backendName": "nextToken",
+            "description_en": "The pagination token for the next page. This parameter is empty if no more data is available",
+            "description_zh": "下一页分页凭证，无更多数据时为空",
+            "example": "eyJjdXJzb3IiOjEwfQ==",
+            "type": "string"
+          },
+          "notifyPolicyList": {
+            "backendName": "dataList",
+            "description_en": "The list of notify policies. Each entry is of the NotifyPolicySummary type (lightweight view)",
+            "description_zh": "通知策略列表。单条类型为 NotifyPolicySummary（轻量视图）",
+            "example": "[{\"uuid\":\"np-12345678-1234-1234-1234-123456789012\",\"name\":\"prod-alert\",\"description\":\"生产环境告警策略\",\"enabled\":true,\"version\":1,\"workspace\":\"default-cms-xxxx-cn-hangzhou\",\"userId\":\"107640\",\"createTime\":\"1711792800000\",\"updateTime\":\"1711792800000\"}]",
+            "itemName": "数据节点",
+            "items": {
+              "$ref": "#/components/schemas/NotifyPolicySummary",
+              "description_en": "The notify policy summary element of the NotifyPolicySummary type",
+              "description_zh": "通知策略摘要元素，类型为 NotifyPolicySummary"
+            },
+            "type": "array"
+          },
+          "requestId": {
+            "backendName": "requestId",
+            "description_en": "The request ID. You can use this ID for troubleshooting and ticket submission",
+            "description_zh": "本次请求的唯一 ID，用于问题排查与工单定位",
+            "example": "0B9377D9-C56B-5C2E-A8A4-A01D6CC3F4B8",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          },
+          "totalCount": {
+            "backendName": "totalLong",
+            "description_en": "The total number of entries. The actual total is returned on the first page. A fixed value of -1 is returned on subsequent pages",
+            "description_zh": "首页返回真实总数，后续页固定返回 -1",
+            "example": "100",
+            "format": "int64",
+            "title_en": "TotalCount首页返回真实总数，后续页固定 -1",
+            "title_zh": "TotalCount首页返回真实总数，后续页固定 -1",
+            "type": "integer"
+          }
+        },
+        "title_en": "Schema of Response",
+        "title_zh": "Schema of Response",
+        "type": "object"
+      }
+    }
+  }
+}
