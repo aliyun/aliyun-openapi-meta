@@ -1,9 +1,9 @@
 {
-  "camel_example": "",
+  "camel_example": "aliyun eds-aic ResetAndroidInstancesInGroup --region cn-hangzhou --SettingResetType 1 --TargetDataDiskSize 10 --IgnoreParamValidation true --PromotionId 500033080110000 --SaleMode Instance --AutoPay true --AndroidInstanceIds.1 'acp-scaucydkl0000' --version 2023-09-30 --method POST --force",
   "cmd_full_name": "eds-aic reset-android-instances-in-group",
   "cmd_name": "reset-android-instances-in-group",
   "deprecated": false,
-  "description_en": "Resets the instance by reinstalling the operating system using its original image. Note: The reset operation will fail if the image that was used to create the Cloud Phone has since been deleted",
+  "description_en": "Resets cloud phone instances. A reset reinstalls the system using the image of the cloud phone. For example, the reset fails if the image used when the cloud phone was created has been deleted",
   "description_zh": "重置云手机实例。 重置是使用该云手机的镜像进行重装系统的过程，例如云手机创建时使用的镜像被删除将重置失败",
   "kebab_example": "aliyun eds-aic reset-android-instances-in-group --android-instance-ids acp-scaucydkl0000 --sale-mode Instance --setting-reset-type 1 --ignore-param-validation true --region cn-hangzhou",
   "method": "GET|POST",
@@ -24,7 +24,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "A list of instance IDs",
+      "help_en": "The list of instance IDs",
       "help_zh": "实例ID列表",
       "location": "query",
       "name": "android_instance_ids",
@@ -42,7 +42,7 @@
         "Node"
       ],
       "example": "Instance",
-      "help_en": "The sale mode. This parameter is deprecated",
+      "help_en": "[Deprecated] The sales mode. This parameter is deprecated",
       "help_zh": "售卖模式。该参数已废弃！",
       "location": "query",
       "name": "sale_mode",
@@ -55,7 +55,7 @@
     },
     {
       "example": "1",
-      "help_en": "<props=\"china\">Specifies whether to retain the property settings when you reset the instances. By default, the property settings are not retained. This parameter applies only to cloud phone matrix instances. Run the wya dump config command to view the details of the retained properties.</props><props=\"intl\">This parameter is not supported on the international site (alibabacloud.com).</props>",
+      "help_en": "<props=\"china\">Specifies whether to retain attribute settings during the reset. If this parameter is not specified, attribute configurations are not retained by default. This parameter takes effect only for cloud phone matrix instances. Run the wya dump config command to view the details of retained attributes.</props>\n<props=\"intl\">This parameter is not supported on the international site.</props>",
       "help_zh": "<props=\"china\">重置是否保留属性设置，不传则默认不保留属性配置，该参数仅针对云手机矩阵实例生效。可执行wya dump config命令查看保留的属性详情。</props>\n<props=\"intl\">国际站不支持此参数</props>",
       "location": "query",
       "name": "setting_reset_type",
@@ -77,6 +77,45 @@
       "raw_name": "IgnoreParamValidation",
       "required": false,
       "type": "bool"
+    },
+    {
+      "example": "10",
+      "help_en": "Specify this parameter when you need to reduce storage while resetting instances in a cloud phone matrix. This feature is currently available through a whitelist. This parameter applies only to instances in a cloud phone matrix",
+      "help_zh": "仅针对云手机矩阵下的实例，重置的同时需要进行存储缩容时，请填写该参数，目前该功能白名单开放",
+      "location": "query",
+      "name": "target_data_disk_size",
+      "options": [
+        "--target-data-disk-size"
+      ],
+      "raw_name": "TargetDataDiskSize",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "true",
+      "help_en": "Specifies whether to enable automatic payment. Default value: false",
+      "help_zh": "是否自动支付。默认为false",
+      "location": "query",
+      "name": "auto_pay",
+      "options": [
+        "--auto-pay"
+      ],
+      "raw_name": "AutoPay",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "example": "50003308011****",
+      "help_en": "The promotion ID",
+      "help_zh": "优惠活动ID",
+      "location": "query",
+      "name": "promotion_id",
+      "options": [
+        "--promotion-id"
+      ],
+      "raw_name": "PromotionId",
+      "required": false,
+      "type": "string"
     }
   ],
   "pathPattern": "",
@@ -88,6 +127,15 @@
         "description_en": "The response parameters",
         "description_zh": "返回参数",
         "properties": {
+          "OrderId": {
+            "backendName": "data.orderId",
+            "description_en": "The order ID for storage reduction. This parameter is returned only when you reduce storage while resetting instances in a cloud phone matrix. It is not returned in other scenarios",
+            "description_zh": "针对云手机矩阵下的实例，重置的同时需要进行存储缩容时，会返回存储缩容的订单Id，其他场景不会返回",
+            "example": "22365781890****",
+            "title_en": "针对云手机矩阵下的实例，重置的同时需要进行存储缩容时，会返回存储缩容的订单Id，其他场景不会返回。",
+            "title_zh": "针对云手机矩阵下的实例，重置的同时需要进行存储缩容时，会返回存储缩容的订单Id，其他场景不会返回。",
+            "type": "string"
+          },
           "RequestId": {
             "backendName": "requestId",
             "description_en": "The request ID",
@@ -99,14 +147,22 @@
           },
           "Tasks": {
             "backendName": "data",
+            "description_en": "The task information",
+            "description_zh": "任务信息",
             "properties": {
               "ChildTasks": {
                 "backendName": "subTasks",
+                "description_en": "The child tasks",
+                "description_zh": "子任务",
                 "itemName": "childTaskId",
                 "items": {
+                  "description_en": "The child task object",
+                  "description_zh": "子任务对象",
                   "properties": {
                     "InstanceId": {
                       "backendName": "instanceId",
+                      "description_en": "The instance ID",
+                      "description_zh": "实例ID",
                       "example": "acp-xxxx",
                       "title_en": "实例ID",
                       "title_zh": "实例ID",
@@ -114,6 +170,8 @@
                     },
                     "TaskId": {
                       "backendName": "taskId",
+                      "description_en": "The child task ID",
+                      "description_zh": "子任务ID",
                       "example": "t-xxxx",
                       "title_en": "子任务ID",
                       "title_zh": "子任务ID",
@@ -130,6 +188,8 @@
               },
               "ParentTaskId": {
                 "backendName": "parentTaskId",
+                "description_en": "The parent task ID",
+                "description_zh": "父任务ID",
                 "example": "t-xxxx",
                 "title_en": "父任务ID",
                 "title_zh": "父任务ID",
