@@ -3,7 +3,7 @@
   "cmd_full_name": "dataworks-public list-task-instances",
   "cmd_name": "list-task-instances",
   "deprecated": false,
-  "description_en": "Queries a list of instances. You can also specify filter conditions to query specific instances",
+  "description_en": "Lists node instances by paging and supports filtered query by conditions",
   "description_zh": "分页获取任务实例列表，也可以通过条件进行筛选查询",
   "kebab_example": "aliyun dataworks-public list-task-instances --project-id 100 --bizdate 1710239005403 --api-version 2024-05-18 --region cn-hangzhou",
   "method": "POST",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "100\n",
-      "help_en": "The DataWorks workspace ID",
+      "help_en": "The project ID",
       "help_zh": "项目ID",
       "location": "formData",
       "name": "project_id",
@@ -37,7 +37,7 @@
     },
     {
       "example": "1710239005403",
-      "help_en": "The data timestamp. The value of this parameter is 00:00:00 of the day before the scheduling time of the instance. The value is a UNIX timestamp. Unit: milliseconds. Example: 1743350400000",
+      "help_en": "The business date. This is typically 00:00:00 of the day before the scheduled time of the periodic instance. The value is a millisecond-level timestamp, such as 1743350400000",
       "help_zh": "业务日期。一般是周期实例定时时间的前一天的0点0分0秒，格式为毫秒级时间戳，如1743350400000",
       "location": "formData",
       "name": "bizdate",
@@ -50,7 +50,7 @@
     },
     {
       "example": "1234",
-      "help_en": "The ID of the task for which the instance is generated",
+      "help_en": "The ID of the corresponding node",
       "help_zh": "对应任务的ID",
       "location": "formData",
       "name": "task_id",
@@ -65,7 +65,7 @@
       "element": {
         "type": "int"
       },
-      "help_en": "The IDs of the tasks. You can query multiple instances at a time by task ID",
+      "help_en": "The list of node IDs. You can use this parameter to query instances of multiple nodes in a batch",
       "help_zh": "对应任务的ID列表，可根据任务Id批量查询任务实例",
       "location": "formData",
       "name": "task_ids",
@@ -79,7 +79,7 @@
     },
     {
       "example": "SQL node",
-      "help_en": "The name of the task. Fuzzy match is supported",
+      "help_en": "The name of the corresponding node. Fuzzy match is supported",
       "help_zh": "对应任务的名称，支持模糊查询",
       "location": "formData",
       "name": "task_name",
@@ -92,7 +92,7 @@
     },
     {
       "example": "1000",
-      "help_en": "The account ID of the task owner",
+      "help_en": "The account ID of the node owner",
       "help_zh": "任务的责任人的账号ID",
       "location": "formData",
       "name": "owner",
@@ -105,7 +105,7 @@
     },
     {
       "example": "ODPS_SQL",
-      "help_en": "The type of the task for which the instance is generated",
+      "help_en": "The node type. For the TaskType values of each node, see https://help.aliyun.com/document_detail/600169.html",
       "help_zh": "任务类型。各节点的TaskType取值，请参见https://help.aliyun.com/document_detail/600169.html",
       "location": "formData",
       "name": "task_type",
@@ -118,7 +118,7 @@
     },
     {
       "example": "S_res_group_524258031846018_1684XXXXXXXXX\n",
-      "help_en": "The information about the resource group. Set this parameter to the identifier of a resource group for scheduling",
+      "help_en": "The schedule resource information. Specify the identifier of the schedule resource group",
       "help_zh": "资源组信息，这里请填入调度资源组标识符",
       "location": "formData",
       "name": "runtime_resource",
@@ -144,7 +144,7 @@
     },
     {
       "example": "1234",
-      "help_en": "The unified workflow instance ID. For all task instances under a specific data timestamp within a single trigger, this field has the same value",
+      "help_en": "The unified workflow instance ID. All instances within the same business date under a single trigger share the same value for this field",
       "help_zh": "统一工作流实例Id，某次触发下某业务日期内的所有任务实例的该字段值相等",
       "location": "formData",
       "name": "unified_workflow_instance_id",
@@ -165,7 +165,7 @@
         "TriggerWorkflow"
       ],
       "example": "Normal\n",
-      "help_en": "The type of the workflow instance. Valid values:\n\nSmokeTest: Testing\n\nManual: Manually triggered node\n\nSupplementData: Data backfill\n\nManualWorkflow: Manually triggered workflow\n\nNormal: Scheduled execution\n\nTriggerWorkflow: Triggered Workflow",
+      "help_en": "The type of the workflow instance to which the instance belongs. Valid values:\nSmokeTest: test.\nManual: manual node.\nSupplementData: data backfill.\nManualWorkflow: manual workflow.\nNormal: periodic scheduling.\nTriggerWorkflow: trigger-based workflow",
       "help_zh": "所属工作流实例的类型。\nSmokeTest：测试\nManual：手动任务\nSupplementData：补数据\nManualWorkflow：手动工作流\nNormal：周期调度\nTriggerWorkflow：触发式工作流",
       "location": "formData",
       "name": "workflow_instance_type",
@@ -178,7 +178,7 @@
     },
     {
       "example": "1234",
-      "help_en": "The workflow instance ID",
+      "help_en": "The ID of the workflow instance to which the instance belongs",
       "help_zh": "所属工作流实例的ID",
       "location": "formData",
       "name": "workflow_instance_id",
@@ -195,7 +195,7 @@
         "Dev"
       ],
       "example": "Prod",
-      "help_en": "The environment of the workspace. Valid values:\n\nProd: production environment\n\nDev: development environment",
+      "help_en": "The project environment. Valid values:\nProd: production.\nDev: development",
       "help_zh": "项目环境。\nProd：生产\nDev：开发",
       "location": "formData",
       "name": "project_env",
@@ -208,7 +208,7 @@
     },
     {
       "example": "1234",
-      "help_en": "The ID of the instance. The instance may be rerun. If the instance is rerun and you configure this parameter, the system returns the historical information of the instance, including the rerun information. You can use the RunNumber parameter to distinguish each entry in the historical information",
+      "help_en": "The instance ID. If an instance has been rerun, specifying this parameter returns the historical information including reruns. You can use RunNumber to distinguish each historical record",
       "help_zh": "任务实例ID。任务实例存在重跑的情况，假如设置该参数，则返回包含重跑的历史信息，通过RunNumber区分每个历史信息",
       "location": "formData",
       "name": "id",
@@ -223,7 +223,7 @@
       "element": {
         "type": "int"
       },
-      "help_en": "The IDs of the instances. You can query multiple instances at a time by instance ID",
+      "help_en": "The list of instance IDs. You can use this parameter to query multiple instances in a batch",
       "help_zh": "任务实例ID列表，可根据任务实例Id批量查询多个任务实例信息",
       "location": "formData",
       "name": "ids",
@@ -241,7 +241,7 @@
         "Manual"
       ],
       "example": "Normal\n",
-      "help_en": "The trigger type. Valid values:\n\nScheduler: scheduling cycle-based trigger\n\nManual: manual trigger",
+      "help_en": "The trigger type. Valid values:\nScheduler: triggered by periodic scheduling.\nManual: manually triggered",
       "help_zh": "触发方式类型。\nScheduler：周期调度触发\nManual：手动触发",
       "location": "formData",
       "name": "trigger_type",
@@ -259,7 +259,7 @@
         "Pause"
       ],
       "example": "Normal",
-      "help_en": "The running mode of the instance after it is triggered. This parameter takes effect only if the TriggerType parameter is set to Scheduler. Valid values:\n\nPause\n\nSkip\n\nNormal",
+      "help_en": "The run mode at the time of triggering. This parameter takes effect only when TriggerType is set to Scheduler. Valid values:\nPause: paused.\nSkip: dry run.\nNormal: normal run",
       "help_zh": "触发时的运行模式，TriggerType=Scheduler时生效。\nPause：暂停\nSkip：空跑\nNormal：正常运行",
       "location": "formData",
       "name": "trigger_recurrence",
@@ -272,7 +272,7 @@
     },
     {
       "example": "Id Desc",
-      "help_en": "The field used for sorting. Fields such as TriggerTime and StartedTime are supported. The value of this parameter is in the Sort field + Sort by (Desc/Asc) format. By default, results are sorted in ascending order. Valid values:\n\n`TriggerTime (Desc/Asc)`\n\n`StartedTime (Desc/Asc)`\n\n`FinishedTime (Desc/Asc)`\n\n`CreateTime (Desc/Asc)`\n\n`Id (Desc/Asc)`\n\n  Default value: `Id Desc`",
+      "help_en": "The sort field. Supports fields such as scheduled time and start time. The format is \"sort field + sort order (Desc/Asc)\". Asc can be omitted. Valid values:\n\n`TriggerTime (Desc/Asc)`\n\n`StartedTime (Desc/Asc)`\n\n`FinishedTime (Desc/Asc)`\n\n`CreateTime (Desc/Asc)`\n\n`Id (Desc/Asc)`\n\n  Default value: `Id Desc`",
       "help_zh": "排序字段。支持定时时间、开始时间等字段，格式为\"排序字段+排序方式(Desc/Asc)\"（Asc可以缺省）。排序字段的枚举值如下：\n\n`TriggerTime (Desc/Asc)`\n\n`StartedTime (Desc/Asc)`\n\n`FinishedTime (Desc/Asc)`\n\n`CreateTime (Desc/Asc)`\n\n`Id (Desc/Asc)`\n\n  默认值：`Id Desc`",
       "location": "formData",
       "name": "sort_by",
@@ -285,7 +285,7 @@
     },
     {
       "example": "10",
-      "help_en": "The number of entries per page. Default value: 10",
+      "help_en": "The number of entries per page. Default value: 10. Maximum value: 500",
       "help_zh": "每页的条目数，默认为10，最大为500",
       "location": "formData",
       "name": "page_size",
@@ -298,7 +298,7 @@
     },
     {
       "example": "1",
-      "help_en": "The page number. Pages start from page 1. Default value: 1",
+      "help_en": "The page number. Pages start from 1. Default value: 1",
       "help_zh": "页码，从1开始，默认为1",
       "location": "formData",
       "name": "page_number",
@@ -319,7 +319,7 @@
         "WaitResource"
       ],
       "example": "Success",
-      "help_en": "The status of the task instance.\n\n`NotRun`: Not started\n\n`Running`\n\n`Failure`\n\n`Success`\n\n`WaitTime`: Awaiting scheduled time\n\n`WaitResource`: Awaiting resources",
+      "help_en": "The status of the instance. Valid values:\n`NotRun`: not run.\n`Running`: running.\n`Failure`: failed.\n`Success`: succeeded.\n`WaitTime`: waiting for the scheduled time.\n`WaitResource`: waiting for resources",
       "help_zh": "任务实例的状态：\n`NotRun`：未运行\n`Running`：运行中\n`Failure`：运行失败\n`Success`：运行成功\n`WaitTime`：等待时间\n`WaitResource`：等待资源",
       "location": "formData",
       "name": "status",
@@ -332,7 +332,7 @@
     },
     {
       "example": "{\n    \"startedTimeStart\": \"1763481600000\",\n    \"startedTimeEnd\": \"1763481600000\",\n    \"finishedTimeStart\": \"1763481600000\",\n    \"finishedTimeEnd\": \"1763481600000\",\n    \"createTimeStart\": \"1763481600000\",\n    \"createTimeEnd\": \"1763481600000\"\n}\n",
-      "help_en": "The filter. It is in JSON format, and multiple filter conditions are combined with a logical AND. Currently supported fields include: `startedTimeStart`, `startedTimeEnd`, `finishedTimeStart`, `finishedTimeEnd`, `createTimeStart`, `createTimeEnd`",
+      "help_en": "The filter. The value is in JSON format. Multiple filter conditions are combined with AND logic. Currently supported fields: `startedTimeStart, startedTimeEnd, finishedTimeStart, finishedTimeEnd, createTimeStart, createTimeEnd`",
       "help_zh": "过滤器。JSON格式，多个过滤条件之间是\"且\"的关系。目前支持的字段有：`startedTimeStart, startedTimeEnd, finishedTimeStart, finishedTimeEnd, createTimeStart, createTimeEnd`",
       "location": "formData",
       "name": "filter",
@@ -353,7 +353,7 @@
         "properties": {
           "PagingInfo": {
             "backendName": "data",
-            "description_en": "Pagination information",
+            "description_en": "The pagination information",
             "description_zh": "分页信息",
             "properties": {
               "PageNumber": {
@@ -389,7 +389,7 @@
                     },
                     "Bizdate": {
                       "backendName": "bizdate",
-                      "description_en": "The data timestamp",
+                      "description_en": "The business date.\n\nThe value is a 13-digit number, such as `1710239005403`",
                       "description_zh": "业务日期。\n\n格式为 13 位数字，例如 `1710239005403`",
                       "example": "1710239005403\n",
                       "format": "int64",
@@ -397,7 +397,7 @@
                     },
                     "CreateTime": {
                       "backendName": "createTime",
-                      "description_en": "The creation time",
+                      "description_en": "The creation time.\n\nThe value is a 13-digit number, such as `1710239005403`",
                       "description_zh": "创建时间。\n\n格式为 13 位数字，例如 `1710239005403`",
                       "example": "1710239005403\n",
                       "format": "int64",
@@ -405,14 +405,14 @@
                     },
                     "CreateUser": {
                       "backendName": "createUser",
-                      "description_en": "The account ID of the user who creates the instance",
+                      "description_en": "The account ID of the user who created the instance",
                       "description_zh": "创建用户的账号ID",
                       "example": "1000",
                       "type": "string"
                     },
                     "DataSource": {
                       "backendName": "dataSource",
-                      "description_en": "The information about the associated data source",
+                      "description_en": "The data source information associated with the instance",
                       "description_zh": "实例关联数据源信息",
                       "properties": {
                         "Name": {
@@ -434,7 +434,7 @@
                     },
                     "FinishedTime": {
                       "backendName": "finishedTime",
-                      "description_en": "The time when the instance finished running",
+                      "description_en": "The time when the instance finished running.\n\nThe value is a 13-digit number, such as `1710239005403`",
                       "description_zh": "完成时间。\n\n格式为 13 位数字，例如 `1710239005403`",
                       "example": "1710239005403\n",
                       "format": "int64",
@@ -442,7 +442,7 @@
                     },
                     "Id": {
                       "backendName": "id",
-                      "description_en": "The instance ID",
+                      "description_en": "The unique identifier of the task instance",
                       "description_zh": "任务实例的唯一标识符",
                       "example": "1234\n",
                       "format": "int64",
@@ -450,7 +450,7 @@
                     },
                     "ModifyTime": {
                       "backendName": "modifyTime",
-                      "description_en": "The modification time",
+                      "description_en": "The modification time.\n\nThe value is a 13-digit number, such as `1710239005403`",
                       "description_zh": "修改时间。\n\n格式为 13 位数字，例如 `1710239005403`",
                       "example": "1710239005403\n",
                       "format": "int64",
@@ -458,21 +458,30 @@
                     },
                     "ModifyUser": {
                       "backendName": "modifyUser",
-                      "description_en": "The account ID of the user who modifies the instance",
+                      "description_en": "The account ID of the user who last modified the instance",
                       "description_zh": "修改用户的账号ID",
                       "example": "1000",
                       "type": "string"
                     },
+                    "OperationType": {
+                      "backendName": "operationType",
+                      "description_en": "The type of the most recent operation on the instance",
+                      "description_zh": "实例最近一次操作的类型",
+                      "example": "TriggerDqc",
+                      "title_en": "实例最近一次操作的类型",
+                      "title_zh": "实例最近一次操作的类型",
+                      "type": "string"
+                    },
                     "Owner": {
                       "backendName": "owner",
-                      "description_en": "The account ID of the task owner",
+                      "description_en": "The account ID of the node owner",
                       "description_zh": "任务的责任人的账号ID",
                       "example": "1000",
                       "type": "string"
                     },
                     "PeriodNumber": {
                       "backendName": "periodNumber",
-                      "description_en": "The sequence number of the cycle. This parameter indicates the cycle of the task instance on the current day",
+                      "description_en": "The period number. Indicates which scheduling cycle of the day the instance belongs to",
                       "description_zh": "周期序号。表示任务实例处于当天的第几轮周期",
                       "example": "1",
                       "format": "int32",
@@ -480,7 +489,7 @@
                     },
                     "Priority": {
                       "backendName": "priority",
-                      "description_en": "The priority of the task. Minimum value: 1. Maximum value: 8. A larger value indicates a higher priority. Default value: 1",
+                      "description_en": "The run priority of the node. Minimum value: 1. Maximum value: 8. A larger value indicates a higher priority. Default value: 1",
                       "description_zh": "任务运行优先级，最小值1，最大值8。取值越大，优先级越高。默认优先级为1",
                       "example": "1",
                       "format": "int32",
@@ -488,14 +497,14 @@
                     },
                     "ProjectEnv": {
                       "backendName": "projectEnv",
-                      "description_en": "The environment of the workspace.\n\nValid values:\n\nProd: production environment\n\nDev: development environment",
+                      "description_en": "The project environment. Valid values:\nProd: production.\nDev: development",
                       "description_zh": "项目环境。\nProd：生产\nDev：开发",
                       "example": "Prod",
                       "type": "string"
                     },
                     "ProjectId": {
                       "backendName": "projectId",
-                      "description_en": "The DataWorks workspace ID",
+                      "description_en": "The project ID",
                       "description_zh": "项目ID",
                       "example": "100",
                       "format": "int64",
@@ -503,7 +512,7 @@
                     },
                     "RerunMode": {
                       "backendName": "rerunMode",
-                      "description_en": "The rerun mode\n\nValid values:\n\nAllDenied: The task cannot be rerun regardless of whether the task is successfully run or fails to run.\n\nFailureAllowed: The task can be rerun only after it fails to run.\n\nAllAllowed: The task can be rerun regardless of whether the task is successfully run or fails to run",
+                      "description_en": "The rerun configuration for the node. Valid values:\nAllDenied: rerun is not allowed regardless of success or failure.\nFailureAllowed: rerun is allowed only upon failure.\nAllAllowed: rerun is allowed regardless of success or failure",
                       "description_zh": "任务是否允许重跑的配置。\nAllDenied：失败或成功都不可重跑\nFailureAllowed：只有失败可重跑\nAllAllowed：失败或成功均可重跑",
                       "example": "AllAllowed\n",
                       "title_en": "任务是否允许重跑的配置",
@@ -512,7 +521,7 @@
                     },
                     "RunNumber": {
                       "backendName": "runNumber",
-                      "description_en": "The number of times the task is run. By default, the value starts from 1",
+                      "description_en": "The current run number, starting from 1 by default",
                       "description_zh": "当前运行的次数，默认从1开始",
                       "example": "1",
                       "format": "int32",
@@ -520,19 +529,19 @@
                     },
                     "Runtime": {
                       "backendName": "runtime",
-                      "description_en": "The runtime information about the instance",
+                      "description_en": "The runtime information of the instance",
                       "description_zh": "实例运行时信息",
                       "properties": {
                         "Gateway": {
                           "backendName": "gateway",
-                          "description_en": "The host for running",
+                          "description_en": "The machine on which the instance runs",
                           "description_zh": "运行机器",
                           "example": "cn-shanghai.1.2\n",
                           "type": "string"
                         },
                         "ProcessId": {
                           "backendName": "processId",
-                          "description_en": "The instance run ID",
+                          "description_en": "The unique run ID",
                           "description_zh": "运行唯一ID",
                           "example": "T3_123\n",
                           "type": "string"
@@ -542,26 +551,26 @@
                     },
                     "RuntimeResource": {
                       "backendName": "runtimeResource",
-                      "description_en": "The information about the resource group with which the instance is associated",
+                      "description_en": "The resource group information associated with the instance",
                       "description_zh": "实例关联资源组信息",
                       "properties": {
                         "Cu": {
                           "backendName": "cu",
-                          "description_en": "The default number of CUs configured for task running",
+                          "description_en": "The compute unit (CU) consumption configured for the node",
                           "description_zh": "任务运行配置CU消耗",
                           "example": "0.25\n",
                           "type": "string"
                         },
                         "Image": {
                           "backendName": "image",
-                          "description_en": "The ID of the image configured for task running",
+                          "description_en": "The image ID configured for the node",
                           "description_zh": "任务运行配置的镜像ID",
                           "example": "i-xxxxxx\n",
                           "type": "string"
                         },
                         "ResourceGroupId": {
                           "backendName": "resourceGroupId",
-                          "description_en": "The ID of the resource group for scheduling configured for task running",
+                          "description_en": "The identifier of the schedule resource group configured for the node",
                           "description_zh": "任务运行配置的调度资源组标识符",
                           "example": "S_res_group_524258031846018_1684XXXXXXXXX",
                           "type": "string"
@@ -571,14 +580,14 @@
                     },
                     "ScriptParameters": {
                       "backendName": "scriptParameters",
-                      "description_en": "The script parameter list",
+                      "description_en": "The list of script parameters",
                       "description_zh": "脚本参数列表",
                       "example": "para1=val1 para2=val2",
                       "type": "string"
                     },
                     "StartedTime": {
                       "backendName": "startedTime",
-                      "description_en": "The time when the instance started to run",
+                      "description_en": "The time when the instance started running.\n\nThe value is a 13-digit number, such as `1710239005403`",
                       "description_zh": "开始运行时间。\n\n格式为 13 位数字，例如 `1710239005403`",
                       "example": "1710239005403\n",
                       "format": "int64",
@@ -586,7 +595,7 @@
                     },
                     "Status": {
                       "backendName": "status",
-                      "description_en": "The status of the instance.\n\nValid values:\n\nNotRun: The instance is not run.\n\nRunning: The instance is running.\n\nWaitTime: The instance is waiting for the scheduling time to arrive.\n\nCheckingCondition: Branch conditions are being checked for the instance.\n\nWaitResource: The instance is waiting for resources.\n\nFailure: The instance fails to be run.\n\nSuccess: The instance is successfully run.\n\nChecking: Data quality is being checked for the instance",
+                      "description_en": "The run status of the instance. Valid values:\nNotRun: not run.\nRunning: running.\nWaitTime: waiting for the TriggerTime to arrive.\nCheckingCondition: checking branch conditions.\nWaitResource: waiting for resources.\nFailure: execution failed.\nSuccess: execution succeeded.\nChecking: submitted for qualityrule check.\nWaitTrigger: waiting for an external trigger. Trigger-based nodes enter this status after the waiting period",
                       "description_zh": "实例运行状态。\nNotRun：未运行\nRunning：运行中\nWaitTime：等待TriggerTime到来\nCheckingCondition：分支条件检验\nWaitResource：等待资源\nFailure：执行失败\nSuccess：执行成功\nChecking：下发给数据质量校检\nWaitTrigger（等待外部触发，触发式节点会在等待时间后变成等待触发）",
                       "example": "Success",
                       "title_en": "实例运行状态",
@@ -595,7 +604,7 @@
                     },
                     "TaskId": {
                       "backendName": "taskId",
-                      "description_en": "The ID of the task for which the instance is generated",
+                      "description_en": "The ID of the corresponding node",
                       "description_zh": "对应任务的ID",
                       "example": "1234\n",
                       "format": "int64",
@@ -603,14 +612,14 @@
                     },
                     "TaskName": {
                       "backendName": "taskName",
-                      "description_en": "The name of the task for which the instance is generated",
+                      "description_en": "The name of the corresponding node",
                       "description_zh": "对应任务的名称",
                       "example": "SQL node\n",
                       "type": "string"
                     },
                     "TaskType": {
                       "backendName": "taskType",
-                      "description_en": "The type of the task for which the instance is generated",
+                      "description_en": "The type of the corresponding node",
                       "description_zh": "对应任务的类型",
                       "example": "ODPS_SQL\n",
                       "title_en": "任务类型",
@@ -619,7 +628,7 @@
                     },
                     "Timeout": {
                       "backendName": "timeout",
-                      "description_en": "The timeout period of task running. Unit: seconds.\n\nNote: The value of this parameter is rounded up by hour",
+                      "description_en": "The timeout period for node execution, in seconds.\n\nNote: The scheduling system rounds the configured value to the nearest hour",
                       "description_zh": "任务执行超时时间，单位为秒。\n\n注意：调度系统会对任务的设定值按小时取整",
                       "example": "3600",
                       "format": "int32",
@@ -627,14 +636,14 @@
                     },
                     "TriggerRecurrence": {
                       "backendName": "triggerRecurrence",
-                      "description_en": "The running mode of the instance after it is triggered. This parameter takes effect only if the TriggerType parameter is set to Scheduler.\n\nValid values:\n\nPause\n\nSkip\n\nNormal",
+                      "description_en": "The run mode at the time of triggering. This parameter takes effect when TriggerType is set to Scheduler. Valid values:\nPause: paused.\nSkip: dry run.\nNormal: normal run",
                       "description_zh": "触发时的运行模式。TriggerType=Scheduler时生效。\nPause：暂停\nSkip：空跑\nNormal：正常运行",
                       "example": "Normal\n",
                       "type": "string"
                     },
                     "TriggerTime": {
                       "backendName": "triggerTime",
-                      "description_en": "The scheduling time",
+                      "description_en": "The scheduled trigger time.\n\nThe value is a 13-digit number, such as `1710239005403`",
                       "description_zh": "定时触发时间。\n\n格式为 13 位数字，例如 `1710239005403`",
                       "example": "1710239005403\n",
                       "format": "int64",
@@ -642,14 +651,14 @@
                     },
                     "TriggerType": {
                       "backendName": "triggerType",
-                      "description_en": "The trigger type.\n\nValid values:\n\nScheduler: scheduling cycle-based trigger\n\nManual: manual trigger",
+                      "description_en": "The trigger type. Valid values:\nScheduler: triggered by a scheduling cycle.\nManual: manually triggered",
                       "description_zh": "触发方式类型。\nScheduler：调度周期触发\nManual：手动触发",
                       "example": "Scheduler\n",
                       "type": "string"
                     },
                     "UnifiedWorkflowInstanceId": {
                       "backendName": "unifiedWorkflowInstanceId",
-                      "description_en": "Unified workflow instance ID. All task instances triggered under the same data timestamp share the same value for this field",
+                      "description_en": "The unified workflow instance ID. All instances within the same business date under a single trigger share the same value for this field",
                       "description_zh": "统一工作流实例Id，某次触发下某业务日期内的所有任务实例的该字段值相等",
                       "example": "1234",
                       "format": "int64",
@@ -657,7 +666,7 @@
                     },
                     "WaitingResourceTime": {
                       "backendName": "waitingResourceTime",
-                      "description_en": "The timestamp for when it started waiting for resources",
+                      "description_en": "The time when the instance entered the waiting-for-resource state",
                       "description_zh": "进入等资源的时刻",
                       "example": "1710239005403",
                       "format": "int64",
@@ -665,7 +674,7 @@
                     },
                     "WaitingTriggerTime": {
                       "backendName": "waitingTriggerTime",
-                      "description_en": "The timestamp for when it started waiting for the scheduled time",
+                      "description_en": "The time when the instance entered the waiting-for-scheduled-time state.\n\nThe value is a 13-digit number, such as `1710239005403`",
                       "description_zh": "进入等定时时间的时刻。\n\n格式为 13 位数字，例如 `1710239005403`",
                       "example": "1710239005403",
                       "format": "int64",
@@ -681,7 +690,7 @@
                     },
                     "WorkflowInstanceId": {
                       "backendName": "workflowInstanceId",
-                      "description_en": "The workflow instance ID",
+                      "description_en": "The ID of the workflow instance to which the instance belongs",
                       "description_zh": "所属工作流实例的ID",
                       "example": "1234",
                       "format": "int64",
@@ -689,7 +698,7 @@
                     },
                     "WorkflowInstanceType": {
                       "backendName": "workflowInstanceType",
-                      "description_en": "The type of the workflow instance.\n\nValid values:\n\nSmokeTest\n\nSupplementData\n\nManual\n\nManualWorkflow\n\nNormal\n\nManualFlow",
+                      "description_en": "The type of the workflow instance to which the instance belongs. Valid values:\nSmokeTest: smoke test.\nSupplementData: data backfill.\nManual: manually triggered.\nManualWorkflow: manual workflow.\nNormal: periodic scheduling.\nManualFlow: manually triggered workflow",
                       "description_zh": "所属工作流实例的类型。\nSmokeTest：测试\nSupplementData：补数据\nManual：手动\nManualWorkflow：手动工作流\nNormal：周期调度\nManualFlow：手动执行的业务流程",
                       "example": "Normal",
                       "type": "string"
@@ -708,7 +717,7 @@
               },
               "TotalCount": {
                 "backendName": "totalCount",
-                "description_en": "The total number of entries returned",
+                "description_en": "The total number of records",
                 "description_zh": "数据总条数",
                 "example": "100",
                 "format": "int32",
@@ -719,7 +728,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID",
+            "description_en": "The request ID, which is used to locate logs and troubleshoot issues",
             "description_zh": "请求的ID，用于定位日志，排查问题",
             "example": "22C97E95-F023-56B5-8852-B1A77A17XXXX",
             "type": "string"
