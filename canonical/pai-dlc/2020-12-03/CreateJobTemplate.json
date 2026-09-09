@@ -3,7 +3,7 @@
   "cmd_full_name": "pai-dlc create-job-template",
   "cmd_name": "create-job-template",
   "deprecated": false,
-  "description_en": "Creates a job template",
+  "description_en": "Creates a task template",
   "description_zh": "创建任务模板",
   "kebab_example": "aliyun pai-dlc create-job-template --template-name job-template-example-17780470000 --description Template_description --workspace-id 15000005 --metadata '{}' --content WorkspaceId_:_15000005_,_JobType_:_PyTorchJob_,_UserCommand_:_echo_hello_,_JobSpecs_:_Type_:_Worker_,_PodCount_:1,_Image_:_dsw-registry-vpc.cn-hangzhou.cr.aliyuncs.com/pai/pytorch:2.8.0-gpu-py313-cu129-ubuntu22.04-3995b779-1764361782_,_EcsSpec_:_ecs.gn7i-c8g1.2xlarge_,_ResourceType_:_ECS_,_ResourcePaymentType_:_PostPaid_,_CredentialConfig_:_EnableCredentialInject_:false_,_Accessibility_:_PRIVATE_,_Settings_:_JobReservedMinutes_:0,_Tags_: --constraints JobSpecs_0_.Image_:_locked_,_UserCommand_:_locked_,_JobType_:_locked --region cn-hangzhou",
   "method": "POST",
@@ -32,7 +32,7 @@
   "parameters": [
     {
       "example": "{\\\"JobSpecs[0].Image\\\":\\\"locked\\\",\\\"UserCommand\\\":\\\"locked\\\",\\\"JobType\\\":\\\"locked\\\"}",
-      "help_en": "The field constraint rules. The key is a JSONPath expression, and the value is a constraint type: `locked` (cannot be overridden), `overridable` (can be overridden), or `required` (must be specified)",
+      "help_en": "The field constraint rules. The key is a JSONPath expression, and the value is the constraint type: locked (locked and cannot be overridden), overridable (can be overridden), or required (required)",
       "help_zh": "字段约束规则。Key 为 JSONPath 表达式，Value 为约束类型：locked（锁定不可覆盖）、overridable（可覆盖）、required（必填）",
       "location": "body",
       "name": "constraints",
@@ -49,7 +49,7 @@
     },
     {
       "example": "{\\\"WorkspaceId\\\":\\\"15****05\\\",\\\"JobType\\\":\\\"PyTorchJob\\\",\\\"UserCommand\\\":\\\"echo hello\\\",\\\"JobSpecs\\\":[{\\\"Type\\\":\\\"Worker\\\",\\\"PodCount\\\":1,\\\"Image\\\":\\\"dsw-registry-vpc.cn-hangzhou.cr.aliyuncs.com/pai/pytorch:2.8.0-gpu-py313-cu129-ubuntu22.04-3995b779-1764361782\\\",\\\"EcsSpec\\\":\\\"ecs.gn7i-c8g1.2xlarge\\\"}],\\\"ResourceType\\\":\\\"ECS\\\",\\\"_ResourcePaymentType\\\":\\\"PostPaid\\\",\\\"CredentialConfig\\\":{\\\"EnableCredentialInject\\\":false},\\\"Accessibility\\\":\\\"PRIVATE\\\",\\\"Settings\\\":{\\\"JobReservedMinutes\\\":0,\\\"Tags\\\":{}}}\t",
-      "help_en": "The configuration of the job template, which must be a JSON string containing the job configuration parameters",
+      "help_en": "The configuration content of the task template, which contains job configuration parameters. Pass the value in JSON string format",
       "help_zh": "任务模板的配置内容，包含作业配置参数，以 JSON String格式传入",
       "location": "body",
       "name": "content",
@@ -63,7 +63,7 @@
     },
     {
       "example": "Template description\t",
-      "help_en": "The description of the job template",
+      "help_en": "The description of the task template",
       "help_zh": "任务模板的描述信息",
       "location": "body",
       "name": "description",
@@ -77,7 +77,7 @@
     },
     {
       "example": "{}",
-      "help_en": "User-defined key-value metadata",
+      "help_en": "The custom key-value pair metadata",
       "help_zh": "自定义的键值对元数据",
       "location": "body",
       "name": "metadata",
@@ -94,7 +94,7 @@
     },
     {
       "example": "job-template-example-1778047****\t",
-      "help_en": "The name of the job template",
+      "help_en": "The name of the task template",
       "help_zh": "任务模板的名称",
       "location": "body",
       "max_length": "1024",
@@ -110,7 +110,7 @@
     },
     {
       "example": "15****05",
-      "help_en": "The ID of the workspace that contains the job template",
+      "help_en": "The ID of the workspace to which the template belongs",
       "help_zh": "模板所属的工作空间ID",
       "location": "body",
       "max_length": "128",
@@ -133,7 +133,7 @@
         "properties": {
           "DefaultVersion": {
             "backendName": "DefaultVersion",
-            "description_en": "The default version number of the job template",
+            "description_en": "The default version number currently in use",
             "description_zh": "当前使用的默认版本号",
             "example": "1",
             "format": "int32",
@@ -143,7 +143,7 @@
           },
           "Description": {
             "backendName": "Description",
-            "description_en": "The description of the job template",
+            "description_en": "The description of the task template",
             "description_zh": "任务模板的描述信息",
             "example": "Template description\n",
             "title_en": "模板描述",
@@ -152,7 +152,7 @@
           },
           "GmtCreateTime": {
             "backendName": "GmtCreateTime",
-            "description_en": "The creation time of the job template",
+            "description_en": "The time when the template was created",
             "description_zh": "模板的创建时间",
             "example": "2025-12-31T02:18:09Z",
             "format": "iso8601",
@@ -162,7 +162,7 @@
           },
           "GmtModifyTime": {
             "backendName": "GmtModifyTime",
-            "description_en": "The last modification time of the job template",
+            "description_en": "The time when the template was last modified",
             "description_zh": "模板的最后修改时间",
             "example": "2026-01-12T14:36:00Z",
             "format": "iso8601",
@@ -170,9 +170,19 @@
             "title_zh": "修改时间",
             "type": "string"
           },
+          "LastUsedTime": {
+            "backendName": "LastUsedTime",
+            "description_en": "The most recent time when a node was successfully created by using this template. This parameter is not returned if you create a template that has not been used",
+            "description_zh": "使用该模板成功创建任务的最近时间。新建模板尚未使用时不返回",
+            "example": "2026-09-03T11:30:00Z",
+            "format": "iso8601",
+            "title_en": "最近使用时间",
+            "title_zh": "最近使用时间",
+            "type": "string"
+          },
           "Metadata": {
             "backendName": "Metadata",
-            "description_en": "User-defined key-value metadata",
+            "description_en": "The custom key-value pair metadata defined by the user",
             "description_zh": "用户自定义的键值对元数据",
             "example": "{}",
             "title_en": "自定义元数据",
@@ -181,7 +191,7 @@
           },
           "RequestId": {
             "backendName": "RequestId",
-            "description_en": "The ID of the request, used for troubleshooting",
+            "description_en": "The ID of the request, which is used for diagnostics and troubleshooting",
             "description_zh": "本次请求的 ID，用于诊断和答疑",
             "example": "8762921A-911C-515F-A3A4-*********",
             "title_en": "请求 ID",
@@ -190,7 +200,7 @@
           },
           "TemplateId": {
             "backendName": "TemplateId",
-            "description_en": "The unique ID of the job template",
+            "description_en": "The unique identifier of the task template",
             "description_zh": "任务模板的唯一标识",
             "example": "tplmceolmf2****",
             "mappingResourcePropertyName": "$.TemplateId",
@@ -200,7 +210,7 @@
           },
           "TemplateName": {
             "backendName": "TemplateName",
-            "description_en": "The name of the job template",
+            "description_en": "The name of the task template",
             "description_zh": "任务模板的名称",
             "example": "job-template-example-1778047****\t",
             "title_en": "模板名称",
@@ -209,7 +219,7 @@
           },
           "TenantId": {
             "backendName": "TenantId",
-            "description_en": "The ID of the tenant that contains the job template",
+            "description_en": "The ID of the tenant to which the template belongs",
             "description_zh": "模板所属的租户ID",
             "example": "10**************14",
             "title_en": "租户 ID",
@@ -218,7 +228,7 @@
           },
           "UserId": {
             "backendName": "UserId",
-            "description_en": "The ID of the user who created the job template",
+            "description_en": "The ID of the user who created the template",
             "description_zh": "创建模板的用户ID",
             "example": "20**************02",
             "title_en": "创建者 ID",
@@ -227,7 +237,7 @@
           },
           "Version": {
             "backendName": "Version",
-            "description_en": "The version number of the created job template",
+            "description_en": "The version number of the currently returned version",
             "description_zh": "当前返回的版本的号",
             "example": "1",
             "format": "int32",
@@ -237,7 +247,7 @@
           },
           "WorkspaceId": {
             "backendName": "WorkspaceId",
-            "description_en": "The ID of the workspace that contains the job template",
+            "description_en": "The ID of the workspace to which the template belongs",
             "description_zh": "模板所属的工作空间ID",
             "example": "15****05",
             "title_en": "工作空间 ID",
@@ -251,7 +261,7 @@
   },
   "v1_body_parameters": [
     {
-      "help_en": "The request body",
+      "help_en": "The request body parameters",
       "help_zh": "请求Body参数",
       "name": "body",
       "param_style": "json",
