@@ -1,0 +1,173 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "aisc test-connectivity",
+  "cmd_name": "test-connectivity",
+  "deprecated": false,
+  "description_en": "Tests the network connectivity and authentication validity of an AI Red Teaming target",
+  "description_zh": "AI Red Teaming，测试目标的网络连通性和认证有效性",
+  "kebab_example": "",
+  "method": "POST",
+  "multi_version": false,
+  "name": "TestConnectivity",
+  "operation": {
+    "action": "TestConnectivity",
+    "api_style": "RPC",
+    "api_version": "2026-01-01",
+    "method": "POST",
+    "operation_type": "readAndWrite",
+    "protocol": "HTTPS",
+    "system_operation_type": "none",
+    "url": ""
+  },
+  "parameters": [
+    {
+      "example": "target-abc123def4567",
+      "help_en": "The unique identifier of the attack target. If specified, the system reads Endpoint, ApiKey, ModelName, ConnectionMethod, and ConnectionConfig from the target configuration and ignores any parameters with the same names in the request. If not specified, provide the connection parameters directly in the request",
+      "help_zh": "攻击目标的唯一标识。传入后系统从目标配置中读取 Endpoint、ApiKey、ModelName、ConnectionMethod、ConnectionConfig，忽略请求中同名参数；不传时需在请求中直接提供连接参数",
+      "location": "query",
+      "name": "target_id",
+      "options": [
+        "--target-id"
+      ],
+      "raw_name": "TargetId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "help_en": "The HTTP or HTTPS endpoint address of the target model service. This parameter is required if TargetId is empty",
+      "help_zh": "目标模型服务的 HTTP/HTTPS 端点地址。TargetId为空时必填",
+      "location": "query",
+      "name": "endpoint",
+      "options": [
+        "--biz-endpoint"
+      ],
+      "raw_name": "Endpoint",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "sk-abcd1234****",
+      "help_en": "The API key for the target model service, used to authenticate with the Endpoint. If TargetId is specified, the system reads the key from the encrypted target configuration. This parameter is required if TargetId is empty. Transmit the key over HTTPS and avoid exposing it in plaintext in logs, URLs, or client code",
+      "help_zh": "目标模型服务的 API 密钥，用于向 Endpoint 认证。传入 TargetId 时系统从已加密保存的目标配置读取。TargetId为空时必填。请通过 HTTPS 传输，避免在日志、URL 或客户端代码中明文暴露",
+      "location": "query",
+      "name": "api_key",
+      "options": [
+        "--api-key"
+      ],
+      "raw_name": "ApiKey",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "qwen-flash",
+      "help_en": "The name of the target model. If ConnectionMethod is set to openai, specify the model ID under the OpenAI compatible protocol. If ConnectionMethod is set to anthropic, specify the model ID for the Anthropic Messages API. This parameter is required if the scan target is a model and TargetId is empty",
+      "help_zh": "目标模型的名称。ConnectionMethod=openai 时填 OpenAI 兼容协议下的模型 ID；ConnectionMethod=anthropic 时填 Anthropic Messages API 的模型 ID。\n如果扫描对象为模型，且TargetId为空时必填",
+      "location": "query",
+      "name": "model_name",
+      "options": [
+        "--model-name"
+      ],
+      "raw_name": "ModelName",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "openai",
+      "help_en": "The connection protocol type of the target service. The system selects the corresponding protocol adapter to initiate the test based on this value. Default value: openai",
+      "help_zh": "目标服务的连接协议类型。系统按此选择对应的协议适配器发起测试。默认 openai",
+      "location": "query",
+      "name": "connection_method",
+      "options": [
+        "--connection-method"
+      ],
+      "raw_name": "ConnectionMethod",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "{\\\"httpMethod\\\":\\\"POST\\\",\\\"authType\\\":\\\"bearer\\\",\\\"timeoutMs\\\":30000,\\\"requestTemplate\\\":\\\"{\\\\\\\"input\\\\\\\":{\\\\\\\"prompt\\\\\\\":\\\\\\\"{{prompt}}\\\\\\\"},\\\\\\\"parameters\\\\\\\":{\\\\\\\"incremental_output\\\\\\\":true},\\\\\\\"debug\\\\\\\":{}}\\\",\\\"messageJsonPath\\\":\\\"$.output.text\\\",\\\"requestHeaders\\\":\\\"{\\\\\\\"X-DashScope-SSE\\\\\\\": \\\\\\\"enable\\\\\\\" }\\\",\\\"stream\\\":true,\\\"customAuthHeaderName\\\":\\\"\\\"}",
+      "help_en": "The advanced connection configuration in JSON string format. Common fields: authType (authentication type. custom_header indicates custom request header authentication. none indicates no authentication), customAuthHeaderName (custom authentication header name, such as X-API-Key), and requestHeaders (additional HTTP request header key-value pairs).\n\nCommon provider configuration templates ({{prompt}} is the prompt placeholder. Replace it with the actual service value. When authType is set to bearer, the token is injected from ApiKey, and the template does not contain credentials):\nBailian: {\"httpMethod\":\"POST\",\"authType\":\"bearer\",\"timeoutMs\":30000,\"requestTemplate\":\"{\\\"input\\\":{\\\"prompt\\\":\\\"{{prompt}}\\\"},\\\"parameters\\\":{\\\"incremental_output\\\":true},\\\"debug\\\":{}}\",\"messageJsonPath\":\"$.output.text\",\"requestHeaders\":\"{\\\"X-DashScope-SSE\\\": \\\"enable\\\" }\",\"stream\":true,\"customAuthHeaderName\":\"\"}\nPAI: {\"httpMethod\":\"POST\",\"authType\":\"bearer\",\"timeoutMs\":60000,\"requestTemplate\":\"{\\\"inputs\\\":{\\\"question\\\":\\\"{{prompt}}\\\",\\\"chat_history\\\":[]},\\\"stream\\\":true}\",\"messageJsonPath\":\"$.outputs.answer\",\"requestHeaders\":\"\",\"stream\":true,\"customAuthHeaderName\":\"\"}\nDify: {\"httpMethod\":\"POST\",\"authType\":\"bearer\",\"timeoutMs\":30000,\"requestTemplate\":\"{\\\"inputs\\\":{},\\\"query\\\":\\\"{{prompt}}\\\",\\\"response_mode\\\":\\\"streaming\\\",\\\"conversation_id\\\":\\\"\\\",\\\"user\\\":\\\"scanner\\\"}\",\"messageJsonPath\":\"$.answer\",\"requestHeaders\":\"\",\"stream\":true,\"customAuthHeaderName\":\"\"}\nAgentRun: {\"httpMethod\":\"POST\",\"authType\":\"custom_header\",\"timeoutMs\":30000,\"requestTemplate\":\"{\\\"messages\\\":[{\\\"role\\\":\\\"user\\\",\\\"content\\\":\\\"{{prompt}}\\\"}],\\\"stream\\\":true}\",\"messageJsonPath\":\"$.choices[0].delta.content\",\"requestHeaders\":\"\",\"customAuthHeaderName\":\"X-API-Key\",\"stream\":true}\nAgentKit: {\"httpMethod\":\"POST\",\"authType\":\"bearer\",\"timeoutMs\":30000,\"requestTemplate\":\"{\\\"messages\\\":[{\\\"role\\\":\\\"user\\\",\\\"content\\\":\\\"{{prompt}}\\\"}]}\",\"messageJsonPath\":\"$.content.parts[0].text\",\"requestHeaders\":\"\",\"stream\":true,\"customAuthHeaderName\":\"\"}",
+      "help_zh": "连接高级配置，JSON 字符串格式。常见字段：authType（认证类型，custom_header=自定义请求头认证、none=无认证）、customAuthHeaderName（自定义认证请求头名称，如 X-API-Key）、requestHeaders（附加的 HTTP 请求头键值对）。\n\n常见 provider 配置模板（{{prompt}} 为提问占位符，按实际服务替换；authType=bearer 时 token 由 ApiKey 注入，模板中不含凭据）：\nBailian：{\"httpMethod\":\"POST\",\"authType\":\"bearer\",\"timeoutMs\":30000,\"requestTemplate\":\"{\\\"input\\\":{\\\"prompt\\\":\\\"{{prompt}}\\\"},\\\"parameters\\\":{\\\"incremental_output\\\":true},\\\"debug\\\":{}}\",\"messageJsonPath\":\"$.output.text\",\"requestHeaders\":\"{\\\"X-DashScope-SSE\\\": \\\"enable\\\" }\",\"stream\":true,\"customAuthHeaderName\":\"\"}\nPAI：{\"httpMethod\":\"POST\",\"authType\":\"bearer\",\"timeoutMs\":60000,\"requestTemplate\":\"{\\\"inputs\\\":{\\\"question\\\":\\\"{{prompt}}\\\",\\\"chat_history\\\":[]},\\\"stream\\\":true}\",\"messageJsonPath\":\"$.outputs.answer\",\"requestHeaders\":\"\",\"stream\":true,\"customAuthHeaderName\":\"\"}\nDify：{\"httpMethod\":\"POST\",\"authType\":\"bearer\",\"timeoutMs\":30000,\"requestTemplate\":\"{\\\"inputs\\\":{},\\\"query\\\":\\\"{{prompt}}\\\",\\\"response_mode\\\":\\\"streaming\\\",\\\"conversation_id\\\":\\\"\\\",\\\"user\\\":\\\"scanner\\\"}\",\"messageJsonPath\":\"$.answer\",\"requestHeaders\":\"\",\"stream\":true,\"customAuthHeaderName\":\"\"}\nAgentRun：{\"httpMethod\":\"POST\",\"authType\":\"custom_header\",\"timeoutMs\":30000,\"requestTemplate\":\"{\\\"messages\\\":[{\\\"role\\\":\\\"user\\\",\\\"content\\\":\\\"{{prompt}}\\\"}],\\\"stream\\\":true}\",\"messageJsonPath\":\"$.choices[0].delta.content\",\"requestHeaders\":\"\",\"customAuthHeaderName\":\"X-API-Key\",\"stream\":true}\nAgentKit：{\"httpMethod\":\"POST\",\"authType\":\"bearer\",\"timeoutMs\":30000,\"requestTemplate\":\"{\\\"messages\\\":[{\\\"role\\\":\\\"user\\\",\\\"content\\\":\\\"{{prompt}}\\\"}]}\",\"messageJsonPath\":\"$.content.parts[0].text\",\"requestHeaders\":\"\",\"stream\":true,\"customAuthHeaderName\":\"\"}",
+      "location": "query",
+      "name": "connection_config",
+      "options": [
+        "--connection-config"
+      ],
+      "raw_name": "ConnectionConfig",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "conn-a1b2c3d4e5f67890",
+      "help_en": "The tracking identifier of the connectivity test. Do not specify this parameter for the first call. The system generates and returns it in the response. For subsequent calls, specify this value to query the latest status of the corresponding test",
+      "help_zh": "连通性测试的追踪标识。首次调用不传，由系统生成并在响应中返回；后续调用传入该值查询对应测试的最新状态",
+      "location": "query",
+      "name": "check_id",
+      "options": [
+        "--check-id"
+      ],
+      "raw_name": "CheckId",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "",
+  "product_code": "AISC",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "properties": {
+          "Data": {
+            "backendName": "data",
+            "description_en": "The result details of the connectivity test",
+            "description_zh": "连通性测试的结果详情",
+            "properties": {
+              "CheckId": {
+                "backendName": "checkId",
+                "description_en": "The tracking identifier of the connectivity test. The system generates this value for the first call. For polling calls, this value is the same as the CheckId in the request",
+                "description_zh": "本次连通性测试的追踪标识。首次调用由系统生成；轮询调用时与请求中的 CheckId 一致",
+                "example": "conn-a1b2c3d4e5f67890",
+                "type": "string"
+              },
+              "LatencyMs": {
+                "backendName": "latencyMs",
+                "description_en": "The end-to-end latency of the target service response, in milliseconds. This value may be 0 or not returned when VerifyStatus is checking",
+                "description_zh": "目标服务响应的端到端延迟，单位毫秒。VerifyStatus=checking 时可能为 0 或不返回",
+                "example": "1200",
+                "format": "int64",
+                "type": "integer"
+              },
+              "VerifyMessage": {
+                "backendName": "verifyMessage",
+                "description_en": "The detailed information of the verification result. When VerifyStatus is verified, this value is a snippet of the response returned by the target service. When VerifyStatus is failed, this value describes the error cause, such as authentication failure, timeout, or empty response",
+                "description_zh": "验证结果的详细信息。VerifyStatus=verified 时为目标服务返回的响应内容片段；failed 时为错误原因描述（如认证失败、超时、空响应等）",
+                "example": "连通性验证成功",
+                "type": "string"
+              },
+              "VerifyStatus": {
+                "backendName": "verifyStatus",
+                "description_en": "The current status of the connectivity verification",
+                "description_zh": "连通性验证的当前状态",
+                "example": "verified",
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "RequestId": {
+            "backendName": "requestId",
+            "description_en": "The unique identifier of the request, used for troubleshooting and log tracing",
+            "description_zh": "本次请求的唯一标识，用于问题排查与日志追踪",
+            "example": "1EBD0C05-6C1F-4C95-9C63-B7AB7B5A9C8E",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}
