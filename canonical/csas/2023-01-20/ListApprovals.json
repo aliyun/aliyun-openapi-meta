@@ -82,8 +82,8 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The list of report types. If not specified, only ApprovalReport is queried",
-      "help_zh": "报备类型列表。未传时仅查询 ApprovalReport",
+      "help_en": "The list of report types, serialized in Flat format. Duplicate values are not allowed. Valid values:\nApprovalReport: approval report.\nBackendReport: backend report.\nIf not specified, only ApprovalReport is queried by default",
+      "help_zh": "报备类型列表，使用 Flat 序列化格式，不能重复。取值：\nApprovalReport：审批报备。\nBackendReport：后台报备。\n不传时默认仅查询 ApprovalReport",
       "location": "query",
       "name": "report_types",
       "options": [
@@ -98,8 +98,8 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The list of report effective statuses. Valid values: Enabled, Expired",
-      "help_zh": "报备生效状态列表，可选 Enabled、Expired",
+      "help_en": "The list of report effective statuses, serialized in Flat format. Duplicate values are not allowed. Only records with an approval status of Approved are matched. Valid values:\nEnabled: effective.\nExpired: expired or invalidated",
+      "help_zh": "报备生效状态列表，使用 Flat 序列化格式，不能重复。仅匹配审批状态为 Approved 的记录。取值：\nEnabled：有效。\nExpired：已失效或已到期",
       "location": "query",
       "name": "effect_statuses",
       "options": [
@@ -138,7 +138,7 @@
     },
     {
       "example": "DlpSend",
-      "help_en": "The adaptation policy type. Valid values:",
+      "help_en": "The adaptation policy type. Valid values:\nDomainBlacklist: Domain name blacklist.\nDomainWhitelist: Domain name whitelist.\nSoftwareBlock: Software blocking.\nAppUninstall: Agent uninstallation.\nDlpSend: File outbound transfer.\nPeripheralBlock: Peripheral control",
       "help_zh": "适配策略类型。取值：\nDomainBlacklist：域名黑名单。\nDomainWhitelist：域名白名单。\nSoftwareBlock：软件禁用。\nAppUninstall：终端卸载。\nDlpSend：文件外发。\nPeripheralBlock：外设管控",
       "location": "query",
       "name": "policy_type",
@@ -229,7 +229,7 @@
     },
     {
       "example": "1730000000",
-      "help_en": "The start time for approval instance creation, in seconds-level timestamp",
+      "help_en": "The start time for querying approval instance creation, in seconds-level timestamp",
       "help_zh": "审批实例创建起始时刻，秒级时间戳",
       "location": "query",
       "name": "create_start_time",
@@ -242,7 +242,7 @@
     },
     {
       "example": "1736750500",
-      "help_en": "The end time for approval instance creation, in seconds-level timestamp",
+      "help_en": "The end time for querying approval instance creation, in seconds-level timestamp",
       "help_zh": "审批实例创建结束时刻，秒级时间戳",
       "location": "query",
       "name": "create_end_time",
@@ -372,14 +372,14 @@
                       },
                       "Status": {
                         "backendName": "status",
-                        "description_en": "The status of the approval progress node. Valid values:",
+                        "description_en": "The status of the approval progress node. Valid values:\nPending: Pending approval.\nApproved: Approved.\nRejected: Rejected.\nRevoked: Revoked",
                         "description_zh": "审批进展节点状态。取值：\nPending：待审批。\nApproved：已通过。\nRejected：已拒绝。\nRevoked：已撤回",
                         "example": "Approved",
                         "type": "string"
                       },
                       "Timestamp": {
                         "backendName": "timestamp",
-                        "description_en": "The time when the action was performed on the approval progress node. The value is a UNIX timestamp in seconds",
+                        "description_en": "The time when the approval progress node was executed. The value is a UNIX timestamp in seconds",
                         "description_zh": "审批进展节点执行时刻，秒级时间戳",
                         "example": "1736752000",
                         "format": "int64",
@@ -392,6 +392,9 @@
                 },
                 "ApprovalType": {
                   "backendName": "approvalType",
+                  "description_en": "The approval type. Valid values:\n0: built-in approval.\n1: DingTalk approval.\n2: WeCom approval.\n3: Lark approval",
+                  "description_zh": "审批类型。取值：\n0：内置审批。\n1：钉钉审批。\n2：企业微信审批。\n3：飞书审批",
+                  "example": "0",
                   "format": "int32",
                   "type": "integer"
                 },
@@ -406,7 +409,7 @@
                   "backendName": "creatorDepartment",
                   "description_en": "The department of the approval instance creator",
                   "description_zh": "审批实例创建人部门",
-                  "example": "测试部",
+                  "example": "CN=cn***,OU=h***",
                   "type": "string"
                 },
                 "CreatorDevTag": {
@@ -427,29 +430,30 @@
                   "backendName": "creatorUsername",
                   "description_en": "The username of the approval instance creator",
                   "description_zh": "审批实例创建人用户名",
-                  "example": "王先生",
+                  "example": "王***",
                   "type": "string"
                 },
                 "EffectStatus": {
                   "backendName": "effectStatus",
-                  "description_en": "The effective status of the report. Enabled indicates that the report is effective. Expired indicates that the report has expired",
-                  "description_zh": "报备生效状态。Enabled 表示有效，Expired 表示已失效",
+                  "description_en": "The filing effective status. An empty string is returned when the approval status is not Approved. Valid values:\nEnabled: effective.\nExpired: expired or reached the expiration date",
+                  "description_zh": "报备生效状态。审批状态不是 Approved 时为空字符串。取值：\nEnabled：有效。\nExpired：已失效或已到期",
+                  "example": "Enabled",
                   "title_en": "报备生效状态。Enabled 表示有效，Expired 表示已失效",
                   "title_zh": "报备生效状态。Enabled 表示有效，Expired 表示已失效",
                   "type": "string"
                 },
                 "EndTimestamp": {
                   "backendName": "endTimestamp",
-                  "description_en": "The expiration time of the approval instance. The value is a UNIX timestamp in seconds",
-                  "description_zh": "审批实例有效截止时刻，秒级时间戳",
+                  "description_en": "The filing deadline. The value is a UNIX timestamp in seconds. The value 0 is returned when ValidityType is set to Permanent",
+                  "description_zh": "报备截止时间，Unix 时间戳，单位为秒。ValidityType 为 Permanent 时返回 0",
                   "example": "1757952000",
                   "format": "int64",
                   "type": "integer"
                 },
                 "PolicyType": {
                   "backendName": "policyType",
-                  "description_en": "The type of the policy associated with the approval instance. Valid values:\nDomainBlacklist: domain name blacklist.\nDomainWhitelist: domain name whitelist.\nSoftwareBlock: software blocking.\nAppUninstall: terminal uninstallation.\nDlpSend: file outgoing.\nPeripheralBlock: peripheral control",
-                  "description_zh": "审批实例关联策略类型。取值：\nDomainBlacklist：域名黑名单。\nDomainWhitelist：域名白名单。\nSoftwareBlock：软件禁用。\nAppUninstall：终端卸载。\nDlpSend：文件外发。\nPeripheralBlock：外设管控",
+                  "description_en": "The policy type associated with the approval instance. Valid values:\nDomainBlacklist: Domain name blacklist.\nDomainWhitelist: Domain name whitelist.\nSoftwareBlock: Software blocking.\nDeviceRegistration: Excess registration.\nAppUninstall: Endpoint uninstallation.\nDlpSend: File outbound transfer.\nPeripheralBlock: Peripheral control.\nEndpointHardening: Endpoint hardening.\noftwareHardening: Software hardening.\nAiAgentBlock: AI Agent control.\nPrivateAccessBlock: Internal network access",
+                  "description_zh": "审批实例关联策略类型。取值：\nDomainBlacklist：域名黑名单。\nDomainWhitelist：域名白名单。\nSoftwareBlock：软件禁用。\nDeviceRegistration：超额注册。\nAppUninstall：终端卸载。\nDlpSend：文件外发。\nPeripheralBlock：外设管控。\nEndpointHardening：终端加固。\noftwareHardening：软件加固。\nAiAgentBlock：AI Agent 管控。\nPrivateAccessBlock：内网访问",
                   "example": "DlpSend",
                   "type": "string"
                 },
@@ -464,20 +468,21 @@
                   "backendName": "processName",
                   "description_en": "The name of the process associated with the approval instance",
                   "description_zh": "审批实例关联流程名称",
-                  "example": "测试",
+                  "example": "测试***",
                   "type": "string"
                 },
                 "Reason": {
                   "backendName": "reason",
                   "description_en": "The reason for creating the approval instance",
                   "description_zh": "审批实例创建原因",
-                  "example": "这是一个测试",
+                  "example": "项目临时访问。",
                   "type": "string"
                 },
                 "ReportType": {
                   "backendName": "reportType",
-                  "description_en": "The report type. ApprovalReport indicates an approval report. BackendReport indicates a backend report",
-                  "description_zh": "报备类型。ApprovalReport 表示审批报备，BackendReport 表示后台报备",
+                  "description_en": "The filing type. Valid values:\nApprovalReport: approval filing.\nBackendReport: backend filing",
+                  "description_zh": "报备类型。取值：\nApprovalReport：审批报备。\nBackendReport：后台报备",
+                  "example": "BackendReport",
                   "title_en": "报备类型。ApprovalReport 表示审批报备，BackendReport 表示后台报备",
                   "title_zh": "报备类型。ApprovalReport 表示审批报备，BackendReport 表示后台报备",
                   "type": "string"
@@ -500,24 +505,25 @@
                   "backendName": "schemaName",
                   "description_en": "The name of the template associated with the approval instance",
                   "description_zh": "审批实例关联模板名称",
-                  "example": "测试",
+                  "example": "模板***",
                   "type": "string"
                 },
                 "Status": {
                   "backendName": "status",
-                  "description_en": "The approval instance status. Valid values:",
-                  "description_zh": "审批实例状态。取值：\nPending：待审批。\nApproved：已通过。\nRejected：已拒绝。\nRevoked：已撤回。\nExpired：已过期",
+                  "description_en": "The instance status of the approval. Valid values:\nPending: Pending approval.\nApproved: Approved.\nRejected: Denied.\nRevoked: Revoked.\nExpired: Expired.\nDeleted: Deleted",
+                  "description_zh": "审批实例状态。取值：\nPending：待审批。\nApproved：已通过。\nRejected：已拒绝。\nRevoked：已撤回。\nExpired：已过期。\nDeleted：审批已删除",
                   "example": "Pending",
                   "type": "string"
                 },
                 "ValidityType": {
                   "backendName": "validityType",
-                  "description_en": "The validity duration type. When the value is Permanent, EndTimestamp returns 0",
-                  "description_zh": "生效时长类型；Permanent 时 EndTimestamp 返回 0",
+                  "description_en": "The validity duration type. Valid values: FixedTime, Permanent",
+                  "description_zh": "生效时长类型。取值：FixedTime、Permanent",
                   "enum": [
                     "FixedTime",
                     "Permanent"
                   ],
+                  "example": "Permanent",
                   "title_en": "生效时长类型；Permanent 时 EndTimestamp 返回 0",
                   "title_zh": "生效时长类型；Permanent 时 EndTimestamp 返回 0",
                   "type": "string"
