@@ -1,5 +1,5 @@
 {
-  "camel_example": "aliyun cas ListInstances --region cn-hangzhou --Status inactive --Brand Digicert --CertificateType DV --Keyword test --ResourceGroupId 'rg-ae0000004wia' --CurrentPage 1 --CertificateStatus issued --ShowSize 10 --InstanceType BUY",
+  "camel_example": "aliyun cas ListInstances --region cn-hangzhou --Status inactive --Brand Digicert --CertificateType DV --AutoReissueFlag 1 --Keyword test --ResourceGroupId 'rg-ae0000004wia' --CurrentPage 1 --CertificateStatus issued --ShowSize 10 --ServerDeployFlag 1 --InstanceType BUY",
   "cmd_full_name": "cas list-instances",
   "cmd_name": "list-instances",
   "deprecated": false,
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "test",
-      "help_en": "The keyword for fuzzy search. The keyword is matched against domain names, instance names, or corresponding resource IDs",
+      "help_en": "The keyword for fuzzy search. Matches domain names, instance names, or corresponding resource IDs",
       "help_zh": "模糊查询，匹配域名、名称实例或对应的资源ID",
       "location": "query",
       "name": "keyword",
@@ -35,7 +35,7 @@
     },
     {
       "example": "inactive",
-      "help_en": "The instance status. Valid values:\ninactive: Pending use.\npending: Under review. The latest certificate has been submitted for commit.\nwillExpire: The instance is about to expire.\nexpired: The instance has expired.\nrefund: Refunded.\nnormal: Normal.\nclosed: Shutdown and unavailable",
+      "help_en": "The instance status. Valid values:\ninactive: Pending use.\npending: Under review. The latest certificate is being reviewed.\nwillExpire: The instance is about to expire.\nexpired: The instance has expired.\nrefund: Refunded.\nnormal: Normal.\nclosed: Closed. The instance is unavailable",
       "help_zh": "实例状态。\ninactive：待使用\npending：审核中，最新证书提交审核中\nwillExpire：实例即将过期\nexpired：实例已经过期\nrefund：已退款\nnormal：正常\nclosed：已关闭，不可使用",
       "location": "query",
       "name": "status",
@@ -165,7 +165,7 @@
         "test"
       ],
       "example": "BUY",
-      "help_en": "The instance type. Valid values: BUY (official certificate) and TEST (test certificate)",
+      "help_en": "The instance type. Valid values:\nBUY: formal certificate.\nTEST: test certificate",
       "help_zh": "实例类型，BUY：正式证书；TEST：测试证书",
       "location": "query",
       "name": "instance_type",
@@ -191,7 +191,7 @@
     },
     {
       "example": "10",
-      "help_en": "Settings for the number of instances to display per page in a paging query. Default value: 10. Maximum value: 100",
+      "help_en": "The number of instances to display per page in a paged query. Default value: 10. Maximum value: 100",
       "help_zh": "分页查询时，设置每页显示实例的数量。默认值为10，最大为100",
       "location": "query",
       "name": "show_size",
@@ -204,7 +204,7 @@
     },
     {
       "example": "1",
-      "help_en": "Settings for the current page number in a paging query. Default value: 1",
+      "help_en": "The page number of the current page in a paged query. Default value: 1",
       "help_zh": "分页查询时，设置当前页面的页码。默认值为1",
       "location": "query",
       "name": "current_page",
@@ -212,6 +212,32 @@
         "--current-page"
       ],
       "raw_name": "CurrentPage",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "1",
+      "help_en": "Specifies whether to return only instances that meet server deployment conditions. Valid values:\n1: Yes.\n0: No",
+      "help_zh": "是否返回仅符合服务器部署条件实例。\n1：是\n0：否",
+      "location": "query",
+      "name": "server_deploy_flag",
+      "options": [
+        "--server-deploy-flag"
+      ],
+      "raw_name": "ServerDeployFlag",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "1",
+      "help_en": "Specifies whether the instance is managed. Valid values:\n1: Managed.\n0: Not managed",
+      "help_zh": "1：已托管\n0：未托管",
+      "location": "query",
+      "name": "auto_reissue_flag",
+      "options": [
+        "--auto-reissue-flag"
+      ],
+      "raw_name": "AutoReissueFlag",
       "required": false,
       "type": "int"
     }
@@ -225,10 +251,26 @@
         "properties": {
           "CurrentPage": {
             "backendName": "data.currentPage",
-            "description_en": "The current page number in a paging query",
+            "description_en": "The page number of the current page in a paged query",
             "description_zh": "分页查询，当前显示的页数",
             "example": "1",
             "format": "int32",
+            "type": "integer"
+          },
+          "DisableReissueCount": {
+            "backendName": "data.disableReissueCount",
+            "description_en": "The number of instances for which managed renewal is not enabled",
+            "description_zh": "未开启托管的实例数",
+            "example": "80",
+            "format": "int64",
+            "type": "integer"
+          },
+          "EnableReissueCount": {
+            "backendName": "data.enableReissueCount",
+            "description_en": "The number of instances for which managed renewal is enabled",
+            "description_zh": "已开启托管的实例数",
+            "example": "100",
+            "format": "int64",
             "type": "integer"
           },
           "InstanceList": {
@@ -242,7 +284,7 @@
               "properties": {
                 "AutoReissue": {
                   "backendName": "autoReissue",
-                  "description_en": "Indicates whether automatic managed renewal is enabled. Valid values:\nenable: Enabled.\ndisable: Disabled",
+                  "description_en": "Indicates whether automatic managed renewal is enabled. Valid values:\nenable: Enabled.\ndisable: Not enabled",
                   "description_zh": "是否开启自动托管。\nenable：开启\ndisable：未开启",
                   "example": "enable",
                   "type": "string"
@@ -256,7 +298,7 @@
                 },
                 "CertIdentifier": {
                   "backendName": "certIdentifier",
-                  "description_en": "The global certificate ID, in the format of certificate ID + \"-\" + site region ID. This ID is commonly used across Alibaba Cloud services.\nFor Alibaba Cloud China Website (www.aliyun.com): certificate ID + \"-cn-hangzhou\"\nFor Alibaba Cloud International Website (www.alibabacloud.com): certificate ID + \"-ap-southeast-1\"\n\nFor example, if the certificate ID is 123, the CertIdentifier on Alibaba Cloud China Website (www.aliyun.com) is \"123-cn-hangzhou\", and the CertIdentifier on Alibaba Cloud International Website (www.alibabacloud.com) is \"123-ap-southeast-1\"",
+                  "description_en": "The global certificate ID, in the format of certificate ID + \"-\" + site region ID. This ID is commonly used across Alibaba Cloud services.\nChina site: certificate ID + \"-cn-hangzhou\"\nInternational site: certificate ID + \"-ap-southeast-1\"\n\nFor example, if the certificate ID is 123, the CertIdentifier on the China site is \"123-cn-hangzhou\", and the CertIdentifier on the international site is \"123-ap-southeast-1\"",
                   "description_zh": "全局证书ID，格式为证书Id + \"-\" + 站点regionId，常用在阿里云各个云产品中。\n国内站为证书Id + \"-cn-hangzhou\"\n国际站为证书Id + \"-ap-southeast-1\"\n\n例如证书Id = 123，则国内站CertIdentifier = “123-cn-hangzhou”，国际站CertIdentifier = \"123-ap-southeast-1\"",
                   "example": "21795675-cn-hangzhou",
                   "type": "string"
@@ -288,7 +330,7 @@
                 },
                 "CertificateNotAfter": {
                   "backendName": "certificateNotAfter",
-                  "description_en": "The end time of the latest certificate. The value is a UNIX timestamp accurate to seconds. If no certificate has been issued, this value is empty",
+                  "description_en": "The end time of the latest certificate. The value is a UNIX timestamp in seconds. This field is empty if no certificate has been issued",
                   "description_zh": "最新证书的结束时间，时间戳。精确到秒。未签发证书则为空",
                   "example": "1801324800000",
                   "format": "int64",
@@ -296,7 +338,7 @@
                 },
                 "CertificateNotBefore": {
                   "backendName": "certificateNotBefore",
-                  "description_en": "The start time of the latest certificate. The value is a UNIX timestamp accurate to seconds. If no certificate has been issued, this value is empty",
+                  "description_en": "The start time of the latest certificate. The value is a UNIX timestamp in seconds. This field is empty if no certificate has been issued",
                   "description_zh": "最新证书的开始时间，时间戳。精确到秒。未签发证书则为空",
                   "example": "1776988800000",
                   "format": "int64",
@@ -304,7 +346,7 @@
                 },
                 "CertificateRevokeTime": {
                   "backendName": "certificateRevokeTime",
-                  "description_en": "The revocation time of the latest certificate. The value is a UNIX timestamp accurate to seconds",
+                  "description_en": "The revocation time of the latest certificate. The value is a UNIX timestamp in seconds",
                   "description_zh": "最新一张证书吊销时间，时间戳。精确到秒",
                   "example": "1801324800000",
                   "format": "int64",
@@ -326,7 +368,7 @@
                 },
                 "Domain": {
                   "backendName": "domain",
-                  "description_en": "The domain name attached to the certificate",
+                  "description_en": "The domain name bound to the certificate",
                   "description_zh": "证书绑定的域名",
                   "example": "test.com",
                   "type": "string"
@@ -341,7 +383,7 @@
                 },
                 "InstanceEndTime": {
                   "backendName": "instanceEndTime",
-                  "description_en": "The expiration time of the instance. The value is a UNIX timestamp accurate to seconds. If no certificate has been issued, this value is empty",
+                  "description_en": "The expiration time of the instance. The value is a UNIX timestamp in seconds. This field is empty if no certificate has been issued",
                   "description_zh": "实例的到期时间，时间戳。精确到秒。如果未签发过证书，则返回空",
                   "example": "1801324800000",
                   "format": "int64",
@@ -356,7 +398,7 @@
                 },
                 "InstanceStartTime": {
                   "backendName": "instanceStartTime",
-                  "description_en": "The start time of the instance. The value is a UNIX timestamp accurate to seconds. If no certificate has been issued, this value is empty",
+                  "description_en": "The start time of the instance. The value is a UNIX timestamp in seconds. This field is empty if no certificate has been issued",
                   "description_zh": "实例的开始时间，时间戳。精确到秒。如果未签发过证书，则返回空",
                   "example": "1801324800000",
                   "format": "int64",
@@ -364,7 +406,7 @@
                 },
                 "InstanceType": {
                   "backendName": "instanceType",
-                  "description_en": "The instance type. Valid values: BUY (official certificate) and TEST (test certificate)",
+                  "description_en": "The instance type. Valid values:\nBUY: formal certificate.\nTEST: test certificate",
                   "description_zh": "实例类型，BUY：正式证书；TEST：测试证书",
                   "example": "BUY",
                   "type": "string"
@@ -378,7 +420,7 @@
                 },
                 "OrderEndTime": {
                   "backendName": "orderEndTime",
-                  "description_en": "The end time when the instance was purchased. The value is a UNIX timestamp accurate to seconds. This value is used to determine the purchase duration of the instance",
+                  "description_en": "The end time when the instance was purchased. The value is a UNIX timestamp in seconds. This value is used to determine the purchase duration of the instance",
                   "description_zh": "实例购买时的结束时间，时间戳，精确到秒。用来判断实例的购买时长",
                   "example": "1801324800000",
                   "format": "int64",
@@ -386,7 +428,7 @@
                 },
                 "OrderStartTime": {
                   "backendName": "orderStartTime",
-                  "description_en": "The start time when the instance was purchased. The value is a UNIX timestamp accurate to seconds. This value is used to determine the refund time limit",
+                  "description_en": "The start time when the instance was purchased. The value is a UNIX timestamp in seconds. This value is used to determine the refund time limit",
                   "description_zh": "实例购买时的开始时间，时间戳，精确到秒。用来判断退款时间限制",
                   "example": "1801324800000",
                   "format": "int64",
@@ -417,7 +459,7 @@
                 },
                 "Status": {
                   "backendName": "status",
-                  "description_en": "The instance status. Valid values:\ninactive: Pending use.\npending: Under review. The latest certificate has been submitted for commit.\nwillExpire: The instance is about to expire.\nexpired: The instance has expired.\nrefund: Refunded.\nnormal: Normal.\nclosed: Shutdown and unavailable",
+                  "description_en": "The instance status. Valid values:\ninactive: Pending use.\npending: Under review. The latest certificate is being reviewed.\nwillExpire: The instance is about to expire.\nexpired: The instance has expired.\nrefund: Refunded.\nnormal: Normal.\nclosed: Closed. The instance is unavailable",
                   "description_zh": "实例状态。\ninactive：待使用\npending：审核中，最新证书提交审核中\nwillExpire：实例即将过期\nexpired：实例已经过期\nrefund：已退款\nnormal：正常\nclosed：已关闭，不可使用",
                   "example": "inactive",
                   "sensitive": true,
@@ -425,11 +467,11 @@
                 },
                 "UsingProductList": {
                   "backendName": "usingProductList",
-                  "description_en": "The list of cloud services for the latest certificate deployment",
+                  "description_en": "The list of cloud services to which the latest certificate is deployed",
                   "description_zh": "最新证书部署云产品列表",
                   "itemName": "Product",
                   "items": {
-                    "description_en": "The cloud service for certificate deployment",
+                    "description_en": "The cloud service to which the certificate is deployed",
                     "description_zh": "部署云产品",
                     "example": "['DCDN', 'VOD', 'CDN', 'OSS']",
                     "title_en": "部署云产品。",
@@ -439,6 +481,19 @@
                   "title_en": "最新证书部署云产品列表。",
                   "title_zh": "最新证书部署云产品列表。",
                   "type": "array"
+                },
+                "VersionType": {
+                  "backendName": "versionType",
+                  "description_en": "The version type. Valid values:\nbasic: Basic Edition.\nstandard: Standard Edition.\nprofessional: Professional Edition.\nultimate: Ultimate Edition",
+                  "description_zh": "版本类型，取值有： 基础版basic、标准版standard、专业版professional、旗舰版ultimate",
+                  "enum": [
+                    "basic",
+                    "standard",
+                    "professional",
+                    "ultimate"
+                  ],
+                  "example": "professional",
+                  "type": "string"
                 },
                 "WildcardDomainCount": {
                   "backendName": "wildcardDomainCount",
