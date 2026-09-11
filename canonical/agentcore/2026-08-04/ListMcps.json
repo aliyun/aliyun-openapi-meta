@@ -3,7 +3,7 @@
   "cmd_full_name": "agentcore list-mcps",
   "cmd_name": "list-mcps",
   "deprecated": false,
-  "description_en": "Queries MCP services and their configurations and statuses in a specified workspace by page",
+  "description_en": "Queries MCP services and their configurations and statuses in a specified workspace by using paging",
   "description_zh": "分页查询指定工作空间中的 MCP 服务及其配置和状态",
   "kebab_example": "aliyun agentcore list-mcps --workspace-id workspace-id --region cn-hangzhou",
   "method": "GET",
@@ -35,7 +35,7 @@
     },
     {
       "example": "20",
-      "help_en": "The maximum number of records per page",
+      "help_en": "The maximum number of entries per page",
       "help_zh": "每页最大返回条数",
       "location": "query",
       "name": "max_results",
@@ -61,8 +61,8 @@
     },
     {
       "example": "my-mcp-server",
-      "help_en": "The MCP service name. Used together with SearchType",
-      "help_zh": "MCP 服务名称。与 SearchType 配合使用",
+      "help_en": "The MCP service name or service ID. Used together with SearchType",
+      "help_zh": "MCP 服务名称或服务 ID。与 SearchType 配合使用",
       "location": "query",
       "name": "name",
       "options": [
@@ -84,6 +84,31 @@
       "raw_name": "searchType",
       "required": false,
       "type": "string"
+    },
+    {
+      "example": "KNOWLEDGE_BASE",
+      "help_en": "Filters results by official usage tag",
+      "help_zh": "按官方用途标签筛选",
+      "location": "query",
+      "name": "official_tag",
+      "options": [
+        "--official-tag"
+      ],
+      "raw_name": "officialTag",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "help_en": "Specifies whether the service is still bound by the official template usage constraint",
+      "help_zh": "是否仍受官方模板用途约束",
+      "location": "query",
+      "name": "usage_active",
+      "options": [
+        "--usage-active"
+      ],
+      "raw_name": "usageActive",
+      "required": false,
+      "type": "bool"
     }
   ],
   "pathPattern": "/workspaces/[workspaceId]/mcp-servers",
@@ -102,6 +127,8 @@
             "description_en": "The business status code",
             "description_zh": "业务状态码",
             "example": "Success",
+            "title_en": "业务状态码",
+            "title_zh": "业务状态码",
             "type": "string"
           },
           "httpStatusCode": {
@@ -110,6 +137,8 @@
             "description_zh": "HTTP 状态码",
             "example": "200",
             "format": "int32",
+            "title_en": "HTTP 状态码",
+            "title_zh": "HTTP 状态码",
             "type": "integer"
           },
           "items": {
@@ -125,21 +154,54 @@
                   "description_zh": "MCP 服务地址列表",
                   "itemName": "addresses",
                   "items": {
-                    "description_en": "The element in the list of MCP service addresses",
+                    "description_en": "An element in the MCP service address list",
                     "description_zh": "MCP 服务地址列表中的元素",
                     "example": "https://example.com/mcp",
+                    "title_en": "单个远程 MCP 服务地址",
+                    "title_zh": "单个远程 MCP 服务地址",
                     "type": "string"
                   },
+                  "title_en": "远程 MCP 服务地址列表",
+                  "title_zh": "远程 MCP 服务地址列表",
                   "type": "array"
                 },
                 "auth": {
                   "backendName": "auth",
-                  "description_en": "The backend authentication configuration. enabled indicates whether authentication is enabled. directProxy specifies the custom authentication header for direct proxy. httpToMcp specifies the list of OpenAPI credentials for HTTP_TO_MCP",
+                  "description_en": "The backend authentication configuration. enabled indicates whether it is enabled. directProxy specifies custom authentication headers for direct proxy. httpToMcp specifies the OpenAPI credential list for HTTP_TO_MCP",
                   "description_zh": "后端认证配置。enabled 表示是否启用；directProxy 为直连代理自定义认证头；httpToMcp 为 HTTP_TO_MCP 的 OpenAPI 凭证列表",
                   "properties": {
+                    "codePackage": {
+                      "backendName": "codePackage",
+                      "description_en": "The caller API Key authentication configuration for code-deployed MCP",
+                      "description_zh": "代码部署 MCP 的调用方 API Key 认证配置",
+                      "properties": {
+                        "apiKey": {
+                          "backendName": "apiKey",
+                          "description_en": "The API Key used to verify MCP callers",
+                          "description_zh": "用于校验 MCP 调用方的 API Key",
+                          "example": "example-api-key",
+                          "sensitive": true,
+                          "title_en": "用于校验 MCP 调用方的 API Key",
+                          "title_zh": "用于校验 MCP 调用方的 API Key",
+                          "type": "string"
+                        },
+                        "headerName": {
+                          "backendName": "headerName",
+                          "description_en": "The name of the request header that carries the API Key",
+                          "description_zh": "承载 API Key 的请求头名称",
+                          "example": "X-API-Key",
+                          "title_en": "承载 API Key 的请求头名称",
+                          "title_zh": "承载 API Key 的请求头名称",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "代码部署 MCP 的调用方 API Key 认证配置",
+                      "title_zh": "代码部署 MCP 的调用方 API Key 认证配置",
+                      "type": "object"
+                    },
                     "directProxy": {
                       "backendName": "directProxy",
-                      "description_en": "The direct proxy authentication configuration",
+                      "description_en": "The authentication configuration for direct proxy",
                       "description_zh": "直连代理认证配置",
                       "properties": {
                         "name": {
@@ -147,6 +209,8 @@
                           "description_en": "The name",
                           "description_zh": "名称",
                           "example": "mcp-example",
+                          "title_en": "后端认证请求头名称",
+                          "title_zh": "后端认证请求头名称",
                           "type": "string"
                         },
                         "value": {
@@ -155,15 +219,21 @@
                           "description_zh": "认证参数取值",
                           "example": "example-credential",
                           "sensitive": true,
+                          "title_en": "后端认证请求头的值",
+                          "title_zh": "后端认证请求头的值",
                           "type": "string"
                         }
                       },
+                      "title_en": "直连代理的后端认证配置",
+                      "title_zh": "直连代理的后端认证配置",
                       "type": "object"
                     },
                     "enabled": {
                       "backendName": "enabled",
-                      "description_en": "Indicates whether authentication is enabled",
+                      "description_en": "Indicates whether the configuration is enabled",
                       "description_zh": "是否启用",
+                      "title_en": "是否启用该配置",
+                      "title_zh": "是否启用该配置",
                       "type": "boolean"
                     },
                     "httpToMcp": {
@@ -179,6 +249,8 @@
                             "description_zh": "认证凭证",
                             "example": "example-credential",
                             "sensitive": true,
+                            "title_en": "后端认证凭据",
+                            "title_zh": "后端认证凭据",
                             "type": "string"
                           },
                           "id": {
@@ -186,6 +258,8 @@
                             "description_en": "The authentication scheme ID",
                             "description_zh": "认证方案 ID",
                             "example": "mcp-1234567890abcdef",
+                            "title_en": "后端认证配置 ID",
+                            "title_zh": "后端认证配置 ID",
                             "type": "string"
                           },
                           "name": {
@@ -193,6 +267,8 @@
                             "description_en": "The name",
                             "description_zh": "名称",
                             "example": "mcp-example",
+                            "title_en": "API Key 参数名称",
+                            "title_zh": "API Key 参数名称",
                             "type": "string"
                           },
                           "position": {
@@ -204,6 +280,8 @@
                               "query"
                             ],
                             "example": "header",
+                            "title_en": "API Key 的传递位置",
+                            "title_zh": "API Key 的传递位置",
                             "type": "string"
                           },
                           "type": {
@@ -216,16 +294,849 @@
                               "apiKey"
                             ],
                             "example": "basic",
+                            "title_en": "后端认证类型",
+                            "title_zh": "后端认证类型",
                             "type": "string"
                           }
                         },
                         "type": "object"
                       },
+                      "title_en": "HTTP 转 MCP 的后端认证配置列表",
+                      "title_zh": "HTTP 转 MCP 的后端认证配置列表",
                       "type": "array"
                     }
                   },
-                  "title_en": "后端认证配置。enabled 表示是否启用；directProxy 为直连代理自定义认证头；httpToMcp 为 HTTP_TO_MCP 的 OpenAPI 凭证列表",
-                  "title_zh": "后端认证配置。enabled 表示是否启用；directProxy 为直连代理自定义认证头；httpToMcp 为 HTTP_TO_MCP 的 OpenAPI 凭证列表",
+                  "title_en": "后端认证配置。enabled 表示是否启用；directProxy 为直连代理自定义认证头；httpToMcp 为 HTTP_TO_MCP 的 OpenAPI 凭证列表；codePackage 用于代码部署 MCP 的调用方 API Key 鉴权",
+                  "title_zh": "后端认证配置。enabled 表示是否启用；directProxy 为直连代理自定义认证头；httpToMcp 为 HTTP_TO_MCP 的 OpenAPI 凭证列表；codePackage 用于代码部署 MCP 的调用方 API Key 鉴权",
+                  "type": "object"
+                },
+                "createdAt": {
+                  "backendName": "createdAt",
+                  "description_en": "The MCP creation time in ISO 8601 UTC format",
+                  "description_zh": "MCP 创建时间，采用 ISO 8601 UTC 格式",
+                  "example": "2026-08-23T00:00:00Z",
+                  "title_en": "MCP 创建时间，采用 ISO 8601 UTC 格式",
+                  "title_zh": "MCP 创建时间，采用 ISO 8601 UTC 格式",
+                  "type": "string"
+                },
+                "customTags": {
+                  "backendName": "customTags",
+                  "description_en": "The custom tags. Multiple tags are supported",
+                  "description_zh": "自定义标签，支持多个",
+                  "itemName": "customTags",
+                  "items": {
+                    "description_en": "A single MCP custom tag",
+                    "description_zh": "单个 MCP 自定义标签",
+                    "example": "知识库",
+                    "title_en": "单个 MCP 自定义标签",
+                    "title_zh": "单个 MCP 自定义标签",
+                    "type": "string"
+                  },
+                  "title_en": "自定义标签，支持多个",
+                  "title_zh": "自定义标签，支持多个",
+                  "type": "array"
+                },
+                "deploymentConfig": {
+                  "backendName": "deploymentConfig",
+                  "description_en": "The deployment configuration for code-deployed MCP",
+                  "description_zh": "代码部署 MCP 的部署配置",
+                  "properties": {
+                    "accessControl": {
+                      "backendName": "accessControl",
+                      "description_en": "The MCP ingress access control",
+                      "description_zh": "MCP 入口访问控制",
+                      "properties": {
+                        "credentialId": {
+                          "backendName": "credentialId",
+                          "description_en": "References an AgentCore Credential when mode is set to CREDENTIAL",
+                          "description_zh": "mode 为 CREDENTIAL 时引用 AgentCore Credential",
+                          "example": "credential-id",
+                          "title_en": "访问凭证 ID",
+                          "title_zh": "访问凭证 ID",
+                          "type": "string"
+                        },
+                        "enabled": {
+                          "backendName": "enabled",
+                          "description_en": "Indicates whether ingress access control is enabled",
+                          "description_zh": "是否启用入口访问控制",
+                          "title_en": "是否启用入口访问控制",
+                          "title_zh": "是否启用入口访问控制",
+                          "type": "boolean"
+                        },
+                        "mode": {
+                          "backendName": "mode",
+                          "description_en": "ANONYMOUS indicates anonymous access. CREDENTIAL indicates using an AgentCore access credential",
+                          "description_zh": "ANONYMOUS 表示匿名访问，CREDENTIAL 表示使用 AgentCore 访问凭证",
+                          "enum": [
+                            "ANONYMOUS",
+                            "CREDENTIAL"
+                          ],
+                          "example": "CREDENTIAL",
+                          "title_en": "访问控制模式",
+                          "title_zh": "访问控制模式",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "MCP 入口访问控制",
+                      "title_zh": "MCP 入口访问控制",
+                      "type": "object"
+                    },
+                    "agentIdentityConfiguration": {
+                      "backendName": "agentIdentityConfiguration",
+                      "description_en": "The Agent Identity configuration",
+                      "description_zh": "Agent Identity 配置",
+                      "properties": {
+                        "authorizationEnabled": {
+                          "backendName": "authorizationEnabled",
+                          "description_en": "Indicates whether authorization is enabled",
+                          "description_zh": "是否启用授权",
+                          "title_en": "是否启用授权",
+                          "title_zh": "是否启用授权",
+                          "type": "boolean"
+                        },
+                        "credentialProviderArn": {
+                          "backendName": "credentialProviderArn",
+                          "description_en": "The credential provider ARN",
+                          "description_zh": "凭证提供者 ARN",
+                          "example": "acs:agentidentity:cn-hangzhou:1234567890123456:provider/example",
+                          "title_en": "凭证提供者 ARN",
+                          "title_zh": "凭证提供者 ARN",
+                          "type": "string"
+                        },
+                        "credentialProviderType": {
+                          "backendName": "credentialProviderType",
+                          "description_en": "The credential provider type",
+                          "description_zh": "凭证提供者类型",
+                          "enum": [
+                            "oauth2",
+                            "api_key"
+                          ],
+                          "example": "oauth2",
+                          "title_en": "凭证提供者类型",
+                          "title_zh": "凭证提供者类型",
+                          "type": "string"
+                        },
+                        "enabled": {
+                          "backendName": "enabled",
+                          "description_en": "Indicates whether Agent Identity is enabled",
+                          "description_zh": "是否启用 Agent Identity",
+                          "title_en": "是否启用 Agent Identity",
+                          "title_zh": "是否启用 Agent Identity",
+                          "type": "boolean"
+                        }
+                      },
+                      "title_en": "Agent Identity 配置",
+                      "title_zh": "Agent Identity 配置",
+                      "type": "object"
+                    },
+                    "artifactType": {
+                      "backendName": "artifactType",
+                      "description_en": "Code indicates a ZIP code package. Container indicates a custom container",
+                      "description_zh": "Code 表示 ZIP 代码包，Container 表示自定义容器",
+                      "enum": [
+                        "Code",
+                        "Container"
+                      ],
+                      "example": "Code",
+                      "title_en": "制品类型",
+                      "title_zh": "制品类型",
+                      "type": "string"
+                    },
+                    "codeConfiguration": {
+                      "backendName": "codeConfiguration",
+                      "description_en": "The code package configuration",
+                      "description_zh": "代码包配置",
+                      "properties": {
+                        "codePackageToken": {
+                          "backendName": "codePackageToken",
+                          "description_en": "The temporary code package token returned by GetMcpCodePackageUploadUrl. Use this token to create or update a code deployment after completing the pre-signed upload",
+                          "description_zh": "GetMcpCodePackageUploadUrl 返回的临时代码包令牌；完成预签名上传后用于创建或更新代码部署",
+                          "example": "upload-token",
+                          "sensitive": true,
+                          "title_en": "代码包令牌",
+                          "title_zh": "代码包令牌",
+                          "type": "string"
+                        },
+                        "command": {
+                          "backendName": "command",
+                          "description_en": "The full startup command, with arguments passed in order by parameter boundary. For example, when using supergateway to start a stdio MCP, pass supergateway, --stdio, the full subcommand, and remaining arguments",
+                          "description_zh": "完整启动命令，按参数边界依次传入。例如使用 supergateway 启动 stdio MCP 时传入 supergateway、--stdio、完整子命令和其余参数",
+                          "items": {
+                            "description_en": "The startup command or an individual command parameter",
+                            "description_zh": "启动命令或单个命令参数",
+                            "example": "python",
+                            "title_en": "启动命令或单个命令参数",
+                            "title_zh": "启动命令或单个命令参数",
+                            "type": "string"
+                          },
+                          "title_en": "启动命令",
+                          "title_zh": "启动命令",
+                          "type": "array"
+                        },
+                        "language": {
+                          "backendName": "language",
+                          "description_en": "The code package runtime: python3.13, nodejs22, or java17",
+                          "description_zh": "代码包运行时：python3.13、nodejs22 或 java17",
+                          "enum": [
+                            "python3.13",
+                            "nodejs22",
+                            "java17"
+                          ],
+                          "example": "python3.13",
+                          "title_en": "代码运行时",
+                          "title_zh": "代码运行时",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "代码包配置",
+                      "title_zh": "代码包配置",
+                      "type": "object"
+                    },
+                    "containerConfiguration": {
+                      "backendName": "containerConfiguration",
+                      "description_en": "The custom container configuration",
+                      "description_zh": "自定义容器配置",
+                      "properties": {
+                        "acrInstanceId": {
+                          "backendName": "acrInstanceId",
+                          "description_en": "The ACR instance ID",
+                          "description_zh": "ACR 实例 ID",
+                          "example": "cri-example",
+                          "title_en": "ACR 实例 ID",
+                          "title_zh": "ACR 实例 ID",
+                          "type": "string"
+                        },
+                        "command": {
+                          "backendName": "command",
+                          "description_en": "The startup command",
+                          "description_zh": "启动命令",
+                          "items": {
+                            "description_en": "The startup command or an individual command parameter",
+                            "description_zh": "启动命令或单个命令参数",
+                            "example": "python",
+                            "title_en": "启动命令或单个命令参数",
+                            "title_zh": "启动命令或单个命令参数",
+                            "type": "string"
+                          },
+                          "title_en": "启动命令",
+                          "title_zh": "启动命令",
+                          "type": "array"
+                        },
+                        "entrypoint": {
+                          "backendName": "entrypoint",
+                          "description_en": "The container entrypoint parameters",
+                          "description_zh": "容器入口参数",
+                          "items": {
+                            "description_en": "An individual container entrypoint parameter",
+                            "description_zh": "单个容器入口参数",
+                            "example": "/bin/sh",
+                            "title_en": "单个容器入口参数",
+                            "title_zh": "单个容器入口参数",
+                            "type": "string"
+                          },
+                          "title_en": "容器入口参数",
+                          "title_zh": "容器入口参数",
+                          "type": "array"
+                        },
+                        "image": {
+                          "backendName": "image",
+                          "description_en": "The container image address",
+                          "description_zh": "容器镜像地址",
+                          "example": "registry.cn-hangzhou.aliyuncs.com/example/mcp:1.0.0",
+                          "title_en": "容器镜像地址",
+                          "title_zh": "容器镜像地址",
+                          "type": "string"
+                        },
+                        "imageRegistryType": {
+                          "backendName": "imageRegistryType",
+                          "description_en": "The image registry type",
+                          "description_zh": "镜像仓库类型",
+                          "enum": [
+                            "ACR",
+                            "ACREE",
+                            "CUSTOM"
+                          ],
+                          "example": "ACR",
+                          "title_en": "镜像仓库类型",
+                          "title_zh": "镜像仓库类型",
+                          "type": "string"
+                        },
+                        "mcpRuntimeMode": {
+                          "backendName": "mcpRuntimeMode",
+                          "description_en": "The custom container must expose a standard MCP endpoint on its own. The value is SELF_HOSTED",
+                          "description_zh": "自定义容器当前需自行暴露标准 MCP，取值为 SELF_HOSTED",
+                          "enum": [
+                            "SELF_HOSTED"
+                          ],
+                          "example": "SELF_HOSTED",
+                          "title_en": "MCP Runtime 模式",
+                          "title_zh": "MCP Runtime 模式",
+                          "type": "string"
+                        },
+                        "sourceType": {
+                          "backendName": "sourceType",
+                          "description_en": "The value is fixed to CONTAINER_IMAGE",
+                          "description_zh": "当前固定为 CONTAINER_IMAGE",
+                          "enum": [
+                            "CONTAINER_IMAGE"
+                          ],
+                          "example": "CONTAINER_IMAGE",
+                          "title_en": "容器来源类型",
+                          "title_zh": "容器来源类型",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "自定义容器配置",
+                      "title_zh": "自定义容器配置",
+                      "type": "object"
+                    },
+                    "hookConfiguration": {
+                      "backendName": "hookConfiguration",
+                      "description_en": "The hook configuration",
+                      "description_zh": "Hook 配置",
+                      "properties": {
+                        "hooks": {
+                          "backendName": "hooks",
+                          "description_en": "The PRE_LIST_TOOLS, PRE_CALL_TOOL, POST_LIST_TOOLS, and POST_CALL_TOOL hooks are executed in array order",
+                          "description_zh": "按数组顺序执行 PRE_LIST_TOOLS、PRE_CALL_TOOL、POST_LIST_TOOLS 和 POST_CALL_TOOL Hook",
+                          "items": {
+                            "properties": {
+                              "apiVersion": {
+                                "backendName": "apiVersion",
+                                "description_en": "The hook API version",
+                                "description_zh": "Hook API 版本",
+                                "example": "1.0",
+                                "title_en": "Hook API 版本",
+                                "title_zh": "Hook API 版本",
+                                "type": "string"
+                              },
+                              "description": {
+                                "backendName": "description",
+                                "description_en": "The hook description",
+                                "description_zh": "Hook 描述",
+                                "example": "记录 MCP 工具调用",
+                                "title_en": "Hook 描述",
+                                "title_zh": "Hook 描述",
+                                "type": "string"
+                              },
+                              "enabled": {
+                                "backendName": "enabled",
+                                "description_en": "Indicates whether the hook is enabled",
+                                "description_zh": "是否启用 Hook",
+                                "title_en": "是否启用 Hook",
+                                "title_zh": "是否启用 Hook",
+                                "type": "boolean"
+                              },
+                              "event": {
+                                "backendName": "event",
+                                "description_en": "The hook event",
+                                "description_zh": "Hook 事件",
+                                "enum": [
+                                  "PRE_LIST_TOOLS",
+                                  "PRE_CALL_TOOL",
+                                  "POST_LIST_TOOLS",
+                                  "POST_CALL_TOOL"
+                                ],
+                                "example": "PRE_CALL_TOOL",
+                                "title_en": "Hook 事件",
+                                "title_zh": "Hook 事件",
+                                "type": "string"
+                              },
+                              "headers": {
+                                "additionalProperties": {
+                                  "description_en": "The value of the HTTP request header",
+                                  "description_zh": "HTTP 请求头的值",
+                                  "example": "application/json",
+                                  "title_en": "HTTP 请求头的值",
+                                  "title_zh": "HTTP 请求头的值",
+                                  "type": "string"
+                                },
+                                "backendName": "headers",
+                                "description_en": "The hook request headers",
+                                "description_zh": "Hook 请求头",
+                                "title_en": "Hook 请求头",
+                                "title_zh": "Hook 请求头",
+                                "type": "object"
+                              },
+                              "timeout": {
+                                "backendName": "timeout",
+                                "description_en": "The timeout period. Unit: milliseconds",
+                                "description_zh": "单位为毫秒",
+                                "example": "3000",
+                                "format": "int32",
+                                "title_en": "Hook 超时时间",
+                                "title_zh": "Hook 超时时间",
+                                "type": "integer"
+                              },
+                              "url": {
+                                "backendName": "url",
+                                "description_en": "The hook callback URL",
+                                "description_zh": "Hook 回调地址",
+                                "example": "https://example.com/mcp-hook",
+                                "title_en": "Hook 回调地址",
+                                "title_zh": "Hook 回调地址",
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "title_en": "有序 Hook 列表",
+                          "title_zh": "有序 Hook 列表",
+                          "type": "array"
+                        }
+                      },
+                      "title_en": "Hook 配置",
+                      "title_zh": "Hook 配置",
+                      "type": "object"
+                    },
+                    "logConfiguration": {
+                      "backendName": "logConfiguration",
+                      "description_en": "The log configuration",
+                      "description_zh": "日志配置",
+                      "properties": {
+                        "enableInstanceMetrics": {
+                          "backendName": "enableInstanceMetrics",
+                          "description_en": "Indicates whether instance metrics collection is enabled",
+                          "description_zh": "是否采集实例指标",
+                          "title_en": "是否采集实例指标",
+                          "title_zh": "是否采集实例指标",
+                          "type": "boolean"
+                        },
+                        "enableRequestMetrics": {
+                          "backendName": "enableRequestMetrics",
+                          "description_en": "Indicates whether request metrics collection is enabled",
+                          "description_zh": "是否采集请求指标",
+                          "title_en": "是否采集请求指标",
+                          "title_zh": "是否采集请求指标",
+                          "type": "boolean"
+                        },
+                        "logBeginRule": {
+                          "backendName": "logBeginRule",
+                          "description_en": "The log splitting begin rule for Function Compute (FC)",
+                          "description_zh": "FC 日志切分起始规则",
+                          "example": "DefaultRegex",
+                          "title_en": "日志起始规则",
+                          "title_zh": "日志起始规则",
+                          "type": "string"
+                        },
+                        "logstore": {
+                          "backendName": "logstore",
+                          "description_en": "The Logstore name",
+                          "description_zh": "日志库名称",
+                          "example": "mcp-logs",
+                          "title_en": "日志库名称",
+                          "title_zh": "日志库名称",
+                          "type": "string"
+                        },
+                        "project": {
+                          "backendName": "project",
+                          "description_en": "The Simple Log Service project name",
+                          "description_zh": "日志服务项目名称",
+                          "example": "agentcore-mcp-logs",
+                          "title_en": "日志服务项目名称",
+                          "title_zh": "日志服务项目名称",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "日志配置",
+                      "title_zh": "日志配置",
+                      "type": "object"
+                    },
+                    "mcpConfiguration": {
+                      "backendName": "mcpConfiguration",
+                      "description_en": "The MCP session configuration",
+                      "description_zh": "MCP 会话配置",
+                      "properties": {
+                        "endpointPath": {
+                          "backendName": "endpointPath",
+                          "description_en": "The MCP endpoint path. For example, /mcp or /sse",
+                          "description_zh": "例如 /mcp 或 /sse",
+                          "example": "/mcp",
+                          "title_en": "MCP Endpoint 路径",
+                          "title_zh": "MCP Endpoint 路径",
+                          "type": "string"
+                        },
+                        "sessionConcurrencyPerInstance": {
+                          "backendName": "sessionConcurrencyPerInstance",
+                          "description_en": "The value is fixed to 1",
+                          "description_zh": "当前固定为 1",
+                          "example": "1",
+                          "format": "int32",
+                          "title_en": "单实例会话并发数",
+                          "title_zh": "单实例会话并发数",
+                          "type": "integer"
+                        },
+                        "sessionIdleTimeoutSeconds": {
+                          "backendName": "sessionIdleTimeoutSeconds",
+                          "description_en": "The session idle timeout period. Unit: seconds. Default value: 1800",
+                          "description_zh": "单位为秒，默认 1800",
+                          "example": "1800",
+                          "format": "int32",
+                          "title_en": "会话空闲超时时间",
+                          "title_zh": "会话空闲超时时间",
+                          "type": "integer"
+                        },
+                        "sessionMaxLifetimeSeconds": {
+                          "backendName": "sessionMaxLifetimeSeconds",
+                          "description_en": "The maximum session lifetime. Unit: seconds. Default value: 21600",
+                          "description_zh": "单位为秒，默认 21600",
+                          "example": "21600",
+                          "format": "int32",
+                          "title_en": "会话最大存活时间",
+                          "title_zh": "会话最大存活时间",
+                          "type": "integer"
+                        }
+                      },
+                      "title_en": "MCP 会话配置",
+                      "title_zh": "MCP 会话配置",
+                      "type": "object"
+                    },
+                    "nasConfiguration": {
+                      "backendName": "nasConfiguration",
+                      "description_en": "The NAS storage configuration",
+                      "description_zh": "NAS 存储配置",
+                      "properties": {
+                        "groupId": {
+                          "backendName": "groupId",
+                          "description_en": "The runtime user group ID",
+                          "description_zh": "运行用户组 ID",
+                          "example": "1000",
+                          "format": "int32",
+                          "title_en": "运行用户组 ID",
+                          "title_zh": "运行用户组 ID",
+                          "type": "integer"
+                        },
+                        "mountPoints": {
+                          "backendName": "mountPoints",
+                          "description_en": "The list of NAS mount points",
+                          "description_zh": "NAS 挂载点列表",
+                          "items": {
+                            "properties": {
+                              "enableTls": {
+                                "backendName": "enableTLS",
+                                "description_en": "Indicates whether TLS is enabled",
+                                "description_zh": "是否启用 TLS",
+                                "title_en": "是否启用 TLS",
+                                "title_zh": "是否启用 TLS",
+                                "type": "boolean"
+                              },
+                              "mountDir": {
+                                "backendName": "mountDir",
+                                "description_en": "The local mount directory",
+                                "description_zh": "本地挂载目录",
+                                "example": "/mnt/data",
+                                "title_en": "本地挂载目录",
+                                "title_zh": "本地挂载目录",
+                                "type": "string"
+                              },
+                              "serverAddr": {
+                                "backendName": "serverAddr",
+                                "description_en": "The NAS server address",
+                                "description_zh": "NAS 服务地址",
+                                "example": "example.cn-hangzhou.nas.aliyuncs.com",
+                                "title_en": "NAS 服务地址",
+                                "title_zh": "NAS 服务地址",
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "title_en": "NAS 挂载点列表",
+                          "title_zh": "NAS 挂载点列表",
+                          "type": "array"
+                        },
+                        "userId": {
+                          "backendName": "userId",
+                          "description_en": "The runtime user ID",
+                          "description_zh": "运行用户 ID",
+                          "example": "1000",
+                          "format": "int32",
+                          "title_en": "运行用户 ID",
+                          "title_zh": "运行用户 ID",
+                          "type": "integer"
+                        }
+                      },
+                      "title_en": "NAS 存储配置",
+                      "title_zh": "NAS 存储配置",
+                      "type": "object"
+                    },
+                    "networkConfiguration": {
+                      "backendName": "networkConfiguration",
+                      "description_en": "The network configuration",
+                      "description_zh": "网络配置",
+                      "properties": {
+                        "networkMode": {
+                          "backendName": "networkMode",
+                          "description_en": "The network mode",
+                          "description_zh": "网络模式",
+                          "enum": [
+                            "PUBLIC",
+                            "PRIVATE",
+                            "PUBLIC_AND_PRIVATE"
+                          ],
+                          "example": "PUBLIC",
+                          "title_en": "网络模式",
+                          "title_zh": "网络模式",
+                          "type": "string"
+                        },
+                        "securityGroupId": {
+                          "backendName": "securityGroupId",
+                          "description_en": "The security group ID",
+                          "description_zh": "安全组 ID",
+                          "example": "sg-example",
+                          "title_en": "安全组 ID",
+                          "title_zh": "安全组 ID",
+                          "type": "string"
+                        },
+                        "vSwitchIds": {
+                          "backendName": "vSwitchIds",
+                          "description_en": "The list of vSwitch IDs",
+                          "description_zh": "交换机 ID 列表",
+                          "items": {
+                            "description_en": "The vSwitch ID",
+                            "description_zh": "单个交换机 ID",
+                            "example": "vsw-example",
+                            "title_en": "单个交换机 ID",
+                            "title_zh": "单个交换机 ID",
+                            "type": "string"
+                          },
+                          "title_en": "交换机 ID 列表",
+                          "title_zh": "交换机 ID 列表",
+                          "type": "array"
+                        },
+                        "vpcId": {
+                          "backendName": "vpcId",
+                          "description_en": "The virtual private cloud (VPC) ID",
+                          "description_zh": "专有网络 VPC ID",
+                          "example": "vpc-example",
+                          "title_en": "专有网络 VPC ID",
+                          "title_zh": "专有网络 VPC ID",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "网络配置",
+                      "title_zh": "网络配置",
+                      "type": "object"
+                    },
+                    "ossMountConfiguration": {
+                      "backendName": "ossMountConfiguration",
+                      "description_en": "The OSS mount configuration",
+                      "description_zh": "OSS 挂载配置",
+                      "properties": {
+                        "mountPoints": {
+                          "backendName": "mountPoints",
+                          "description_en": "The list of OSS mount points",
+                          "description_zh": "OSS 挂载点列表",
+                          "items": {
+                            "properties": {
+                              "bucketName": {
+                                "backendName": "bucketName",
+                                "description_en": "The OSS bucket name",
+                                "description_zh": "OSS Bucket 名称",
+                                "example": "example-bucket",
+                                "title_en": "OSS Bucket 名称",
+                                "title_zh": "OSS Bucket 名称",
+                                "type": "string"
+                              },
+                              "bucketPath": {
+                                "backendName": "bucketPath",
+                                "description_en": "The OSS bucket path",
+                                "description_zh": "OSS Bucket 路径",
+                                "example": "/data",
+                                "title_en": "OSS Bucket 路径",
+                                "title_zh": "OSS Bucket 路径",
+                                "type": "string"
+                              },
+                              "endpoint": {
+                                "backendName": "endpoint",
+                                "description_en": "The OSS service endpoint",
+                                "description_zh": "OSS 服务访问端点",
+                                "example": "https://oss-cn-hangzhou.aliyuncs.com",
+                                "title_en": "OSS 服务访问端点",
+                                "title_zh": "OSS 服务访问端点",
+                                "type": "string"
+                              },
+                              "mountDir": {
+                                "backendName": "mountDir",
+                                "description_en": "The local mount directory",
+                                "description_zh": "本地挂载目录",
+                                "example": "/mnt/data",
+                                "title_en": "本地挂载目录",
+                                "title_zh": "本地挂载目录",
+                                "type": "string"
+                              },
+                              "readOnly": {
+                                "backendName": "readOnly",
+                                "description_en": "Indicates whether the mount point is read-only",
+                                "description_zh": "是否只读",
+                                "title_en": "是否只读",
+                                "title_zh": "是否只读",
+                                "type": "boolean"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "title_en": "OSS 挂载点列表",
+                          "title_zh": "OSS 挂载点列表",
+                          "type": "array"
+                        }
+                      },
+                      "title_en": "OSS 挂载配置",
+                      "title_zh": "OSS 挂载配置",
+                      "type": "object"
+                    },
+                    "parameterTransformConfiguration": {
+                      "backendName": "parameterTransformConfiguration",
+                      "description_en": "The parameter transformation and result enhancement configuration",
+                      "description_zh": "参数转换和结果增强配置",
+                      "properties": {
+                        "enabled": {
+                          "backendName": "enabled",
+                          "description_en": "Indicates whether parameter transformation and result enhancement is enabled",
+                          "description_zh": "是否启用参数转换和结果增强",
+                          "title_en": "是否启用参数转换和结果增强",
+                          "title_zh": "是否启用参数转换和结果增强",
+                          "type": "boolean"
+                        },
+                        "ruleSetId": {
+                          "backendName": "ruleSetId",
+                          "description_en": "The reserved reference to the parameter transformation and result enhancement rule set",
+                          "description_zh": "预留的参数转换和结果增强规则集引用",
+                          "example": "rules-1",
+                          "title_en": "转换规则集 ID",
+                          "title_zh": "转换规则集 ID",
+                          "type": "string"
+                        },
+                        "version": {
+                          "backendName": "version",
+                          "description_en": "The transformation rule version",
+                          "description_zh": "转换规则版本",
+                          "example": "1.0",
+                          "title_en": "转换规则版本",
+                          "title_zh": "转换规则版本",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "参数转换和结果增强配置",
+                      "title_zh": "参数转换和结果增强配置",
+                      "type": "object"
+                    },
+                    "proxyConfiguration": {
+                      "backendName": "proxyConfiguration",
+                      "description_en": "The MCP proxy configuration",
+                      "description_zh": "MCP 代理配置",
+                      "properties": {
+                        "enabled": {
+                          "backendName": "enabled",
+                          "description_en": "Indicates whether the MCP proxy is enabled",
+                          "description_zh": "是否启用 MCP 代理",
+                          "title_en": "是否启用 MCP 代理",
+                          "title_zh": "是否启用 MCP 代理",
+                          "type": "boolean"
+                        }
+                      },
+                      "title_en": "MCP 代理配置",
+                      "title_zh": "MCP 代理配置",
+                      "type": "object"
+                    },
+                    "runtimeConfiguration": {
+                      "backendName": "runtimeConfiguration",
+                      "description_en": "The runtime and resource configuration",
+                      "description_zh": "运行时和资源配置",
+                      "properties": {
+                        "cpu": {
+                          "backendName": "cpu",
+                          "description_en": "The number of vCPUs. Default value: 0.25",
+                          "description_zh": "单位为核，默认 0.25",
+                          "example": "0.25",
+                          "format": "double",
+                          "title_en": "CPU 规格",
+                          "title_zh": "CPU 规格",
+                          "type": "number"
+                        },
+                        "diskSize": {
+                          "backendName": "diskSize",
+                          "description_en": "The ephemeral disk size. Unit: MB. Valid values: 512 and 10240",
+                          "description_zh": "单位为 MB，支持 512 或 10240",
+                          "example": "512",
+                          "format": "int32",
+                          "title_en": "临时磁盘大小",
+                          "title_zh": "临时磁盘大小",
+                          "type": "integer"
+                        },
+                        "environmentVariables": {
+                          "additionalProperties": {
+                            "description_en": "The value of the environment variable",
+                            "description_zh": "环境变量的值",
+                            "example": "production",
+                            "title_en": "环境变量的值",
+                            "title_zh": "环境变量的值",
+                            "type": "string"
+                          },
+                          "backendName": "environmentVariables",
+                          "description_en": "The environment variables",
+                          "description_zh": "环境变量",
+                          "title_en": "环境变量",
+                          "title_zh": "环境变量",
+                          "type": "object"
+                        },
+                        "executionRoleArn": {
+                          "backendName": "executionRoleArn",
+                          "description_en": "The Alibaba Cloud Resource Name (ARN) of the RAM role used by user code to access downstream Alibaba Cloud resources",
+                          "description_zh": "用户代码访问下游阿里云资源时使用的 RAM 角色 ARN",
+                          "example": "acs:ram::1234567890123456:role/agentcore-mcp-execution",
+                          "title_en": "执行角色 ARN",
+                          "title_zh": "执行角色 ARN",
+                          "type": "string"
+                        },
+                        "instanceConcurrency": {
+                          "backendName": "instanceConcurrency",
+                          "description_en": "The number of concurrent requests per instance. Default value: 200",
+                          "description_zh": "默认 200",
+                          "example": "200",
+                          "format": "int32",
+                          "title_en": "单实例请求并发数",
+                          "title_zh": "单实例请求并发数",
+                          "type": "integer"
+                        },
+                        "memory": {
+                          "backendName": "memory",
+                          "description_en": "The memory size. Unit: MB. Default value: 512",
+                          "description_zh": "单位为 MB，默认 512",
+                          "example": "512",
+                          "format": "int32",
+                          "title_en": "内存规格",
+                          "title_zh": "内存规格",
+                          "type": "integer"
+                        },
+                        "port": {
+                          "backendName": "port",
+                          "description_en": "The service port. Default value: 9000",
+                          "description_zh": "默认 9000",
+                          "example": "9000",
+                          "format": "int32",
+                          "title_en": "服务端口",
+                          "title_zh": "服务端口",
+                          "type": "integer"
+                        },
+                        "timeout": {
+                          "backendName": "timeout",
+                          "description_en": "The function timeout period. Unit: seconds. Default value: 300",
+                          "description_zh": "单位为秒，默认 300",
+                          "example": "300",
+                          "format": "int32",
+                          "title_en": "函数超时时间",
+                          "title_zh": "函数超时时间",
+                          "type": "integer"
+                        }
+                      },
+                      "title_en": "运行时和资源配置",
+                      "title_zh": "运行时和资源配置",
+                      "type": "object"
+                    }
+                  },
+                  "title_en": "代码部署 MCP 的部署配置",
+                  "title_zh": "代码部署 MCP 的部署配置",
                   "type": "object"
                 },
                 "description": {
@@ -233,13 +1144,54 @@
                   "description_en": "The description",
                   "description_zh": "描述",
                   "example": "用于说明资源用途的示例描述。",
+                  "title_en": "MCP 服务描述",
+                  "title_zh": "MCP 服务描述",
                   "type": "string"
+                },
+                "endpoint": {
+                  "backendName": "endpoint",
+                  "description_en": "The MCP endpoint available for users or agents to call. This value is empty before deployment is complete",
+                  "description_zh": "可供用户或 Agent 调用的 MCP Endpoint。部署完成前为空",
+                  "example": "https://example.com/mcp",
+                  "title_en": "可供用户或 Agent 调用的 MCP Endpoint。部署完成前为空。",
+                  "title_zh": "可供用户或 Agent 调用的 MCP Endpoint。部署完成前为空。",
+                  "type": "string"
+                },
+                "functionName": {
+                  "backendName": "functionName",
+                  "description_en": "The Function Compute function name corresponding to the CODE_PACKAGE MCP. This value is empty before deployment is complete or for other types",
+                  "description_zh": "CODE_PACKAGE MCP 对应的函数计算函数名称。部署完成前为空，其他类型为空",
+                  "example": "agentcore-mcp-example",
+                  "title_en": "CODE_PACKAGE MCP 对应的函数计算函数名称。部署完成前为空，其他类型为空。",
+                  "title_zh": "CODE_PACKAGE MCP 对应的函数计算函数名称。部署完成前为空，其他类型为空。",
+                  "type": "string"
+                },
+                "marketSource": {
+                  "backendName": "marketSource",
+                  "description_en": "The MCP marketplace source template",
+                  "description_zh": "MCP 来源市场模板",
+                  "properties": {
+                    "marketItemId": {
+                      "backendName": "marketItemId",
+                      "description_en": "The MCP marketplace template ID",
+                      "description_zh": "MCP 市场模板 ID",
+                      "example": "market-1",
+                      "title_en": "MCP 市场模板 ID",
+                      "title_zh": "MCP 市场模板 ID",
+                      "type": "string"
+                    }
+                  },
+                  "title_en": "MCP 来源市场模板",
+                  "title_zh": "MCP 来源市场模板",
+                  "type": "object"
                 },
                 "mcpServerId": {
                   "backendName": "mcpServerId",
                   "description_en": "The MCP service ID",
                   "description_zh": "MCP 服务 ID",
                   "example": "mcp-1234567890abcdef",
+                  "title_en": "MCP 服务 ID",
+                  "title_zh": "MCP 服务 ID",
                   "type": "string"
                 },
                 "name": {
@@ -247,6 +1199,17 @@
                   "description_en": "The name",
                   "description_zh": "名称",
                   "example": "mcp-example",
+                  "title_en": "MCP 服务名称",
+                  "title_zh": "MCP 服务名称",
+                  "type": "string"
+                },
+                "officialTag": {
+                  "backendName": "officialTag",
+                  "description_en": "The official tag managed by the server",
+                  "description_zh": "官方用途标签，由服务端管理",
+                  "example": "KNOWLEDGE_BASE",
+                  "title_en": "官方用途标签，由服务端管理",
+                  "title_zh": "官方用途标签，由服务端管理",
                   "type": "string"
                 },
                 "protocol": {
@@ -254,6 +1217,8 @@
                   "description_en": "The MCP protocol",
                   "description_zh": "MCP 协议",
                   "example": "SSE",
+                  "title_en": "MCP 协议",
+                  "title_zh": "MCP 协议",
                   "type": "string"
                 },
                 "status": {
@@ -288,6 +1253,8 @@
                   "description_en": "The Swagger configuration",
                   "description_zh": "Swagger 配置",
                   "example": "{\"type\":\"object\"}",
+                  "title_en": "HTTP 转 MCP 使用的 OpenAPI 配置，采用 JSON 字符串表示",
+                  "title_zh": "HTTP 转 MCP 使用的 OpenAPI 配置，采用 JSON 字符串表示",
                   "type": "string"
                 },
                 "type": {
@@ -295,19 +1262,42 @@
                   "description_en": "The type",
                   "description_zh": "类型",
                   "example": "file",
+                  "title_en": "MCP 类型：DIRECT_PROXY（直连代理）、HTTP_TO_MCP（HTTP 转 MCP）或 CODE_PACKAGE（代码部署）",
+                  "title_zh": "MCP 类型：DIRECT_PROXY（直连代理）、HTTP_TO_MCP（HTTP 转 MCP）或 CODE_PACKAGE（代码部署）",
                   "type": "string"
+                },
+                "updatedAt": {
+                  "backendName": "updatedAt",
+                  "description_en": "The time when the MCP was last updated, in ISO 8601 UTC format",
+                  "description_zh": "MCP 最近更新时间，采用 ISO 8601 UTC 格式",
+                  "example": "2026-08-23T01:00:00Z",
+                  "title_en": "MCP 最近更新时间，采用 ISO 8601 UTC 格式",
+                  "title_zh": "MCP 最近更新时间，采用 ISO 8601 UTC 格式",
+                  "type": "string"
+                },
+                "usageActive": {
+                  "backendName": "usageActive",
+                  "description_en": "Indicates whether the MCP is still subject to the usage constraints of the official template",
+                  "description_zh": "MCP 是否仍受官方模板的用途约束",
+                  "title_en": "MCP 是否仍受官方模板的用途约束",
+                  "title_zh": "MCP 是否仍受官方模板的用途约束",
+                  "type": "boolean"
                 }
               },
               "type": "object"
             },
+            "title_en": "查询结果列表",
+            "title_zh": "查询结果列表",
             "type": "array"
           },
           "maxResults": {
             "backendName": "maxResults",
-            "description_en": "The maximum number of records per page",
+            "description_en": "The maximum number of entries per page",
             "description_zh": "每页最大返回条数",
             "example": "20",
             "format": "int32",
+            "title_en": "本次查询最多返回的记录数",
+            "title_zh": "本次查询最多返回的记录数",
             "type": "integer"
           },
           "message": {
@@ -315,6 +1305,8 @@
             "description_en": "The response message",
             "description_zh": "响应消息",
             "example": "请求处理成功",
+            "title_en": "响应消息",
+            "title_zh": "响应消息",
             "type": "string"
           },
           "nextToken": {
@@ -322,6 +1314,8 @@
             "description_en": "The pagination token for the next page",
             "description_zh": "下一页令牌",
             "example": "next-page-token",
+            "title_en": "查询下一页的分页标记",
+            "title_zh": "查询下一页的分页标记",
             "type": "string"
           },
           "requestId": {
@@ -329,14 +1323,16 @@
             "description_en": "The request ID",
             "description_zh": "请求 ID",
             "example": "A1B2C3D4-E5F6-47A8-90AB-CDEF12345678",
-            "title_en": "Id of the request",
-            "title_zh": "Id of the request",
+            "title_en": "请求 ID",
+            "title_zh": "请求 ID",
             "type": "string"
           },
           "success": {
             "backendName": "success",
             "description_en": "Indicates whether the request was successful",
             "description_zh": "请求是否成功",
+            "title_en": "请求是否成功",
+            "title_zh": "请求是否成功",
             "type": "boolean"
           },
           "totalCount": {
@@ -345,6 +1341,8 @@
             "description_zh": "总记录数",
             "example": "100",
             "format": "int64",
+            "title_en": "符合条件的记录总数",
+            "title_zh": "符合条件的记录总数",
             "type": "integer"
           }
         },
