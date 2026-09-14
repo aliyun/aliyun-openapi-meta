@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "10000",
-      "help_en": "The tenant ID that takes effect",
+      "help_en": "The ID of the effective tenant",
       "help_zh": "生效租户ID",
       "location": "query",
       "name": "tenant_id",
@@ -48,7 +48,7 @@
     },
     {
       "example": "示例关键词",
-      "help_en": "The keyword of the rule name for fuzzy match",
+      "help_en": "The keyword of the rule name, used for fuzzy match",
       "help_zh": "规则名称关键词，用于模糊匹配",
       "location": "query",
       "name": "keyword",
@@ -130,7 +130,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to return only tasks created by the caller. This parameter takes effect only in the group dimension (in the personal dimension, only the caller's own tasks are returned). If not specified, no filtering is applied",
+      "help_en": "Specifies whether to return only tasks created by the caller. This parameter takes effect only in the group dimension. In the personal dimension, only the caller's own tasks are always returned. If not specified, no filtering is applied",
       "help_zh": "只看自己创建的任务；仅群维度生效（个人维度恒为自己的任务），不传表示不过滤",
       "location": "query",
       "name": "creator_only",
@@ -169,40 +169,40 @@
             "description_zh": "Skill 卡片列表",
             "itemName": "items",
             "items": {
-              "description_en": "The result list.\nMaximum size:\n50",
+              "description_en": "The result list. Maximum size: 50",
               "description_zh": "结果列表\n最大size:\n50",
               "properties": {
                 "abnormalReason": {
                   "backendName": "abnormalReason",
-                  "description_en": "The reason for the exception. This field has a value only when status is abnormal",
+                  "description_en": "The reason for the exception. This parameter has a value only when status is abnormal",
                   "description_zh": "异常原因；仅 status=abnormal 时有值",
                   "example": "string_value",
                   "type": "string"
                 },
                 "canDelete": {
                   "backendName": "canDelete",
-                  "description_en": "Indicates whether the current caller can delete the task (only the task creator and group owner can do so). Always returns true for personal tasks",
+                  "description_en": "Indicates whether the current caller can delete the task. Only the task creator and group owner can delete the task. For personal tasks, this value is always true",
                   "description_zh": "当前调用者是否可删除（仅任务创建人与群主）；个人任务恒 true",
                   "example": "true",
                   "type": "boolean"
                 },
                 "canEdit": {
                   "backendName": "canEdit",
-                  "description_en": "Indicates whether the task can be edited or deleted",
+                  "description_en": "Indicates whether the course can be edited or deleted",
                   "description_zh": "课程是否可以编辑或删除",
                   "example": "true",
                   "type": "boolean"
                 },
                 "canExecute": {
                   "backendName": "canExecute",
-                  "description_en": "Indicates whether the current caller can immediately execute the task (anyone with visibility can operate. Returns false for abnormal tasks). Always returns true for personal tasks",
+                  "description_en": "Indicates whether the current caller can immediately execute the task. A task is executable if it is visible to the caller, except for abnormal tasks which return false. For personal tasks, this value is always true",
                   "description_zh": "当前调用者是否可立即执行（可见即可操作；异常任务 false）；个人任务恒 true",
                   "example": "true",
                   "type": "boolean"
                 },
                 "canToggle": {
                   "backendName": "canToggle",
-                  "description_en": "Indicates whether the current caller can start or stop the task (only the task creator and group owner can do so. Returns false for abnormal tasks). Always returns true for personal tasks",
+                  "description_en": "Indicates whether the current caller can start or stop the task. Only the task creator and group owner can toggle the task. Abnormal tasks return false. For personal tasks, this value is always true",
                   "description_zh": "当前调用者是否可启停（仅任务创建人与群主；异常任务 false）；个人任务恒 true",
                   "example": "true",
                   "type": "boolean"
@@ -253,11 +253,13 @@
                     "example": "pcitc-magent",
                     "type": "string"
                   },
+                  "parseType": "struct",
+                  "required": false,
                   "type": "array"
                 },
                 "executionCount": {
                   "backendName": "executionCount",
-                  "description_en": "The total number of executions",
+                  "description_en": "The cumulative number of executions",
                   "description_zh": "累计执行次数",
                   "example": "1",
                   "format": "int64",
@@ -314,21 +316,21 @@
                 },
                 "triggerType": {
                   "backendName": "triggerType",
-                  "description_en": "The trigger type",
+                  "description_en": "The type of the trigger",
                   "description_zh": "触发器的类型",
                   "example": "string_value",
                   "type": "string"
                 },
                 "visibility": {
                   "backendName": "visibility",
-                  "description_en": "The visibility scope of the group task. Valid values:\nPRIVATE: visible only to the creator and group owner.\nCOLLABORATIVE: visible to specified collaborators.\nPUBLIC: visible to all group members.\n\nFor group tasks, the default value is PRIVATE if not specified. This field is ignored for personal tasks",
+                  "description_en": "The visibility scope of the group task. Valid values:\nPRIVATE: visible only to the creator and group owner.\nCOLLABORATIVE: visible to specified collaborators.\nPUBLIC: visible to all group members.\n\nIf not specified for a group task, the default value is PRIVATE. This parameter is ignored for personal tasks",
                   "description_zh": "群任务可见范围：PRIVATE(仅创建人与群主可见)/COLLABORATIVE(指定协作成员可见)/PUBLIC(群内全员可见)；群任务不传时默认 PRIVATE，个人任务忽略该字段",
                   "example": "PRIVATE",
                   "type": "string"
                 },
                 "visibleMemberUserIds": {
                   "backendName": "visibleMemberUserIds",
-                  "description_en": "The list of collaborators (excluding the task creator and group creator, who are covered by the authentication layer). This field is returned only for group tasks. An empty list is returned for PRIVATE or PUBLIC visibility",
+                  "description_en": "The list of collaborator members, excluding the task creator and group creator whose access is governed by the authentication layer. This parameter is returned only for group tasks. An empty list is returned for PRIVATE and PUBLIC visibility",
                   "description_zh": "协作成员名单（不含任务创建人与群创建人，二者由鉴权层覆盖）；仅群任务返回，PRIVATE/PUBLIC 档返回空列表",
                   "example": "string_value",
                   "items": {
@@ -337,11 +339,15 @@
                     "example": "1001",
                     "type": "string"
                   },
+                  "parseType": "struct",
+                  "required": false,
                   "type": "array"
                 }
               },
               "type": "object"
             },
+            "parseType": "struct",
+            "required": false,
             "type": "array"
           },
           "maxResults": {
