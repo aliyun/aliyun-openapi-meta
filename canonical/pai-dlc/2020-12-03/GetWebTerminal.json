@@ -3,7 +3,7 @@
   "cmd_full_name": "pai-dlc get-web-terminal",
   "cmd_name": "get-web-terminal",
   "deprecated": false,
-  "description_en": "Provides methods and steps to obtain a HTTP link for accessing a container",
+  "description_en": "Provides the method and steps to obtain an HTTP link for accessing a container",
   "description_zh": "提供获取容器访问HTTP链接的方法和步骤",
   "kebab_example": "aliyun pai-dlc get-web-terminal --job-id dlc-20210126170216-000000 --pod-id dlc-20210126170216-0000-chief-0 --pod-uid 94a7cc7c-0033-48b5-85bd-71c63592c268 --is-shared true --region cn-hangzhou",
   "method": "GET",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "dlc-20210126170216-******",
-      "help_en": "The task ID",
+      "help_en": "The job ID",
       "help_zh": "任务ID",
       "location": "path",
       "name": "job_id",
@@ -35,7 +35,7 @@
     },
     {
       "example": "dlc-20210126170216-****-chief-0",
-      "help_en": "The ID of the pod in the task",
+      "help_en": "The pod ID of the job",
       "help_zh": "任务Pod ID",
       "location": "path",
       "name": "pod_id",
@@ -48,7 +48,7 @@
     },
     {
       "example": "94a7cc7c-0033-48b5-85bd-71c63592c268",
-      "help_en": "The pod UID",
+      "help_en": "Pod UID",
       "help_zh": "Pod UID",
       "location": "query",
       "name": "pod_uid",
@@ -61,7 +61,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to create a shareable link to access the container. Valid values:\n\ntrue: returns a shareable link to access the container. The link will expire after 30 seconds and can only be used once. After you access the container by using the link, other requests that use this link to access the container become invalid.\nfalse: returns a common shareable link to access the container. If you use a common shareable link to access a container, Alibaba Cloud identity authentication is required. The link will expire after 30 seconds",
+      "help_en": "Specifies whether to create a shared link for accessing the container. Valid values:\ntrue: Returns a shared link for accessing the container. The link expires after 30 seconds and can be used only once. After someone accesses the container through this link, subsequent requests using the same link are invalid.\nfalse: Returns a regular link for accessing the container. Alibaba Cloud identity authentication is required when using this link. The link expires after 30 seconds",
       "help_zh": "是否创建用于分享的进入容器链接，取值如下：\ntrue：返回进入容器的分享链接。该链接将在三十秒后失效，且仅能被使用一次。一旦通过该链接进入容器后，其他使用该链接进入容器的请求将无效。\nfalse：返回普通的进入容器的分享链接，使用时需进行阿里云身份认证。该链接将在三十秒后失效",
       "location": "query",
       "name": "is_shared",
@@ -79,17 +79,17 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The returned data",
+        "description_en": "The response",
         "description_zh": "返回结果",
         "properties": {
           "RequestId": {
-            "description_en": "The request ID which is used for diagnostics and Q\\&A",
+            "description_en": "The request ID for this call, used for diagnostics and troubleshooting",
             "description_zh": "此次调用的请求ID，用于诊断和答疑",
             "example": "473469C7-AA6F-4DC5-B3DB-A3DC0DE3C83E",
             "type": "string"
           },
           "WebTerminalUrl": {
-            "description_en": "The WebSocket URI for accessing the container. You must build a WebSocket client. For more information about the communication format, see the following code:\n\n    ws = new WebSocket(\n      `wss://xxxxx`,\n    );\n    ws.onopen = function open() {\n      console.warn('connected');\n      term.write('\\r');\n    };\n\n    ws.onclose = function close() {\n      console.warn('disconnected');\n      term.write('Connection closed');\n    };\n\n    // Return the following information in the backend.\n    ws.onmessage = function incoming(event) {\n      const msg = JSON.parse(event.data);\n      console.warn(msg);\n      if (msg.operation === 'stdout') {\n        term.write(msg.data);\n      } else {\n        console.warn('invalid msg operation: ' + msg);\n      }\n    };\n\n    // Enter the following code in the console.\n    term.onData(data => {\n      const msg = { operation: 'stdin', data: data };\n      ws.send(JSON.stringify(msg));\n    });\n\n    term.onResize(size => {\n      const msg = { operation: 'resize', cols: size.cols, rows: size.rows };\n      ws.send(JSON.stringify(msg));\n    });\n\n    fitAddon.fit();\n    };",
+            "description_en": "The WebSocket link for accessing the container. You need to build a WebSocket client. For the detailed communication format, refer to the following code:\n  ```\n  ws = new WebSocket(\n    `wss://xxxxx`,\n  );\n  ws.onopen = function open() {\n    console.warn('connected');\n    term.write('');\n  };\n\n  ws.onclose = function close() {\n    console.warn('disconnected');\n    term.write('Connection closed');\n  };\n\n  // Receive response from the backend\n  ws.onmessage = function incoming(event) {\n    const msg = JSON.parse(event.data);\n    console.warn(msg);\n    if (msg.operation === 'stdout') {\n      term.write(msg.data);\n    } else {\n      console.warn('invalid msg operation: ' + msg);\n    }\n  };\n\n  // Console input\n  term.onData(data => {\n    const msg = { operation: 'stdin', data: data };\n    ws.send(JSON.stringify(msg));\n  });\n\n  term.onResize(size => {\n    const msg = { operation: 'resize', cols: size.cols, rows: size.rows };\n    ws.send(JSON.stringify(msg));\n  });\n\n  fitAddon.fit();\n};\n```",
             "description_zh": "进入容器的WebSocket链接。您需构建WebSocket客户端，详细通信格式请参考如下代码：\n  ```\n  ws = new WebSocket(\n    `wss://xxxxx`,\n  );\n  ws.onopen = function open() {\n    console.warn('connected');\n    term.write('\\r');\n  };\n\n  ws.onclose = function close() {\n    console.warn('disconnected');\n    term.write('Connection closed');\n  };\n\n  // 收到后端返回\n  ws.onmessage = function incoming(event) {\n    const msg = JSON.parse(event.data);\n    console.warn(msg);\n    if (msg.operation === 'stdout') {\n      term.write(msg.data);\n    } else {\n      console.warn('invalid msg operation: ' + msg);\n    }\n  };\n\n  // 控制台输入\n  term.onData(data => {\n    const msg = { operation: 'stdin', data: data };\n    ws.send(JSON.stringify(msg));\n  });\n\n  term.onResize(size => {\n    const msg = { operation: 'resize', cols: size.cols, rows: size.rows };\n    ws.send(JSON.stringify(msg));\n  });\n\n  fitAddon.fit();\n};\n```",
             "example": "wss://*****",
             "type": "string"
@@ -103,7 +103,7 @@
   },
   "v1_parameters": [
     {
-      "help_en": "Specifies whether to create a shareable link to access the container. Valid values:\n\ntrue: returns a shareable link to access the container. The link will expire after 30 seconds and can only be used once. After you access the container by using the link, other requests that use this link to access the container become invalid.\nfalse: returns a common shareable link to access the container. If you use a common shareable link to access a container, Alibaba Cloud identity authentication is required. The link will expire after 30 seconds",
+      "help_en": "Specifies whether to create a shared link for accessing the container. Valid values:\ntrue: Returns a shared link for accessing the container. The link expires after 30 seconds and can be used only once. After someone accesses the container through this link, subsequent requests using the same link are invalid.\nfalse: Returns a regular link for accessing the container. Alibaba Cloud identity authentication is required when using this link. The link expires after 30 seconds",
       "help_zh": "是否创建用于分享的进入容器链接，取值如下：\ntrue：返回进入容器的分享链接。该链接将在三十秒后失效，且仅能被使用一次。一旦通过该链接进入容器后，其他使用该链接进入容器的请求将无效。\nfalse：返回普通的进入容器的分享链接，使用时需进行阿里云身份认证。该链接将在三十秒后失效",
       "name": "IsShared",
       "position": "query",
@@ -111,7 +111,7 @@
       "type": "bool"
     },
     {
-      "help_en": "The task ID",
+      "help_en": "The job ID",
       "help_zh": "任务ID",
       "name": "JobId",
       "position": "path",
@@ -119,7 +119,7 @@
       "type": "string"
     },
     {
-      "help_en": "The ID of the pod in the task",
+      "help_en": "The pod ID of the job",
       "help_zh": "任务Pod ID",
       "name": "PodId",
       "position": "path",
@@ -127,7 +127,7 @@
       "type": "string"
     },
     {
-      "help_en": "The pod UID",
+      "help_en": "Pod UID",
       "help_zh": "Pod UID",
       "name": "PodUid",
       "position": "query",
