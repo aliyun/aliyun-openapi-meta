@@ -86,6 +86,75 @@
               "raw_name": "modelName",
               "required": true,
               "type": "string"
+            },
+            {
+              "fields": [
+                {
+                  "example": "true",
+                  "help_en": "Specifies whether to enable token quota. Defaults to true if not specified. Set to false to disable and delete existing quota rules",
+                  "help_zh": "是否启用 Token 配额；不填时默认为 true，传 false 表示关闭并删除已有配额规则",
+                  "name": "enabled",
+                  "options": [
+                    "--enabled"
+                  ],
+                  "raw_name": "enabled",
+                  "required": false,
+                  "type": "bool"
+                },
+                {
+                  "enum": [
+                    "token"
+                  ],
+                  "example": "token",
+                  "help_en": "The quota limit type. Required by backend validation when quota is enabled. Fixed value: token",
+                  "help_zh": "配额限制类型；开启配额时由后端校验必填，固定值：token",
+                  "name": "limit_type",
+                  "options": [
+                    "--limit-type"
+                  ],
+                  "raw_name": "limitType",
+                  "required": false,
+                  "type": "string"
+                },
+                {
+                  "enum": [
+                    "day",
+                    "month"
+                  ],
+                  "example": "day",
+                  "help_en": "The quota statistical period. Required by backend validation when quota is enabled. Valid values: day (daily) and month (monthly)",
+                  "help_zh": "配额统计周期；开启配额时由后端校验必填，取值：day（按天）、month（按月）",
+                  "name": "period_type",
+                  "options": [
+                    "--period-type"
+                  ],
+                  "raw_name": "periodType",
+                  "required": false,
+                  "type": "string"
+                },
+                {
+                  "example": "1000000",
+                  "help_en": "The maximum number of tokens that can be consumed within a single period. Required by backend validation when quota is enabled. The value must be greater than 0",
+                  "help_zh": "单个周期内允许消耗的 Token 上限；开启配额时由后端校验必填，必须大于 0",
+                  "minimum": "1",
+                  "name": "usage_limit",
+                  "options": [
+                    "--usage-limit"
+                  ],
+                  "raw_name": "usageLimit",
+                  "required": false,
+                  "type": "int"
+                }
+              ],
+              "help_en": "The model token quota configuration. If not specified, no quota is configured",
+              "help_zh": "模型 Token 配额配置；不传则不配置配额",
+              "name": "quota",
+              "options": [
+                "--quota"
+              ],
+              "raw_name": "quota",
+              "required": false,
+              "type": "object"
             }
           ],
           "help_en": "The model configuration. Available only when modelSource is set to PLATFORM",
@@ -104,7 +173,7 @@
             "RUNTIME"
           ],
           "example": "PLATFORM",
-          "help_en": "The source of the model configuration. Valid values:\n\nPLATFORM: The platform parses and delivers the model configuration.\nRUNTIME: The external runtime manages the model on its own. You cannot specify the model parameter at the same time",
+          "help_en": "The model configuration source. PLATFORM indicates that the platform parses and delivers the model configuration. RUNTIME indicates that the external runtime manages the model independently, and the model parameter cannot be specified at the same time. Valid values:\nPLATFORM: platform model.\nRUNTIME: runtime model",
           "help_zh": "模型配置来源。PLATFORM 表示由平台解析并下发 model 配置；RUNTIME 表示由外部运行时自行管理模型，不能同时传入 model。枚举值：PLATFORM（平台模型）、RUNTIME（运行时模型）",
           "name": "model_source",
           "options": [
@@ -236,7 +305,7 @@
                   "MCP"
                 ],
                 "example": "MCP",
-                "help_en": "The tool type. Valid values:\n\nMCP: MCP tool",
+                "help_en": "The tool type. Valid values:\nMCP: MCP tool",
                 "help_zh": "工具类型。枚举值：MCP（MCP 工具）",
                 "name": "type",
                 "options": [
@@ -274,7 +343,7 @@
     },
     {
       "example": "client-token-1",
-      "help_en": "The reserved idempotency token. The backend does not provide idempotency guarantees in the current version",
+      "help_en": "The reserved idempotency token. The backend does not provide idempotency guarantee in the current phase",
       "help_zh": "预留幂等令牌，本期后端不提供幂等保证",
       "location": "query",
       "name": "client_token",
@@ -361,14 +430,14 @@
                   },
                   "lastActiveAt": {
                     "backendName": "lastActiveAt",
-                    "description_en": "The last active time of the external agent in RFC 3339 format",
+                    "description_en": "The time when the external agent was last active, in RFC 3339 format",
                     "description_zh": "外部智能体最近一次活跃时间，RFC 3339 格式",
                     "example": "2026-01-01T00:00:00Z",
                     "type": "string"
                   },
                   "lastHeartbeat": {
                     "backendName": "lastHeartbeat",
-                    "description_en": "The last heartbeat time of the external agent in RFC 3339 format",
+                    "description_en": "The time of the last heartbeat from the external agent, in RFC 3339 format",
                     "description_zh": "外部智能体最近一次心跳时间，RFC 3339 格式",
                     "example": "2026-01-01T00:00:00Z",
                     "type": "string"
@@ -430,7 +499,6 @@
                     "description_en": "The model connection ID",
                     "description_zh": "模型连接 ID",
                     "example": "mc-1",
-                    "required": true,
                     "type": "string"
                   },
                   "modelName": {
@@ -438,15 +506,96 @@
                     "description_en": "The upstream model name",
                     "description_zh": "上游模型名称",
                     "example": "qwen-max",
-                    "required": true,
                     "type": "string"
+                  },
+                  "quota": {
+                    "backendName": "quota",
+                    "description_en": "The model token quota configuration and the quota usage status in the current cycle. This field is empty if no quota is configured",
+                    "description_zh": "模型 Token 配额配置及当前周期的配额使用状态；未配置配额时为空",
+                    "properties": {
+                      "enabled": {
+                        "backendName": "enabled",
+                        "description_en": "Indicates whether the quota is enabled. This field is not returned if no quota is configured",
+                        "description_zh": "配额是否处于启用状态；未配置配额时不返回",
+                        "example": "true",
+                        "title_en": "配额是否处于启用状态；未配置配额时不返回",
+                        "title_zh": "配额是否处于启用状态；未配置配额时不返回",
+                        "type": "boolean"
+                      },
+                      "limitType": {
+                        "backendName": "limitType",
+                        "description_en": "The quota limit type. Currently, only token is supported",
+                        "description_zh": "配额限制类型；当前仅支持 token",
+                        "enum": [
+                          "token"
+                        ],
+                        "example": "token",
+                        "title_en": "配额限制类型；当前仅支持 token",
+                        "title_zh": "配额限制类型；当前仅支持 token",
+                        "type": "string"
+                      },
+                      "overLimit": {
+                        "backendName": "overLimit",
+                        "description_en": "Indicates whether the quota has been exceeded in the current cycle. This is a read-only field returned by the backend",
+                        "description_zh": "当前周期是否已超出配额；只读，由后端返回",
+                        "example": "false",
+                        "title_en": "当前周期是否已超出配额；只读，由后端返回",
+                        "title_zh": "当前周期是否已超出配额；只读，由后端返回",
+                        "type": "boolean"
+                      },
+                      "periodType": {
+                        "backendName": "periodType",
+                        "description_en": "The quota statistical period. day indicates a daily period. month indicates a monthly period",
+                        "description_zh": "配额统计周期；day 表示按天，month 表示按月",
+                        "enum": [
+                          "day",
+                          "month"
+                        ],
+                        "example": "day",
+                        "title_en": "配额统计周期；day 表示按天，month 表示按月",
+                        "title_zh": "配额统计周期；day 表示按天，month 表示按月",
+                        "type": "string"
+                      },
+                      "ruleStatus": {
+                        "backendName": "ruleStatus",
+                        "description_en": "The gateway quota rule status. This is a read-only field returned by the backend",
+                        "description_zh": "网关配额规则状态；只读，由后端返回",
+                        "example": "ACTIVE",
+                        "title_en": "网关配额规则状态；只读，由后端返回",
+                        "title_zh": "网关配额规则状态；只读，由后端返回",
+                        "type": "string"
+                      },
+                      "usageLimit": {
+                        "backendName": "usageLimit",
+                        "description_en": "The maximum number of tokens that can be consumed within a single cycle",
+                        "description_zh": "单个周期内允许消耗的 Token 上限",
+                        "example": "1000000",
+                        "format": "int64",
+                        "title_en": "单个周期内允许消耗的 Token 上限",
+                        "title_zh": "单个周期内允许消耗的 Token 上限",
+                        "type": "integer"
+                      },
+                      "usedAmount": {
+                        "backendName": "usedAmount",
+                        "description_en": "The number of tokens consumed in the current cycle. This is a read-only field returned by the backend",
+                        "description_zh": "当前周期已消耗的 Token 数；只读，由后端返回",
+                        "example": "12345",
+                        "format": "int64",
+                        "title_en": "当前周期已消耗的 Token 数；只读，由后端返回",
+                        "title_zh": "当前周期已消耗的 Token 数；只读，由后端返回",
+                        "type": "integer"
+                      }
+                    },
+                    "title_en": "模型 Token 配额配置及当前周期的配额使用状态；未配置配额时为空",
+                    "title_zh": "模型 Token 配额配置及当前周期的配额使用状态；未配置配额时为空",
+                    "type": "object"
                   }
                 },
                 "type": "object"
               },
               "modelSource": {
                 "backendName": "modelSource",
-                "description_en": "The source of the model configuration. Valid values:\n\nPLATFORM: The platform parses and delivers the model configuration.\nRUNTIME: The external runtime manages the model on its own. You cannot specify the model parameter at the same time",
+                "description_en": "The model configuration source. PLATFORM indicates that the platform parses and delivers the model configuration. RUNTIME indicates that the external runtime manages the model independently, and the model parameter cannot be specified at the same time. Valid values:\nPLATFORM: platform model.\nRUNTIME: runtime model",
                 "description_zh": "模型配置来源。PLATFORM 表示由平台解析并下发 model 配置；RUNTIME 表示由外部运行时自行管理模型，不能同时传入 model。枚举值：PLATFORM（平台模型）、RUNTIME（运行时模型）",
                 "enum": [
                   "PLATFORM",
@@ -569,7 +718,7 @@
                     },
                     "type": {
                       "backendName": "type",
-                      "description_en": "The tool type. Valid values:\n\nMCP: MCP tool",
+                      "description_en": "The tool type. Valid values:\nMCP: MCP tool",
                       "description_zh": "工具类型。枚举值：MCP（MCP 工具）",
                       "enum": [
                         "MCP"
@@ -610,7 +759,7 @@
           },
           "message": {
             "backendName": "message",
-            "description_en": "The message that indicates the result of the request",
+            "description_en": "The request processing result message",
             "description_zh": "请求处理结果消息",
             "example": "success",
             "type": "string"
