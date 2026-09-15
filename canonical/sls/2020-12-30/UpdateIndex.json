@@ -3,7 +3,7 @@
   "cmd_full_name": "sls update-index",
   "cmd_name": "update-index",
   "deprecated": false,
-  "description_en": "Updates the indexes of a Logstore",
+  "description_en": "Updates the index information of a Logstore",
   "description_zh": "更新Logstore的索引信息",
   "kebab_example": "aliyun sls update-index --project ali-test-project --logstore test-logstore --region cn-hangzhou",
   "method": "PUT",
@@ -33,7 +33,7 @@
   "parameters": [
     {
       "example": "ali-test-project",
-      "help_en": "The name of the project",
+      "help_en": "The project name",
       "help_zh": "Project名称",
       "location": "host",
       "name": "project",
@@ -46,7 +46,7 @@
     },
     {
       "example": "test-logstore",
-      "help_en": "The name of the Logstore",
+      "help_en": "The Logstore name",
       "help_zh": "Logstore名称",
       "location": "path",
       "name": "logstore",
@@ -58,7 +58,7 @@
       "type": "string"
     },
     {
-      "help_en": "The field index configuration. The key is the field name and the value is the index configuration for the field. You must specify either this parameter or the \\`line\\` parameter",
+      "help_en": "The field index configuration. The key is the field name, and the value is the field index configuration. At least one of the following must exist: full-text index, field index, or scan index.\nField index example:\n```\n{\n    \"region\": {\n      \"doc_value\": true,\n      \"alias\": \"\",\n      \"type\": \"text\",\n      \"caseSensitive\": false,\n      \"chn\": false,\n      \"token\": [\",\",\" \",\"'\",\"\\\"\",\";\",\"=\",\"(\",\")\",\"[\",\"]\",\"{\",\"}\",\"?\",\"@\",\"<\",\"&\",\"/\",\":\",\"\\n\",\"\\t\",\"\\r\"]\n    },\n    \"end_time\": {\n      \"doc_value\": true,\n      \"alias\": \"\",\n      \"type\": \"long\"\n    },\n    \"request_time\": {\n      \"doc_value\": true,\n      \"alias\": \"\",\n      \"type\": \"double\"\n    }\n  }\n```",
       "help_zh": "字段索引配置，key为字段名称，value为字段索引配置。全文索引、字段索引、扫描索引至少需要存在一个。\n字段索引示例：\n```\n{\n    \"region\": {\n      \"doc_value\": true,\n      \"alias\": \"\",\n      \"type\": \"text\",\n      \"caseSensitive\": false,\n      \"chn\": false,\n      \"token\": [\",\",\" \",\"'\",\"\\\"\",\";\",\"=\",\"(\",\")\",\"[\",\"]\",\"{\",\"}\",\"?\",\"@\",\"<\",\"&\",\"/\",\":\",\"\\n\",\"\\t\",\"\\r\"]\n    },\n    \"end_time\": {\n      \"doc_value\": true,\n      \"alias\": \"\",\n      \"type\": \"long\"\n    },\n    \"request_time\": {\n      \"doc_value\": true,\n      \"alias\": \"\",\n      \"type\": \"double\"\n    }\n  }\n```",
       "location": "body",
       "name": "keys",
@@ -287,8 +287,34 @@
     {
       "fields": [
         {
+          "example": "false",
+          "help_en": "Specifies whether to enable the automatic index discovery feature. After this feature is enabled, fields in logs that do not have indexes are automatically discovered and added to auto_text_keys (automatically discovered indexed fields). The automatically discovered indexed fields are of the text type with analytics enabled. Their case sensitivity and token settings inherit the full-text index configuration",
+          "help_zh": "是否开启索引自动发现功能。开启后会自动发现日志中未添加索引的字段，并添加到 auto_text_keys （自动发现的索引字段）内。自动发现的索引字段都是 text 文本类型，开启了统计分析能力，且其大小写敏感与分词配置继承全文索引的配置",
+          "name": "auto_key_detect",
+          "options": [
+            "--auto-key-detect"
+          ],
+          "raw_name": "auto_key_detect",
+          "required": false,
+          "type": "bool"
+        },
+        {
+          "element": {
+            "type": "string"
+          },
+          "help_en": "The automatically discovered indexed fields. The automatically discovered indexed fields are of the text type with analytics enabled. Their case sensitivity and token settings inherit the full-text index configuration. After automatic index discovery is disabled, the previously discovered indexes are retained unless you explicitly clear this field",
+          "help_zh": "自动发现的索引字段。自动发现的索引字段都是 text 文本类型，开启了统计分析能力，且其大小写敏感与分词配置继承全文索引的配置。关闭自动发现索引后，原自动发现的索引将继续保留，除非显式清空此字段",
+          "name": "auto_text_keys",
+          "options": [
+            "--auto-text-keys"
+          ],
+          "raw_name": "auto_text_keys",
+          "required": false,
+          "type": "array"
+        },
+        {
           "example": "true",
-          "help_en": "Specifies whether the index is case-sensitive.\n\ntrue: The index is case-sensitive.\n\nfalse (default): The index is not case-sensitive",
+          "help_en": "Specifies whether the index is case-sensitive. Default value: false",
           "help_zh": "是否大小写敏感。默认值为 false",
           "name": "case_sensitive",
           "options": [
@@ -300,7 +326,7 @@
         },
         {
           "example": "false",
-          "help_en": "Specifies whether the logs contain Chinese characters.\n\ntrue: The logs contain Chinese characters.\n\nfalse (default): The logs do not contain Chinese characters",
+          "help_en": "Specifies whether to include Chinese characters. Default value: false. Enabling this option may reduce write performance",
           "help_zh": "是否包含中文。默认值为 false，开启包含中文后，写入能力可能会有一定下降",
           "name": "chn",
           "options": [
@@ -314,7 +340,7 @@
           "element": {
             "type": "string"
           },
-          "help_en": "The list of fields to exclude from the full-text index. This parameter cannot be specified at the same time as \\`include\\_keys\\`",
+          "help_en": "The list of excluded fields. This parameter cannot be specified together with include_keys",
           "help_zh": "排除的字段列表，不能与include_keys同时指定",
           "name": "exclude_keys",
           "options": [
@@ -328,7 +354,7 @@
           "element": {
             "type": "string"
           },
-          "help_en": "The list of fields to include in the full-text index. This parameter cannot be specified at the same time as \\`exclude\\_keys\\`",
+          "help_en": "The list of included fields. This parameter cannot be specified together with exclude_keys",
           "help_zh": "包含的字段列表，不能与exclude_keys同时指定",
           "name": "include_keys",
           "options": [
@@ -342,7 +368,7 @@
           "element": {
             "type": "string"
           },
-          "help_en": "The list of delimiters for tokenization. This parameter specifies how the field is tokenized",
+          "help_en": "The list of token delimiters. You can set a token parameter to specify how the field is tokenized",
           "help_zh": "分词符列表。可以设置一个分词参数，指定这个字段按照哪一种方式分词",
           "name": "token",
           "options": [
@@ -353,7 +379,7 @@
           "type": "array"
         }
       ],
-      "help_en": "The full-text index configuration. You must specify either this parameter or the \\`keys\\` parameter",
+      "help_en": "The full-text index configuration. At least one of the following must exist: full-text index, field index, or scan index.\nFull-text index example:\n```\n{\n    \"chn\": false,\n    \"caseSensitive\": false,\n    \"token\":[\",\",\" \",\"'\",\"\\\"\",\";\",\"=\",\"(\",\")\",\"[\",\"]\",\"{\",\"}\",\"?\",\"@\",\"<\",\"&\",\"/\",\":\",\"\\n\",\"\\t\",\"\\r\"]\n}\n```",
       "help_zh": "全文索引配置。全文索引、字段索引、扫描索引至少需要存在一个。\n全文索引示例：\n```\n{\n    \"chn\": false,\n    \"caseSensitive\": false,\n    \"token\":[\",\",\" \",\"'\",\"\\\"\",\";\",\"=\",\"(\",\")\",\"[\",\"]\",\"{\",\"}\",\"?\",\"@\",\"<\",\"&\",\"/\",\":\",\"\\n\",\"\\t\",\"\\r\"]\n}\n```",
       "location": "body",
       "name": "line",
@@ -367,7 +393,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to enable log clustering. If enabled, either the whitelist or the blacklist can be active, but not both.\n\ntrue: Enable log clustering.\n\nfalse (default): Do not enable log clustering",
+      "help_en": "Specifies whether to enable LogReduce. After LogReduce is enabled, at most one of the whitelist and blacklist takes effect.\n\ntrue: LogReduce is enabled.\nfalse (default): LogReduce is not enabled",
       "help_zh": "是否开启日志聚类。开启后白名单与黑名单至多生效其中一个。\n\ntrue：开启日志聚类。\nfalse（默认值）：不开启日志聚类",
       "location": "body",
       "name": "log_reduce",
@@ -383,7 +409,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The blacklist of fields for log clustering. This parameter is valid only when log clustering is enabled",
+      "help_en": "The blacklist for filtering clustering fields in LogReduce. This parameter takes effect only when LogReduce is enabled",
       "help_zh": "日志聚类的聚类字段过滤黑名单，仅当日志聚类开启时有效",
       "location": "body",
       "name": "log_reduce_black_list",
@@ -399,7 +425,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The whitelist of fields for log clustering. This parameter is valid only when log clustering is enabled",
+      "help_en": "The whitelist for filtering clustering fields in LogReduce. This parameter takes effect only when LogReduce is enabled",
       "help_zh": "日志聚类的聚类字段过滤白名单，仅当日志聚类开启时有效",
       "location": "body",
       "name": "log_reduce_white_list",
@@ -413,7 +439,7 @@
     },
     {
       "example": "2048",
-      "help_en": "The default maximum length of a field value in Simple Log Service is 2,048 bytes (2 KB). To change this limit, set the maximum length for a text field. The value must be between 64 and 16,384 bytes",
+      "help_en": "Simple Log Service sets the maximum length of a field value to 2,048 bytes (2 KB) by default. To change the maximum length of a field value, set the maximum length of a statistics field (text). Valid values: 64 to 16384. Unit: bytes",
       "help_zh": "日志服务默认字段值的最大长度为2048字节，即2 KB。如果您需要修改字段值的最大长度，可设置统计字段（text）最大长度，取值范围为64~16384字节",
       "location": "body",
       "name": "max_text_len",
@@ -427,7 +453,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to enable the scan index",
+      "help_en": "Specifies whether to enable scan index. At least one of the following must exist: full-text index, field index, or scan index",
       "help_zh": "是否开启扫描索引。全文索引、字段索引、扫描索引至少需要存在一个",
       "location": "body",
       "name": "scan_index",
