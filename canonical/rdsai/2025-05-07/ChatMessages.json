@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun rdsai ChatMessages --region cn-hangzhou --Query '实例rm-bp14as9914vd30000_磁盘使用率，是否需要进行扩容' --version 2025-05-07 --method POST --force",
+  "camel_example": "aliyun rdsai ChatMessages --region cn-hangzhou --ConversationId 'fea7bdca-e848-44dd-b1ae-852472b80000' --EventMode inline --Query '实例rm-bp14as9914vd30000_磁盘使用率，是否需要进行扩容' --ParentMessageId '84dc9f9b-424a-404d-9c36-35e9d0000000' --Files '[{\"TransferMethod\":\"example-string\",\"Type\":\"example-string\",\"UploadFileId\":\"example-string\"}]' --Inputs '{\"EnableThinking\":\"true\",\"Timezone\":\"UTC\",\"Language\":\"zh-cn\",\"ThinkEffort\":\"default\",\"WorkspaceId\":\"00000000-0000-4000-8000-000000000001\",\"CustomAgentId\":\"d1b7d639-f34e-44c7-8231-987da14d0000\",\"RegionId\":\"cn-hangzhou\",\"ToolApprovalMode\":\"manual\",\"ModelId\":\"qwen3.7-max\",\"ResumeCallId\":\"call-example\"}' --version 2025-05-07 --method POST --force",
   "cmd_full_name": "rdsai chat-messages",
   "cmd_name": "chat-messages",
   "deprecated": false,
   "description_en": "Sends a conversation message",
   "description_zh": "发送对话消息",
-  "kebab_example": "aliyun rdsai chat-messages --query '实例rm-bp14as9914vd30000_磁盘使用率，是否需要进行扩容' --region cn-hangzhou",
+  "kebab_example": "aliyun rdsai chat-messages --query '实例rm-bp14as9914vd30000_磁盘使用率，是否需要进行扩容' --conversation-id fea7bdca-e848-44dd-b1ae-852472b80000 --parent-message-id 84dc9f9b-424a-404d-9c36-35e9d0000000 --inputs EnableThinking=true Timezone=UTC Language=zh-cn ThinkEffort=default WorkspaceId=00000000-0000-4000-8000-000000000001 CustomAgentId=d1b7d639-f34e-44c7-8231-987da14d0000 RegionId=cn-hangzhou ToolApprovalMode=manual ModelId=qwen3.7-max ResumeCallId=call-example --event-mode inline --files TransferMethod=example-string Type=example-string UploadFileId=example-string --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "ChatMessages",
@@ -32,7 +32,7 @@
         "--query"
       ],
       "raw_name": "Query",
-      "required": true,
+      "required": false,
       "type": "string"
     },
     {
@@ -124,6 +124,18 @@
           "type": "string"
         },
         {
+          "example": "call-example",
+          "help_en": "The tool approval call ID for resuming execution. Pass this parameter after all decisions in the current approval round are completed in the console to continue the interrupted ChatMessage Loop. Do not pass this parameter for regular conversations",
+          "help_zh": "本次恢复执行的工具审批调用 ID。控制台完成当前审批轮次的全部决定后传入，用于继续中断的 ChatMessage Loop；普通对话不传",
+          "name": "resume_call_id",
+          "options": [
+            "--resume-call-id"
+          ],
+          "raw_name": "ResumeCallId",
+          "required": false,
+          "type": "string"
+        },
+        {
           "example": "default",
           "help_en": "The thinking depth",
           "help_zh": "思考深度",
@@ -146,9 +158,33 @@
           "raw_name": "Timezone",
           "required": false,
           "type": "string"
+        },
+        {
+          "example": "manual",
+          "help_en": "The tool approval mode for the current conversation. Valid values: read_only (read-only, write tools are rejected), manual (write tools require manual approval), and auto (the approval sub-agent automatically determines the action. If the result is needs_human, the approval is escalated to manual review). When this parameter is passed, the approval mode of the current conversation is updated",
+          "help_zh": "本次 Conversation 的工具审批模式。可选值：read_only（只读，拒绝写工具）、manual（写工具需人工审批）、auto（由审批子智能体自动判断；needs_human 时转人工审批）。传入后更新当前 Conversation 的审批模式",
+          "name": "tool_approval_mode",
+          "options": [
+            "--tool-approval-mode"
+          ],
+          "raw_name": "ToolApprovalMode",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "00000000-0000-4000-8000-000000000001",
+          "help_en": "The ContextDB workspace ID",
+          "help_zh": "ContextDB 工作空间 ID",
+          "name": "workspace_id",
+          "options": [
+            "--workspace-id"
+          ],
+          "raw_name": "WorkspaceId",
+          "required": false,
+          "type": "string"
         }
       ],
-      "help_en": "The task input",
+      "help_en": "The task inputs",
       "help_zh": "任务输入",
       "location": "query",
       "name": "inputs",
@@ -162,7 +198,7 @@
     },
     {
       "example": "inline",
-      "help_en": "The event output type. Valid values: inline and separate. Default value: inline. When set to inline, tool invocation events, sub-node events, and document events are included in the answer field of event = message. When set to separate, tool invocation events, sub-node events, and document events each have their own event",
+      "help_en": "The event output type. Valid values: inline and separate. Default value: inline. When set to inline, tool invocation events, sub-node events, and document events are included in the answer field of the event = message response. When set to separate, tool invocation events, sub-node events, and document events each have their own event",
       "help_zh": "事件输出类型，支持inline和separate，默认inline。inline时，工具调用事件、子任务事件、文档事件会统一放到event = message的answer字段中。separate时，工具调用时间、子任务事件、文档事件，有各自的event",
       "location": "query",
       "name": "event_mode",
@@ -241,6 +277,24 @@
             "example": "您询问的实例rm-bp14as9914vd3**** 磁盘使用率为23%，暂时不需要进行扩容。如果您需要进一步查看某个实例的详细配置、性能监控或进行其他操作，请告诉我你的具体需求！",
             "type": "string"
           },
+          "ApprovalStatus": {
+            "backendName": "approval_status",
+            "description_en": "The tool invocation approval status",
+            "description_zh": "工具调用审批状态",
+            "example": "pending",
+            "title_en": "工具调用审批状态",
+            "title_zh": "工具调用审批状态",
+            "type": "string"
+          },
+          "CallId": {
+            "backendName": "call_id",
+            "description_en": "The tool invocation ID",
+            "description_zh": "工具调用 ID",
+            "example": "call-example",
+            "title_en": "工具调用 ID",
+            "title_zh": "工具调用 ID",
+            "type": "string"
+          },
           "ConversationId": {
             "backendName": "conversation_id",
             "description_en": "The conversation ID",
@@ -256,13 +310,22 @@
             "format": "int64",
             "type": "integer"
           },
+          "Description": {
+            "backendName": "description",
+            "description_en": "The tool invocation description",
+            "description_zh": "工具调用说明",
+            "example": "Search ContextDB records",
+            "title_en": "工具调用说明",
+            "title_zh": "工具调用说明",
+            "type": "string"
+          },
           "Event": {
             "backendName": "event",
             "description_en": "The event",
             "description_zh": "事件",
             "example": "MysqlIOException",
-            "title_en": "包括：\nmessage：回复事件\nerror：失败事件\ntool_call：工具调用事件（仅在EventMode=separate存在） \nsubtask：子任务事件（仅在EventMode=separate存在） \ndoc：文档召回事件（仅在EventMode=separate存在） ",
-            "title_zh": "包括：\nmessage：回复事件\nerror：失败事件\ntool_call：工具调用事件（仅在EventMode=separate存在） \nsubtask：子任务事件（仅在EventMode=separate存在） \ndoc：文档召回事件（仅在EventMode=separate存在） ",
+            "title_en": "包括：\nmessage：回复事件\nerror：失败事件\ntool_call：工具调用事件（仅在EventMode=separate存在） \ntool_approval：人工审批待处理事件；POP 仅转发事件名，审批详情通过 Conversation 工具权限查询接口获取\ntool_approval_processing：自动审批中事件，表示审批子智能体正在评估；POP 仅转发事件名，控制台携带 MessageId 查询最新审批轮次详情\ntool_approval_result：自动审批结果事件，结果为 approve、deny 或 needs_human；POP 仅转发事件名，控制台携带 MessageId 查询最新审批轮次详情\nsubtask：子任务事件（仅在EventMode=separate存在） \ndoc：文档召回事件（仅在EventMode=separate存在） ",
+            "title_zh": "包括：\nmessage：回复事件\nerror：失败事件\ntool_call：工具调用事件（仅在EventMode=separate存在） \ntool_approval：人工审批待处理事件；POP 仅转发事件名，审批详情通过 Conversation 工具权限查询接口获取\ntool_approval_processing：自动审批中事件，表示审批子智能体正在评估；POP 仅转发事件名，控制台携带 MessageId 查询最新审批轮次详情\ntool_approval_result：自动审批结果事件，结果为 approve、deny 或 needs_human；POP 仅转发事件名，控制台携带 MessageId 查询最新审批轮次详情\nsubtask：子任务事件（仅在EventMode=separate存在） \ndoc：文档召回事件（仅在EventMode=separate存在） ",
             "type": "string"
           },
           "Id": {
@@ -295,11 +358,37 @@
             "title_zh": "Id of the request",
             "type": "string"
           },
+          "RoundId": {
+            "backendName": "round_id",
+            "description_en": "The tool approval round ID",
+            "description_zh": "工具审批轮次 ID",
+            "example": "round-example",
+            "title_en": "工具审批轮次 ID",
+            "title_zh": "工具审批轮次 ID",
+            "type": "string"
+          },
           "TaskId": {
             "backendName": "task_id",
             "description_en": "The asynchronous task ID",
             "description_zh": "异步任务ID",
             "example": "01c3d43d-9466-4bd5-8196-4cbbce08****",
+            "type": "string"
+          },
+          "ToolArguments": {
+            "backendName": "tool_arguments",
+            "description_en": "The tool invocation parameters",
+            "description_zh": "工具调用参数",
+            "title_en": "工具调用参数",
+            "title_zh": "工具调用参数",
+            "type": "object"
+          },
+          "ToolName": {
+            "backendName": "tool_name",
+            "description_en": "The tool name",
+            "description_zh": "工具名称",
+            "example": "contextdb.search",
+            "title_en": "工具名称",
+            "title_zh": "工具名称",
             "type": "string"
           }
         },
