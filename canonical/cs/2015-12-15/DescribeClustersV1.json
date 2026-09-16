@@ -5,12 +5,12 @@
   "components": {
     "schemas": {
       "maintenance_window": {
-        "description_en": "The configurations of the cluster maintenance window",
+        "description_en": "The cluster maintenance window",
         "description_zh": "集群维护窗口",
         "properties": {
           "duration": {
             "backendName": "duration",
-            "description_en": "The duration of the cluster maintenance window. \n\nValid values: 1 to 24. \n\nUnit: hours.\n\nDefault value: 3",
+            "description_en": "The maintenance duration. Valid values: [1,24]. Unit: hours.\n\nDefault value: 3h",
             "description_zh": "维护时长。取值范围[1,24]，单位为小时。\n\n默认值：3h",
             "example": "3h",
             "title": "维护时长。取值范围1～24，单位为小时。 默认值：3h。",
@@ -18,15 +18,59 @@
           },
           "enable": {
             "backendName": "enable",
-            "description_en": "Specifies whether to enable the cluster maintenance window. Valid values:\n\n`true`: enables the cluster maintenance window.\n`false`: disables the cluster maintenance window.\n\nDefault value: `false`",
+            "description_en": "Specifies whether to enable the maintenance window. Valid values:\n`true`: Enables the maintenance window.\n`false`: Disables the maintenance window.\n\nDefault value: `false`",
             "description_zh": "是否开启维护窗口。取值：\n`true`：开启维护窗口。\n`false`：不开启维护窗口。\n\n默认值：`false`",
             "example": "false",
             "title": "是否开启维护窗口。默认值false。",
             "type": "boolean"
           },
+          "exclusions": {
+            "backendName": "exclusions",
+            "description_en": "The list of maintenance window exclusions. A maximum of 10 exclusions are supported. Exclusions take priority over the maintenance window: even if the current time falls within a maintenance window, operations are not performed as long as an active exclusion covers the O&M type. When multiple exclusions are active at the same time, the union of all exclusions is applied. The total number of NoOperations and NoUpgrades exclusions cannot exceed 3. Currently, only one-time time ranges are supported. Recurring configurations are not supported",
+            "description_zh": "维护窗口排除项列表，最多10项。排除项优先级高于维护窗口：即使当前处于维护窗口内，只要有生效的排除项覆盖该运维类型，则不执行。同一时刻多个排除项生效时取并集，其中NoOperations与NoUpgrades合计不超过3项。当前仅支持一次性时间段，不支持周期性配置",
+            "items": {
+              "properties": {
+                "description": {
+                  "backendName": "description",
+                  "description_en": "The description of the exclusion. The description can be up to 128 characters in length and does not support emoji or other 4-byte characters",
+                  "description_zh": "排除项描述。最长128个字符，不支持emoji等4字节字符",
+                  "example": "封网期间禁止一切变更",
+                  "title": "排除项描述。最长128个字符，不支持emoji等4字节字符。",
+                  "type": "string"
+                },
+                "end_time": {
+                  "backendName": "end_time",
+                  "description_en": "The end time when the exclusion takes effect. The value must be in RFC 3339 format and must be later than start_time and the current time. Maximum duration per exclusion: 30 days for NoOperations, NoUpgrades, and NoCVEPatch, and 180 days for NoMinorUpgrades",
+                  "description_zh": "排除项生效结束时间。RFC3339标准格式，必须晚于start_time且晚于当前时间。单条时长上限:NoOperations、NoUpgrades和NoCVEPatch为30天，NoMinorUpgrades为180天",
+                  "example": "2026-11-15T00:00:00+08:00",
+                  "title": "排除项生效结束时间。RFC3339标准格式，必须晚于start_time且晚于当前时间。单条时长上限:NoOperations、NoUpgrades和NoCVEPatch为30天，NoMinorUpgrades为180天。",
+                  "type": "string"
+                },
+                "scope": {
+                  "backendName": "scope",
+                  "description_en": "The scope of the exclusion, which specifies the proactive O&M types that are prohibited during the time range. Values are case-sensitive. Valid values:\nNoOperations: Prohibits all proactive O&M operations, including cluster upgrades, component upgrades, CVE fixes, and OS image updates.\nNoUpgrades: Prohibits cluster upgrades and component upgrades. CVE fixes and ECS scheduled event responses are still allowed.\nNoMinorUpgrades: Prohibits only cluster minor version upgrades. Patch upgrades, component upgrades, and CVE fixes are still allowed.\nNoCVEPatch: Prohibits automatic CVE fixes",
+                  "description_zh": "排除项作用域，即在该时间段内禁止执行的主动运维类型。取值区分大小写:\nNoOperations:禁止所有主动运维，包括集群升级、组件升级、CVE修复和OS镜像更新;\nNoUpgrades:禁止集群升级和组件升级，仍允许CVE修复和ECS计划内事件响应;\nNoMinorUpgrades:仅禁止集群minor版本升级，仍允许patch升级、组件升级和CVE修复;\nNoCVEPatch:禁止CVE自动修复",
+                  "example": "NoOperations",
+                  "title": "排除项作用域，即在该时间段内禁止执行的主动运维类型。取值区分大小写:\n- NoOperations:禁止所有主动运维，包括集群升级、组件升级、CVE修复和OS镜像更新;\n- NoUpgrades:禁止集群升级和组件升级，仍允许CVE修复和ECS计划内事件响应;\n- NoMinorUpgrades:仅禁止集群minor版本升级，仍允许patch升级、组件升级和CVE修复;\n- NoCVEPatch:禁止CVE自动修复。",
+                  "type": "string"
+                },
+                "start_time": {
+                  "backendName": "start_time",
+                  "description_en": "The start time when the exclusion takes effect. The value must be in RFC 3339 format. The time zone offset must be consistent with that of end_time and maintenance_time",
+                  "description_zh": "排除项生效起始时间。RFC3339标准格式，需与end_time以及maintenance_time的时区偏移量保持一致",
+                  "example": "2026-11-01T00:00:00+08:00",
+                  "title": "排除项生效起始时间。RFC3339标准格式，需与end_time以及maintenance_time的时区偏移量保持一致。",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "title": "维护窗口排除项列表，最多10项。排除项优先级高于维护窗口：即使当前处于维护窗口内，只要有生效的排除项覆盖该运维类型，则不执行。同一时刻多个排除项生效时取并集，其中NoOperations与NoUpgrades合计不超过3项。当前仅支持一次性时间段，不支持周期性配置。",
+            "type": "array"
+          },
           "maintenance_time": {
             "backendName": "maintenance_time",
-            "description_en": "The start time of the cluster maintenance window. The value follows a standard time format in Golang. Example: 15:04:05Z",
+            "description_en": "The start time of the maintenance window. The value must be in RFC 3339 format",
             "description_zh": "维护起始时间。RFC3339标准格式",
             "example": "2020-10-15T12:31:00.000+08:00",
             "title": "维护起始时间。RFC3339标准格式。",
@@ -34,7 +78,7 @@
           },
           "recurrence": {
             "backendName": "recurrence",
-            "description_en": "Defines a maintenance window recurrence rule by using the RFC5545 recurrence rule. Currently, only FREQ=WEEKLY is supported, and you cannot specify COUNT or UNTIL",
+            "description_en": "The recurrence rule of the maintenance window defined by using the RFC 5545 Recurrence Rule syntax. Currently, only FREQ=WEEKLY is supported. Specifying COUNT or UNTIL is not supported",
             "description_zh": "使用RFC5545 Recurrence Rule语法定义的维护窗口循环规则，目前仅支持FREQ=WEEKLY，且不支持指定COUNT或UNTIL",
             "example": "FREQ=WEEKLY;INTERVAL=4;BYDAY=MO,TU",
             "title": "使用RFC5545 Recurrence Rule语法定义的维护窗口循环规则，目前仅支持FREQ=WEEKLY，且不支持指定COUNT或UNTIL",
@@ -42,7 +86,7 @@
           },
           "weekly_period": {
             "backendName": "weekly_period",
-            "description_en": "The day of the week when maintenance is performed. Separate multiple days with commas (,). \n\nValid values: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, and Sunday.\n\nDefault value: `Thursday`",
+            "description_en": "The maintenance cycle. Separate multiple values with commas (,). Valid values: {Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday}\n\nDefault value: `Thursday`",
             "description_zh": "维护周期，多个值用英文半角逗号（,）分隔。取值：{Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday}\n\n默认值：`Thursday`",
             "example": "Monday,Thursday",
             "title": "维护周期。取值范围为:Monday~Sunday，多个值用逗号分隔。 默认值：Thursday。",
@@ -79,7 +123,7 @@
     }
   },
   "deprecated": false,
-  "description_en": "You can invoke the DescribeClustersV1 operation to query the list of ACK clusters that meet conditional criteria (such as cluster type and cluster specification) under the current account",
+  "description_en": "Queries a list of ACK clusters that meet specified conditions, such as cluster type and cluster specification, under the current account",
   "description_zh": "您可以调用DescribeClustersV1接口查看本账号下符合条件的ACK集群（例如指定集群类型、集群规格）列表信息",
   "kebab_example": "aliyun cs describe-clusters-v1 --name cluster-demo --cluster-type Kubernetes --page-size 10 --page-number 1 --biz-profile Default --cluster-spec ack.pro.small --biz-region-id cn-hangzhou --cluster-id c3fb96524f9274b4495df0f12a6b50000 --region cn-hangzhou",
   "method": "GET",
@@ -150,7 +194,7 @@
     },
     {
       "example": "Default",
-      "help_en": "When you set `cluster_type` to `ManagedKubernetes` (ACK managed cluster types), you can further specify the cluster subtype. Valid values:\n`Default`: ACK managed cluster, including ACK cluster Pro and ACK cluster Basic.\n\n`Edge`: ACK Edge cluster, including ACK Edge cluster Pro and ACK Edge cluster Basic.\n\n`Serverless`: ACK Serverless cluster, including ACK Serverless cluster Pro and ACK Serverless cluster Basic.\n\n`Lingjun`: ACK Lingjun cluster, available in Pro",
+      "help_en": "When you set `cluster_type` to `ManagedKubernetes`, you can further specify the child class of the ACK cluster. Valid values:\n`Default`: ACK managed cluster, including ACK cluster Pro and ACK cluster Basic.\n\n`Edge`: ACK Edge cluster, including ACK Edge cluster Pro and ACK Edge cluster Basic.\n\n`Serverless`: ACK Serverless cluster, including ACK Serverless cluster Pro and ACK Serverless cluster Basic.\n\n`Lingjun`: ACK Lingjun cluster, available in Pro",
       "help_zh": "当您选择`cluster_type`为`ManagedKubernetes`时，即ACK托管类的集群时，您可以进一步指定集群的子类型。\n`Default`：ACK托管集群，包括ACK集群Pro版和ACK集群基础版。\n\n`Edge`：ACK Edge集群，包括ACK Edge集群Pro版和ACK Edge集群基础版。\n\n`Serverless`：ACK Serverless集群，包括ACK Serverless集群Pro版和ACK Serverless集群基础版。\n\n`Lingjun`：ACK灵骏集群，提供Pro版",
       "location": "query",
       "name": "profile",
@@ -163,7 +207,7 @@
     },
     {
       "example": "ack.pro.small",
-      "help_en": "The cluster specification when `cluster_type` is set to `ManagedKubernetes` and `profile` is configured. Valid values:\n\n`ack.standard`: Basic\n`ack.pro.small`: Pro\n`ack.pro.xlarge`: Pro XL\n`ack.pro.2xlarge`: Pro 2XL\n`ack.pro.4xlarge`: Pro 4XL (contact customer service to add your account to the whitelist)\n\nPro XL, Pro 2XL, and Pro 4XL are three tiers provided by <props=\"china\">ACK Pro Provisioned Control Plane (https://help.aliyun.com/ack/ack-managed-and-ack-dedicated/user-guide/ack-pro-provisioned-control-plane)</props><props=\"intl\">ACK Pro Provisioned Control Plane (https://www.alibabacloud.com/help/ack/ack-managed-and-ack-dedicated/user-guide/ack-pro-provisioned-control-plane)</props>. By pre-allocating and dedicating control plane resources, these tiers ensure that API concurrency and Pod scheduling capabilities remain at a deterministic high level, suitable for AI training and inference, ultra-large-scale clusters, and mission-critical workloads.\n\nFor information about cluster management fees for Pro and provisioned control plane editions, see <props=\"china\">Cluster management fees (https://help.aliyun.com/ack/ack-managed-and-ack-dedicated/product-overview/cluster-management-fee)</props><props=\"intl\">Cluster management fees (https://www.alibabacloud.com/help/ack/ack-managed-and-ack-dedicated/product-overview/cluster-management-fee)</props>",
+      "help_en": "The cluster specification when you set `cluster_type` to `ManagedKubernetes` and configure `profile`. Valid values:\n\n`ack.standard`: Basic\n`ack.pro.small`: Pro\n`ack.pro.xlarge`: Pro XL\n`ack.pro.2xlarge`: Pro 2XL\n`ack.pro.4xlarge`: Pro 4XL (contact customer service to be added to the whitelist)\n\nPro XL, Pro 2XL, and Pro 4XL are three tiers provided by <props=\"china\">ACK Pro Provisioned Control Plane (https://help.aliyun.com/ack/ack-managed-and-ack-dedicated/user-guide/ack-pro-provisioned-control-plane)</props><props=\"intl\">ACK Pro Provisioned Control Plane (https://www.alibabacloud.com/help/ack/ack-managed-and-ack-dedicated/user-guide/ack-pro-provisioned-control-plane)</props>. By pre-allocating and dedicating control plane resources, these tiers ensure that API concurrency and pod scheduling capabilities remain at a consistently high level. They are suitable for AI training and inference, ultra-large-scale clusters, and mission-critical workloads.\n\nFor information about the cluster management fees for Pro and provisioned control plane editions, see <props=\"china\">Cluster management fees (https://help.aliyun.com/ack/ack-managed-and-ack-dedicated/product-overview/cluster-management-fee)</props><props=\"intl\">Cluster management fees (https://www.alibabacloud.com/help/ack/ack-managed-and-ack-dedicated/product-overview/cluster-management-fee)</props>",
       "help_zh": "选择`cluster_type`为`ManagedKubernetes`并配置`profile`时，集群的规格。取值：\n\n`ack.standard`：基础版\n`ack.pro.small`：Pro版\n`ack.pro.xlarge`：Pro XL\n`ack.pro.2xlarge`：Pro 2XL\n`ack.pro.4xlarge`: Pro 4XL （需联系客服开通白名单）\n\nPro XL、Pro 2XL、Pro 4XL为<props=\"china\">ACK Pro 预设控制面 (https://help.aliyun.com/ack/ack-managed-and-ack-dedicated/user-guide/ack-pro-provisioned-control-plane)</props><props=\"intl\">ACK Pro 预设控制面 (https://www.alibabacloud.com/help/ack/ack-managed-and-ack-dedicated/user-guide/ack-pro-provisioned-control-plane)</props>提供的三个档位，通过预先分配并固化控制面资源，确保 API 并发与 Pod 调度能力始终处于确定的高水平状态，适用于 AI 训练推理、超大规模集群及关键任务型业务。\n\nPro版及预设控制面版本的集群管理费用请参见<props=\"china\">集群管理费用 (https://help.aliyun.com/ack/ack-managed-and-ack-dedicated/product-overview/cluster-management-fee)</props><props=\"intl\">集群管理费用 (https://www.alibabacloud.com/help/ack/ack-managed-and-ack-dedicated/product-overview/cluster-management-fee)</props>",
       "location": "query",
       "name": "cluster_spec",
@@ -176,7 +220,7 @@
     },
     {
       "example": "cn-hangzhou",
-      "help_en": "The region of the cluster. Specify this parameter to filter clusters in the specified region",
+      "help_en": "The cluster region. Specify this parameter to filter clusters in the specified region",
       "help_zh": "集群地域。通过指定该字段，可以过滤出该地域下的集群列表",
       "location": "query",
       "name": "region_id",
@@ -223,6 +267,7 @@
                   "description_en": "The local domain name of the cluster",
                   "description_zh": "集群本地域名",
                   "example": "cluster.local",
+                  "mappingResourcePropertyName": "$.ClusterDomain",
                   "title_en": "集群本地域名",
                   "title_zh": "集群本地域名",
                   "type": "string"
@@ -232,6 +277,7 @@
                   "description_en": "The cluster ID",
                   "description_zh": "集群ID",
                   "example": "c3fb96524f9274b4495df0f12a6b5****",
+                  "mappingResourcePropertyName": "$.ClusterId",
                   "title_en": "集群ID。",
                   "title_zh": "集群ID。",
                   "type": "string",
@@ -241,6 +287,7 @@
                   "description_en": "The cluster specification",
                   "description_zh": "集群规格",
                   "example": "ack.standard",
+                  "mappingResourcePropertyName": "$.ClusterSpec",
                   "title_en": "托管版集群类型，面向托管集群。 • ack.pro.small：专业托管集群。 • ack.standard ：标准托管集群。",
                   "title_zh": "托管版集群类型，面向托管集群。 • ack.pro.small：专业托管集群。 • ack.standard ：标准托管集群。",
                   "type": "string"
@@ -250,15 +297,17 @@
                   "description_en": "The cluster type",
                   "description_zh": "集群类型",
                   "example": "Kubernetes",
+                  "mappingResourcePropertyName": "$.ClusterType",
                   "title_en": "集群类型。",
                   "title_zh": "集群类型。",
                   "type": "string",
                   "visibility": "Public"
                 },
                 "container_cidr": {
-                  "description_en": "The pod CIDR block, which is the Flannel network configuration",
+                  "description_en": "The CIDR block of pods. This is the Flannel network configuration",
                   "description_zh": "Pod网络网段，Flannel网络配置",
                   "example": "172.20.xx.xx/16",
+                  "mappingResourcePropertyName": "$.PodCidr",
                   "required": false,
                   "title_en": "POD网络网段",
                   "title_zh": "POD网络网段",
@@ -269,6 +318,7 @@
                   "description_en": "The time when the cluster was created",
                   "description_zh": "集群创建时间",
                   "example": "2025-04-07T09:57:26+08:00",
+                  "mappingResourcePropertyName": "$.CreateTime",
                   "title_en": "集群初始化时间。",
                   "title_zh": "集群初始化时间。",
                   "type": "string",
@@ -279,6 +329,7 @@
                   "description_en": "The current version of the cluster",
                   "description_zh": "集群当前版本",
                   "example": "1.32.1-aliyun.1",
+                  "mappingResourcePropertyName": "$.CurrentVersion",
                   "title_en": "集群当前版本。",
                   "title_zh": "集群当前版本。",
                   "type": "string",
@@ -286,9 +337,10 @@
                 },
                 "deletion_protection": {
                   "backendName": "subnet_cidr",
-                  "description_en": "Indicates whether deletion protection is enabled for the cluster. This prevents accidental deletion of the cluster through the console or API. Valid values:\n\n`true`: Deletion protection is enabled. The cluster cannot be deleted through the console or API.\n`false`: Deletion protection is not enabled. The cluster can be deleted through the console or API",
+                  "description_en": "Indicates whether deletion protection is enabled for the cluster. Deletion protection prevents the cluster from being accidentally deleted in the console or by calling API operations. Valid values:\n\n`true`: Deletion protection is enabled. The cluster cannot be deleted in the console or by calling API operations.\n`false`: Deletion protection is not enabled. The cluster can be deleted in the console or by calling API operations",
                   "description_zh": "集群删除保护，防止通过控制台或API误删除集群。取值：\n\n`true`：启用集群删除保护，将不能通过控制台或API删除集群。\n`false`：不启用集群删除保护，则能通过控制台或API删除集群",
                   "example": "true",
+                  "mappingResourcePropertyName": "$.DeletionProtection",
                   "title_en": "集群是否开启删除保护。",
                   "title_zh": "集群是否开启删除保护。",
                   "type": "boolean",
@@ -300,6 +352,7 @@
                   "description_en": "The Docker version of the cluster",
                   "description_zh": "集群Docker版本",
                   "example": "19.03.5",
+                  "mappingResourcePropertyName": "$.DockerVersion",
                   "title_en": "集群使用的Docker版本。",
                   "title_zh": "集群使用的Docker版本。",
                   "type": "string",
@@ -308,18 +361,20 @@
                 "external_loadbalancer_id": {
                   "backendName": "profile",
                   "deprecated": true,
-                  "description_en": "The ID of the Server Load Balancer (SLB) instance for the Ingress of the cluster.\n\nDefault instance type: guaranteed-performance instance (slb.s1.small)",
+                  "description_en": "The SLB instance for the Ingress of the cluster.\n\nDefault instance type: guaranteed-performance instance (slb.s1.small)",
                   "description_zh": "集群中Ingress SLB实例。\n\n默认实例规格：性能保障型（slb.s1.small）",
                   "example": "lb-2vcrbmlevo6kjpgch****",
+                  "mappingResourcePropertyName": "$.ExternalLoadbalancerId",
                   "title_en": "集群负载均衡服务的ID。",
                   "title_zh": "集群负载均衡服务的ID。",
                   "type": "string",
                   "visibility": "Public"
                 },
                 "init_version": {
-                  "description_en": "The cluster version. For Kubernetes versions supported by ACK, see [Kubernetes version release overview]（https://help.aliyun.com/document_detail/185269.html）",
+                  "description_en": "The initial Kubernetes version of the cluster. For more information about the Kubernetes versions supported by ACK, see [Kubernetes version release notes]（https://help.aliyun.com/document_detail/185269.html）",
                   "description_zh": "集群版本。ACK支持的Kubernetes版本，请参见[Kubernetes版本发布概览]（https://help.aliyun.com/document_detail/185269.html）",
                   "example": "1.32.1-aliyun.1",
+                  "mappingResourcePropertyName": "$.InitVersion",
                   "title_en": "集群初始化版本。",
                   "title_zh": "集群初始化版本。",
                   "type": "string"
@@ -333,6 +388,7 @@
                     "dual"
                   ],
                   "example": "ipv4",
+                  "mappingResourcePropertyName": "$.IpStack",
                   "title_en": "集群的IP协议栈，可取值：\nipv4：创建仅支持IPv4协议栈的集群；\ndual：创建支持IPv4/IPv6双栈的集群。",
                   "title_zh": "集群的IP协议栈，可取值：\nipv4：创建仅支持IPv4协议栈的集群；\ndual：创建支持IPv4/IPv6双栈的集群。",
                   "type": "string"
@@ -347,6 +403,7 @@
                   "description_en": "The access addresses of the cluster API server, including the internal network access address and the public network access address",
                   "description_zh": "集群API Server访问地址，包含内网访问地址以及公网访问地址",
                   "example": "{\\\"api_server_endpoint\\\":\\\"\\\",\\\"intranet_api_server_endpoint\\\":\\\"https://192.168.xx.xx:6443\\\"}",
+                  "mappingResourcePropertyName": "$.MasterUrl",
                   "title_en": "集群访问地址列表。",
                   "title_zh": "集群访问地址列表。",
                   "type": "string",
@@ -357,6 +414,7 @@
                   "description_en": "The metadata of the cluster",
                   "description_zh": "集群元数据信息",
                   "example": "{\\\"Addons\\\":[{\\\"config\\\":***}}",
+                  "mappingResourcePropertyName": "$.MetaData",
                   "title_en": "集群元数据信息。",
                   "title_zh": "集群元数据信息。",
                   "type": "string",
@@ -367,6 +425,7 @@
                   "description_en": "The cluster name",
                   "description_zh": "集群名称",
                   "example": "cluster-demo",
+                  "mappingResourcePropertyName": "$.ClusterName",
                   "title_en": "集群名称。",
                   "title_zh": "集群名称。",
                   "type": "string",
@@ -378,6 +437,7 @@
                   "description_en": "The network mode of the cluster. Valid values:\n\n`classic`: classic network.\n`vpc`: virtual private cloud (VPC).\n`overlay`: overlay network.\n`calico`: Calico network",
                   "description_zh": "集群网络模式。取值：\n\n`classic`：经典网络。\n`vpc`：专有网络。\n`overlay`：叠加网络。\n`calico`：Calico网络",
                   "example": "vpc",
+                  "mappingResourcePropertyName": "$.NetworkMode",
                   "title_en": "集群使用的网络类型，例如：VPC网络。",
                   "title_zh": "集群使用的网络类型，例如：VPC网络。",
                   "type": "string",
@@ -387,6 +447,7 @@
                   "description_en": "The version to which the cluster can be upgraded",
                   "description_zh": "集群可升级版本",
                   "example": "1.xx.x-aliyun.1",
+                  "mappingResourcePropertyName": "$.NextVersion",
                   "title_en": "集群可升级版本。",
                   "title_zh": "集群可升级版本。",
                   "type": "string"
@@ -400,9 +461,10 @@
                       "description_zh": "集群自动升级",
                       "properties": {
                         "channel": {
-                          "description_en": "The frequency of automatic cluster upgrades. For more information, see [Upgrade frequency]（https://help.aliyun.com/document_detail/2712866.html）.\n\nValid values:\npatch: the latest patch version.\nstable: the second latest minor version.\nrapid: the latest minor version",
+                          "description_en": "The automatic upgrade frequency of the cluster. For more information, see [Upgrade frequency]（https://help.aliyun.com/document_detail/2712866.html）.\n\nValid values:\npatch: the latest patch version.\nstable: the second latest minor version.\nrapid: the latest minor version",
                           "description_zh": "集群自动升级频次。更多信息，请参见[升级频次]（https://help.aliyun.com/document_detail/2712866.html）。\n\n取值：\npatch：最新补丁版本。\nstable：次新次要版本。\nrapid：最新次要版本",
                           "example": "patch",
+                          "mappingResourcePropertyName": "$.OperationPolicy.ClusterAutoUpgrade.Channel",
                           "title_en": "集群自动升级频次。可取值：\npatch\nstable\nrapid",
                           "title_zh": "集群自动升级频次。可取值：\npatch\nstable\nrapid",
                           "type": "string"
@@ -411,6 +473,7 @@
                           "description_en": "Indicates whether automatic cluster upgrade is enabled",
                           "description_zh": "是否开启集群自动升级",
                           "example": "true",
+                          "mappingResourcePropertyName": "$.OperationPolicy.ClusterAutoUpgrade.Enabled",
                           "title_en": "是否开启集群自动升级。",
                           "title_zh": "是否开启集群自动升级。",
                           "type": "boolean"
@@ -431,6 +494,7 @@
                   "description_en": "The Private Zone configuration of the cluster. Valid values:\n\n`true`: Private Zone is enabled.\n`false`: Private Zone is not enabled",
                   "description_zh": "集群Private Zone配置。取值：\n\n`true`：启用Private Zone。\n`false`：不启用Private Zone",
                   "example": "false",
+                  "mappingResourcePropertyName": "$.PrivateZone",
                   "title_en": "集群是否开启Private Zone。",
                   "title_zh": "集群是否开启Private Zone。",
                   "type": "boolean",
@@ -441,24 +505,27 @@
                   "description_en": "The cluster subtype",
                   "description_zh": "集群子类型",
                   "example": "Default",
+                  "mappingResourcePropertyName": "$.Profile",
                   "title_en": "边缘集群表示，用于区分边缘托管版集群。",
                   "title_zh": "边缘集群表示，用于区分边缘托管版集群。",
                   "type": "string",
                   "visibility": "Public"
                 },
                 "proxy_mode": {
-                  "description_en": "The kube-proxy mode. Valid values:\n\n`iptables`: a mature and stable kube-proxy mode. Uses iptables rules for service discovery and load balancing of Kubernetes Services. Performance is moderate and affected by scale. Suitable for clusters with a small number of Services.\n`ipvs`: a high-performance kube-proxy mode. Uses the Linux IPVS module for service discovery and load balancing of Kubernetes Services. Suitable for clusters with a large number of Services that require high-performance load balancing",
+                  "description_en": "The kube-proxy mode.\n\n`iptables`: a mature and stable kube-proxy mode. In this mode, Service discovery and load balancing use iptables rules. The performance is average and is affected by the cluster scale. This mode is suitable for clusters that contain a small number of Services.\n`ipvs`: a high-performance kube-proxy mode. In this mode, Service discovery and load balancing use the Linux IPVS module. This mode is suitable for clusters that contain a large number of Services and require high-performance load balancing",
                   "description_zh": "kube-proxy代理模式。\n\n`iptables`: 成熟稳定的kube-proxy代理模式，Kubernetes Service的服务发现和负载均衡使用iptables规则配置，但是性能一般，受规模影响较大，适用于集群存在少量的Service。\n`ipvs`：高性能的kube-proxy代理模式，Kubernetes Service的服务发现和负载均衡使用Linux IPVS模块进行配置，适用于集群存在大量的Service，对负载均衡有高性能要求的场景",
                   "example": "ipvs",
+                  "mappingResourcePropertyName": "$.ProxyMode",
                   "title_en": "Proxy代理模式，ipvs|iptables",
                   "title_zh": "Proxy代理模式，ipvs|iptables",
                   "type": "string"
                 },
                 "region_id": {
                   "backendName": "cluster_type",
-                  "description_en": "The region ID of the cluster",
+                  "description_en": "The ID of the region where the cluster is deployed",
                   "description_zh": "集群所在地域ID",
                   "example": "cn-beijing",
+                  "mappingResourcePropertyName": "$.RegionId",
                   "title_en": "地域ID。",
                   "title_zh": "地域ID。",
                   "type": "string",
@@ -469,6 +536,7 @@
                   "description_en": "The resource group ID of the cluster",
                   "description_zh": "集群资源组ID",
                   "example": "rg-acfmyvw3wjm****",
+                  "mappingResourcePropertyName": "$.ResourceGroupId",
                   "title_en": "集群资源组ID。",
                   "title_zh": "集群资源组ID。",
                   "type": "string",
@@ -479,15 +547,17 @@
                   "description_en": "The security group ID of the cluster",
                   "description_zh": "集群安全组ID",
                   "example": "sg-2vcgwsrwgt5mp0yi****",
+                  "mappingResourcePropertyName": "$.SecurityGroupId",
                   "title_en": "集群安全组ID。",
                   "title_zh": "集群安全组ID。",
                   "type": "string",
                   "visibility": "Public"
                 },
                 "service_cidr": {
-                  "description_en": "The service CIDR block",
+                  "description_en": "The CIDR block of Services",
                   "description_zh": "服务网络网段",
                   "example": "172.21.xx.xx/20",
+                  "mappingResourcePropertyName": "$.ServiceCidr",
                   "required": true,
                   "title_en": "服务网络网段",
                   "title_zh": "服务网络网段",
@@ -499,6 +569,7 @@
                   "description_zh": "集群当前节点数量，包含Master节点以及Worker节点",
                   "example": "5",
                   "format": "int64",
+                  "mappingResourcePropertyName": "$.Size",
                   "title_en": "集群节点数。",
                   "title_zh": "集群节点数。",
                   "type": "integer",
@@ -506,9 +577,10 @@
                 },
                 "state": {
                   "backendName": "state",
-                  "description_en": "The running state of the cluster. Valid values:\n\n`initial`: The cluster is being created.\n`failed`: The cluster failed to be created.\n`running`: The cluster is running.\n`updating`: The cluster is being updated.\n`upgrading`: The cluster is being upgraded.\n`removing`: Nodes are being removed.\n`draining`: Nodes are being drained.\n`scaling`: The cluster is being scaled.\n`inactive`: The cluster is inactive.\n`unavailable`: The cluster is unavailable.\n`deleting`: The cluster is being deleted.\n`deleted`: The cluster has been deleted.\n`delete_failed`: The cluster failed to be deleted.\n`waiting`: The cluster is in the accessed state, waiting to be connected.\n`disconnected`: The cluster is disconnected",
+                  "description_en": "The running status of the cluster. Valid values:\n\n`initial`: The cluster is being created.\n`failed`: The cluster failed to be created.\n`running`: The cluster is running.\n`updating`: The cluster is being updated.\n`upgrading`: The cluster is being upgraded.\n`removing`: Nodes are being removed.\n`draining`: Nodes are being drained.\n`scaling`: The cluster is being scaled.\n`inactive`: The cluster is inactive.\n`unavailable`: The cluster is unavailable.\n`deleting`: The cluster is being deleted.\n`deleted`: The cluster has been deleted.\n`delete_failed`: The cluster failed to be deleted.\n`waiting`: The cluster is in the accessed state, waiting to be connected.\n`disconnected`: The cluster is disconnected",
                   "description_zh": "集群运行状态，取值：\n\n`initial`：集群创建中。\n`failed`：集群创建失败。\n`running`：集群运行中。\n`updating`：集群变更中。\n`upgrading`：集群升级中。\n`removing`：节点移除中。\n`draining`：节点排水中。\n`scaling`：集群伸缩中。\n`inactive`：集群不活跃。\n`unavailable`：集群不可用。\n`deleting`：集群删除中。\n`deleted`：集群已经被删除。\n`delete_failed`：集群删除失败。\n`waiting`：等待接入状态。\n`disconnected`：断开状态",
                   "example": "running",
+                  "mappingResourcePropertyName": "$.Status",
                   "title_en": "集群运行状态。",
                   "title_zh": "集群运行状态。",
                   "type": "string",
@@ -517,9 +589,10 @@
                 "subnet_cidr": {
                   "backendName": "subnet_cidr",
                   "deprecated": true,
-                  "description_en": "[This field is deprecated] Use container_cidr to obtain the pod CIDR block",
+                  "description_en": "[Deprecated] Use container_cidr to obtain the pod CIDR block",
                   "description_zh": "【该字段已废弃】请使用container_cidr获取Pod网络网段",
                   "example": "null",
+                  "mappingResourcePropertyName": "$.SubnetCidr",
                   "title_en": "POD网段地址。【该字段已废弃】请使用container_cidr获取Pod网络网段。",
                   "title_zh": "POD网段地址。【该字段已废弃】请使用container_cidr获取Pod网络网段。",
                   "type": "string",
@@ -533,7 +606,8 @@
                   "items": {
                     "$ref": "#/components/schemas/tag",
                     "description_en": "The resource tags of the cluster",
-                    "description_zh": "集群资源标签"
+                    "description_zh": "集群资源标签",
+                    "mappingResourcePropertyName": "$.Tags[*]"
                   },
                   "title_en": "集群标签。",
                   "title_zh": "集群标签。",
@@ -544,15 +618,17 @@
                   "description_en": "The time zone",
                   "description_zh": "时区",
                   "example": "Asia/Shanghai",
+                  "mappingResourcePropertyName": "$.Timezone",
                   "title_en": "时区",
                   "title_zh": "时区",
                   "type": "string"
                 },
                 "updated": {
                   "backendName": "updated",
-                  "description_en": "The time when the cluster was last updated",
+                  "description_en": "The time when the cluster was updated",
                   "description_zh": "集群更新时间",
                   "example": "2025-04-07T09:57:26+08:00",
+                  "mappingResourcePropertyName": "$.Updated",
                   "title_en": "集群更新时间。",
                   "title_zh": "集群更新时间。",
                   "type": "string",
@@ -560,9 +636,10 @@
                 },
                 "vpc_id": {
                   "backendName": "vpc_id",
-                  "description_en": "The VPC ID of the cluster",
+                  "description_en": "The ID of the VPC where the cluster is deployed",
                   "description_zh": "集群专有网络ID",
                   "example": "vpc-2vcg932hsxsxuqbgl****",
+                  "mappingResourcePropertyName": "$.VpcId",
                   "title_en": "集群所在的VPC ID。",
                   "title_zh": "集群所在的VPC ID。",
                   "type": "string",
@@ -574,19 +651,21 @@
                   "description_en": "The vSwitch ID of the cluster",
                   "description_zh": "集群虚拟交换机ID",
                   "example": "vsw-2vc41xuumx5z2rdma****,vsw-2vc41xuumx5z2rdma****",
+                  "mappingResourcePropertyName": "$.VSwitchId",
                   "title_en": "集群使用的虚拟交换ID。",
                   "title_zh": "集群使用的虚拟交换ID。",
                   "type": "string",
                   "visibility": "Public"
                 },
                 "vswitch_ids": {
-                  "description_en": "The vSwitches of the cluster control plane",
+                  "description_en": "The vSwitches for the cluster control plane",
                   "description_zh": "集群控制面虚拟交换机",
                   "itemName": "控制面交换机",
                   "items": {
-                    "description_en": "The vSwitches of the cluster control plane",
+                    "description_en": "The vSwitches for the cluster control plane",
                     "description_zh": "集群控制面虚拟交换机",
                     "example": "vsw-2vc41xuumx5z2rdma****",
+                    "mappingResourcePropertyName": "$.VswitchIds[*]",
                     "type": "string"
                   },
                   "title_en": "集群控制面虚拟交换机。",
@@ -596,9 +675,10 @@
                 "worker_ram_role_name": {
                   "backendName": "swarm_mode",
                   "deprecated": true,
-                  "description_en": "The name of the worker RAM role that authorizes ECS instances to serve as cluster worker nodes",
+                  "description_en": "The name of the Worker RAM role that authorizes ECS instances to serve as cluster worker nodes",
                   "description_zh": "Worker RAM角色名称，授权ECS实例为集群Worker节点",
                   "example": "KubernetesWorkerRole-ec87d15b-edca-4302-933f-c8a16bf0****",
+                  "mappingResourcePropertyName": "$.WorkerRamRoleName",
                   "title_en": "集群Worker RAM角色。",
                   "title_zh": "集群Worker RAM角色。",
                   "type": "string",
@@ -641,7 +721,7 @@
               },
               "page_size": {
                 "backendName": "page_size",
-                "description_en": "The page size",
+                "description_en": "The number of entries per page",
                 "description_zh": "单页大小",
                 "example": "20",
                 "format": "int32",
