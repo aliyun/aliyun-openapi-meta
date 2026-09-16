@@ -2,9 +2,9 @@
   "cmd_full_name": "lhm list-meta-data-component-page",
   "cmd_name": "list-meta-data-component-page",
   "deprecated": false,
-  "description_en": "数据源分页查询",
+  "description_en": "Queries the metadata data source list by paging and returns the data source type, connection status, and status information of associated profiling nodes",
   "description_zh": "分页查询元数据数据源列表，返回数据源类型、连接状态及关联探查任务的状态信息",
-  "kebab_example": "",
+  "kebab_example": "aliyun lhm list-meta-data-component-page --category-type WORKFLOW --component-type 0 --ds-name test_ds318_hangzhou_0428 --ds-status 1 --ds-type Hive --ds-type-list Hive --group-by order_date --need-total-count true --order-by gmtCreate --order-direction DESC --page-index 1 --page-size 20 --src-component-id 12345 --api-version 2025-01-16 --region cn-hangzhou",
   "method": "POST",
   "multi_version": true,
   "name": "ListMetaDataComponentPage",
@@ -38,7 +38,7 @@
   "parameters": [
     {
       "example": "WORKFLOW",
-      "help_en": "The categoryType",
+      "help_en": "The category type of the data source. Valid values: DATASET, WORKFLOW, and ENGINE. For scheduling scenarios, this parameter is set to WORKFLOW",
       "help_zh": "数据源分类类型：DATASET、WORKFLOW、ENGINE。调度场景固定为 WORKFLOW",
       "location": "body",
       "name": "category_type",
@@ -52,7 +52,7 @@
     },
     {
       "example": "0",
-      "help_en": "The componentType",
+      "help_en": "The entry component type. In some operations, this parameter is used as a backward compatible field for version 1.1.0. Valid values:\n0: source\n1: destination",
       "help_zh": "入口组件类型。部分接口中作为 1.1.0 向下兼容字段使用：0-源端，1-目标端",
       "location": "body",
       "name": "component_type",
@@ -66,7 +66,7 @@
     },
     {
       "example": "test_ds318_hangzhou_0428",
-      "help_en": "The dsName",
+      "help_en": "The data source name. Exact match and fuzzy match are supported",
       "help_zh": "数据源名称，支持精确匹配或模糊匹配",
       "location": "body",
       "name": "ds_name",
@@ -82,7 +82,7 @@
       "element": {
         "type": "int"
       },
-      "help_en": "The dsStatus",
+      "help_en": "The connectivity status of the data source. Valid values:\n0: Not tested.\n1: Connected.\n2: Connection failed.\n-1: Connectivity test not supported",
       "help_zh": "数据源连通状态：0-未测试，1-连通正常，2-连通失败，-1-不支持连通性测试",
       "location": "body",
       "name": "ds_status",
@@ -96,7 +96,7 @@
     },
     {
       "example": "Hive",
-      "help_en": "The dsType",
+      "help_en": "The data source type, such as Hive or MaxCompute",
       "help_zh": "数据源类型，例如 Hive、MaxCompute 等",
       "location": "body",
       "name": "ds_type",
@@ -112,7 +112,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The dsTypeList",
+      "help_en": "The list of data source types",
       "help_zh": "数据源类型列表",
       "location": "body",
       "name": "ds_type_list",
@@ -126,7 +126,7 @@
     },
     {
       "example": "order_date",
-      "help_en": "The groupBy",
+      "help_en": "The grouping field (GROUP BY condition). Set this parameter as needed",
       "help_zh": "分组字段（GROUP BY 条件），按实际情况配置",
       "location": "body",
       "name": "group_by",
@@ -140,7 +140,7 @@
     },
     {
       "example": "true",
-      "help_en": "The needTotalCount",
+      "help_en": "Specifies whether to return the total number of records in the paginated result",
       "help_zh": "是否需要在分页结果中返回总记录数",
       "location": "body",
       "name": "need_total_count",
@@ -154,7 +154,7 @@
     },
     {
       "example": "gmtCreate",
-      "help_en": "The orderBy",
+      "help_en": "The sort field. Set this parameter as needed",
       "help_zh": "排序字段，按实际情况配置",
       "location": "body",
       "name": "order_by",
@@ -168,7 +168,7 @@
     },
     {
       "example": "DESC",
-      "help_en": "The orderDirection",
+      "help_en": "The sort direction. Valid values:\nASC: ascending order\nDESC: descending order",
       "help_zh": "排序方向：ASC-升序，DESC-降序",
       "location": "body",
       "name": "order_direction",
@@ -182,7 +182,7 @@
     },
     {
       "example": "1",
-      "help_en": "The pageIndex",
+      "help_en": "The page number, starting from 1",
       "help_zh": "页码，从 1 开始",
       "location": "body",
       "name": "page_index",
@@ -196,7 +196,7 @@
     },
     {
       "example": "20",
-      "help_en": "The pageSize",
+      "help_en": "The page size, which is the number of records returned per page",
       "help_zh": "分页大小，即每页返回的记录数",
       "location": "body",
       "name": "page_size",
@@ -210,7 +210,7 @@
     },
     {
       "example": "12345",
-      "help_en": "The srcComponentId",
+      "help_en": "The source component ID, which is the primary key of the source data source component",
       "help_zh": "源端组件 ID，即源端数据源组件的主键标识",
       "location": "body",
       "name": "src_component_id",
@@ -229,17 +229,21 @@
   "responses": {
     "200": {
       "schema": {
+        "description_en": "The paging query result object. The totalCount parameter indicates the total number of records that meet the conditional filter criteria. The pageIndex and pageSize parameters echo the paging parameters. The data parameter contains the list of data sources on the current page. The success parameter indicates whether the invocation is successful. If the invocation fails, the errCode and errMessage parameters provide the error code and error message. The requestId parameter uniquely identifies this invocation. Provide this value when troubleshooting issues",
         "description_zh": "分页查询结果对象：totalCount 为符合条件的记录总数，pageIndex 与 pageSize 回显本次分页参数，data 为当前页数据源列表，success 表示调用是否成功，失败时由 errCode 与 errMessage 给出错误编码与错误信息，requestId 唯一标识本次调用，排查问题时请提供该值",
         "properties": {
           "data": {
             "backendName": "data",
+            "description_en": "The data list returned by the operation. For the structure of each element, see the child parameters",
             "description_zh": "接口返回的数据列表，元素结构参见下级子字段说明",
             "itemName": "data",
             "items": {
+              "description_en": "A single data source object. For the description of each field, see the child parameters",
               "description_zh": "单个数据源对象，字段含义参见下级子字段说明",
               "properties": {
                 "componentType": {
                   "backendName": "componentType",
+                  "description_en": "The entry component type. In some operations, this parameter is used as a backward compatible field for version 1.1.0. Valid values:\n0: source\n1: destination",
                   "description_zh": "入口组件类型。部分接口中作为 1.1.0 向下兼容字段使用：0-源端，1-目标端",
                   "example": "0",
                   "format": "int64",
@@ -247,36 +251,42 @@
                 },
                 "createTime": {
                   "backendName": "createTime",
+                  "description_en": "The creation time of the table or partition",
                   "description_zh": "创建时间（表或分区的创建时间）",
                   "example": "2026-01-16T10:00:00Z",
                   "type": "string"
                 },
                 "dsConfig": {
                   "backendName": "dsConfig",
+                  "description_en": "The datasource config in JSON string format. The structure is defined by each dsType. Parse the JSON string before use. Sensitive fields such as tokens are masked in the response",
                   "description_zh": "数据源配置，JSON 字符串形式，结构由各 dsType 自行定义，使用时需先做 JSON 解析；token 等敏感字段在响应中会脱敏",
                   "example": "{\"endpoint\":\"...\",\"token\":\"******\"}",
                   "type": "string"
                 },
                 "dsDesc": {
                   "backendName": "dsDesc",
+                  "description_en": "The description of the data source",
                   "description_zh": "数据源描述",
                   "example": "数据源描述",
                   "type": "string"
                 },
                 "dsId": {
                   "backendName": "dsId",
+                  "description_en": "The business ID of the data source (external ID, which may be the same as the primary key ID)",
                   "description_zh": "数据源业务 ID（外部 ID，可能与主键 id 相同）",
                   "example": "290",
                   "type": "string"
                 },
                 "dsName": {
                   "backendName": "dsName",
+                  "description_en": "The data source name. Exact match and fuzzy match are supported",
                   "description_zh": "数据源名称，支持精确匹配或模糊匹配",
                   "example": "test_ds318_hangzhou_0428",
                   "type": "string"
                 },
                 "dsStatus": {
                   "backendName": "dsStatus",
+                  "description_en": "The connectivity status of the data source. Valid values:\n0: Not tested.\n1: Connected.\n2: Connection failed.\n-1: Connectivity test not supported",
                   "description_zh": "数据源连通状态：0-未测试，1-连通正常，2-连通失败，-1-不支持连通性测试",
                   "example": "1",
                   "format": "int32",
@@ -284,24 +294,28 @@
                 },
                 "dsType": {
                   "backendName": "dsType",
+                  "description_en": "The data source type, such as Hive or MaxCompute",
                   "description_zh": "数据源类型，例如 Hive、MaxCompute 等",
                   "example": "Hive",
                   "type": "string"
                 },
                 "dsVersion": {
                   "backendName": "dsVersion",
+                  "description_en": "The version number of the data source",
                   "description_zh": "数据源版本号",
                   "example": "3.2.0",
                   "type": "string"
                 },
                 "expired": {
                   "backendName": "expired",
+                  "description_en": "Indicates whether the data source has expired. Valid values:\ntrue: Expired.\nfalse: Not expired",
                   "description_zh": "数据源是否过期：true-已过期，false-未过期",
                   "example": "false",
                   "type": "boolean"
                 },
                 "id": {
                   "backendName": "id\n",
+                  "description_en": "The primary key ID that uniquely identifies a record",
                   "description_zh": "主键 ID，唯一标识一条记录",
                   "example": "10001",
                   "format": "int64",
@@ -309,10 +323,12 @@
                 },
                 "profilingJob": {
                   "backendName": "profilingJob",
+                  "description_en": "The profiling task information, including the task status, scheduling ID, profiling rule, and profiling type. This field is empty if the data source is not associated with a profiling task",
                   "description_zh": "数据探查任务信息，包含探查任务状态、调度 ID、探查规则与探查类型；数据源未关联探查任务时为空",
                   "properties": {
                     "componentId": {
                       "backendName": "componentId",
+                      "description_en": "The component ID, which is the primary key of the data source component",
                       "description_zh": "组件 ID，即数据源组件的主键标识",
                       "example": "12345",
                       "format": "int64",
@@ -320,12 +336,14 @@
                     },
                     "createTime": {
                       "backendName": "createTime",
+                      "description_en": "The creation time of the table or partition",
                       "description_zh": "创建时间（表或分区的创建时间）",
                       "example": "2026-01-16T10:00:00Z",
                       "type": "string"
                     },
                     "id": {
                       "backendName": "id",
+                      "description_en": "The primary key ID that uniquely identifies a record",
                       "description_zh": "主键 ID，唯一标识一条记录",
                       "example": "10001",
                       "format": "int64",
@@ -333,24 +351,28 @@
                     },
                     "jobDesc": {
                       "backendName": "jobDesc",
+                      "description_en": "The description of the profiling task",
                       "description_zh": "探查任务描述",
                       "example": "探查任务描述",
                       "type": "string"
                     },
                     "jobName": {
                       "backendName": "jobName",
+                      "description_en": "The name of the profiling task",
                       "description_zh": "任务名称（探查任务名称）",
                       "example": "job_name",
                       "type": "string"
                     },
                     "lastBatchId": {
                       "backendName": "lastBatchId",
+                      "description_en": "The ID of the most recent profiling task batch",
                       "description_zh": "最近一次批次号（最近一次探查任务批次号）",
                       "example": "20001",
                       "type": "string"
                     },
                     "profilingEnable": {
                       "backendName": "profilingEnable",
+                      "description_en": "The profiling task status. Valid values:\n0: Not started.\n1: Running.\n2: Stopped",
                       "description_zh": "探查任务状态：0-未开始，1-执行中，2-已停止",
                       "example": "1",
                       "format": "int32",
@@ -358,6 +380,7 @@
                     },
                     "profilingPermission": {
                       "backendName": "profilingPermission",
+                      "description_en": "The profiling permission. Valid values:\n0: read-only link\n1: client",
                       "description_zh": "探查权限：0-只读链接，1-client",
                       "example": "0",
                       "format": "int32",
@@ -365,12 +388,14 @@
                     },
                     "profilingRule": {
                       "backendName": "profilingRule",
+                      "description_en": "The cron expression for scheduled profiling. This parameter takes effect only when profilingType is set to CRON",
                       "description_zh": "定时探查的 cron 表达式，profilingType 为 CRON 时生效",
                       "example": "0 0 2 * * ?",
                       "type": "string"
                     },
                     "profilingType": {
                       "backendName": "profilingType",
+                      "description_en": "The profiling policy (scheduling type). Valid values:\n0: daily\n1: CRON",
                       "description_zh": "探查策略（定时类型）：0-每天，1-CRON",
                       "example": "0",
                       "format": "int32",
@@ -378,6 +403,7 @@
                     },
                     "schedulerToken": {
                       "backendName": "schedulerToken",
+                      "description_en": "The scheduling ID, which uniquely identifies the profiling task on the scheduling side",
                       "description_zh": "调度 ID，探查任务在调度侧的唯一标识",
                       "example": "12345",
                       "type": "string"
@@ -392,18 +418,21 @@
           },
           "errCode": {
             "backendName": "errCode",
+            "description_en": "The error code. An empty string is returned if the call is successful",
             "description_zh": "错误码，调用成功时为空字符串",
             "example": "Success",
             "type": "string"
           },
           "errMessage": {
             "backendName": "errMessage",
+            "description_en": "The error message. An empty string is returned if the call is successful",
             "description_zh": "错误信息，调用成功时为空字符串",
             "example": "success",
             "type": "string"
           },
           "pageIndex": {
             "backendName": "pageIndex",
+            "description_en": "The page number, starting from 1",
             "description_zh": "页码，从 1 开始",
             "example": "1",
             "format": "int32",
@@ -411,6 +440,7 @@
           },
           "pageSize": {
             "backendName": "pageSize",
+            "description_en": "The page size, which is the number of records returned per page",
             "description_zh": "分页大小，即每页返回的记录数",
             "example": "20",
             "format": "int32",
@@ -418,18 +448,21 @@
           },
           "requestId": {
             "backendName": "requestId",
+            "description_en": "The request ID, which is used to locate and troubleshoot issues",
             "description_zh": "请求 ID，用于定位和排查本次调用问题",
             "example": "4C467B38-3910-4477-9B0B-6963D83B4E72",
             "type": "string"
           },
           "success": {
             "backendName": "success",
+            "description_en": "Indicates whether the call is successful. Valid values:\ntrue: Successful.\nfalse: Failed. Check errCode and errMessage for details",
             "description_zh": "调用是否成功：true 表示成功，false 表示失败，失败时结合 errCode 与 errMessage 排查",
             "example": "true",
             "type": "boolean"
           },
           "totalCount": {
             "backendName": "totalCount",
+            "description_en": "The total number of records that meet the query conditions. This parameter is used for pagination",
             "description_zh": "满足查询条件的记录总数，用于分页",
             "example": "100",
             "format": "int32",
