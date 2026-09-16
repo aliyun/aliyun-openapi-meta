@@ -1,10 +1,10 @@
 {
-  "camel_example": "aliyun agentloop GET /agentspace/my-agent-space/pipeline --region cn-hangzhou --pipelineName 'my-pipeline' --scheduleType RunOnce --nextToken 'MTIzNDU2Nzg5MA==' --maxResults 20 --scheduleStatus Active --header \"Content-Type=application/json\" --version 2026-05-20 --force",
+  "camel_example": "aliyun agentloop GET /agentspace/my-agent-space/pipeline --region cn-hangzhou --pipelineName 'my-pipeline' --scheduleType RunOnce --nextToken 'MTIzNDU2Nzg5MA==' --maxResults 20 --scheduleStatus Active --sinkName 'my-dataset' --header \"Content-Type=application/json\" --version 2026-05-20 --force",
   "cmd_full_name": "agentloop list-pipelines",
   "cmd_name": "list-pipelines",
   "deprecated": false,
-  "description_en": "Lists CI/CD pipelines",
-  "description_zh": "查询流水线列表",
+  "description_en": "Queries a list of pipelines. Supports filtering by name, schedule type, and schedule status with cursor-based pagination",
+  "description_zh": "查询流水线列表。支持按名称、调度类型、调度状态过滤，Cursor 分页",
   "kebab_example": "aliyun agentloop list-pipelines --agent-space my-agent-space --pipeline-name my-pipeline --schedule-type RunOnce --schedule-status Active --next-token MTIzNDU2Nzg5MA== --max-results 20 --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "my-agent-space",
-      "help_en": "AgentSpace 名称，列出该 AgentSpace 下的流水线",
+      "help_en": "The name of the AgentSpace. Pipelines under this AgentSpace are listed",
       "help_zh": "AgentSpace 名称，列出该 AgentSpace 下的流水线",
       "location": "path",
       "name": "agent_space",
@@ -35,7 +35,7 @@
     },
     {
       "example": "my-pipeline",
-      "help_en": "按流水线名称过滤，支持精确匹配；不传表示不过滤",
+      "help_en": "Filters pipelines by name using exact match. If this parameter is not specified, no filtering is applied",
       "help_zh": "按流水线名称过滤，支持精确匹配；不传表示不过滤",
       "location": "query",
       "name": "pipeline_name",
@@ -48,7 +48,7 @@
     },
     {
       "example": "RunOnce",
-      "help_en": "按调度类型过滤：RunOnce（单次执行）或 Scheduled（周期调度）；不传表示不过滤",
+      "help_en": "Filters pipelines by schedule type. If this parameter is not specified, no filtering is applied. Valid values:\nRunOnce: One-time execution.\nScheduled: Periodic scheduling",
       "help_zh": "按调度类型过滤：RunOnce（单次执行）或 Scheduled（周期调度）；不传表示不过滤",
       "location": "query",
       "name": "schedule_type",
@@ -61,7 +61,7 @@
     },
     {
       "example": "Active",
-      "help_en": "按调度状态过滤：None（无调度）、Active（活跃）、Paused（已暂停）或 Terminated（已终止）；不传表示不过滤",
+      "help_en": "Filters pipelines by schedule status. If this parameter is not specified, no filtering is applied. Valid values:\nNone: No schedule.\nActive: Active.\nPaused: Paused.\nTerminated: Terminated",
       "help_zh": "按调度状态过滤：None（无调度）、Active（活跃）、Paused（已暂停）或 Terminated（已终止）；不传表示不过滤",
       "location": "query",
       "name": "schedule_status",
@@ -74,7 +74,7 @@
     },
     {
       "example": "MTIzNDU2Nzg5MA==",
-      "help_en": "分页 Token，传入上一次响应中的 nextToken 翻页；首次请求不传",
+      "help_en": "The pagination token. Set this parameter to the nextToken value returned in the previous response to retrieve the next page. Do not specify this parameter for the first request",
       "help_zh": "分页 Token，传入上一次响应中的 nextToken 翻页；首次请求不传",
       "location": "query",
       "name": "next_token",
@@ -87,7 +87,7 @@
     },
     {
       "example": "20",
-      "help_en": "本次最多返回的流水线条数，默认 20，最大 100",
+      "help_en": "The maximum number of pipelines to return. Default value: 20. Maximum value: 100",
       "help_zh": "本次最多返回的流水线条数，默认 20，最大 100",
       "location": "query",
       "name": "max_results",
@@ -97,6 +97,19 @@
       "raw_name": "maxResults",
       "required": false,
       "type": "int"
+    },
+    {
+      "example": "my-dataset",
+      "help_en": "Filters pipelines by the exact name of the output dataset. Matches standard sinks, conditional branch sinks, and default sinks. If this parameter is not specified, no filtering is applied",
+      "help_zh": "按输出 Dataset 名称精确过滤；匹配普通 Sink、条件分支 Sink 和默认 Sink，不传表示不过滤",
+      "location": "query",
+      "name": "sink_name",
+      "options": [
+        "--sink-name"
+      ],
+      "raw_name": "sinkName",
+      "required": false,
+      "type": "string"
     }
   ],
   "pathPattern": "/agentspace/[agentSpace]/pipeline",
@@ -105,8 +118,12 @@
   "responses": {
     "200": {
       "schema": {
+        "description_en": "The response data",
+        "description_zh": "响应数据",
         "properties": {
           "maxResults": {
+            "description_en": "The maximum number of entries per page that was specified in the request. This value is echoed back",
+            "description_zh": "请求时传入的本页最大条数，回显",
             "example": "20",
             "format": "int32",
             "title_en": "请求时传入的本页最大条数，回显",
@@ -114,6 +131,8 @@
             "type": "integer"
           },
           "nextToken": {
+            "description_en": "The token for the next page. An empty string indicates that the current page is the last page",
+            "description_zh": "下一页 Token，空字符串表示已经是最后一页",
             "example": "MTIzNDU2Nzg5MA==",
             "title_en": "下一页 Token，空字符串表示已经是最后一页",
             "title_zh": "下一页 Token，空字符串表示已经是最后一页",
@@ -121,12 +140,18 @@
           },
           "pipelines": {
             "backendName": "pipelines",
+            "description_en": "The list of pipelines",
+            "description_zh": "流水线列表",
             "itemName": "pipelines",
             "items": {
+              "description_en": "The pipeline entry",
+              "description_zh": "流水线条目",
               "properties": {
                 "createTime": {
                   "backendParamType": "java.util.Date",
                   "dateFormat": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                  "description_en": "The time when the pipeline was created, in ISO 8601 UTC format",
+                  "description_zh": "流水线创建时间，ISO 8601 UTC 格式",
                   "example": "2026-01-01T00:00:00Z",
                   "format": "iso8601_normal",
                   "title_en": "流水线创建时间，ISO 8601 UTC 格式",
@@ -134,22 +159,32 @@
                   "type": "string"
                 },
                 "description": {
+                  "description_en": "The description of the pipeline",
+                  "description_zh": "流水线描述",
                   "example": "我的流水线",
                   "title_en": "流水线描述",
                   "title_zh": "流水线描述",
                   "type": "string"
                 },
                 "executePolicy": {
+                  "description_en": "The execution policy",
+                  "description_zh": "执行策略",
                   "properties": {
                     "mode": {
+                      "description_en": "The scheduling mode. Valid values:\nRunOnce: one-time execution.\nScheduled: periodic scheduling",
+                      "description_zh": "调度模式，RunOnce 表示单次执行，Scheduled 表示周期调度",
                       "example": "RunOnce",
                       "title_en": "调度模式，RunOnce 表示单次执行，Scheduled 表示周期调度",
                       "title_zh": "调度模式，RunOnce 表示单次执行，Scheduled 表示周期调度",
                       "type": "string"
                     },
                     "runOnce": {
+                      "description_en": "The parameters for one-time execution. This parameter has a value only when mode is set to RunOnce",
+                      "description_zh": "单次执行参数，仅 mode 为 RunOnce 时有值",
                       "properties": {
                         "fromTime": {
+                          "description_en": "The start of the time slice, in UNIX millisecond timestamp format",
+                          "description_zh": "时间片起点，Unix 毫秒时间戳",
                           "example": "1735660800000",
                           "format": "int64",
                           "parseType": "struct",
@@ -158,6 +193,8 @@
                           "type": "integer"
                         },
                         "toTime": {
+                          "description_en": "The end of the time slice, in UNIX millisecond timestamp format",
+                          "description_zh": "时间片终点，Unix 毫秒时间戳",
                           "example": "1735747200000",
                           "format": "int64",
                           "parseType": "struct",
@@ -171,8 +208,12 @@
                       "type": "object"
                     },
                     "scheduled": {
+                      "description_en": "The parameters for periodic scheduling. This parameter has a value only when mode is set to Scheduled",
+                      "description_zh": "周期调度参数，仅 mode 为 Scheduled 时有值",
                       "properties": {
                         "fromTime": {
+                          "description_en": "The scheduling start time, in UNIX millisecond timestamp format",
+                          "description_zh": "调度起始时间，Unix 毫秒时间戳",
                           "example": "1735660800000",
                           "format": "int64",
                           "parseType": "struct",
@@ -181,6 +222,8 @@
                           "type": "integer"
                         },
                         "interval": {
+                          "description_en": "The scheduling interval, such as 1h or 30m",
+                          "description_zh": "调度间隔，如 1h、30m",
                           "example": "1h",
                           "title_en": "调度间隔，如 1h、30m",
                           "title_zh": "调度间隔，如 1h、30m",
@@ -197,6 +240,8 @@
                   "type": "object"
                 },
                 "pipelineName": {
+                  "description_en": "The name of the pipeline",
+                  "description_zh": "流水线名称",
                   "example": "my-pipeline",
                   "title_en": "流水线名称",
                   "title_zh": "流水线名称",
@@ -204,26 +249,285 @@
                 },
                 "regionId": {
                   "backendName": "regionId",
+                  "description_en": "The region ID",
+                  "description_zh": "地域ID",
                   "example": "cn-hangzhou",
                   "title_en": "地域ID",
                   "title_zh": "地域ID",
                   "type": "string"
                 },
                 "scheduleStatus": {
+                  "description_en": "The scheduling status. Valid values:\nNone: no scheduling. This value is returned for RunOnce pipelines.\nActive: active.\nPaused: paused.\nTerminated: terminated",
+                  "description_zh": "调度状态：None（无调度，RunOnce 管线）、Active（活跃）、Paused（已暂停）或 Terminated（已终止）",
                   "example": "None",
                   "title_en": "调度状态：None（无调度，RunOnce 管线）、Active（活跃）、Paused（已暂停）或 Terminated（已终止）",
                   "title_zh": "调度状态：None（无调度，RunOnce 管线）、Active（活跃）、Paused（已暂停）或 Terminated（已终止）",
                   "type": "string"
                 },
                 "scheduleType": {
+                  "description_en": "The scheduling type. Valid values:\nRunOnce: one-time execution.\nScheduled: periodic scheduling",
+                  "description_zh": "调度类型：RunOnce（单次执行）或 Scheduled（周期调度）",
                   "example": "RunOnce",
                   "title_en": "调度类型：RunOnce（单次执行）或 Scheduled（周期调度）",
                   "title_zh": "调度类型：RunOnce（单次执行）或 Scheduled（周期调度）",
                   "type": "string"
                 },
+                "sink": {
+                  "description_en": "The pipeline sink (data write destination)",
+                  "description_zh": "Pipeline 目标（数据写入目标）",
+                  "properties": {
+                    "condition": {
+                      "description_en": "The conditional routing configuration. This parameter is used only when sink.type is set to condition",
+                      "description_zh": "条件分流配置，仅 sink.type 为 condition 时使用",
+                      "properties": {
+                        "defaultSink": {
+                          "description_en": "The default write destination that is used when no condition route is matched",
+                          "description_zh": "未命中任何条件路由时使用的默认写入目标",
+                          "properties": {
+                            "dataset": {
+                              "description_en": "The default destination dataset",
+                              "description_zh": "默认目标 Dataset",
+                              "properties": {
+                                "agentSpace": {
+                                  "description_en": "The name of the AgentSpace to which the default destination dataset belongs",
+                                  "description_zh": "默认目标 Dataset 所属 AgentSpace 名称",
+                                  "example": "my-agent-space",
+                                  "title_en": "默认目标 Dataset 所属 AgentSpace 名称",
+                                  "title_zh": "默认目标 Dataset 所属 AgentSpace 名称",
+                                  "type": "string"
+                                },
+                                "dataset": {
+                                  "description_en": "The name of the default destination dataset",
+                                  "description_zh": "默认目标 Dataset 名称",
+                                  "example": "other-result",
+                                  "title_en": "默认目标 Dataset 名称",
+                                  "title_zh": "默认目标 Dataset 名称",
+                                  "type": "string"
+                                }
+                              },
+                              "title_en": "默认目标 Dataset",
+                              "title_zh": "默认目标 Dataset",
+                              "type": "object"
+                            },
+                            "type": {
+                              "description_en": "The type of the default destination. Currently, only dataset is supported",
+                              "description_zh": "默认目标类型，当前仅支持 dataset",
+                              "example": "dataset",
+                              "title_en": "默认目标类型，当前仅支持 dataset",
+                              "title_zh": "默认目标类型，当前仅支持 dataset",
+                              "type": "string"
+                            }
+                          },
+                          "title_en": "未命中任何条件路由时使用的默认写入目标",
+                          "title_zh": "未命中任何条件路由时使用的默认写入目标",
+                          "type": "object"
+                        },
+                        "matchMode": {
+                          "description_en": "The route matching mode. Currently, only all is supported",
+                          "description_zh": "路由匹配模式，当前仅支持 all",
+                          "example": "all",
+                          "title_en": "路由匹配模式，当前仅支持 all",
+                          "title_zh": "路由匹配模式，当前仅支持 all",
+                          "type": "string"
+                        },
+                        "routes": {
+                          "description_en": "The list of condition routes",
+                          "description_zh": "条件路由列表",
+                          "itemName": "routes",
+                          "items": {
+                            "description_en": "The condition route",
+                            "description_zh": "条件路由",
+                            "properties": {
+                              "expression": {
+                                "description_en": "The route expression in SPL. Only where, project, and extend are supported",
+                                "description_zh": "路由表达式（SPL），仅支持 where、project、extend",
+                                "example": "* | where intent = 'refund'",
+                                "title_en": "路由表达式（SPL），仅支持 where、project、extend",
+                                "title_zh": "路由表达式（SPL），仅支持 where、project、extend",
+                                "type": "string"
+                              },
+                              "id": {
+                                "description_en": "The route ID",
+                                "description_zh": "路由 Id",
+                                "example": "refund",
+                                "title_en": "路由 Id",
+                                "title_zh": "路由 Id",
+                                "type": "string"
+                              },
+                              "sink": {
+                                "description_en": "The write destination of the route",
+                                "description_zh": "路由写入目标",
+                                "properties": {
+                                  "dataset": {
+                                    "description_en": "The destination dataset of the route",
+                                    "description_zh": "路由目标 Dataset",
+                                    "properties": {
+                                      "agentSpace": {
+                                        "description_en": "The name of the AgentSpace to which the destination dataset belongs",
+                                        "description_zh": "目标 Dataset 所属 AgentSpace 名称",
+                                        "example": "my-agent-space",
+                                        "title_en": "目标 Dataset 所属 AgentSpace 名称",
+                                        "title_zh": "目标 Dataset 所属 AgentSpace 名称",
+                                        "type": "string"
+                                      },
+                                      "dataset": {
+                                        "description_en": "The name of the destination dataset",
+                                        "description_zh": "目标 Dataset 名称",
+                                        "example": "refund-result",
+                                        "title_en": "目标 Dataset 名称",
+                                        "title_zh": "目标 Dataset 名称",
+                                        "type": "string"
+                                      }
+                                    },
+                                    "title_en": "路由目标 Dataset",
+                                    "title_zh": "路由目标 Dataset",
+                                    "type": "object"
+                                  },
+                                  "type": {
+                                    "description_en": "The type of the route destination. Currently, only dataset is supported",
+                                    "description_zh": "路由目标类型，当前仅支持 dataset",
+                                    "example": "dataset",
+                                    "title_en": "路由目标类型，当前仅支持 dataset",
+                                    "title_zh": "路由目标类型，当前仅支持 dataset",
+                                    "type": "string"
+                                  }
+                                },
+                                "title_en": "路由写入目标",
+                                "title_zh": "路由写入目标",
+                                "type": "object"
+                              }
+                            },
+                            "title_en": "条件路由",
+                            "title_zh": "条件路由",
+                            "type": "object"
+                          },
+                          "title_en": "条件路由列表",
+                          "title_zh": "条件路由列表",
+                          "type": "array"
+                        }
+                      },
+                      "title_en": "条件分流配置，仅 sink.type 为 condition 时使用",
+                      "title_zh": "条件分流配置，仅 sink.type 为 condition 时使用",
+                      "type": "object"
+                    },
+                    "dataset": {
+                      "description_en": "The destination dataset configuration for the dataset sink. This parameter is used only when sink.type is set to dataset",
+                      "description_zh": "Dataset Sink 的目标数据集配置，仅 sink.type 为 dataset 时使用",
+                      "properties": {
+                        "agentSpace": {
+                          "description_en": "The name of the AgentSpace to which the destination dataset belongs",
+                          "description_zh": "目标数据集所属 AgentSpace 名称",
+                          "example": "my-agent-space",
+                          "title_en": "目标数据集所属 AgentSpace 名称",
+                          "title_zh": "目标数据集所属 AgentSpace 名称",
+                          "type": "string"
+                        },
+                        "dataset": {
+                          "description_en": "The name of the destination dataset",
+                          "description_zh": "目标数据集名称",
+                          "example": "my-dataset",
+                          "title_en": "目标数据集名称",
+                          "title_zh": "目标数据集名称",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "Dataset Sink 的目标数据集配置，仅 sink.type 为 dataset 时使用",
+                      "title_zh": "Dataset Sink 的目标数据集配置，仅 sink.type 为 dataset 时使用",
+                      "type": "object"
+                    },
+                    "type": {
+                      "description_en": "The destination type. Valid values: dataset or condition",
+                      "description_zh": "目标类型，支持 dataset 或 condition",
+                      "example": "condition",
+                      "title_en": "目标类型，支持 dataset 或 condition",
+                      "title_zh": "目标类型，支持 dataset 或 condition",
+                      "type": "string"
+                    }
+                  },
+                  "title_en": "Pipeline 目标（数据写入目标）",
+                  "title_zh": "Pipeline 目标（数据写入目标）",
+                  "type": "object"
+                },
+                "source": {
+                  "description_en": "The pipeline data source",
+                  "description_zh": "Pipeline 数据源",
+                  "properties": {
+                    "dataset": {
+                      "description_en": "The dataset datasource config in the current AgentSpace",
+                      "description_zh": "当前 AgentSpace 下的 Dataset 数据源配置",
+                      "properties": {
+                        "dataset": {
+                          "description_en": "The name of the source dataset",
+                          "description_zh": "源 Dataset 名称",
+                          "example": "my-dataset",
+                          "title_en": "源 Dataset 名称",
+                          "title_zh": "源 Dataset 名称",
+                          "type": "string"
+                        },
+                        "filter": {
+                          "description_en": "The data filter condition for the dataset",
+                          "description_zh": "Dataset 数据过滤条件",
+                          "example": "status = 'pending'",
+                          "title_en": "Dataset 数据过滤条件",
+                          "title_zh": "Dataset 数据过滤条件",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "当前 AgentSpace 下的 Dataset 数据源配置",
+                      "title_zh": "当前 AgentSpace 下的 Dataset 数据源配置",
+                      "type": "object"
+                    },
+                    "logstore": {
+                      "description_en": "The Simple Log Service (SLS) Logstore datasource config",
+                      "description_zh": "SLS Logstore 数据源配置",
+                      "properties": {
+                        "logstore": {
+                          "description_en": "The name of the SLS Logstore",
+                          "description_zh": "SLS Logstore 名称",
+                          "example": "my-sls-logstore",
+                          "title_en": "SLS Logstore 名称",
+                          "title_zh": "SLS Logstore 名称",
+                          "type": "string"
+                        },
+                        "project": {
+                          "description_en": "The name of the SLS project",
+                          "description_zh": "SLS Project 名称",
+                          "example": "my-sls-project",
+                          "title_en": "SLS Project 名称",
+                          "title_zh": "SLS Project 名称",
+                          "type": "string"
+                        },
+                        "query": {
+                          "description_en": "The data filtered query statement in SLS query/analysis syntax",
+                          "description_zh": "数据筛选查询语句（SLS 查询/分析语法）",
+                          "example": "* | SELECT *",
+                          "title_en": "数据筛选查询语句（SLS 查询/分析语法）",
+                          "title_zh": "数据筛选查询语句（SLS 查询/分析语法）",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "SLS Logstore 数据源配置",
+                      "title_zh": "SLS Logstore 数据源配置",
+                      "type": "object"
+                    },
+                    "type": {
+                      "description_en": "The data source type. Valid values: logstore or dataset",
+                      "description_zh": "数据源类型，支持 logstore 或 dataset",
+                      "example": "dataset",
+                      "title_en": "数据源类型，支持 logstore 或 dataset",
+                      "title_zh": "数据源类型，支持 logstore 或 dataset",
+                      "type": "string"
+                    }
+                  },
+                  "title_en": "Pipeline 数据源",
+                  "title_zh": "Pipeline 数据源",
+                  "type": "object"
+                },
                 "updateTime": {
                   "backendParamType": "java.util.Date",
                   "dateFormat": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                  "description_en": "The time when the pipeline was last updated, in ISO 8601 UTC format",
+                  "description_zh": "流水线最近一次更新时间，ISO 8601 UTC 格式",
                   "example": "2026-01-02T00:00:00Z",
                   "format": "iso8601_normal",
                   "title_en": "流水线最近一次更新时间，ISO 8601 UTC 格式",
@@ -231,6 +535,8 @@
                   "type": "string"
                 },
                 "workspace": {
+                  "description_en": "The workspace associated with the pipeline",
+                  "description_zh": "流水线关联的 Workspace",
                   "example": "my-workspace",
                   "title_en": "流水线关联的 Workspace",
                   "title_zh": "流水线关联的 Workspace",
@@ -246,12 +552,16 @@
             "type": "array"
           },
           "requestId": {
+            "description_en": "The request ID, which is used to locate and troubleshoot issues",
+            "description_zh": "请求 Id，用于排查问题时定位本次请求",
             "example": "9ACFB10A-1B2C-3D4E-5F6G-7H8I9J0K1L2M",
             "title_en": "请求 Id，用于排查问题时定位本次请求",
-            "title_zh": "Id of the request",
+            "title_zh": "请求 Id，用于排查问题时定位本次请求",
             "type": "string"
           },
           "totalCount": {
+            "description_en": "The total number of pipelines that match the filter conditions",
+            "description_zh": "满足过滤条件的流水线总数",
             "example": "100",
             "format": "int32",
             "title_en": "满足过滤条件的流水线总数",
@@ -260,14 +570,14 @@
           }
         },
         "title_en": "响应数据",
-        "title_zh": "Schema of Response",
+        "title_zh": "响应数据",
         "type": "object"
       }
     }
   },
   "v1_parameters": [
     {
-      "help_en": "AgentSpace 名称，列出该 AgentSpace 下的流水线",
+      "help_en": "The name of the AgentSpace. Pipelines under this AgentSpace are listed",
       "help_zh": "AgentSpace 名称，列出该 AgentSpace 下的流水线",
       "name": "agentSpace",
       "position": "path",
@@ -275,7 +585,7 @@
       "type": "string"
     },
     {
-      "help_en": "本次最多返回的流水线条数，默认 20，最大 100",
+      "help_en": "The maximum number of pipelines to return. Default value: 20. Maximum value: 100",
       "help_zh": "本次最多返回的流水线条数，默认 20，最大 100",
       "name": "maxResults",
       "position": "query",
@@ -283,7 +593,7 @@
       "type": "int"
     },
     {
-      "help_en": "分页 Token，传入上一次响应中的 nextToken 翻页；首次请求不传",
+      "help_en": "The pagination token. Set this parameter to the nextToken value returned in the previous response to retrieve the next page. Do not specify this parameter for the first request",
       "help_zh": "分页 Token，传入上一次响应中的 nextToken 翻页；首次请求不传",
       "name": "nextToken",
       "position": "query",
@@ -291,7 +601,7 @@
       "type": "string"
     },
     {
-      "help_en": "按流水线名称过滤，支持精确匹配；不传表示不过滤",
+      "help_en": "Filters pipelines by name using exact match. If this parameter is not specified, no filtering is applied",
       "help_zh": "按流水线名称过滤，支持精确匹配；不传表示不过滤",
       "name": "pipelineName",
       "position": "query",
@@ -299,7 +609,7 @@
       "type": "string"
     },
     {
-      "help_en": "按调度状态过滤：None（无调度）、Active（活跃）、Paused（已暂停）或 Terminated（已终止）；不传表示不过滤",
+      "help_en": "Filters pipelines by schedule status. If this parameter is not specified, no filtering is applied. Valid values:\nNone: No schedule.\nActive: Active.\nPaused: Paused.\nTerminated: Terminated",
       "help_zh": "按调度状态过滤：None（无调度）、Active（活跃）、Paused（已暂停）或 Terminated（已终止）；不传表示不过滤",
       "name": "scheduleStatus",
       "position": "query",
@@ -307,9 +617,17 @@
       "type": "string"
     },
     {
-      "help_en": "按调度类型过滤：RunOnce（单次执行）或 Scheduled（周期调度）；不传表示不过滤",
+      "help_en": "Filters pipelines by schedule type. If this parameter is not specified, no filtering is applied. Valid values:\nRunOnce: One-time execution.\nScheduled: Periodic scheduling",
       "help_zh": "按调度类型过滤：RunOnce（单次执行）或 Scheduled（周期调度）；不传表示不过滤",
       "name": "scheduleType",
+      "position": "query",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "help_en": "Filters pipelines by the exact name of the output dataset. Matches standard sinks, conditional branch sinks, and default sinks. If this parameter is not specified, no filtering is applied",
+      "help_zh": "按输出 Dataset 名称精确过滤；匹配普通 Sink、条件分支 Sink 和默认 Sink，不传表示不过滤",
+      "name": "sinkName",
       "position": "query",
       "required": false,
       "type": "string"
