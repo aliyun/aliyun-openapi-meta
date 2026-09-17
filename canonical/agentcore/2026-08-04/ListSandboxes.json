@@ -3,8 +3,8 @@
   "cmd_full_name": "agentcore list-sandboxes",
   "cmd_name": "list-sandboxes",
   "deprecated": false,
-  "description_en": "Queries a list of sandboxes",
-  "description_zh": "查询 Sandbox 列表",
+  "description_en": "Queries the list of sandboxes for a managed agent in a specified workspace. You can filter results by sandbox ID and active session ID fragments",
+  "description_zh": "查询指定工作空间中托管智能体的 Sandbox 列表，支持按 Sandbox ID 和当前有效 Session ID 的片段组合筛选",
   "kebab_example": "",
   "method": "GET",
   "multi_version": false,
@@ -21,8 +21,9 @@
   },
   "parameters": [
     {
-      "help_en": "The workspaceId",
-      "help_zh": "The workspaceId",
+      "example": "ws-1",
+      "help_en": "The workspace ID",
+      "help_zh": "工作空间 ID",
       "location": "path",
       "name": "workspace_id",
       "options": [
@@ -33,8 +34,9 @@
       "type": "string"
     },
     {
-      "help_en": "The agentId",
-      "help_zh": "The agentId",
+      "example": "agent-1",
+      "help_en": "The managed agent ID",
+      "help_zh": "托管智能体 ID",
       "location": "path",
       "name": "agent_id",
       "options": [
@@ -46,8 +48,8 @@
     },
     {
       "example": "2f360",
-      "help_en": "When explicitly specified, this parameter cannot be empty or consist entirely of whitespace. The value can contain up to 36 characters and allows only hexadecimal characters and hyphens. This parameter can be used together with sessionId, combined with AND logic",
-      "help_zh": "显式传入时不可为空或全空白，最多 36 个字符，仅允许十六进制字符和连字符；可与 sessionId 同时使用，按 AND 组合",
+      "help_en": "Performs a case-insensitive fuzzy search by sandbox ID fragment",
+      "help_zh": "按 Sandbox ID 片段模糊搜索，不区分大小写",
       "location": "query",
       "name": "search_text",
       "options": [
@@ -59,8 +61,8 @@
     },
     {
       "example": "session-a",
-      "help_en": "When explicitly specified, this parameter cannot be empty or consist entirely of whitespace. The value must be valid UTF-8 of 1 to 128 bytes and cannot contain forward slashes (/), vertical bars (|), control characters, or format characters. The original case and leading/trailing spaces are preserved. This parameter can be used together with searchText, combined with AND logic",
-      "help_zh": "显式传入时不可为空或全空白，必须是 1～128 字节的有效 UTF-8，不能包含 /、|、控制字符或格式字符；保留原始大小写及首尾空格，可与 searchText 同时使用并按 AND 组合",
+      "help_en": "Performs a case-insensitive fuzzy search by active session ID fragment",
+      "help_zh": "按当前有效 Session ID 片段模糊搜索，不区分大小写",
       "location": "query",
       "name": "session_id",
       "options": [
@@ -86,7 +88,8 @@
       "type": "int"
     },
     {
-      "help_en": "The pagination token for the next page. When paginating, keep workspaceId, agentId, searchText, sessionId, and maxResults unchanged",
+      "example": "next-token-1",
+      "help_en": "The pagination token for querying the next page. When paginating, keep workspaceId, agentId, searchText, sessionId, and maxResults unchanged",
       "help_zh": "查询下一页的游标；翻页时须保持 workspaceId、agentId、searchText、sessionId 和 maxResults 不变",
       "location": "query",
       "name": "next_token",
@@ -107,42 +110,67 @@
         "properties": {
           "code": {
             "backendName": "code",
+            "description_en": "The business status code. The value SUCCESS is returned if the request was successful",
+            "description_zh": "业务状态码，成功时为 SUCCESS",
+            "example": "SUCCESS",
             "type": "string"
           },
           "httpStatusCode": {
             "backendName": "httpStatusCode",
+            "description_en": "The HTTP status code. The value 200 is returned if the request was successful",
+            "description_zh": "HTTP 状态码，成功时为 200",
+            "example": "200",
             "format": "int32",
             "type": "integer"
           },
           "items": {
             "backendName": "items",
+            "description_en": "The list of sandboxes that match the filter conditions",
+            "description_zh": "符合筛选条件的 Sandbox 列表",
             "itemName": "items",
             "items": {
               "properties": {
                 "activeSessionCount": {
                   "backendName": "activeSessionCount",
+                  "description_en": "The number of active sessions for this sandbox",
+                  "description_zh": "该 Sandbox 当前的活动 Session 数量",
+                  "example": "1",
                   "format": "int32",
                   "type": "integer"
                 },
                 "createdAt": {
                   "backendName": "createdAt",
+                  "description_en": "The time when the sandbox was created, in RFC 3339 UTC format",
+                  "description_zh": "Sandbox 创建时间，采用 RFC 3339 UTC 格式",
+                  "example": "2026-08-29T00:00:00Z",
                   "type": "string"
                 },
                 "lastActiveAt": {
                   "backendName": "lastActiveAt",
+                  "description_en": "The time of the last activity on the sandbox, in RFC 3339 UTC format",
+                  "description_zh": "Sandbox 最近一次活动时间，采用 RFC 3339 UTC 格式",
+                  "example": "2026-08-29T00:02:00Z",
                   "type": "string"
                 },
                 "lastHeartbeatAt": {
                   "backendName": "lastHeartbeatAt",
+                  "description_en": "The time of the last heartbeat from the sandbox, in RFC 3339 UTC format",
+                  "description_zh": "Sandbox 最近一次心跳时间，采用 RFC 3339 UTC 格式",
+                  "example": "2026-08-29T00:01:00Z",
                   "type": "string"
                 },
                 "maxConcurrentSessions": {
                   "backendName": "maxConcurrentSessions",
+                  "description_en": "The maximum number of concurrent sessions allowed for this sandbox, derived from the auto scaling configuration in effect at runtime. This value is empty if auto scaling is not enabled or the configuration is unavailable",
+                  "description_zh": "该 Sandbox 允许的最大并发 Session 数，取自运行时生效的自动扩缩容配置；自动扩缩容未启用或配置不可用时为空",
+                  "example": "7",
                   "format": "int32",
                   "type": "integer"
                 },
                 "phase": {
                   "backendName": "phase",
+                  "description_en": "The current running phase of the sandbox",
+                  "description_zh": "Sandbox 当前运行阶段",
                   "enum": [
                     "PENDING",
                     "RUNNING",
@@ -152,10 +180,14 @@
                     "TERMINATING",
                     "FAILED"
                   ],
+                  "example": "RUNNING",
                   "type": "string"
                 },
                 "sandboxId": {
                   "backendName": "sandboxId",
+                  "description_en": "The sandbox ID. You can call the ListSandboxes operation to query sandbox IDs",
+                  "description_zh": "Sandbox ID，可通过 ListSandboxes 查询",
+                  "example": "sbx-2",
                   "type": "string"
                 }
               },
@@ -165,27 +197,44 @@
           },
           "maxResults": {
             "backendName": "maxResults",
+            "description_en": "The maximum number of records per page for this query",
+            "description_zh": "本次查询的单页最大记录数",
+            "example": "20",
             "format": "int32",
             "type": "integer"
           },
           "message": {
             "backendName": "message",
+            "description_en": "The response message. The value success is returned if the request was successful",
+            "description_zh": "响应消息，成功时为 success",
+            "example": "success",
             "type": "string"
           },
           "nextToken": {
             "backendName": "nextToken",
+            "description_en": "The pagination token for the next page. An empty value indicates that no more results are available",
+            "description_zh": "下一页的分页令牌；为空表示没有更多结果",
+            "example": "next-token-1",
             "type": "string"
           },
           "requestId": {
             "backendName": "requestId",
+            "description_en": "The request ID, which is used to locate and troubleshoot issues",
+            "description_zh": "请求 ID，用于定位和排查问题",
+            "example": "1a2b3c4d-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
             "type": "string"
           },
           "success": {
             "backendName": "success",
+            "description_en": "Indicates whether the request was successful. Valid values:\ntrue: The request was successful.\nfalse: The request failed",
+            "description_zh": "请求是否成功。true 表示成功，false 表示失败",
             "type": "boolean"
           },
           "totalCount": {
             "backendName": "totalCount",
+            "description_en": "The total number of records that match the query conditions",
+            "description_zh": "符合本次查询条件的记录总数",
+            "example": "27",
             "format": "int64",
             "type": "integer"
           }
