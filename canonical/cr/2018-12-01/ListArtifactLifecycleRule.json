@@ -23,7 +23,7 @@
     {
       "doc_required": true,
       "example": "cri-eztul9ucz76q****",
-      "help_en": "The ID of the Enterprise Edition instance",
+      "help_en": "The ID of the Enterprise instance",
       "help_zh": "企业版实例id",
       "location": "query",
       "name": "instance_id",
@@ -49,7 +49,7 @@
     },
     {
       "example": "10",
-      "help_en": "The number of entries to return per page. The maximum value is 100. If you specify a value greater than 100, the system may return a parameter error or use a page size of 100",
+      "help_en": "The number of entries per page. Maximum value: 100. If the specified value exceeds 100, the system returns a parameter error or uses 100 as the actual maximum number of entries returned",
       "help_zh": "每页展示的列表数。上限为 100。如果传入的值超过 100，系统将报参数错误或以 100 作为实际返回的列表数上限",
       "location": "query",
       "name": "page_size",
@@ -62,7 +62,7 @@
     },
     {
       "example": "true",
-      "help_en": "Indicates whether automatic tag deletion is enabled",
+      "help_en": "Specifies whether lifecycle management is enabled",
       "help_zh": "是否开启生命周期管理",
       "location": "query",
       "name": "enable_delete_tag",
@@ -92,7 +92,7 @@
           },
           "IsSuccess": {
             "backendName": "success",
-            "description_en": "Indicates whether the request succeeded. Valid values:\n\n`true`: The request succeeded.\n\n`false`: The request failed",
+            "description_en": "Indicates whether the call was successful. Valid values:\n\n`true`: The call was successful.\n\n`false`: The call failed",
             "description_zh": "调用是否成功，取值：\n\n`true`：调用成功\n\n`false`：调用失败",
             "example": "true",
             "nullToEmpty": false,
@@ -111,7 +111,7 @@
           },
           "PageSize": {
             "backendName": "data.pageSize",
-            "description_en": "The number of entries returned on each page",
+            "description_en": "The page size",
             "description_zh": "页大小",
             "example": "10",
             "format": "int32",
@@ -130,14 +130,14 @@
           },
           "Rules": {
             "backendName": "data.data",
-            "description_en": "The list of lifecycle management rules",
+            "description_en": "The list of rules",
             "description_zh": "规则列表",
             "itemName": "Rules",
             "items": {
               "properties": {
                 "Auto": {
                   "backendName": "auto",
-                  "description_en": "Indicates whether the rule runs automatically",
+                  "description_en": "Indicates whether the rule is automatically executed",
                   "description_zh": "是否自动执行",
                   "example": "false",
                   "nullToEmpty": false,
@@ -146,19 +146,35 @@
                 },
                 "CreateTime": {
                   "backendName": "createTime",
-                  "description_en": "The creation time of the rule",
-                  "description_zh": "创建时间",
+                  "description_en": "The creation time. The value is a UNIX timestamp in milliseconds",
+                  "description_zh": "创建时间，使用 UNIX 时间戳，单位为毫秒",
                   "example": "1638187989000",
                   "format": "int64",
                   "nullToEmpty": false,
                   "type": "integer",
                   "visibility": "Public"
                 },
+                "DryRun": {
+                  "backendName": "dryRun",
+                  "description_en": "Indicates whether DryRun mode is enabled. When DryRun mode is enabled, only lifecycle task scanning is performed and no actual data cleanup is executed. This mode is disabled by default",
+                  "description_zh": "是否开启DryRun模式。开启 DryRun 模式后仅执行生命周期任务扫描，不执行真实数据清理。默认关闭",
+                  "example": "false",
+                  "type": "boolean"
+                },
                 "EnableDeleteTag": {
                   "backendName": "enableDeleteTag",
-                  "description_en": "Indicates whether the rule is configured to delete tags",
-                  "description_zh": "是否开启生命周期管理",
+                  "description_en": "Indicates whether lifecycle management is enabled.\n\nOnly one of this parameter and EnableDeleteUntaggedManifest can be set to true",
+                  "description_zh": "是否开启生命周期管理。\n\n该参数与 EnableDeleteUntaggedManifest 只有一个能设置为 true",
                   "example": "true",
+                  "nullToEmpty": false,
+                  "type": "boolean",
+                  "visibility": "Public"
+                },
+                "EnableDeleteUntaggedManifest": {
+                  "backendName": "enableDeleteUntaggedManifest",
+                  "description_en": "Indicates whether artifact cleanup is enabled.\n\nOnly one of this parameter and EnableDeleteTag can be set to true",
+                  "description_zh": "是否开启制品清理。\n\n该参数与 EnableDeleteTag 只有一个能设置为 true",
+                  "example": "false",
                   "nullToEmpty": false,
                   "type": "boolean",
                   "visibility": "Public"
@@ -174,8 +190,8 @@
                 },
                 "ModifiedTime": {
                   "backendName": "modifiedTime",
-                  "description_en": "The last modification time of the rule",
-                  "description_zh": "修改时间",
+                  "description_en": "The modification time. The value is a UNIX timestamp in milliseconds",
+                  "description_zh": "修改时间，使用 UNIX 时间戳，单位为毫秒",
                   "example": "1678341923385",
                   "format": "int64",
                   "nullToEmpty": false,
@@ -193,8 +209,8 @@
                 },
                 "NextTime": {
                   "backendName": "nextTime",
-                  "description_en": "The next execution time",
-                  "description_zh": "下一次执行时间",
+                  "description_en": "The next execution time. The value is a UNIX timestamp in milliseconds",
+                  "description_zh": "下一次执行时间，使用 UNIX 时间戳，单位为毫秒",
                   "example": "1638187989000",
                   "format": "int64",
                   "nullToEmpty": false,
@@ -203,24 +219,37 @@
                 },
                 "Policies": {
                   "backendName": "policies",
+                  "description_en": "The list of lifecycle policies",
+                  "description_zh": "生命周期策略列表",
                   "itemName": "Policies",
                   "items": {
                     "properties": {
                       "Condition": {
                         "backendName": "condition",
+                        "description_en": "The trigger condition of the lifecycle policy",
+                        "description_zh": "生命周期策略触发条件",
                         "properties": {
                           "LastPullOlderThanDays": {
                             "backendName": "lastPullOlderThanDays",
+                            "description_en": "The number of days since the last pull",
+                            "description_zh": "最近拉取时间距今超过的天数",
+                            "example": "0",
                             "format": "int32",
                             "type": "integer"
                           },
                           "LastPushOlderThanDays": {
                             "backendName": "lastPushOlderThanDays",
+                            "description_en": "The number of days since the last push",
+                            "description_zh": "最近推送时间距今超过的天数",
+                            "example": "0",
                             "format": "int32",
                             "type": "integer"
                           },
                           "LatestTagCount": {
                             "backendName": "keepLatestTags",
+                            "description_en": "The number of latest image versions to retain",
+                            "description_zh": "保留的最新镜像版本数量",
+                            "example": "0",
                             "format": "int32",
                             "type": "integer"
                           }
@@ -229,9 +258,13 @@
                       },
                       "Filter": {
                         "backendName": "filter",
+                        "description_en": "The image version filter condition",
+                        "description_zh": "镜像版本过滤条件",
                         "properties": {
                           "TagWildcard": {
                             "backendName": "tagWildcard",
+                            "description_en": "The wildcard used to match image versions",
+                            "description_zh": "用于匹配镜像版本的通配符",
                             "type": "string"
                           }
                         },
@@ -239,6 +272,8 @@
                       },
                       "Type": {
                         "backendName": "type",
+                        "description_en": "The lifecycle policy type",
+                        "description_zh": "生命周期策略类型",
                         "type": "string"
                       }
                     },
@@ -257,7 +292,7 @@
                 },
                 "RetentionTagCount": {
                   "backendName": "retentionTagCount",
-                  "description_en": "The number of image tags to retain",
+                  "description_en": "The number of retained images",
                   "description_zh": "保留镜像个数",
                   "example": "30",
                   "format": "int64",
@@ -276,7 +311,7 @@
                 },
                 "ScheduleTime": {
                   "backendName": "scheduleTime",
-                  "description_en": "The execution schedule",
+                  "description_en": "The execution cycle",
                   "description_zh": "执行周期",
                   "example": "WEEK",
                   "nullToEmpty": false,
@@ -285,7 +320,7 @@
                 },
                 "Scope": {
                   "backendName": "scope",
-                  "description_en": "The scope of the rule",
+                  "description_en": "The cleanup scope",
                   "description_zh": "清理范围",
                   "example": "INSTANCE",
                   "nullToEmpty": false,
@@ -294,7 +329,7 @@
                 },
                 "TagRegexp": {
                   "backendName": "tagRegexp",
-                  "description_en": "The regular expression that matches image tags to retain",
+                  "description_en": "The regular expression for retaining image versions",
                   "description_zh": "保留镜像版本的正则表达式",
                   "example": ".*-alpine\n",
                   "nullToEmpty": false,
@@ -310,7 +345,7 @@
           },
           "TotalCount": {
             "backendName": "data.totalCount",
-            "description_en": "The total number of entries returned",
+            "description_en": "The total number of entries",
             "description_zh": "总数量",
             "example": "39",
             "format": "int32",
