@@ -1,5 +1,5 @@
 {
-  "camel_example": "",
+  "camel_example": "aliyun eventbridge ListLumaTables --region cn-hangzhou --AgentName my_agent --Catalog my_catalog --Namespace my_namespace",
   "cmd_full_name": "eventbridge list-luma-tables",
   "cmd_name": "list-luma-tables",
   "components": {
@@ -130,9 +130,9 @@
     }
   },
   "deprecated": false,
-  "description_en": "Lists all event tables bound to a Luma Agent under a specified namespace. Returns the complete set of bindings without pagination",
+  "description_en": "Lists all event tables bound to a Luma Agent in a specified namespace. Returns the complete set of bindings without pagination",
   "description_zh": "列出 Luma Agent 在指定命名空间下绑定的全部事件表。返回的是绑定关系的全集，不分页",
-  "kebab_example": "",
+  "kebab_example": "aliyun eventbridge list-luma-tables --agent-name my_agent --catalog my_catalog --namespace my_namespace --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "ListLumaTables",
@@ -151,7 +151,7 @@
   "parameters": [
     {
       "example": "my_agent",
-      "help_en": "The name of the Agent",
+      "help_en": "The name of the agent",
       "help_zh": "Agent名称",
       "location": "formData",
       "max_length": "128",
@@ -166,7 +166,7 @@
     },
     {
       "example": "my_catalog",
-      "help_en": "The name of the data catalog bound to the Agent. You can call ListLumaCatalogs to obtain this value",
+      "help_en": "The name of the data catalog bound to the agent. You can call ListLumaCatalogs to obtain the catalog name",
       "help_zh": "Agent 已绑定的数据目录名称。可通过 ListLumaCatalogs 获取",
       "location": "formData",
       "max_length": "127",
@@ -180,7 +180,7 @@
     },
     {
       "example": "my_namespace",
-      "help_en": "The name of the namespace bound to the Agent. You can call ListLumaNamespaces to obtain this value",
+      "help_en": "The name of the namespace bound to the agent. You can call ListLumaNamespaces to obtain the namespace name",
       "help_zh": "Agent 已绑定的命名空间名称。可通过 ListLumaNamespaces 获取",
       "location": "formData",
       "max_length": "127",
@@ -190,6 +190,32 @@
       ],
       "raw_name": "Namespace",
       "required": true,
+      "type": "string"
+    },
+    {
+      "example": "10",
+      "help_en": "The maximum number of entries to return per page. Valid values: 1 to 100. Default value: 100. Each entry requires a back-to-origin metadata query, so this value also limits the number of back-to-origin queries per call",
+      "help_zh": "每页返回的最大数据条数。取值范围 1~100，不传时默认 100。每条记录都需回源查询一次元数据，因此该值同时限制单次调用的回源次数",
+      "location": "formData",
+      "name": "limit",
+      "options": [
+        "--limit"
+      ],
+      "raw_name": "Limit",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "0",
+      "help_en": "The starting token for a paging query. Leave this parameter empty or set it to \"0\" for the first query. For subsequent pages, use the NextToken value returned in the previous response",
+      "help_zh": "分页查询的起始Token。首次查询不传或传 \"0\"；后续翻页使用上一次响应中返回的 NextToken 值",
+      "location": "formData",
+      "name": "next_token",
+      "options": [
+        "--next-token"
+      ],
+      "raw_name": "NextToken",
+      "required": false,
       "type": "string"
     }
   ],
@@ -202,7 +228,7 @@
         "properties": {
           "Code": {
             "backendName": "code",
-            "description_en": "The response code of the operation. A value of Success indicates success. An error code is returned if the call fails",
+            "description_en": "The response code. A value of Success indicates a successful call. If the call fails, a specific error code is returned",
             "description_zh": "接口返回码，Success 表示成功，失败时为具体错误码",
             "example": "Success",
             "nullToEmpty": false,
@@ -213,18 +239,37 @@
           },
           "Data": {
             "backendName": "data",
-            "description_en": "The list of event tables bound to the Agent. All results are returned at once without pagination",
-            "description_zh": "Agent 绑定的事件表列表，一次返回全部，不分页",
+            "description_en": "The list of event tables bound to the agent, including entries and pagination information",
+            "description_zh": "Agent 绑定的事件表列表，包含条目与分页信息",
             "properties": {
+              "Limit": {
+                "backendName": "limit",
+                "description_en": "The effective page size for this request. If the Limit parameter is not specified, the server default value is used. If the specified value exceeds the upper limit, the value is adjusted to the maximum allowed value",
+                "description_zh": "本次请求实际生效的每页数量。未传 Limit 时为服务端默认值，超出上限时为收敛后的值",
+                "example": "10",
+                "format": "int32",
+                "title_en": "本次请求实际生效的每页数量",
+                "title_zh": "本次请求实际生效的每页数量",
+                "type": "integer"
+              },
+              "NextToken": {
+                "backendName": "nextToken",
+                "description_en": "The token for the next page. Pass this value as the NextToken parameter in the next request to retrieve the next page. An empty value indicates that no more data is available",
+                "description_zh": "下一页起始Token，传入下次请求的 NextToken 可获取下一页；为空表示已无更多数据",
+                "example": "10",
+                "title_en": "下一页Token，为空表示已是最后一页",
+                "title_zh": "下一页Token，为空表示已是最后一页",
+                "type": "string"
+              },
               "Tables": {
                 "backendName": "tables",
-                "description_en": "The list of event tables bound to the Agent",
+                "description_en": "The list of event tables bound to the agent",
                 "description_zh": "Agent 绑定的事件表列表",
                 "example": "[{\"Name\":\"my_table\",\"Namespace\":\"my_namespace\"}]",
                 "itemName": "事件表列表",
                 "items": {
                   "$ref": "#/components/schemas/LumaTable",
-                  "description_en": "The details of a single data table, including column definitions and data retention policy",
+                  "description_en": "The details of a single data table, including column definitions and the data retention policy",
                   "description_zh": "单个数据表的详细信息，包含列定义与保留策略",
                   "title_en": "事件表",
                   "title_zh": "事件表"
@@ -232,6 +277,16 @@
                 "title_en": "事件表列表",
                 "title_zh": "事件表列表",
                 "type": "array"
+              },
+              "TotalCount": {
+                "backendName": "totalCount",
+                "description_en": "The total number of event tables bound to the agent, regardless of the number of entries returned on the current page",
+                "description_zh": "Agent 绑定的事件表总数，与本页返回条数无关",
+                "example": "10",
+                "format": "int32",
+                "title_en": "Agent 绑定的事件表总数",
+                "title_zh": "Agent 绑定的事件表总数",
+                "type": "integer"
               }
             },
             "title_en": "事件表列表",
@@ -241,7 +296,7 @@
           },
           "Message": {
             "backendName": "message",
-            "description_en": "The message returned by the operation. The value is Operation success if the call succeeds, or a specific error description if the call fails",
+            "description_en": "The message returned by the operation. The value Operation success is returned if the call succeeds. A specific error description is returned if the call fails",
             "description_zh": "接口返回的提示信息，成功时为 Operation success，失败时为具体错误描述",
             "example": "Operation success",
             "nullToEmpty": false,
@@ -252,7 +307,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The unique identifier of the request, used for troubleshooting and ticket feedback",
+            "description_en": "The unique identifier of this request, which is used for troubleshooting and ticket submission",
             "description_zh": "本次请求的唯一标识，用于问题排查与工单反馈",
             "example": "34AD682D-5B91-5773-8132-AA38C130****",
             "nullToEmpty": false,
@@ -263,7 +318,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the call was successful. A value of true indicates success",
+            "description_en": "Indicates whether the call was successful. A value of true indicates a successful call",
             "description_zh": "本次调用是否成功，true 表示成功",
             "example": "true",
             "nullToEmpty": false,

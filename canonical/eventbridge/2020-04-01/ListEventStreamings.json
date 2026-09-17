@@ -4,6 +4,513 @@
   "cmd_name": "list-event-streamings",
   "components": {
     "schemas": {
+      "AiChunkTransformParameters": {
+        "description_en": "The local text chunking operator",
+        "description_zh": "本地文本分块",
+        "properties": {
+          "ChunkingType": {
+            "backendName": "ChunkingType",
+            "description_en": "The chunking algorithm. Valid values: markdown_header and recursive_character",
+            "description_zh": "分块算法。markdown_header 或 recursive_character",
+            "enum": [
+              "markdown_header",
+              "recursive_character"
+            ],
+            "example": "recursive_character",
+            "required": false,
+            "title": "分块算法。markdown_header 或 recursive_character",
+            "type": "string"
+          },
+          "InputField": {
+            "$ref": "#/components/schemas/AiTransformField",
+            "backendName": "InputField",
+            "description_en": "The text field to chunk. This operator does not use InputField",
+            "description_zh": "待分块文本字段。本算子不使用 InputField",
+            "required": false,
+            "title": "待分块文本字段。本算子不使用 InputField"
+          },
+          "MaxOverlapSize": {
+            "backendName": "MaxOverlapSize",
+            "description_en": "The chunk overlap length. Default value: 10",
+            "description_zh": "分块重叠长度。默认 10",
+            "example": "10",
+            "format": "int32",
+            "required": false,
+            "title": "分块重叠长度。默认 10",
+            "type": "integer"
+          },
+          "MaxSegmentSize": {
+            "backendName": "MaxSegmentSize",
+            "description_en": "The maximum chunk length. Default value: 1000",
+            "description_zh": "分块最大长度。默认 1000",
+            "example": "1000",
+            "format": "int32",
+            "required": false,
+            "title": "分块最大长度。默认 1000",
+            "type": "integer"
+          },
+          "StepName": {
+            "backendName": "StepName",
+            "description_en": "The field name in the CloudEvent to which the output is attached. Default value: transform0",
+            "description_zh": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "example": "chunks",
+            "required": false,
+            "title": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "type": "string"
+          },
+          "Unpack": {
+            "backendName": "Unpack",
+            "description_en": "Specifies whether to split the output into multiple events. Default value: true",
+            "description_zh": "是否拆成多条事件。默认 true",
+            "example": "true",
+            "required": false,
+            "title": "是否拆成多条事件。默认 true",
+            "type": "boolean"
+          }
+        },
+        "title": "本地文本分块",
+        "type": "object"
+      },
+      "AiClassifyTransformParameters": {
+        "description_en": "The AI text classification",
+        "description_zh": "AI 文本分类",
+        "properties": {
+          "InputField": {
+            "$ref": "#/components/schemas/AiTransformField",
+            "backendName": "InputField",
+            "description_en": "The input text field",
+            "description_zh": "输入文本字段",
+            "required": false,
+            "title": "输入文本字段"
+          },
+          "Instruction": {
+            "backendName": "Instruction",
+            "description_en": "The classification constraints provided to the model, such as priority rules or how to categorize uncertain cases. If left empty, classification is performed based on Labels only",
+            "description_zh": "补充给模型的分类约束，例如优先规则或不确定时的归类方式。不填则仅按 Labels 分类",
+            "example": "提到崩溃或异常时归为 bug，无法判断时归为 other",
+            "required": false,
+            "title": "额外分类指令",
+            "type": "string"
+          },
+          "Labels": {
+            "backendName": "Labels",
+            "description_en": "The candidate classification labels. The classification result must fall within this list. Specify at least two labels",
+            "description_zh": "候选分类标签。分类结果必须落在该列表中，至少填写 2 个",
+            "example": "[\"bug\",\"feature\",\"question\",\"other\"]",
+            "itemName": "分类标签",
+            "items": {
+              "description_en": "A single candidate classification label",
+              "description_zh": "单个候选分类标签",
+              "example": "bug",
+              "title": "分类标签",
+              "type": "string"
+            },
+            "required": false,
+            "title": "分类标签列表",
+            "type": "array"
+          },
+          "OutputMode": {
+            "backendName": "OutputMode",
+            "description_en": "The output mode. Valid values: single: single-label. multi: multi-label. Default value: single",
+            "description_zh": "输出模式。single：单标签；multi：多标签。默认 single",
+            "enum": [
+              "single",
+              "multi"
+            ],
+            "example": "single",
+            "required": false,
+            "title": "输出模式。single：单标签；multi：多标签。默认 single",
+            "type": "string"
+          },
+          "StepName": {
+            "backendName": "StepName",
+            "description_en": "The field name in the CloudEvent to which the output is attached. Default value: transform0",
+            "description_zh": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "example": "classify_result",
+            "required": false,
+            "title": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "type": "string"
+          }
+        },
+        "title": "AI 文本分类",
+        "type": "object"
+      },
+      "AiEmbedTransformParameters": {
+        "description_en": "The AI vectorization",
+        "description_zh": "AI 向量化",
+        "properties": {
+          "Dimension": {
+            "backendName": "Dimension",
+            "description_en": "The vector dimensions. Must be a dimension supported by the selected model. If not specified, the default value of the model is used (1024 for most models, 1536 for v1/v2/async)",
+            "description_zh": "向量维度。须属于所选模型支持的维度；未填时用该模型默认值（多数为 1024，v1/v2/async 为 1536）",
+            "example": "1024",
+            "format": "int32",
+            "required": false,
+            "title": "向量维度。须属于所选模型支持的维度；未填时用该模型默认值（多数为 1024，v1/v2/async 为 1536）",
+            "type": "integer"
+          },
+          "InputField": {
+            "$ref": "#/components/schemas/AiTransformField",
+            "backendName": "InputField",
+            "description_en": "The input text field",
+            "description_zh": "输入文本字段",
+            "required": false,
+            "title": "输入文本字段"
+          },
+          "Model": {
+            "backendName": "Model",
+            "description_en": "The embedding model. Default value: text-embedding-v4",
+            "description_zh": "Embedding 模型。默认 text-embedding-v4",
+            "enum": [
+              "qwen3.7-text-embedding",
+              "qwen3.7-text-embedding-flash",
+              "text-embedding-v4",
+              "text-embedding-v3",
+              "text-embedding-v2",
+              "text-embedding-v1",
+              "text-embedding-async-v2",
+              "text-embedding-async-v1"
+            ],
+            "example": "text-embedding-v4",
+            "required": false,
+            "title": "Embedding 模型。默认 text-embedding-v4",
+            "type": "string"
+          },
+          "StepName": {
+            "backendName": "StepName",
+            "description_en": "The field name in the CloudEvent to which the output is attached. Default value: transform0",
+            "description_zh": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "example": "embedding",
+            "required": false,
+            "title": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "type": "string"
+          }
+        },
+        "title": "AI 向量化",
+        "type": "object"
+      },
+      "AiExtractTransformParameters": {
+        "description_en": "The AI information extraction",
+        "description_zh": "AI 信息抽取",
+        "properties": {
+          "ExtractSchema": {
+            "backendName": "ExtractSchema",
+            "description_en": "The JSON Schema of the extraction results. Pass a serialized JSON object string or JSON Schema text",
+            "description_zh": "抽取结果的 JSON Schema。传 JSON 对象序列化后的字符串，或 JSON Schema 文本",
+            "example": "{\"type\":\"object\",\"properties\":{\"orderId\":{\"type\":\"string\"},\"amount\":{\"type\":\"number\"}}}",
+            "required": false,
+            "title": "抽取结果的 JSON Schema。传 JSON 对象序列化后的字符串，或 JSON Schema 文本",
+            "type": "string"
+          },
+          "InputField": {
+            "$ref": "#/components/schemas/AiTransformField",
+            "backendName": "InputField",
+            "description_en": "The input text field",
+            "description_zh": "输入文本字段",
+            "required": false,
+            "title": "输入文本字段"
+          },
+          "StepName": {
+            "backendName": "StepName",
+            "description_en": "The field name attached to the CloudEvent for output. Default value: transform0",
+            "description_zh": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "example": "extract_result",
+            "required": false,
+            "title": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "type": "string"
+          }
+        },
+        "title": "AI 信息抽取",
+        "type": "object"
+      },
+      "AiFilterTransformParameters": {
+        "description_en": "The AI conditional filtering",
+        "description_zh": "AI 条件过滤",
+        "properties": {
+          "Condition": {
+            "backendName": "Condition",
+            "description_en": "The retention condition described in natural language. The model uses this condition to determine whether an event matches",
+            "description_zh": "用自然语言描述的保留条件，模型据此判断事件是否匹配",
+            "example": "仅保留用户投诉或退款相关的内容",
+            "required": false,
+            "title": "过滤条件",
+            "type": "string"
+          },
+          "InputField": {
+            "$ref": "#/components/schemas/AiTransformField",
+            "backendName": "InputField",
+            "description_en": "The input text field",
+            "description_zh": "输入文本字段",
+            "required": false,
+            "title": "输入文本字段"
+          },
+          "OnMismatch": {
+            "backendName": "OnMismatch",
+            "description_en": "The behavior when a mismatch occurs. Valid values: discard (default): discards the event. forward: forwards the event as-is",
+            "description_zh": "不匹配时的行为。discard（默认）：丢弃；forward：原样转发",
+            "enum": [
+              "discard",
+              "forward"
+            ],
+            "example": "discard",
+            "required": false,
+            "title": "不匹配时的行为。discard（默认）：丢弃；forward：原样转发",
+            "type": "string"
+          },
+          "StepName": {
+            "backendName": "StepName",
+            "description_en": "The field name in the CloudEvent to which the output is attached. Default value: transform0",
+            "description_zh": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "example": "filter_result",
+            "required": false,
+            "title": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "type": "string"
+          }
+        },
+        "title": "AI 条件过滤",
+        "type": "object"
+      },
+      "AiPrepSearchTransformParameters": {
+        "description_en": "The AI semantic chunking configuration",
+        "description_zh": "AI 语义切块",
+        "properties": {
+          "InputField": {
+            "$ref": "#/components/schemas/AiTransformField",
+            "backendName": "InputField",
+            "description_en": "The input text field",
+            "description_zh": "输入文本字段",
+            "required": false,
+            "title": "输入文本字段"
+          },
+          "MaxChunkSize": {
+            "backendName": "MaxChunkSize",
+            "description_en": "The maximum number of chunks. Valid values: 1 to 1000. Default value: 20",
+            "description_zh": "最大分块数。范围 [1,1000]，默认 20",
+            "example": "20",
+            "format": "int32",
+            "required": false,
+            "title": "最大分块数。范围 [1,1000]，默认 20",
+            "type": "integer"
+          },
+          "StepName": {
+            "backendName": "StepName",
+            "description_en": "The field name attached to the CloudEvent for output. Default value: transform0",
+            "description_zh": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "example": "chunks",
+            "required": false,
+            "title": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "type": "string"
+          }
+        },
+        "title": "AI 语义切块",
+        "type": "object"
+      },
+      "AiRedactTransformParameters": {
+        "description_en": "The AI data masking",
+        "description_zh": "AI 脱敏",
+        "properties": {
+          "Entities": {
+            "backendName": "Entities",
+            "description_en": "The entity types to identify and mask in the text, such as phone numbers, ID card numbers, and email addresses",
+            "description_zh": "要从文本中识别并脱敏的实体类型，例如手机号、身份证号、邮箱",
+            "example": "[\"PHONE\",\"ID_CARD\",\"EMAIL\"]",
+            "itemName": "实体类型",
+            "items": {
+              "description_en": "The individual entity type to mask",
+              "description_zh": "单个待脱敏实体类型",
+              "example": "PHONE",
+              "title": "实体类型",
+              "type": "string"
+            },
+            "required": false,
+            "title": "需要脱敏的实体类型",
+            "type": "array"
+          },
+          "InputField": {
+            "$ref": "#/components/schemas/AiTransformField",
+            "backendName": "InputField",
+            "description_en": "The input text field",
+            "description_zh": "输入文本字段",
+            "required": false,
+            "title": "输入文本字段"
+          },
+          "MaskChar": {
+            "backendName": "MaskChar",
+            "description_en": "The mask character used in mask mode. Default value: *",
+            "description_zh": "mask 模式下的掩码字符。默认 *",
+            "example": "*",
+            "required": false,
+            "title": "mask 模式下的掩码字符。默认 *",
+            "type": "string"
+          },
+          "Mode": {
+            "backendName": "Mode",
+            "description_en": "The masking mode. Valid values: mask, replace, and remove",
+            "description_zh": "脱敏方式。mask / replace / remove",
+            "enum": [
+              "mask",
+              "replace",
+              "remove"
+            ],
+            "example": "mask",
+            "required": false,
+            "title": "脱敏方式。mask / replace / remove",
+            "type": "string"
+          },
+          "StepName": {
+            "backendName": "StepName",
+            "description_en": "The field name appended to the CloudEvent for output. Default value: transform0",
+            "description_zh": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "example": "redact_result",
+            "required": false,
+            "title": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "type": "string"
+          }
+        },
+        "title": "AI 脱敏",
+        "type": "object"
+      },
+      "AiSentimentAnalysisTransformParameters": {
+        "description_en": "The emotion analysis",
+        "description_zh": "情感分析",
+        "properties": {
+          "Aspects": {
+            "backendName": "Aspects",
+            "description_en": "Performs emotion analysis on each specified aspect separately. If left empty, performs overall emotion analysis on the entire text",
+            "description_zh": "按指定方面分别做情感分析；不填则对整段文本做总体情感分析",
+            "example": "[\"价格\",\"物流\",\"客服\"]",
+            "itemName": "方面",
+            "items": {
+              "description_en": "The individual aspect for emotion analysis",
+              "description_zh": "单个情感分析关注点",
+              "example": "价格",
+              "title": "方面",
+              "type": "string"
+            },
+            "required": false,
+            "title": "关注的方面（aspect）",
+            "type": "array"
+          },
+          "InputField": {
+            "$ref": "#/components/schemas/AiTransformField",
+            "backendName": "InputField",
+            "description_en": "The input text field",
+            "description_zh": "输入文本字段",
+            "required": false,
+            "title": "输入文本字段"
+          },
+          "StepName": {
+            "backendName": "StepName",
+            "description_en": "The field name attached to the CloudEvent for output. Default value: transform0",
+            "description_zh": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "example": "sentiment",
+            "required": false,
+            "title": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "type": "string"
+          }
+        },
+        "title": "情感分析",
+        "type": "object"
+      },
+      "AiSummarizeTransformParameters": {
+        "description_en": "The AI summary",
+        "description_zh": "AI 摘要",
+        "properties": {
+          "InputField": {
+            "$ref": "#/components/schemas/AiTransformField",
+            "backendName": "InputField",
+            "description_en": "The input text field",
+            "description_zh": "输入文本字段",
+            "required": false,
+            "title": "输入文本字段"
+          },
+          "MaxLength": {
+            "backendName": "MaxLength",
+            "description_en": "The maximum summary length. The value must be a positive integer. Default value: 200",
+            "description_zh": "摘要最大长度，正整数。默认 200",
+            "example": "200",
+            "format": "int32",
+            "required": false,
+            "title": "摘要最大长度，正整数。默认 200",
+            "type": "integer"
+          },
+          "StepName": {
+            "backendName": "StepName",
+            "description_en": "The field name attached to the CloudEvent for output. Default value: transform0",
+            "description_zh": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "example": "summary",
+            "required": false,
+            "title": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "type": "string"
+          }
+        },
+        "title": "AI 摘要",
+        "type": "object"
+      },
+      "AiTransformField": {
+        "description_en": "The AI Transform input field (JSONPath)",
+        "description_zh": "AI Transform 输入字段（JSONPath）",
+        "properties": {
+          "Form": {
+            "backendName": "Form",
+            "description_en": "The value form. Currently uses JSONPATH",
+            "description_zh": "取值形式。目前使用 JSONPATH",
+            "example": "JSONPATH",
+            "required": false,
+            "title": "取值形式。目前使用 JSONPATH",
+            "type": "string"
+          },
+          "Value": {
+            "backendName": "Value",
+            "description_en": "The JSONPath expression",
+            "description_zh": "JSONPath 表达式",
+            "example": "$.data.message",
+            "required": false,
+            "title": "JSONPath 表达式",
+            "type": "string"
+          }
+        },
+        "title": "AI Transform 输入字段（JSONPath）",
+        "type": "object"
+      },
+      "AiTranslateTransformParameters": {
+        "description_zh": "AI 翻译",
+        "properties": {
+          "InputField": {
+            "$ref": "#/components/schemas/AiTransformField",
+            "backendName": "InputField",
+            "description_zh": "输入文本字段",
+            "required": false,
+            "title": "输入文本字段"
+          },
+          "SourceLanguage": {
+            "backendName": "SourceLanguage",
+            "description_zh": "源语言。不填则自动检测",
+            "example": "zh",
+            "required": false,
+            "title": "源语言。不填则自动检测",
+            "type": "string"
+          },
+          "StepName": {
+            "backendName": "StepName",
+            "description_zh": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "example": "translation",
+            "required": false,
+            "title": "输出挂到 CloudEvent 的字段名。默认 transform0",
+            "type": "string"
+          },
+          "TargetLanguage": {
+            "backendName": "TargetLanguage",
+            "description_zh": "目标语言",
+            "example": "en",
+            "required": false,
+            "title": "目标语言",
+            "type": "string"
+          }
+        },
+        "title": "AI 翻译",
+        "type": "object"
+      },
       "BaiLianAgentTransformParameters": {
         "description_zh": "百炼Agent Transform",
         "properties": {
@@ -1355,7 +1862,7 @@
     },
     {
       "example": "10",
-      "help_en": "The maximum number of entries to return per request. You can use this parameter together with NextToken to implement paging.\n<notice>The maximum number of entries returned per request cannot exceed 100.></notice>",
+      "help_en": "The maximum number of entries to return per request. You can use this parameter together with NextToken to implement paging.\n<notice>The maximum number of entries to return per request cannot exceed 100.></notice>",
       "help_zh": "限定每次返回的最大条数，可以和NextToken搭配使用实现翻页能力。\n<notice>每次返回的最大条数不超过100。></notice>",
       "location": "formData",
       "name": "limit",
@@ -1454,12 +1961,12 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response information",
+        "description_en": "The response parameters",
         "description_zh": "返回信息",
         "properties": {
           "Code": {
             "backendName": "code",
-            "description_en": "The response code. Valid values:\n\nSuccess: The request was successful.    \n\nOther values: An error occurred. For more information about error codes, see error codes",
+            "description_en": "The response code. Valid values:\n\nSuccess: The request was successful.    \n\nOther values: An error occurred. For more information about error codes, see Error codes",
             "description_zh": "接口返回码：\n\nSuccess：表示成功。    \n\n其它：表示错误码。错误码详情，请参见错误码",
             "example": "Success",
             "nullToEmpty": false,
@@ -1512,7 +2019,7 @@
                       "properties": {
                         "BatchWindow": {
                           "backendName": "BatchWindow",
-                          "description_en": "The batch window",
+                          "description_en": "The batching window",
                           "description_zh": "攒批窗口",
                           "properties": {
                             "CountBasedWindow": {
@@ -1557,7 +2064,7 @@
                         },
                         "DeadLetterQueue": {
                           "backendName": "DeadLetterQueue",
-                          "description_en": "Specifies whether to enable the dead-letter queue. By default, the dead-letter queue is disabled, and messages that exceed the retry policy are discarded",
+                          "description_en": "Indicates whether the dead-letter queue is enabled. By default, the dead-letter queue is disabled, and messages that exceed the retry policy are discarded",
                           "description_zh": "是否启用死信队列。默认不启用死信队列，超过重试策略后的消息将被丢弃",
                           "properties": {
                             "Arn": {
@@ -2064,7 +2571,7 @@
                           "properties": {
                             "Body": {
                               "backendName": "Body",
-                              "description_en": "The BLOB type record content template",
+                              "description_en": "The BLOB type. The record content template",
                               "description_zh": "BLOB类型，Record内容模板",
                               "properties": {
                                 "Form": {
@@ -2082,7 +2589,7 @@
                                 },
                                 "Value": {
                                   "backendName": "Value",
-                                  "description_en": "The BLOB type record content template",
+                                  "description_en": "The BLOB type. The record content template",
                                   "description_zh": "BLOB类型，Record内容模板",
                                   "type": "string"
                                 }
@@ -2119,7 +2626,7 @@
                             },
                             "RoleName": {
                               "backendName": "RoleName",
-                              "description_en": "To grant authorization to the event bus EventBridge to use this role to read SLS log content, the following conditions must be met: when you create the role used by the service in the Resource Access Management (RAM) console, set the trusted entity type to Alibaba Cloud Service and set the trusted service to event bus",
+                              "description_en": "To grant authorization to the event bus EventBridge to use this role to read Simple Log Service (SLS) log content, the following conditions must be met: when you create the role used by the service in the Resource Access Management (RAM) console, set the trusted entity type to \"Alibaba Cloud Service\" and set the trusted service to \"event bus\"",
                               "description_zh": "授权事件总线EventBridge使用此角色读取SLS日志内容时，需满足条件：在RAM控制台创建服务所使用的角色时，需要选择“阿里云服务”，并且“受信服务”需要选择“事件总线”",
                               "properties": {
                                 "Form": {
@@ -2137,7 +2644,7 @@
                                 },
                                 "Value": {
                                   "backendName": "Value",
-                                  "description_en": "To grant authorization to the event bus EventBridge to use this role to read SLS log content, the following conditions must be met: when you create the role used by the service in the Resource Access Management (RAM) console, set the trusted entity type to Alibaba Cloud Service and set the trusted service to event bus",
+                                  "description_en": "To grant authorization to the event bus EventBridge to use this role to read Simple Log Service (SLS) log content, the following conditions must be met: when you create the role used by the service in the Resource Access Management (RAM) console, set the trusted entity type to \"Alibaba Cloud Service\" and set the trusted service to \"event bus\"",
                                   "description_zh": "授权事件总线EventBridge使用此角色读取SLS日志内容时，需满足条件：在RAM控制台创建服务所使用的角色时，需要选择“阿里云服务”，并且“受信服务”需要选择“事件总线”",
                                   "example": "testRole\n",
                                   "type": "string"
@@ -2175,7 +2682,7 @@
                             },
                             "TopicSchema": {
                               "backendName": "TopicSchema",
-                              "description_en": "The content schema of the topic. This parameter is of the TUPLE type",
+                              "description_en": "The content schema of the topic. This parameter applies to the TUPLE type",
                               "description_zh": "TUBLE类型，topic内容模式",
                               "properties": {
                                 "Form": {
@@ -2193,7 +2700,7 @@
                                 },
                                 "Value": {
                                   "backendName": "Value",
-                                  "description_en": "The content schema of the topic. This parameter is of the TUPLE type",
+                                  "description_en": "The content schema of the topic. This parameter applies to the TUPLE type",
                                   "description_zh": "TUBLE类型，topic内容模式",
                                   "example": "{\"k1\":\"value1\",\"k2\":\"value2\"}\n",
                                   "type": "string"
@@ -2203,7 +2710,7 @@
                             },
                             "TopicType": {
                               "backendName": "TopicType",
-                              "description_en": "The topic type. Valid values:\n\nTUPLE\nBLOB",
+                              "description_en": "The type of the topic. Valid values:\n\nTUPLE\nBLOB",
                               "description_zh": "topic 类型：\n\nTUPLE\nBLOB",
                               "properties": {
                                 "Form": {
@@ -2221,7 +2728,7 @@
                                 },
                                 "Value": {
                                   "backendName": "Value",
-                                  "description_en": "The topic type. Valid values:\n\nTUPLE\nBLOB",
+                                  "description_en": "The type of the topic. Valid values:\n\nTUPLE\nBLOB",
                                   "description_zh": "topic 类型：\n\nTUPLE\nBLOB",
                                   "example": "TUPLE\n",
                                   "type": "string"
@@ -2902,19 +3409,19 @@
                         "SinkHttpsParameters": {
                           "$ref": "#/components/schemas/SinkHttpsParameters",
                           "backendName": "SinkHttpsParameters",
-                          "description_en": "The HTTPS event target parameters",
+                          "description_en": "The HTTPS target parameters",
                           "description_zh": "Https目标参数",
                           "title_en": "Https目标参数",
                           "title_zh": "Https目标参数"
                         },
                         "SinkKafkaParameters": {
                           "backendName": "SinkKafkaParameters",
-                          "description_en": "The Sink Kafka parameters",
+                          "description_en": "The sink Kafka parameters",
                           "description_zh": "Sink kafka参数",
                           "properties": {
                             "Acks": {
                               "backendName": "Acks",
-                              "description_en": "The acknowledgment mode for writing to Kafka:\nacks=0: No response is required from the server. This mode offers high performance but a high risk of data loss.\nacks=1: A response is returned after the primary node on the server writes the data. This mode offers moderate performance and a moderate risk of data loss. Data loss may occur if the primary node goes down.\nacks=all: A response is returned only after the primary node writes the data and the secondary nodes complete synchronization. This mode offers lower performance but higher data safety. Data loss occurs only if both the primary and secondary nodes go down",
+                              "description_en": "The acknowledgment mode for writing to Kafka:\nacks=0: No response is required from the server. This mode delivers high performance but has a high risk of data loss.\nacks=1: A response is returned after the primary node on the server successfully writes the data. This mode delivers moderate performance and has a moderate risk of data loss. Data loss may occur if the primary node goes down.\nacks=all: A response is returned only after the primary node successfully writes the data and the secondary nodes complete synchronization. This mode delivers lower performance but provides higher data safety. Data loss occurs only if both the primary and secondary nodes go down",
                               "description_zh": "写入Kafka确认模式：\nacks=0：无需服务端的Response、性能较高、丢数据风险较大。\nacks=1：服务端主节点写成功即返回Response、性能中等、丢数据风险中等、主节点宕机可能导致数据丢失；\nacks=all：服务端主节点写成功且备节点同步成功才返回Response、性能较差、数据较为安全、主节点和备节点都宕机才会导致数据丢失",
                               "properties": {
                                 "Form": {
@@ -2932,7 +3439,7 @@
                                 },
                                 "Value": {
                                   "backendName": "Value",
-                                  "description_en": "The acknowledgment mode for writing to Kafka:\nacks=0: No response is required from the server. This mode offers high performance but a high risk of data loss.\nacks=1: A response is returned after the primary node on the server writes the data. This mode offers moderate performance and a moderate risk of data loss. Data loss may occur if the primary node goes down.\nacks=all: A response is returned only after the primary node writes the data and the secondary nodes complete synchronization. This mode offers lower performance but higher data safety. Data loss occurs only if both the primary and secondary nodes go down",
+                                  "description_en": "The acknowledgment mode for writing to Kafka:\nacks=0: No response is required from the server. This mode delivers high performance but has a high risk of data loss.\nacks=1: A response is returned after the primary node on the server successfully writes the data. This mode delivers moderate performance and has a moderate risk of data loss. Data loss may occur if the primary node goes down.\nacks=all: A response is returned only after the primary node successfully writes the data and the secondary nodes complete synchronization. This mode delivers lower performance but provides higher data safety. Data loss occurs only if both the primary and secondary nodes go down",
                                   "description_zh": "写入Kafka确认模式：\nacks=0：无需服务端的Response、性能较高、丢数据风险较大。\nacks=1：服务端主节点写成功即返回Response、性能中等、丢数据风险中等、主节点宕机可能导致数据丢失；\nacks=all：服务端主节点写成功且备节点同步成功才返回Response、性能较差、数据较为安全、主节点和备节点都宕机才会导致数据丢失",
                                   "example": "1",
                                   "type": "string"
@@ -2951,7 +3458,7 @@
                               "properties": {
                                 "Form": {
                                   "backendName": "Form",
-                                  "description_en": "The transformation type. Valid values:\nCONSTANT: constant\nJSONPATH: extracts a value from the upstream event based on a JSONPath expression",
+                                  "description_en": "The transformation type.\nCONSTANT: a constant.\nJSONPATH: extracts a value from the upstream source based on a path",
                                   "description_zh": "转换的类型\nCONSTANT：固定值\nJSONPATH：根据路径从上游提取",
                                   "title_en": "转换的类型\nCONSTANT：固定值\nJSONPATH：根据路径从上游提取",
                                   "title_zh": "转换的类型\nCONSTANT：固定值\nJSONPATH：根据路径从上游提取",
@@ -2980,7 +3487,7 @@
                             },
                             "InstanceId": {
                               "backendName": "InstanceId",
-                              "description_en": "The target service type is ApsaraMQ for Kafka",
+                              "description_en": "The target service type is MSMQ for Apache Kafka",
                               "description_zh": "目标服务类型为消息队列Kafka版",
                               "properties": {
                                 "Form": {
@@ -3097,14 +3604,14 @@
                         "SinkKnowledgeBaseParameters": {
                           "$ref": "#/components/schemas/SinkKnowledgeBaseParameters",
                           "backendName": "SinkKnowledgeBaseParameters",
-                          "description_en": "The parameters for delivering the event stream to an EventHouse knowledge base. Specify this parameter only when the Sink type is knowledge base",
+                          "description_en": "The target parameters for delivering event streams to an EventHouse knowledge base. Specify this parameter only when the sink type is knowledge base",
                           "description_zh": "事件流投递到 EventHouse 知识库的目标端参数，仅 Sink 类型为知识库时传入",
                           "title_en": "知识库投递参数",
                           "title_zh": "知识库投递参数"
                         },
                         "SinkMNSParameters": {
                           "backendName": "SinkMNSParameters",
-                          "description_en": "The Simple Message Queue (formerly MNS) event target",
+                          "description_en": "The Simple MSMQ (formerly MNS) event target",
                           "description_zh": "轻量消息队列（原 MNS）事件目标",
                           "properties": {
                             "Body": {
@@ -3138,7 +3645,7 @@
                             },
                             "IsBase64Encode": {
                               "backendName": "IsBase64Encode",
-                              "description_en": "Specifies whether to enable Base64 encoding",
+                              "description_en": "Indicates whether Base64 encoding is enabled",
                               "description_zh": "是否开启Base64编码",
                               "properties": {
                                 "Form": {
@@ -3166,7 +3673,7 @@
                             },
                             "QueueName": {
                               "backendName": "QueueName",
-                              "description_en": "The target service type is Simple Message Queue (formerly MNS)",
+                              "description_en": "The target service type is Simple MSMQ (formerly MNS)",
                               "description_zh": "目标服务类型为轻量消息队列（原 MNS）",
                               "properties": {
                                 "Form": {
@@ -3184,7 +3691,7 @@
                                 },
                                 "Value": {
                                   "backendName": "Value",
-                                  "description_en": "The name of the queue in Simple Message Queue (formerly MNS)",
+                                  "description_en": "The name of the Simple MSMQ (formerly MNS) queue",
                                   "description_zh": "轻量消息队列（原 MNS）的Queue的名称",
                                   "example": "MyQueue",
                                   "type": "string"
@@ -3205,7 +3712,7 @@
                         },
                         "SinkOpenSourceRabbitMQParameters": {
                           "backendName": "SinkOpenSourceRabbitMQParameters",
-                          "description_en": "The Sink open source RabbitMQ parameters",
+                          "description_en": "The sink open-source RabbitMQ parameters",
                           "description_zh": "Sink Open Source RabbitMQ参数",
                           "properties": {
                             "AuthType": {
@@ -3246,7 +3753,7 @@
                             },
                             "Endpoint": {
                               "backendName": "Endpoint",
-                              "description_en": "The endpoint of the RabbitMQ instance",
+                              "description_en": "The RabbitMQ instance endpoint",
                               "description_zh": "RabbitMQ实例接入点",
                               "example": "192.168.1.1:9876",
                               "type": "string"
@@ -3296,7 +3803,7 @@
                             },
                             "Password": {
                               "backendName": "Password",
-                              "description_en": "The username and password used for authentication",
+                              "description_en": "The username and password used for identity verification",
                               "description_zh": "用于身份验证的用户名密码",
                               "example": "****",
                               "sensitive": true,
@@ -3456,7 +3963,7 @@
                             },
                             "Exchange": {
                               "backendName": "Exchange",
-                              "description_en": "The Exchange mode. This parameter is required only when TargetType is set to Exchange",
+                              "description_en": "The Exchange mode. This parameter is required only when the TargetType parameter is set to Exchange",
                               "description_zh": "Exchange模式。\n仅当参数TargetType配置为Exchange时，需配置此参数",
                               "properties": {
                                 "Form": {
@@ -3502,7 +4009,7 @@
                                 },
                                 "Value": {
                                   "backendName": "Value",
-                                  "description_en": "The instance ID of the ApsaraMQ for RabbitMQ instance",
+                                  "description_en": "The instance ID of ApsaraMQ for RabbitMQ",
                                   "description_zh": "消息队列RabbitMQ版的实例ID",
                                   "example": "si-296cd57939a1421b****",
                                   "type": "string"
@@ -3570,7 +4077,7 @@
                             },
                             "QueueName": {
                               "backendName": "QueueName",
-                              "description_en": "The Queue mode. This parameter is required only when TargetType is set to Queue",
+                              "description_en": "The Queue mode. This parameter is required only when the TargetType parameter is set to Queue",
                               "description_zh": "Queue模式。\n仅当参数TargetType配置为Queue时，需配置此参数",
                               "properties": {
                                 "Form": {
@@ -3598,7 +4105,7 @@
                             },
                             "RoutingKey": {
                               "backendName": "RoutingKey",
-                              "description_en": "The routing rule of the message. This parameter is required only when TargetType is set to Exchange",
+                              "description_en": "The routing rule for messages. This parameter is required only when the TargetType parameter is set to Exchange",
                               "description_zh": "消息的路由规则。\n仅当参数TargetType配置为Exchange时，需配置此参数",
                               "properties": {
                                 "Form": {
@@ -3747,7 +4254,7 @@
                             },
                             "InstanceId": {
                               "backendName": "InstanceId",
-                              "description_en": "The instance ID of the RocketMQ instance",
+                              "description_en": "The instance ID of ApsaraMQ for RocketMQ",
                               "description_zh": "RocketMQ实例ID",
                               "example": "MQ_INST_1825725063814405_BZ******",
                               "type": "string"
@@ -3794,7 +4301,7 @@
                         },
                         "SinkRocketMQParameters": {
                           "backendName": "SinkRocketMQParameters",
-                          "description_en": "The parameters for the sink ApsaraMQ for RocketMQ",
+                          "description_en": "The parameters for the sink RocketMQ source",
                           "description_zh": "Sink RocketMQ 源",
                           "properties": {
                             "Body": {
@@ -3828,7 +4335,7 @@
                             },
                             "DeliveryOrderType": {
                               "backendName": "DeliveryOrderType",
-                              "description_en": "The delivery order type of the message",
+                              "description_en": "The delivery order type of messages",
                               "description_zh": "消息的投递顺序类型",
                               "properties": {
                                 "Form": {
@@ -3902,7 +4409,7 @@
                                 },
                                 "Value": {
                                   "backendName": "Value",
-                                  "description_en": "The instance ID of the ApsaraMQ for RocketMQ instance",
+                                  "description_en": "The instance ID of ApsaraMQ for RocketMQ",
                                   "description_zh": "消息队列RocketMQ版的实例ID",
                                   "example": "MQ_INST_164901546557****_BAAN****\n",
                                   "type": "string"
@@ -3959,7 +4466,7 @@
                                 },
                                 "Value": {
                                   "backendName": "Value",
-                                  "description_en": "The instance type. Valid values:\n\nCloud_4: ApsaraMQ for RocketMQ 4.0 instance (default).\nCloud_5: ApsaraMQ for RocketMQ 5.0 instance.\nSelfBuilt: Self-managed Apache RocketMQ cluster",
+                                  "description_en": "The instance type. Valid values:\n\nCloud_4: ApsaraMQ for RocketMQ 4.0 instance (default).\nCloud_5: ApsaraMQ for RocketMQ 5.0 instance.\nSelfBuilt: self-managed Apache RocketMQ cluster",
                                   "description_zh": "实例类型。取值说明如下：\n\nCloud_4：阿里云 RocketMQ 4.0 版本实例（默认选项）\nCloud_5：阿里云 RocketMQ 5.0 版本实例\nSelfBuilt：自建 Apache RocketMQ 集群",
                                   "example": "Cloud_4",
                                   "type": "string"
@@ -4168,7 +4675,7 @@
                             },
                             "Topic": {
                               "backendName": "Topic",
-                              "description_en": "The topic of the MSMQ RocketMQ instance",
+                              "description_en": "The topic of the MSMQ for RocketMQ instance",
                               "description_zh": "消息队列RocketMQ版实例的Topic",
                               "properties": {
                                 "Form": {
@@ -4186,7 +4693,7 @@
                                 },
                                 "Value": {
                                   "backendName": "Value",
-                                  "description_en": "The topic of the MSMQ RocketMQ instance",
+                                  "description_en": "The topic of the MSMQ for RocketMQ instance",
                                   "description_zh": "消息队列RocketMQ版实例的Topic",
                                   "example": "topic",
                                   "type": "string"
@@ -4317,7 +4824,7 @@
                             },
                             "ContentType": {
                               "backendName": "ContentType",
-                              "description_en": "The data format of SLS. You can use the default format or specify key-value pairs. Valid values:\n\nJSON\nKeyValue",
+                              "description_en": "The SLS data format. You can use the default format or specify key-value pairs. Valid values:\n\nJSON\nKeyValue",
                               "description_zh": "SLS数据格式。可选择默认或者配置制定的键值：\n\nJSON\nKeyValue",
                               "properties": {
                                 "Form": {
@@ -4335,7 +4842,7 @@
                                 },
                                 "Value": {
                                   "backendName": "Value",
-                                  "description_en": "The data format of SLS. You can use the default format or specify key-value pairs. Valid values:\n\nJSON\nKeyValue",
+                                  "description_en": "The SLS data format. You can use the default format or specify key-value pairs. Valid values:\n\nJSON\nKeyValue",
                                   "description_zh": "SLS数据格式。可选择默认或者配置制定的键值：\n\nJSON\nKeyValue",
                                   "example": "JSON\n",
                                   "type": "string"
@@ -4401,7 +4908,7 @@
                             },
                             "RoleName": {
                               "backendName": "RoleName",
-                              "description_en": "The role that grants authorization to the event bus EventBridge to read SLS log content. To use this role, the following conditions must be met: when you create the role in the Resource Access Management (RAM) console, select Alibaba Cloud Service as the trusted entity, and select event bus as the trusted service",
+                              "description_en": "The role used for authorization of EventBridge to read SLS log content. To use this role, the following conditions must be met: when you create the role used by the service in the Resource Access Management (RAM) console, select Alibaba Cloud Service, and set the trusted service to EventBridge",
                               "description_zh": "授权事件总线EventBridge使用此角色读取SLS日志内容时，需满足条件：在RAM控制台创建服务所使用的角色时，需要选择“阿里云服务”，并且“受信服务”需要选择“事件总线”",
                               "properties": {
                                 "Form": {
@@ -4419,7 +4926,7 @@
                                 },
                                 "Value": {
                                   "backendName": "Value",
-                                  "description_en": "The role that grants authorization to the event bus EventBridge to read SLS log content. To use this role, the following conditions must be met: when you create the role in the Resource Access Management (RAM) console, select Alibaba Cloud Service as the trusted entity, and select event bus as the trusted service",
+                                  "description_en": "The role used for authorization of EventBridge to read SLS log content. To use this role, the following conditions must be met: when you create the role used by the service in the Resource Access Management (RAM) console, select Alibaba Cloud Service, and set the trusted service to EventBridge",
                                   "description_zh": "授权事件总线EventBridge使用此角色读取SLS日志内容时，需满足条件：在RAM控制台创建服务所使用的角色时，需要选择“阿里云服务”，并且“受信服务”需要选择“事件总线”",
                                   "example": "test-role",
                                   "type": "string"
@@ -4468,7 +4975,7 @@
                       "properties": {
                         "SourceApacheRocketMQCheckpointParameters": {
                           "backendName": "SourceApacheRocketMQCheckpointParameters",
-                          "description_en": "The Source RocketMQ checkpoint",
+                          "description_en": "The Source RocketMQ checkpoint parameters",
                           "description_zh": "Source RocketMQ Checkpoint源",
                           "properties": {
                             "InstanceEndpoint": {
@@ -4664,7 +5171,7 @@
                         },
                         "SourceEventBusParameters": {
                           "backendName": "SourceEventBusParameters",
-                          "description_en": "The Source EventBus event source",
+                          "description_en": "The Source event bus event source",
                           "description_zh": "Source EventBus源",
                           "properties": {
                             "EventBusName": {
@@ -4763,7 +5270,7 @@
                             },
                             "VpcId": {
                               "backendName": "VpcId",
-                              "description_en": "The VPC ID of the user",
+                              "description_en": "The VPC ID",
                               "description_zh": "用户的VPC ID",
                               "example": "vpc-wz9ki1qdlx3cx5cbf****",
                               "type": "string"
@@ -4773,20 +5280,20 @@
                         },
                         "SourceMNSParameters": {
                           "backendName": "SourceMNSParameters",
-                          "description_en": "The Source Simple Message Queue (formerly MNS) event source",
+                          "description_en": "The Source Simple Message Queue (formerly MNS) message event source",
                           "description_zh": "Source 轻量消息队列（原 MNS） 源",
                           "nullToEmpty": true,
                           "properties": {
                             "IsBase64Decode": {
                               "backendName": "IsBase64Decode",
-                              "description_en": "Specifies whether to enable Base64 encoding",
+                              "description_en": "Indicates whether Base64 encoding is enabled",
                               "description_zh": "是否开启Base64编码",
                               "example": "true",
                               "type": "boolean"
                             },
                             "QueueName": {
                               "backendName": "QueueName",
-                              "description_en": "The name of the Simple Message Queue (formerly MNS) queue",
+                              "description_en": "The name of the Simple Message Queue (formerly MNS) message queue",
                               "description_zh": "轻量消息队列（原 MNS）的Queue的名称",
                               "example": "work4",
                               "nullToEmpty": true,
@@ -4850,7 +5357,7 @@
                             },
                             "VSwitchIds": {
                               "backendName": "VSwitchIds",
-                              "description_en": "The vSwitch IDs",
+                              "description_en": "The vSwitch ID",
                               "description_zh": "虚拟交换机ID",
                               "type": "string"
                             },
@@ -4883,7 +5390,7 @@
                             },
                             "Delimiter": {
                               "backendName": "Delimiter",
-                              "description_en": "The delimiter used in chunked loading mode as the text chunk identifier. By default, the newline character \n is used as the delimiter",
+                              "description_en": "The delimiter. In chunked loading mode, this delimiter is used as the chunk identifier for the text. By default, the newline character \n is used as the delimiter",
                               "description_zh": "分隔符，在分块加载模式下，以该分隔符作为文本的分块标识符，默认以换行符\\n作为分隔符",
                               "example": "\\n\n",
                               "type": "string"
@@ -5083,7 +5590,7 @@
                             },
                             "QueueName": {
                               "backendName": "QueueName",
-                              "description_en": "The name of the queue on the ApsaraMQ for RabbitMQ instance",
+                              "description_en": "The queue name of the ApsaraMQ for RabbitMQ instance",
                               "description_zh": "消息队列RabbitMQ版实例的Queue的名称",
                               "example": "liuyang",
                               "nullToEmpty": true,
@@ -5099,7 +5606,7 @@
                             },
                             "VirtualHostName": {
                               "backendName": "VirtualHostName",
-                              "description_en": "The name of the vhost on the ApsaraMQ for RabbitMQ instance",
+                              "description_en": "The vhost name of the ApsaraMQ for RabbitMQ instance",
                               "description_zh": "消息队列RabbitMQ版实例的Vhost的名称",
                               "example": "eb-connect\n",
                               "nullToEmpty": true,
@@ -5110,7 +5617,7 @@
                         },
                         "SourceRocketMQCheckpointParameters": {
                           "backendName": "SourceRocketMQCheckpointParameters",
-                          "description_en": "The Source RocketMQ checkpoint",
+                          "description_en": "The Source RocketMQ checkpoint parameters",
                           "description_zh": "Source RocketMQ Checkpoint源",
                           "properties": {
                             "InstanceId": {
@@ -5209,7 +5716,7 @@
                             },
                             "InstanceNetwork": {
                               "backendName": "InstanceNetwork",
-                              "description_en": "The network type of the instance. Valid values:\nPublicNetwork\nPrivateNetwork",
+                              "description_en": "The instance network information. Valid values:\nPublicNetwork\nPrivateNetwork",
                               "description_zh": "实例网络信息：\nPublicNetwork\nPrivateNetwork",
                               "example": "PublicNetwork",
                               "type": "string"
@@ -5231,7 +5738,7 @@
                             },
                             "InstanceType": {
                               "backendName": "InstanceType",
-                              "description_en": "The instance type. Valid values:\n\nCloud_4: ApsaraMQ for RocketMQ 4.0 instance (default).\nCloud_5: ApsaraMQ for RocketMQ 5.0 instance.\nSelfBuilt: Self-managed Apache RocketMQ cluster",
+                              "description_en": "The instance type. Valid values:\n\nCloud_4: ApsaraMQ for RocketMQ 4.0 instance (default).\nCloud_5: ApsaraMQ for RocketMQ 5.0 instance.\nSelfBuilt: self-managed Apache RocketMQ cluster",
                               "description_zh": "实例类型。取值说明如下：\n\nCloud_4：阿里云 RocketMQ 4.0 版本实例（默认选项）\nCloud_5：阿里云 RocketMQ 5.0 版本实例\nSelfBuilt：自建 Apache RocketMQ 集群",
                               "example": "Cloud_4\n",
                               "type": "string"
@@ -5309,7 +5816,7 @@
                             },
                             "VSwitchIds": {
                               "backendName": "VSwitchIds",
-                              "description_en": "The vSwitch IDs",
+                              "description_en": "The vSwitch ID",
                               "description_zh": "虚拟交换机ID",
                               "example": "vsw-m5ev8asdc6h12345****\n",
                               "type": "string"
@@ -5359,7 +5866,7 @@
                             },
                             "RoleName": {
                               "backendName": "RoleName",
-                              "description_en": "The role name for authorization of the event bus EventBridge to read Simple Log Service log content. To use this role, create a role for the service in the Resource Access Management (RAM) console, select \"Alibaba Cloud Service\", and set \"Trusted Service\" to \"event bus\"",
+                              "description_en": "The role name for authorization of the event bus EventBridge to read Simple Log Service log content. To use this role, create a role in the Resource Access Management (RAM) console, select \"Alibaba Cloud Service\" as the trusted entity, and select \"event bus\" as the trusted service",
                               "description_zh": "授权事件总线EventBridge使用此角色读取SLS日志内容时，需满足条件：在RAM控制台创建服务所使用的角色时，需要选择“阿里云服务”，并且“受信服务”需要选择“事件总线”",
                               "example": "testRole",
                               "type": "string"
@@ -5379,13 +5886,93 @@
                     },
                     "Transforms": {
                       "backendName": "Transforms",
-                      "description_en": "The transformation configurations",
+                      "description_en": "The event transformer configurations",
                       "description_zh": "Transform 相关配置",
                       "itemName": "Transforms",
                       "items": {
                         "description_en": "The Alibaba Cloud Resource Name (ARN) of the cloud service, such as the ARN of a function in Function Compute",
                         "description_zh": "云产品的 ARN，比如函数计算中函数的 ARN",
                         "properties": {
+                          "AiChunkTransformParameters": {
+                            "$ref": "#/components/schemas/AiChunkTransformParameters",
+                            "backendName": "AiChunkTransformParameters",
+                            "description_en": "The AI local text chunking parameters",
+                            "description_zh": "AI 本地文本分块参数",
+                            "title_en": "AI 本地文本分块参数",
+                            "title_zh": "AI 本地文本分块参数"
+                          },
+                          "AiClassifyTransformParameters": {
+                            "$ref": "#/components/schemas/AiClassifyTransformParameters",
+                            "backendName": "AiClassifyTransformParameters",
+                            "description_en": "The AI text classification parameters",
+                            "description_zh": "AI 文本分类参数",
+                            "title_en": "AI 文本分类参数",
+                            "title_zh": "AI 文本分类参数"
+                          },
+                          "AiEmbedTransformParameters": {
+                            "$ref": "#/components/schemas/AiEmbedTransformParameters",
+                            "backendName": "AiEmbedTransformParameters",
+                            "description_en": "The AI embedding parameters",
+                            "description_zh": "AI 向量化参数",
+                            "title_en": "AI 向量化参数",
+                            "title_zh": "AI 向量化参数"
+                          },
+                          "AiExtractTransformParameters": {
+                            "$ref": "#/components/schemas/AiExtractTransformParameters",
+                            "backendName": "AiExtractTransformParameters",
+                            "description_en": "The AI information extraction parameters",
+                            "description_zh": "AI 信息抽取参数",
+                            "title_en": "AI 信息抽取参数",
+                            "title_zh": "AI 信息抽取参数"
+                          },
+                          "AiFilterTransformParameters": {
+                            "$ref": "#/components/schemas/AiFilterTransformParameters",
+                            "backendName": "AiFilterTransformParameters",
+                            "description_en": "The AI conditional filtering parameters",
+                            "description_zh": "AI 条件过滤参数",
+                            "title_en": "AI 条件过滤参数",
+                            "title_zh": "AI 条件过滤参数"
+                          },
+                          "AiPrepSearchTransformParameters": {
+                            "$ref": "#/components/schemas/AiPrepSearchTransformParameters",
+                            "backendName": "AiPrepSearchTransformParameters",
+                            "description_en": "The AI semantic chunking parameters",
+                            "description_zh": "AI 语义切块参数",
+                            "title_en": "AI 语义切块参数",
+                            "title_zh": "AI 语义切块参数"
+                          },
+                          "AiRedactTransformParameters": {
+                            "$ref": "#/components/schemas/AiRedactTransformParameters",
+                            "backendName": "AiRedactTransformParameters",
+                            "description_en": "The AI data masking parameters",
+                            "description_zh": "AI 脱敏参数",
+                            "title_en": "AI 脱敏参数",
+                            "title_zh": "AI 脱敏参数"
+                          },
+                          "AiSentimentAnalysisTransformParameters": {
+                            "$ref": "#/components/schemas/AiSentimentAnalysisTransformParameters",
+                            "backendName": "AiSentimentAnalysisTransformParameters",
+                            "description_en": "The AI emotion analysis parameters",
+                            "description_zh": "AI 情感分析参数",
+                            "title_en": "AI 情感分析参数",
+                            "title_zh": "AI 情感分析参数"
+                          },
+                          "AiSummarizeTransformParameters": {
+                            "$ref": "#/components/schemas/AiSummarizeTransformParameters",
+                            "backendName": "AiSummarizeTransformParameters",
+                            "description_en": "The AI summarization parameters",
+                            "description_zh": "AI 摘要参数",
+                            "title_en": "AI 摘要参数",
+                            "title_zh": "AI 摘要参数"
+                          },
+                          "AiTranslateTransformParameters": {
+                            "$ref": "#/components/schemas/AiTranslateTransformParameters",
+                            "backendName": "AiTranslateTransformParameters",
+                            "description_en": "The AI translation parameters",
+                            "description_zh": "AI 翻译参数",
+                            "title_en": "AI 翻译参数",
+                            "title_zh": "AI 翻译参数"
+                          },
                           "Arn": {
                             "backendName": "Arn",
                             "description_en": "The Alibaba Cloud Resource Name (ARN) of the cloud service, such as the ARN of a function in Function Compute",
@@ -5413,7 +6000,7 @@
               },
               "NextToken": {
                 "backendName": "NextToken",
-                "description_en": "Indicates the position from which the current call starts to read data. A value of empty string indicates that all data has been read. Set this value to the NextToken request parameter in the next call",
+                "description_en": "Indicates whether there is more data to return. A value of empty string indicates that all data has been returned. If the value is not empty, set this value to the NextToken request parameter in the next call",
                 "description_zh": "用来表示当前调用返回读取到的位置，空代表数据已经读取完毕。下次调用时，需要将此设置到入参NextToken中",
                 "example": "177",
                 "type": "string"
@@ -5450,7 +6037,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the operation was successful. The value true indicates success",
+            "description_en": "Indicates whether the operation was successful. The value true is returned if the operation was successful",
             "description_zh": "操作成功返回true",
             "example": "true",
             "nullToEmpty": false,
