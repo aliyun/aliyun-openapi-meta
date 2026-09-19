@@ -4,7 +4,7 @@
   "deprecated": false,
   "description_en": "Creates a custom cloud computer template. A cloud computer template is a collection of cloud computer configurations that reduces the configuration steps and accelerates the creation of cloud computers",
   "description_zh": "创建一个自定义的云电脑模板。云电脑模板（简称模板）是云电脑配置的合集，用于减少创建云电脑时的配置步骤，加快创建云电脑的速度",
-  "kebab_example": "aliyun ecd create-template --template-name '我的云电脑模板001' --api-version 2020-09-30 --region cn-hangzhou",
+  "kebab_example": "aliyun ecd create-template --template-name '我的云电脑模板001' --description '设计部模板' --product-type CloudDesktop --biz-type 1 --system-disk-size 80 --system-disk-performance-level AutoPL --data-disk-list PerformanceLevel=AutoPL Size=40 --image-id desktopimage-windows-server-2022-64-asp --default-language zh-CN --policy-group-id pg-8hlryfn331000000 --timer-group-id ccg-0caoeogrk9m50000 --resource-group-id rg-4knxmfneq1e000000 --resource-tag-list Value=design Key=department --region-config-list OfficeSiteId=cn-hangzhou+dir-709000000 SnapshotPolicyId=sp-35fvn8m21pnx20000 VolumeEncryptionEnable=false ResourceInstanceType=eds.enterprise_office.8c16g VirtualNodePoolId=vnp-0bydg00000000 VolumeEncryptionKey=a7b3c0c8-b3a2-4876-b1cc-000000000 RegionId=cn-hangzhou SubnetId=vsw-bp1yiu0000000000 --site-config-list SiteId=mainland AppRuleId=bwr-5a5371e0db954d00000000 --charge-type PrePaid --period 1 --period-unit Month --auto-pay true --auto-renew true --user-duration 120 --post-paid-after-used-up true --api-version 2020-09-30 --region cn-hangzhou",
   "method": "POST",
   "multi_version": true,
   "name": "CreateTemplate",
@@ -23,7 +23,7 @@
   "parameters": [
     {
       "example": "我的云电脑模板001",
-      "help_en": "The name of the template. The name must meet the following requirements:\n\nThe name must be 2 to 126 characters in length.\nThe name must start with a letter or a Chinese character. It cannot start with `http://` or `https://`.\nThe name can contain letters, digits, Chinese characters, colons (:), underscores (_), or hyphens (-). Periods (.) are not supported",
+      "help_en": "The name of the template. The name must meet the following requirements:\n\nThe name must be 2 to 126 characters in length and can contain letters and Chinese characters.\nThe name must start with a letter or a Chinese character. It cannot start with `http://` or `https://`.\nThe name can contain letters, digits, Chinese characters, colons (:), underscores (_), or hyphens (-). Periods (.) are not supported",
       "help_zh": "模板的名称。必须符合以下要求：\n\n长度2~126个英文或中文字符。\n必须以大小写字母或中文开头，不能以`http://`和`https://`开头。\n可以包含字母、数字、汉字、半角冒号（:）、下划线（_）或短划线（-），不支持点号（.）",
       "location": "formData",
       "max_length": "126",
@@ -38,8 +38,22 @@
       "type": "string"
     },
     {
+      "example": "myHost",
+      "help_en": "The instance name",
+      "help_zh": "实例名称",
+      "location": "formData",
+      "max_length": "128",
+      "name": "instance_name",
+      "options": [
+        "--instance-name"
+      ],
+      "raw_name": "InstanceName",
+      "required": false,
+      "type": "string"
+    },
+    {
       "example": "设计部模板",
-      "help_en": "The description of the template. The description must meet the following requirements:\n\nThe description must be 2 to 256 characters in length. It cannot start with `http://` or `https://`.\nThe description can contain Chinese characters, letters, digits, spaces, and special characters. Line breaks are supported",
+      "help_en": "The description of the template. The description must meet the following requirements:\n\nThe description must be 2 to 256 characters in length and cannot start with `http://` or `https://`.\nThe description can contain Chinese characters, letters, digits, spaces, and special characters, and supports line breaks",
       "help_zh": "模板的描述。必须符合以下要求：\n\n长度2~256个字符，不能以`http://`和`https://`开头。\n支持中文、英文、数字、空格和特殊符号，使用回车换行",
       "location": "formData",
       "max_length": "256",
@@ -80,11 +94,11 @@
     },
     {
       "example": "80",
-      "help_en": "The size of the system disk. Unit: GiB. Valid values: 40 to 500. The value must be a multiple of 10.\n\nThe system disk size cannot be smaller than the image size",
+      "help_en": "The system disk size. Unit: GiB. Valid values: 40 to 500, in increments of 10 GiB.\n\nThe system disk size cannot be smaller than the size of the configured image",
       "help_zh": "系统盘大小。单位：GiB。取值范围: 40~500，每10GiB为一个步长。\n\n系统盘大小不能小于配置的镜像大小",
       "location": "formData",
       "maximum": "2040",
-      "minimum": "40",
+      "minimum": "20",
       "name": "system_disk_size",
       "options": [
         "--system-disk-size"
@@ -95,7 +109,7 @@
     },
     {
       "example": "AutoPL",
-      "help_en": "The type of the system disk.\n\nOnly high-frequency and GPU-accelerated cloud computer specifications support ESSD disks",
+      "help_en": "The system disk type.\n\nOnly high frequency and graphics cloud computer specifications support ESSD disks",
       "help_zh": "系统盘类型。\n\n只有高主频和图形型的云电脑规格支持ESSD类型的磁盘",
       "location": "formData",
       "name": "system_disk_performance_level",
@@ -123,7 +137,7 @@
           },
           {
             "example": "40",
-            "help_en": "The size of the data cloud disk. Unit: GiB. Valid values: 40 to 2040. The value must be a multiple of 10.\n\n<notice>The larger the ESSD cloud disk capacity, the higher the performance level (PL) available (for example, PL2 is available for capacities of 460 GiB or more). Higher performance levels (PLs) incur higher costs. Select the ESSD cloud disk performance level (PL) based on your requirements. Note: Only standard SSD and ESSD cloud disks are supported.></notice>",
+            "help_en": "The data cloud disk size. Unit: GiB. Valid values: 40 to 2040, in increments of 10 GiB.\n\n<notice>The larger the ESSD cloud disk capacity, the higher the available performance level (PL) (for example, PL2 is available for capacities of 460 GiB or more). Higher performance levels (PLs) incur higher costs. Select the ESSD cloud disk performance level (PL) based on your requirements.></notice>",
             "help_zh": "系统盘大小。单位：GiB。取值范围: 40~2040，每10GiB为一个步长。\n\n<notice>ESSD云盘容量越大，可供选择的“性能级别”越高 (例如460GiB以上可选PL2)。性能级别越高，费用也越高，请根据您的使用需求合理选择ESSD云盘性能级别。></notice>",
             "maximum": "2040",
             "minimum": "20",
@@ -138,7 +152,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The size and specification configurations of data disks",
+      "help_en": "The data disk size and specification configurations",
       "help_zh": "数据盘大小和规格配置",
       "location": "formData",
       "name": "data_disk_list",
@@ -152,7 +166,7 @@
     },
     {
       "example": "desktopimage-windows-server-2022-64-asp",
-      "help_en": "The ID of the cloud computer image. You can query the ID on the image management page. System images and custom images are supported",
+      "help_en": "The cloud computer image ID. You can query the ID on the image management page. System images, custom images, and other image types are supported",
       "help_zh": "云电脑镜像ID，可以从镜像管理页面查询， 支持系统镜像、自定义镜像等类型",
       "location": "formData",
       "name": "image_id",
@@ -245,7 +259,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The tags of the cloud computer in key-value format. You can specify up to 20 tags",
+      "help_en": "The cloud computer tags in key-value format. You can specify up to 20 tags",
       "help_zh": "云电脑标签。Key-Value格式。最多可传入20个标签",
       "location": "formData",
       "name": "resource_tag_list",
@@ -274,7 +288,7 @@
           },
           {
             "example": "cn-hangzhou",
-            "help_en": "The region ID. You can call [DescribeRegions](~~DescribeRegions~~) to query the list of regions supported by WUYING Workspace",
+            "help_en": "The region ID. Call [DescribeRegions](~~DescribeRegions~~) to query the list of regions supported by WUYING Workspace",
             "help_zh": "地域ID。可以调用[DescribeRegions](~~DescribeRegions~~)获取无影云电脑支持的地域列表",
             "name": "region_id",
             "options": [
@@ -298,7 +312,7 @@
           },
           {
             "example": "sp-35fvn8m21pnx2****",
-            "help_en": "The ID of the automatic snapshot policy",
+            "help_en": "The automatic snapshot policy ID",
             "help_zh": "自动快照策略ID",
             "name": "snapshot_policy_id",
             "options": [
@@ -321,6 +335,18 @@
             "type": "string"
           },
           {
+            "example": "vnp-0bydg********",
+            "help_en": "The virtual node pool, used in workstation scenarios",
+            "help_zh": "虚拟节点池，工作站场景使用",
+            "name": "virtual_node_pool_id",
+            "options": [
+              "--virtual-node-pool-id"
+            ],
+            "raw_name": "VirtualNodePoolId",
+            "required": false,
+            "type": "string"
+          },
+          {
             "example": "false",
             "help_en": "Specifies whether to enable disk encryption",
             "help_zh": "是否开启磁盘加密功能",
@@ -334,7 +360,7 @@
           },
           {
             "example": "a7b3c0c8-b3a2-4876-b1cc-*********",
-            "help_en": "The ID of the KMS key used when disk encryption is enabled. You can call https://help.aliyun.com/document_detail/28951.html to obtain the key ID",
+            "help_en": "The KMS key ID used when disk encryption is enabled. You can call https://help.aliyun.com/document_detail/28951.html to obtain the key ID",
             "help_zh": "开启磁盘加密的情况下使用的KMS的密钥ID。可通过https://help.aliyun.com/document_detail/28951.html接口获取",
             "name": "volume_encryption_key",
             "options": [
@@ -347,7 +373,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The region-specific template configurations. You can specify multiple configurations. The configuration that matches the specific region is used.\n\nYou can specify configurations for up to 20 regions",
+      "help_en": "The region-specific template configurations. Multiple configurations are supported. The configuration that matches the specific region is used.\n\nYou can configure up to 20 regions",
       "help_zh": "地域化的模板信息配置， 支持配置多个。 使用时会根据具体的地域匹配。\n\n最多支持20个地域的配置",
       "location": "formData",
       "name": "region_config_list",
@@ -452,7 +478,7 @@
       "type": "string"
     },
     {
-      "help_en": "Indicates whether automatic payment is enabled for the subscription order",
+      "help_en": "Specifies whether automatic payment is enabled for the subscription order",
       "help_zh": "是否自动支付包年包月订单",
       "location": "formData",
       "name": "auto_pay",
@@ -524,7 +550,7 @@
           },
           "Data": {
             "backendName": "data",
-            "description_en": "The template ID returned after successful creation",
+            "description_en": "The template ID returned after the template is created",
             "description_zh": "创建成功之后的模板ID",
             "example": "b-0cc7rx533*****",
             "type": "string"
