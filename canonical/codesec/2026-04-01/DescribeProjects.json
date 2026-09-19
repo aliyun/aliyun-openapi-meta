@@ -3,7 +3,7 @@
   "cmd_full_name": "codesec describe-projects",
   "cmd_name": "describe-projects",
   "deprecated": false,
-  "description_en": "Lists projects under the current tenant with pagination. Supports fuzzy match by name or prompt",
+  "description_en": "Lists projects under a tenant by page, with support for fuzzy search by name or prompt",
   "description_zh": "分页列出租户下的项目（Project），支持按名称/提示词模糊搜索",
   "kebab_example": "",
   "method": "GET",
@@ -37,7 +37,7 @@
     },
     {
       "example": "eyJ0IjoiMjAyNi0wNy0xNlQwNzo1MzozOC4wMjFaIiwiaSI6MTAwMDQ0OH0",
-      "help_en": "The pagination token. Do not specify this parameter or set it to an empty string for the first page. To retrieve subsequent pages, pass the nextToken value from the previous response without any modification. If the nextToken value in the response is empty, the last page has been reached",
+      "help_en": "The pagination token. Do not specify this parameter or set it to an empty string for the first page. For subsequent pages, pass the nextToken value from the previous response without any modification. If the nextToken value in the response is empty, the last page has been reached",
       "help_zh": "分页Token，首页不传nextToken省略或为空字符串，翻页原样回传把上一次响应的nextToken值不做任何修改地传入下一次请求，响应中nextToken 为空，已到最后一页",
       "location": "query",
       "name": "next_token",
@@ -68,7 +68,7 @@
         "lastScanTime"
       ],
       "example": "last_scan_time",
-      "help_en": "The field by which to sort the results. Default value: last_scan_time.\n\nValid values:\nlast_scan_time: the time when a task was last created.\ncreated_at: the time when the project was created.\nupdated_at: the time when the project was last modified",
+      "help_en": "The field by which to sort the results. Default value: last_scan_time.\n\nValid values:\n\nlast_scan_time: the time when a task was last created.\ncreated_at: the time when the project was created.\nupdated_at: the time when the project was last modified",
       "help_zh": "排序的字段，默认值 last_scan_time\n取值如下：\nlast_scan_time 最近一次创建任务时间\ncreated_at 创建项目的时间\nupdated_at 修改项目的时间",
       "location": "query",
       "name": "sort_by",
@@ -85,7 +85,7 @@
         "desc"
       ],
       "example": "desc",
-      "help_en": "The sort order. Default value: desc.\n\nValid values:\ndesc: descending order.\nasc: ascending order",
+      "help_en": "The sort order. Default value: desc.\n\nValid values:\n\ndesc: descending order.\nasc: ascending order",
       "help_zh": "指定排序顺序，默认值desc。\n取值如下：\ndesc 倒序\nasc 正序",
       "location": "query",
       "name": "sort_order",
@@ -125,7 +125,7 @@
                 },
                 "createdAt": {
                   "backendName": "created_at",
-                  "description_en": "The time when the project was created",
+                  "description_en": "The creation time",
                   "description_zh": "创建时间",
                   "example": "2026-07-28T03:36:31.573Z",
                   "type": "string"
@@ -146,22 +146,50 @@
                 },
                 "engines": {
                   "backendName": "engines",
-                  "description_en": "The engine switches for the project or scan snapshot. Only SAST and SCA are supported",
+                  "description_en": "The engine switches in the project or scan snapshot. Only SAST and SCA are supported",
                   "description_zh": "项目/扫描快照中的引擎开关，（仅 SAST、SCA）",
                   "properties": {
                     "sast": {
                       "backendName": "sast",
-                      "description_en": "Indicates whether SAST is enabled",
+                      "description_en": "Indicates whether SAST is supported",
                       "description_zh": "支持SAST",
                       "example": "true",
                       "type": "boolean"
                     },
+                    "sastConfig": {
+                      "backendName": "sast_config",
+                      "description_en": "The engine-level configuration",
+                      "description_zh": "引擎级配置；",
+                      "properties": {
+                        "remediation": {
+                          "backendName": "remediation",
+                          "description_en": "Specifies whether to generate remediation suggestions",
+                          "description_zh": "是否生成修复建议；",
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
                     "sca": {
                       "backendName": "sca",
-                      "description_en": "Indicates whether SCA is enabled",
+                      "description_en": "Indicates whether SCA is supported",
                       "description_zh": "支持SCA",
                       "example": "true",
                       "type": "boolean"
+                    },
+                    "scaConfig": {
+                      "backendName": "sca_config",
+                      "description_en": "The engine-level configuration",
+                      "description_zh": "引擎级配置；",
+                      "properties": {
+                        "remediation": {
+                          "backendName": "remediation",
+                          "description_en": "Specifies whether to generate remediation suggestions",
+                          "description_zh": "是否生成修复建议；",
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
                     }
                   },
                   "type": "object"
@@ -176,7 +204,7 @@
                 },
                 "instructionPrompt": {
                   "backendName": "instruction_prompt",
-                  "description_en": "The natural language prompt provided by the user that describes scanning or result processing preferences, such as ignoring low-risk vulnerabilities",
+                  "description_en": "The natural language prompt provided by the user that describes scanning or result processing preferences, such as ignoring low-severity vulnerabilities",
                   "description_zh": "用户自然语言提示，描述扫描或结果处理偏好（如忽略低危漏洞等）",
                   "example": "1111",
                   "type": "string"
@@ -212,7 +240,7 @@
                 },
                 "updatedAt": {
                   "backendName": "updated_at",
-                  "description_en": "The time when the project was last updated",
+                  "description_en": "The update time",
                   "description_zh": "更新时间",
                   "example": "2026-07-28T03:36:31.573Z",
                   "type": "string"
@@ -239,7 +267,7 @@
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The unique request ID",
+            "description_en": "The request ID",
             "description_zh": "请求唯一标识",
             "example": "9A1F403F-0A85-5578-8B7C-55E3E9408659",
             "title_en": "Id of the request",

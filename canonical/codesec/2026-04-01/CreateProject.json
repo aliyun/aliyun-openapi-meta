@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun codesec POST /v1/projects --region cn-hangzhou --name user_paswd_103 --header \"Content-Type=application/json\" --version 2026-04-01 --force",
+  "camel_example": "aliyun codesec POST /v1/projects --region cn-hangzhou --engines '{\"sca\":false,\"scaConfig\":{\"remediation\":true},\"sast\":true,\"sastConfig\":{\"remediation\":true}}' --name user_paswd_103 --description 'This_is_default_function_description_by_fc-deploy_component' --instructionPrompt 'such_as_ignoring_low-severity_vulnerabilities,_etc.' --source '{\"type\":\"api\"}' --header \"Content-Type=application/json\" --version 2026-04-01 --force",
   "cmd_full_name": "codesec create-project",
   "cmd_name": "create-project",
   "deprecated": false,
-  "description_en": "Create project",
+  "description_en": "Creates a project",
   "description_zh": "创建项目",
-  "kebab_example": "aliyun codesec create-project --name user_paswd_103 --region cn-hangzhou",
+  "kebab_example": "aliyun codesec create-project --name user_paswd_103 --description This_is_default_function_description_by_fc-deploy_component --instruction-prompt such_as_ignoring_low-severity_vulnerabilities,_etc. --source type=api --engines sca=false scaConfig={\"remediation\":true} sast=true sastConfig={\"remediation\":true} --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "CreateProject",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "user_paswd_103",
-      "help_en": "The name",
+      "help_en": "The project name",
       "help_zh": "项目名称",
       "location": "query",
       "max_length": "512",
@@ -50,7 +50,7 @@
     },
     {
       "example": "such as ignoring low-severity vulnerabilities, etc.",
-      "help_en": "The instructionPrompt",
+      "help_en": "The natural language prompt that describes scanning or result processing preferences, such as ignoring low-risk vulnerabilities",
       "help_zh": "用户自然语言提示，描述扫描或结果处理偏好（如忽略低危漏洞等）",
       "location": "query",
       "name": "instruction_prompt",
@@ -68,7 +68,7 @@
             "manual_upload"
           ],
           "example": "api",
-          "help_en": "The type",
+          "help_en": "The project type",
           "help_zh": "项目类型",
           "name": "type",
           "options": [
@@ -79,7 +79,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The source",
+      "help_en": "The project source",
       "help_zh": "项目来源",
       "location": "query",
       "name": "source",
@@ -95,7 +95,7 @@
       "fields": [
         {
           "example": "true",
-          "help_en": "The sast",
+          "help_en": "Specifies whether SAST is supported",
           "help_zh": "支持SAST",
           "name": "sast",
           "options": [
@@ -106,8 +106,32 @@
           "type": "bool"
         },
         {
+          "fields": [
+            {
+              "help_en": "Specifies whether to generate remediation suggestions",
+              "help_zh": "是否生成修复建议；",
+              "name": "remediation",
+              "options": [
+                "--remediation"
+              ],
+              "raw_name": "remediation",
+              "required": false,
+              "type": "bool"
+            }
+          ],
+          "help_en": "The engine-level configuration",
+          "help_zh": "引擎级配置；",
+          "name": "sast_config",
+          "options": [
+            "--sast-config"
+          ],
+          "raw_name": "sastConfig",
+          "required": false,
+          "type": "object"
+        },
+        {
           "example": "false",
-          "help_en": "The sca",
+          "help_en": "Specifies whether SCA is supported",
           "help_zh": "支持SCA",
           "name": "sca",
           "options": [
@@ -116,9 +140,33 @@
           "raw_name": "sca",
           "required": false,
           "type": "bool"
+        },
+        {
+          "fields": [
+            {
+              "help_en": "Specifies whether to generate remediation suggestions",
+              "help_zh": "是否生成修复建议；",
+              "name": "remediation",
+              "options": [
+                "--remediation"
+              ],
+              "raw_name": "remediation",
+              "required": false,
+              "type": "bool"
+            }
+          ],
+          "help_en": "The engine-level configuration",
+          "help_zh": "引擎级配置；",
+          "name": "sca_config",
+          "options": [
+            "--sca-config"
+          ],
+          "raw_name": "scaConfig",
+          "required": false,
+          "type": "object"
         }
       ],
-      "help_en": "The engines",
+      "help_en": "The engine switches for the project or scan snapshot. Only SAST and SCA are supported",
       "help_zh": "项目/扫描快照中的引擎开关，（仅 SAST、SCA）",
       "location": "query",
       "name": "engines",
@@ -137,10 +185,12 @@
   "responses": {
     "200": {
       "schema": {
+        "description_en": "Schema of Response",
         "description_zh": "Schema of Response",
         "properties": {
           "configRevision": {
             "backendName": "data.config_revision",
+            "description_en": "The project configuration version number",
             "description_zh": "项目配置版本号",
             "example": "1",
             "format": "int64",
@@ -148,6 +198,7 @@
           },
           "createdAt": {
             "backendName": "data.created_at",
+            "description_en": "The creation time",
             "description_zh": "创建时间",
             "example": "2026-08-27T00:53:46.774Z",
             "format": "date-time",
@@ -155,28 +206,33 @@
           },
           "createdBy": {
             "backendName": "data.created_by",
+            "description_en": "The user ID of the project creator",
             "description_zh": "项目创建者的用户ID",
             "example": "3221",
             "type": "string"
           },
           "description": {
             "backendName": "data.description",
+            "description_en": "The description",
             "description_zh": "描述",
             "example": "This is default function description by fc-deploy component",
             "type": "string"
           },
           "engines": {
             "backendName": "data.engines",
+            "description_en": "The engine switches for the project or scan snapshot. Only SAST and SCA are supported",
             "description_zh": "项目/扫描快照中的引擎开关，（仅 SAST、SCA）",
             "properties": {
               "sast": {
                 "backendName": "sast",
+                "description_en": "Specifies whether SAST is supported",
                 "description_zh": "支持SAST",
                 "example": "true",
                 "type": "boolean"
               },
               "sca": {
                 "backendName": "sca",
+                "description_en": "Specifies whether SCA is supported",
                 "description_zh": "支持SCA",
                 "example": "true",
                 "type": "boolean"
@@ -186,6 +242,7 @@
           },
           "id": {
             "backendName": "data.id",
+            "description_en": "The project ID",
             "description_zh": "项目ID",
             "example": "111",
             "format": "int64",
@@ -193,18 +250,21 @@
           },
           "instructionPrompt": {
             "backendName": "data.instruction_prompt",
+            "description_en": "The natural language prompt that describes scanning or result processing preferences, such as ignoring low-risk vulnerabilities",
             "description_zh": "用户自然语言提示，描述扫描或结果处理偏好（如忽略低危漏洞等）",
             "example": "such as ignoring low-severity vulnerabilities, etc.",
             "type": "string"
           },
           "name": {
             "backendName": "data.name",
+            "description_en": "The project name",
             "description_zh": "项目名称",
             "example": "name",
             "type": "string"
           },
           "requestId": {
             "backendName": "requestId",
+            "description_en": "The request ID",
             "description_zh": "请求唯一标识",
             "example": "9A1F403F-0A85-5578-8B7C-55E3E9408659",
             "title_en": "Id of the request",
@@ -213,10 +273,12 @@
           },
           "source": {
             "backendName": "data.source",
+            "description_en": "The project source",
             "description_zh": "项目来源",
             "properties": {
               "type": {
                 "backendName": "type",
+                "description_en": "The project type",
                 "description_zh": "项目类型",
                 "example": "api",
                 "type": "string"
@@ -226,6 +288,7 @@
           },
           "updatedAt": {
             "backendName": "data.updated_at",
+            "description_en": "The update time",
             "description_zh": "更新时间",
             "example": "2026-08-27T00:53:46.774Z",
             "format": "date-time",

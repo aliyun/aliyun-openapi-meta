@@ -3,7 +3,7 @@
   "cmd_full_name": "codesec create-code-bundle",
   "cmd_name": "create-code-bundle",
   "deprecated": false,
-  "description_en": "Create pending code bundle with CI metadata and issue direct-to-OSS PUT credentials",
+  "description_en": "Creates a function code package in pending status and returns a pre-signed OSS PUT upload credential",
   "description_zh": "创建 pending 状态代码包，并返回预签名 OSS PUT 直传凭证",
   "kebab_example": "aliyun codesec create-code-bundle --project-id 123 --filename test-cases.zip --region cn-hangzhou",
   "method": "POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "123",
-      "help_en": "Numeric primary key (`projects.id`)",
+      "help_en": "The project ID",
       "help_zh": "项目ID",
       "location": "path",
       "name": "project_id",
@@ -35,7 +35,7 @@
     },
     {
       "example": "test-cases.zip",
-      "help_en": "Original archive file name; used to derive OSS key suffix (e.g. `.zip`, `.tar.gz`)",
+      "help_en": "The file name",
       "help_zh": "文件名称",
       "location": "query",
       "name": "filename",
@@ -48,7 +48,7 @@
     },
     {
       "example": "{\"region\":\"cn-beijing\"}",
-      "help_en": "Optional CI/CD metadata JSON, stored as-is on the `code_bundles` row.\nUsed by downstream scan creation for incremental diff, branch tracking, and audit.\nTypical structure: `{\"scan_mode\": {\"type\": \"full\"|\"incremental\", \"base_ref\": \"...\", \"base_commit\": \"...\", \"head_commit\": \"...\"},\n\"context\": {\"repository\": \"...\", \"branch\": \"...\", \"commit\": \"...\", \"pipeline_source\": \"...\", \"merge_request_iid\": 123, \"default_branch\": \"main\"},\n\"client\": {\"name\": \"krypton-cli\", \"version\": \"0.2.0\", \"os\": \"linux\", \"arch\": \"amd64\"}}`.\nBackend does not validate internal fields; clients may add arbitrary keys",
+      "help_en": "An optional CI/CD metadata JSON string",
       "help_zh": "可选 CI/CD 元数据 JSON 字符串；",
       "location": "query",
       "name": "ci_metadata",
@@ -66,16 +66,19 @@
   "responses": {
     "200": {
       "schema": {
+        "description_en": "Schema of Response",
         "description_zh": "Schema of Response",
         "properties": {
           "bundleVersion": {
             "backendName": "data.bundle_version",
+            "description_en": "The version identifier of the function code package",
             "description_zh": "代码包版本标识",
             "example": "1",
             "type": "string"
           },
           "codeBundleId": {
             "backendName": "data.code_bundle_id",
+            "description_en": "The function code package ID",
             "description_zh": "代码包 ID",
             "example": "111",
             "format": "int64",
@@ -83,7 +86,7 @@
           },
           "createdAt": {
             "backendName": "data.created_at",
-            "description_en": "代码包创建时间（RFC3339）",
+            "description_en": "The time when the function code package was created",
             "description_zh": "创建时间",
             "example": "2026-08-27T00:53:46.774Z",
             "format": "date-time",
@@ -91,12 +94,14 @@
           },
           "filename": {
             "backendName": "data.filename",
+            "description_en": "The file name",
             "description_zh": "文件名称",
             "example": "test-cases.zip",
             "type": "string"
           },
           "projectId": {
             "backendName": "data.project_id",
+            "description_en": "The project ID",
             "description_zh": "项目ID",
             "example": "123",
             "format": "int64",
@@ -104,6 +109,7 @@
           },
           "requestId": {
             "backendName": "requestId",
+            "description_en": "The request ID",
             "description_zh": "请求唯一标识",
             "example": "9A1F403F-0A85-5578-8B7C-55E3E9408659",
             "title_en": "Id of the request",
@@ -112,6 +118,7 @@
           },
           "status": {
             "backendName": "data.status",
+            "description_en": "The status of the function code package",
             "description_zh": "代码包状态",
             "enum": [
               "pending"
@@ -121,7 +128,7 @@
           },
           "updatedAt": {
             "backendName": "data.updated_at",
-            "description_en": "代码包更新时间（RFC3339）",
+            "description_en": "The time when the function code package was last updated",
             "description_zh": "更新时间",
             "example": "2026-08-27T00:53:46.774Z",
             "format": "date-time",
@@ -129,11 +136,12 @@
           },
           "upload": {
             "backendName": "data.upload",
+            "description_en": "The upload credential. See the following fields for details",
             "description_zh": "上传凭证，字段见下",
             "properties": {
               "expiresAt": {
                 "backendName": "expires_at",
-                "description_en": "凭证过期时间（RFC3339）",
+                "description_en": "The expiration time of the credential in RFC 3339 format",
                 "description_zh": "凭证过期时间（RFC3339）",
                 "example": "2026-09-03T05:58:47.88987539Z",
                 "format": "date-time",
@@ -141,7 +149,7 @@
               },
               "method": {
                 "backendName": "method",
-                "description_en": "HTTP method for the presigned URL",
+                "description_en": "The HTTP method of the pre-signed URL. Valid values: PUT",
                 "description_zh": "预签名 URL 的 HTTP 方法，枚举 PUT",
                 "enum": [
                   "PUT"
@@ -151,14 +159,14 @@
               },
               "putUrl": {
                 "backendName": "put_url",
-                "description_en": "Presigned OSS PUT URL",
+                "description_en": "The pre-signed OSS PUT upload URL",
                 "description_zh": "预签名 OSS PUT 直传 URL",
                 "example": "https://codesec-beijing.oss-cn-beijing.aliyuncs.com/87766767%2F1001667%2F1004171.zip",
                 "type": "string"
               },
               "requiredContentType": {
                 "backendName": "required_content_type",
-                "description_en": "Clients MUST send this `Content-Type` on PUT when `put_url` is set",
+                "description_en": "The Content-Type header that the client must include when performing the PUT request. This field is returned when putUrl is present",
                 "description_zh": "客户端 PUT 时必须携带的 Content-Type（当 putUrl 存在时）",
                 "example": "application/octet-stream",
                 "type": "string"
