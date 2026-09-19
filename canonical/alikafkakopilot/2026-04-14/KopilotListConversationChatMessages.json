@@ -1,5 +1,5 @@
 {
-  "camel_example": "aliyun alikafkakopilot KopilotListConversationChatMessages --region cn-hangzhou --PageSize 10 --BeforeTurnId 2345 --RegionId 'cn-hangzhou' --SessionId 'e356c91c-8220-425c-9d86-00000000' --version 2026-04-14 --method POST --force",
+  "camel_example": "aliyun alikafkakopilot KopilotListConversationChatMessages --region cn-hangzhou --PageSize 10 --BeforeTurnId 2345 --RegionId 'cn-hangzhou' --TaskPageSize 20 --SessionId 'e356c91c-8220-425c-9d86-00000000' --TaskCursor 123 --version 2026-04-14 --method POST --force",
   "cmd_full_name": "alikafkakopilot kopilot-list-conversation-chat-messages",
   "cmd_name": "kopilot-list-conversation-chat-messages",
   "deprecated": false,
@@ -61,7 +61,7 @@
     },
     {
       "example": "2345",
-      "help_en": "The cursor.\n\nIf this parameter is not specified, the last pageSize turn IDs are returned. If this parameter is specified, the corresponding turn IDs are returned",
+      "help_en": "The cursor.\n\nIf this parameter is not specified, the last pageSize turn IDs are returned. If this parameter is specified, the turn IDs before the specified turn ID are returned",
       "help_zh": "游标。\n\n不传时返回最后 pageSize 个 turnId，传入时返回 turn ID",
       "location": "query",
       "name": "before_turn_id",
@@ -71,6 +71,32 @@
       "raw_name": "BeforeTurnId",
       "required": false,
       "type": "int"
+    },
+    {
+      "example": "20",
+      "help_en": "The number of scheduled tasks per page. Default value: 20. Valid values: 1 to 100",
+      "help_zh": "定时任务列表每页条数，默认 20，范围 1–100",
+      "location": "query",
+      "name": "task_page_size",
+      "options": [
+        "--task-page-size"
+      ],
+      "raw_name": "TaskPageSize",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "123",
+      "help_en": "The pagination cursor. Do not specify this parameter for the first query. For subsequent queries, pass in the value of Data.ScheduledTaskInfo.NextTaskCursor from the previous response",
+      "help_zh": "分页游标。首次查询不传，后续原样传入上次响应的 Data.ScheduledTaskInfo.NextTaskCursor",
+      "location": "query",
+      "name": "task_cursor",
+      "options": [
+        "--task-cursor"
+      ],
+      "raw_name": "TaskCursor",
+      "required": false,
+      "type": "string"
     }
   ],
   "pathPattern": "",
@@ -84,7 +110,7 @@
         "properties": {
           "Code": {
             "backendName": "code",
-            "description_en": "The return code. A value of 200 indicates success",
+            "description_en": "The response code. A value of 200 indicates success",
             "description_zh": "返回码。返回200代表成功",
             "example": "200",
             "format": "int64",
@@ -92,7 +118,7 @@
           },
           "Data": {
             "backendName": "data",
-            "description_en": "The data returned if the call is successful",
+            "description_en": "The data returned when the call is successful",
             "description_zh": "调用成功时，返回的数据",
             "properties": {
               "HasMore": {
@@ -158,6 +184,197 @@
                 "example": "1",
                 "format": "int64",
                 "type": "integer"
+              },
+              "ScheduledTaskInfo": {
+                "backendName": "scheduledTaskInfo",
+                "description_en": "The details of scheduled tasks associated with the current session. Only tasks in the enabled, paused, or pending authorization state are counted",
+                "description_zh": "当前会话关联的定时任务详情，仅统计已启用、已暂停和待授权任务",
+                "properties": {
+                  "AsOf": {
+                    "backendName": "asOf",
+                    "description_en": "The time when the overview was generated, in UTC ISO 8601 format",
+                    "description_zh": "概览生成时间，UTC ISO 8601 格式",
+                    "example": "2026-09-17T12:00:00Z",
+                    "type": "string"
+                  },
+                  "EnabledCount": {
+                    "backendName": "enabledCount",
+                    "description_en": "The number of associated tasks in the ENABLED state",
+                    "description_zh": "关联任务中处于 ENABLED 状态的数量",
+                    "example": "1",
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "HasMoreTasks": {
+                    "backendName": "hasMoreTasks",
+                    "description_en": "Indicates whether there is a next page of associated tasks",
+                    "description_zh": "是否还有下一页关联任务",
+                    "example": "false",
+                    "type": "boolean"
+                  },
+                  "HasScheduledTask": {
+                    "backendName": "hasScheduledTask",
+                    "description_en": "Indicates whether the current session has associated scheduled tasks in the enabled, paused, or pending authorization state",
+                    "description_zh": "当前会话是否关联已启用、已暂停或待授权的定时任务",
+                    "example": "true",
+                    "type": "boolean"
+                  },
+                  "NextTaskCursor": {
+                    "backendName": "nextTaskCursor",
+                    "description_en": "The cursor for the next page. This value is empty if there is no next page",
+                    "description_zh": "下一页游标；没有下一页时为空",
+                    "example": "123",
+                    "type": "string"
+                  },
+                  "TaskCount": {
+                    "backendName": "taskCount",
+                    "description_en": "The total number of associated tasks. Only tasks in the ENABLED, PAUSED, or NEEDS_AUTH state are counted",
+                    "description_zh": "关联任务总数，仅统计 ENABLED、PAUSED、NEEDS_AUTH 状态",
+                    "example": "1",
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "Tasks": {
+                    "backendName": "tasks",
+                    "description_en": "The list of associated tasks on the current page",
+                    "description_zh": "当前页关联任务列表",
+                    "itemName": "Tasks",
+                    "items": {
+                      "description_en": "The information about a single scheduled task",
+                      "description_zh": "单个定时任务信息",
+                      "properties": {
+                        "ActiveRun": {
+                          "backendName": "activeRun",
+                          "description_en": "The run record that is currently queued or running. This value is empty if there is no active run",
+                          "description_zh": "当前排队中或执行中的运行记录，无活动运行时为空",
+                          "properties": {
+                            "FinishedAt": {
+                              "backendName": "finishedAt",
+                              "description_en": "The time when the run ended, in UTC ISO 8601 format. This value is typically empty for queued or running tasks",
+                              "description_zh": "运行结束时间，UTC ISO 8601 格式；排队中和执行中通常为空",
+                              "example": "2026-09-17T12:01:00Z",
+                              "type": "string"
+                            },
+                            "RunId": {
+                              "backendName": "runId",
+                              "description_en": "The unique identifier of a single run",
+                              "description_zh": "单次运行唯一标识",
+                              "example": "run_0123456789abcdef0123456789abcdef",
+                              "type": "string"
+                            },
+                            "Status": {
+                              "backendName": "status",
+                              "description_en": "The status of a single run. A value of QUEUED indicates that the run is queued. A value of RUNNING indicates that the run is in progress",
+                              "description_zh": "单次运行状态：QUEUED 为排队中，RUNNING 为执行中",
+                              "example": "RUNNING",
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "LastCompletedRun": {
+                          "backendName": "lastCompletedRun",
+                          "description_en": "The most recent completed run record, including failed runs. This value is empty if no record exists",
+                          "description_zh": "最近一次已结束的运行记录，包括失败的运行；没有记录时为空",
+                          "properties": {
+                            "FinishedAt": {
+                              "backendName": "finishedAt",
+                              "description_en": "The time when the run ended, in UTC ISO 8601 format. This value is empty if the run has not ended",
+                              "description_zh": "运行结束时间，UTC ISO 8601 格式；尚未结束时为空",
+                              "example": "2026-09-17T12:01:00Z",
+                              "type": "string"
+                            },
+                            "RunId": {
+                              "backendName": "runId",
+                              "description_en": "The unique identifier of a single run",
+                              "description_zh": "单次运行唯一标识",
+                              "example": "run_0123456789abcdef0123456789abcdef",
+                              "type": "string"
+                            },
+                            "Status": {
+                              "backendName": "status",
+                              "description_en": "The status of the most recent completed run. For example, SUCCEEDED indicates success and FAILED indicates failure",
+                              "description_zh": "最近已结束运行的状态，例如 SUCCEEDED 表示成功，FAILED 表示失败",
+                              "example": "SUCCEEDED",
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "Name": {
+                          "backendName": "name",
+                          "description_en": "The name of the scheduled task",
+                          "description_zh": "定时任务名称",
+                          "example": "Kafka 资源巡检",
+                          "type": "string"
+                        },
+                        "NextRunAt": {
+                          "backendName": "nextRunAt",
+                          "description_en": "The next scheduled execution time, in UTC ISO 8601 format. This value is empty if no next execution is scheduled",
+                          "description_zh": "下次计划执行时间，UTC ISO 8601 格式；无下次计划时为空",
+                          "example": "2026-09-17T12:15:00Z",
+                          "type": "string"
+                        },
+                        "ScheduleDescription": {
+                          "backendName": "scheduleDescription",
+                          "description_en": "The human-readable description of the execution schedule",
+                          "description_zh": "执行计划的可读说明",
+                          "example": "每 900 秒",
+                          "type": "string"
+                        },
+                        "Status": {
+                          "backendName": "status",
+                          "description_en": "The status of the scheduled task. Valid values:\nDRAFT: The task is a draft.\nENABLED: The task is enabled.\nPAUSED: The task is paused.\nNEEDS_AUTH: The task is pending authorization.\nCOMPLETED: The task is completed.\n\nThis status is independent of the run status",
+                          "description_zh": "定时任务状态。DRAFT 为草稿，ENABLED 为已启用，PAUSED 为已暂停，NEEDS_AUTH 为待授权，COMPLETED 为已完成。与运行状态独立",
+                          "example": "ENABLED",
+                          "type": "string"
+                        },
+                        "TaskId": {
+                          "backendName": "taskId",
+                          "description_en": "The unique identifier of the scheduled task",
+                          "description_zh": "定时任务唯一标识",
+                          "example": "task_0123456789abcdef0123456789abcdef",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
+              },
+              "ScheduledTaskQuota": {
+                "backendName": "scheduledTaskQuota",
+                "description_en": "The scheduled task quota for the current Alibaba Cloud account in this environment, counted across regions",
+                "description_zh": "当前主账号在本环境中的定时任务数量配额，跨地域统计",
+                "properties": {
+                  "Limit": {
+                    "backendName": "limit",
+                    "description_en": "The maximum number of tasks or channels allowed, subject to the actual configuration",
+                    "description_zh": "对应任务或渠道的数量上限，以实际配置为准",
+                    "example": "3",
+                    "format": "int32",
+                    "type": "integer"
+                  },
+                  "Remaining": {
+                    "backendName": "remaining",
+                    "description_en": "The remaining quota, calculated as the limit minus the used quota. The minimum value is 0",
+                    "description_zh": "剩余数量，为上限减去已用数量，最小为 0",
+                    "example": "2",
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "Used": {
+                    "backendName": "used",
+                    "description_en": "The used task quota. Tasks in the DRAFT, ENABLED, PAUSED, or NEEDS_AUTH state are counted. Completed or deleted tasks do not consume the quota",
+                    "description_zh": "已占用任务配额，统计 DRAFT、ENABLED、PAUSED、NEEDS_AUTH；已完成及已删除任务不占用",
+                    "example": "1",
+                    "format": "int64",
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
               },
               "SessionId": {
                 "backendName": "sessionId",

@@ -1,5 +1,5 @@
 {
-  "camel_example": "aliyun alikafkakopilot KopilotListConversations --region cn-hangzhou --Size 10 --Page 1 --RegionId 'cn-hangzhou' --version 2026-04-14 --method POST --force",
+  "camel_example": "aliyun alikafkakopilot KopilotListConversations --region cn-hangzhou --Size 10 --IncludeAutomationOverview true --DestinationPageSize 20 --Page 1 --RegionId 'cn-hangzhou' --TaskPageSize 20 --DestinationCursor 123 --TaskCursor 123 --version 2026-04-14 --method POST --force",
   "cmd_full_name": "alikafkakopilot kopilot-list-conversations",
   "cmd_name": "kopilot-list-conversations",
   "deprecated": false,
@@ -58,6 +58,71 @@
       "raw_name": "Size",
       "required": false,
       "type": "int"
+    },
+    {
+      "example": "true",
+      "help_en": "Specifies whether to return the overview of scheduled tasks and notification channels for the account. A value of true indicates that the overview is returned. If this parameter is not specified, the overview is not returned",
+      "help_zh": "是否返回账号的定时任务与通知渠道概览。true 表示返回；未指定时不返回该概览",
+      "location": "query",
+      "name": "include_automation_overview",
+      "options": [
+        "--include-automation-overview"
+      ],
+      "raw_name": "IncludeAutomationOverview",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "example": "20",
+      "help_en": "The number of entries per page for the scheduled task list. Default value: 20. Valid values: 1 to 100",
+      "help_zh": "定时任务列表每页条数，默认 20，范围 1–100",
+      "location": "query",
+      "name": "task_page_size",
+      "options": [
+        "--task-page-size"
+      ],
+      "raw_name": "TaskPageSize",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "123",
+      "help_en": "The pagination cursor. Do not specify this parameter for the first query. For subsequent queries, pass in the value of Data.AutomationOverview.Tasks.NextCursor from the previous response",
+      "help_zh": "分页游标。首次查询不传，后续原样传入上次响应的 Data.AutomationOverview.Tasks.NextCursor",
+      "location": "query",
+      "name": "task_cursor",
+      "options": [
+        "--task-cursor"
+      ],
+      "raw_name": "TaskCursor",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "20",
+      "help_en": "The number of entries per page for the notification channel list. Default value: 20. Valid values: 1 to 100",
+      "help_zh": "通知渠道列表每页条数，默认 20，范围 1–100",
+      "location": "query",
+      "name": "destination_page_size",
+      "options": [
+        "--destination-page-size"
+      ],
+      "raw_name": "DestinationPageSize",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "123",
+      "help_en": "The pagination cursor for notification channels. Do not specify this parameter for the first query. For subsequent queries, pass in the value of Data.AutomationOverview.Destinations.NextCursor from the previous response",
+      "help_zh": "通知渠道分页游标。首次查询不传，后续原样传入上次响应 Data.AutomationOverview.Destinations.NextCursor",
+      "location": "query",
+      "name": "destination_cursor",
+      "options": [
+        "--destination-cursor"
+      ],
+      "raw_name": "DestinationCursor",
+      "required": false,
+      "type": "string"
     }
   ],
   "pathPattern": "",
@@ -79,9 +144,575 @@
           },
           "Data": {
             "backendName": "data",
-            "description_en": "The data returned if the call is successful",
+            "description_en": "The data returned when the call is successful",
             "description_zh": "调用成功时，返回的数据",
             "properties": {
+              "AutomationOverview": {
+                "backendName": "automationOverview",
+                "description_en": "The overview of tasks, notification channels, and quotas for the current account. Returned only when the request includes the overview and the feature is available",
+                "description_zh": "当前账号的任务、通知渠道与配额概览。仅请求包含概览且功能可用时返回",
+                "properties": {
+                  "AsOf": {
+                    "backendName": "asOf",
+                    "description_en": "The time when the overview was generated, in UTC ISO 8601 format",
+                    "description_zh": "概览生成时间，UTC ISO 8601 格式",
+                    "example": "2026-09-17T12:00:00Z",
+                    "type": "string"
+                  },
+                  "DestinationQuota": {
+                    "backendName": "destinationQuota",
+                    "description_en": "The quota for the number of notification channels of the current primary account in this environment, counted across regions",
+                    "description_zh": "当前主账号在本环境中的通知渠道数量配额，跨地域统计",
+                    "properties": {
+                      "Limit": {
+                        "backendName": "limit",
+                        "description_en": "The maximum number of tasks or channels allowed, subject to the actual configuration",
+                        "description_zh": "对应任务或渠道的数量上限，以实际配置为准",
+                        "example": "3",
+                        "format": "int32",
+                        "type": "integer"
+                      },
+                      "Remaining": {
+                        "backendName": "remaining",
+                        "description_en": "The remaining quota, calculated as the limit minus the used quantity. The minimum value is 0",
+                        "description_zh": "剩余数量，为上限减去已用数量，最小为 0",
+                        "example": "2",
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "Used": {
+                        "backendName": "used",
+                        "description_en": "The number of non-deleted notification channels. Disabled channels still consume quota",
+                        "description_zh": "未删除的通知渠道数量；停用渠道仍占用配额",
+                        "example": "1",
+                        "format": "int64",
+                        "type": "integer"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "Destinations": {
+                    "backendName": "destinations",
+                    "description_en": "The paginated results of notification channels. Webhook URLs and signing keys are not returned",
+                    "description_zh": "通知渠道分页结果，不返回 Webhook 或签名密钥",
+                    "properties": {
+                      "HasMore": {
+                        "backendName": "hasMore",
+                        "description_en": "Indicates whether more pages are available",
+                        "description_zh": "是否还有下一页",
+                        "example": "false",
+                        "type": "boolean"
+                      },
+                      "Items": {
+                        "backendName": "items",
+                        "description_en": "The list of tasks or notification channels on the current page",
+                        "description_zh": "当前页任务或通知渠道列表",
+                        "itemName": "Items",
+                        "items": {
+                          "description_en": "The information about a single notification channel",
+                          "description_zh": "单个通知渠道信息",
+                          "properties": {
+                            "CreatedAt": {
+                              "backendName": "createdAt",
+                              "description_en": "The time when the record was created, in UTC ISO 8601 format",
+                              "description_zh": "当前记录创建时间，UTC ISO 8601 格式",
+                              "example": "2026-09-17T12:00:00Z",
+                              "type": "string"
+                            },
+                            "DestinationId": {
+                              "backendName": "destinationId",
+                              "description_en": "The unique identifier of the notification channel",
+                              "description_zh": "通知渠道唯一标识",
+                              "example": "dst_0123456789abcdef0123456789abcdef",
+                              "type": "string"
+                            },
+                            "LastDelivery": {
+                              "backendName": "lastDelivery",
+                              "description_en": "The most recent delivery record. This field is empty if no delivery has been made",
+                              "description_zh": "最近一次投递记录；尚未投递时为空",
+                              "properties": {
+                                "AcceptedAt": {
+                                  "backendName": "acceptedAt",
+                                  "description_en": "The time when the notification service accepted the delivery, in UTC ISO 8601 format. This field is empty if the delivery has not been accepted",
+                                  "description_zh": "通知服务接收时间，UTC ISO 8601 格式；尚未接收时为空",
+                                  "example": "2026-09-17T12:01:00Z",
+                                  "type": "string"
+                                },
+                                "CreatedAt": {
+                                  "backendName": "createdAt",
+                                  "description_en": "The time when the record was created, in UTC ISO 8601 format",
+                                  "description_zh": "当前记录创建时间，UTC ISO 8601 格式",
+                                  "example": "2026-09-17T12:00:00Z",
+                                  "type": "string"
+                                },
+                                "DeliveryId": {
+                                  "backendName": "deliveryId",
+                                  "description_en": "The unique identifier of the delivery record",
+                                  "description_zh": "投递记录唯一标识",
+                                  "example": "dlv_0123456789abcdef0123456789abcdef",
+                                  "type": "string"
+                                },
+                                "LastAttemptAt": {
+                                  "backendName": "lastAttemptAt",
+                                  "description_en": "The time of the most recent delivery attempt, in UTC ISO 8601 format",
+                                  "description_zh": "最近一次尝试发送的时间，UTC ISO 8601 格式",
+                                  "example": "2026-09-17T12:01:00Z",
+                                  "type": "string"
+                                },
+                                "SendKind": {
+                                  "backendName": "sendKind",
+                                  "description_en": "The delivery type. Valid values:\nAUTO: automatic delivery.\nMANUAL: manual delivery.\nTEST: connectivity test",
+                                  "description_zh": "发送类型：AUTO 自动、MANUAL 手动、TEST 连通性测试",
+                                  "example": "AUTO",
+                                  "type": "string"
+                                },
+                                "Status": {
+                                  "backendName": "status",
+                                  "description_en": "The most recent delivery status. ACCEPTED indicates that the notification service has accepted the delivery, but does not mean the recipient has read it",
+                                  "description_zh": "最近投递状态。ACCEPTED 表示通知服务已接收，不代表收件人已阅读",
+                                  "example": "ACCEPTED",
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "Name": {
+                              "backendName": "name",
+                              "description_en": "The name of the notification channel",
+                              "description_zh": "通知渠道名称",
+                              "example": "巡检通知群",
+                              "type": "string"
+                            },
+                            "Status": {
+                              "backendName": "status",
+                              "description_en": "The configuration status of the channel. Valid values:\nACTIVE: enabled.\nDISABLED: disabled.\nBeing enabled does not indicate that a delivery has been successfully sent",
+                              "description_zh": "渠道配置状态：ACTIVE 为启用，DISABLED 为停用；启用不表示已经发送成功",
+                              "example": "ACTIVE",
+                              "type": "string"
+                            },
+                            "Type": {
+                              "backendName": "type",
+                              "description_en": "The type of the notification channel. DINGTALK_WEBHOOK indicates a DingTalk custom chatbot",
+                              "description_zh": "通知渠道类型。DINGTALK_WEBHOOK 表示钉钉自定义机器人",
+                              "example": "DINGTALK_WEBHOOK",
+                              "type": "string"
+                            },
+                            "UpdatedAt": {
+                              "backendName": "updatedAt",
+                              "description_en": "The time when the record was last updated, in UTC ISO 8601 format",
+                              "description_zh": "当前记录最近更新时间，UTC ISO 8601 格式",
+                              "example": "2026-09-17T12:00:00Z",
+                              "type": "string"
+                            },
+                            "Version": {
+                              "backendName": "version",
+                              "description_en": "The version number used for concurrent update verification of the record",
+                              "description_zh": "用于当前记录并发更新校验的版本号",
+                              "example": "1",
+                              "format": "int64",
+                              "type": "integer"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "NextCursor": {
+                        "backendName": "nextCursor",
+                        "description_en": "The cursor for the next page. This field is empty if no more pages are available",
+                        "description_zh": "下一页游标，没有下一页时为空",
+                        "example": "123",
+                        "type": "string"
+                      },
+                      "Total": {
+                        "backendName": "total",
+                        "description_en": "The total number of non-deleted records in the list",
+                        "description_zh": "对应列表未删除记录的总数",
+                        "example": "1",
+                        "format": "int64",
+                        "type": "integer"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "HomeRegion": {
+                    "backendName": "homeRegion",
+                    "description_en": "The home region for tasks and notification channels",
+                    "description_zh": "任务与通知渠道的服务归属地域",
+                    "example": "cn-beijing",
+                    "type": "string"
+                  },
+                  "Quota": {
+                    "backendName": "quota",
+                    "description_en": "The quota for the number of scheduled tasks of the current primary account in this environment, counted across regions",
+                    "description_zh": "当前主账号在本环境中的定时任务数量配额，跨地域统计",
+                    "properties": {
+                      "Limit": {
+                        "backendName": "limit",
+                        "description_en": "The maximum number of tasks or channels allowed, subject to the actual configuration",
+                        "description_zh": "对应任务或渠道的数量上限，以实际配置为准",
+                        "example": "3",
+                        "format": "int32",
+                        "type": "integer"
+                      },
+                      "Remaining": {
+                        "backendName": "remaining",
+                        "description_en": "The remaining quota, calculated as the limit minus the used quantity. The minimum value is 0",
+                        "description_zh": "剩余数量，为上限减去已用数量，最小为 0",
+                        "example": "2",
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "Used": {
+                        "backendName": "used",
+                        "description_en": "The number of task quota slots consumed. Tasks in DRAFT, ENABLED, PAUSED, or NEEDS_AUTH status are counted. Completed and deleted tasks do not consume quota",
+                        "description_zh": "已占用任务配额，统计 DRAFT、ENABLED、PAUSED、NEEDS_AUTH；已完成及已删除任务不占用",
+                        "example": "1",
+                        "format": "int64",
+                        "type": "integer"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "Tasks": {
+                    "backendName": "tasks",
+                    "description_en": "The paginated results of scheduled tasks for the account",
+                    "description_zh": "账号定时任务分页结果",
+                    "properties": {
+                      "HasMore": {
+                        "backendName": "hasMore",
+                        "description_en": "Indicates whether more pages are available",
+                        "description_zh": "是否还有下一页",
+                        "example": "false",
+                        "type": "boolean"
+                      },
+                      "Items": {
+                        "backendName": "items",
+                        "description_en": "The list of tasks or notification channels on the current page",
+                        "description_zh": "当前页任务或通知渠道列表",
+                        "itemName": "Items",
+                        "items": {
+                          "description_en": "The information about a single scheduled task",
+                          "description_zh": "单个定时任务信息",
+                          "properties": {
+                            "ActiveRun": {
+                              "backendName": "activeRun",
+                              "description_en": "The currently queued or running execution record. This field is empty if no active run exists",
+                              "description_zh": "当前排队中或执行中的运行记录，无活动运行时为空",
+                              "properties": {
+                                "ErrorCode": {
+                                  "backendName": "errorCode",
+                                  "description_en": "The error code of a failed run. This field is empty if no error occurred",
+                                  "description_zh": "运行失败的错误码；无错误时为空",
+                                  "example": "UPSTREAM_TIMEOUT",
+                                  "type": "string"
+                                },
+                                "ErrorMessage": {
+                                  "backendName": "errorMessage",
+                                  "description_en": "The user-facing failure reason. This field is empty if no error occurred",
+                                  "description_zh": "可展示给用户的失败原因；无错误时为空",
+                                  "example": "模型或工具调用超时，请稍后重试",
+                                  "type": "string"
+                                },
+                                "FinishedAt": {
+                                  "backendName": "finishedAt",
+                                  "description_en": "The time when the run finished, in UTC ISO 8601 format. This field is typically empty for queued or running executions",
+                                  "description_zh": "运行结束时间，UTC ISO 8601 格式；排队中和执行中通常为空",
+                                  "example": "2026-09-17T12:01:00Z",
+                                  "type": "string"
+                                },
+                                "RunId": {
+                                  "backendName": "runId",
+                                  "description_en": "The unique identifier of a single run",
+                                  "description_zh": "单次运行唯一标识",
+                                  "example": "run_0123456789abcdef0123456789abcdef",
+                                  "type": "string"
+                                },
+                                "Status": {
+                                  "backendName": "status",
+                                  "description_en": "The status of a single run. Valid values:\nQUEUED: queued.\nRUNNING: running",
+                                  "description_zh": "单次运行状态：QUEUED 为排队中，RUNNING 为执行中",
+                                  "example": "RUNNING",
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "Configuration": {
+                              "backendName": "configuration",
+                              "description_en": "The task execution configuration",
+                              "description_zh": "任务执行配置",
+                              "properties": {
+                                "CronExpression": {
+                                  "backendName": "cronExpression",
+                                  "description_en": "The six-field cron expression with the seconds field fixed to 0. This field is used only for the CRON schedule type",
+                                  "description_zh": "六字段 Cron 表达式，秒固定为 0，仅 CRON 类型使用",
+                                  "example": "0 */15 * * * *",
+                                  "type": "string"
+                                },
+                                "DestinationIds": {
+                                  "backendName": "destinationIds",
+                                  "description_en": "The list of notification channel IDs that receive task results. A maximum of 3 IDs are supported",
+                                  "description_zh": "接收任务结果的通知渠道 ID 列表，最多 3 个",
+                                  "itemName": "DestinationIds",
+                                  "items": {
+                                    "description_en": "The unique identifier of the notification channel",
+                                    "description_zh": "通知渠道唯一标识",
+                                    "example": "dst_0123456789abcdef0123456789abcdef",
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "InstanceIds": {
+                                  "backendName": "instanceIds",
+                                  "description_en": "The list of instance IDs within the query scope",
+                                  "description_zh": "查询范围内的实例 ID 列表",
+                                  "itemName": "InstanceIds",
+                                  "items": {
+                                    "description_en": "The Kafka instance ID. The example is provided only to illustrate the format",
+                                    "description_zh": "Kafka 实例 ID。示例仅用于说明格式",
+                                    "example": "alikafka_post-cn-example",
+                                    "type": "string"
+                                  },
+                                  "type": "array"
+                                },
+                                "Instruction": {
+                                  "backendName": "instruction",
+                                  "description_en": "The instruction for the scheduled task execution",
+                                  "description_zh": "定时执行的任务说明",
+                                  "example": "查询指定实例的当前风险并汇总结果",
+                                  "type": "string"
+                                },
+                                "IntervalSeconds": {
+                                  "backendName": "intervalSeconds",
+                                  "description_en": "The fixed interval in seconds. Valid values: 900 to 31536000. This field is used only for the FIXED_INTERVAL schedule type",
+                                  "description_zh": "固定间隔秒数，范围 900–31536000，仅 FIXED_INTERVAL 使用",
+                                  "example": "900",
+                                  "format": "int32",
+                                  "type": "integer"
+                                },
+                                "MaxRunSeconds": {
+                                  "backendName": "maxRunSeconds",
+                                  "description_en": "The time budget for a single task run, in seconds. Default value: 600. Valid values: 30 to 1800",
+                                  "description_zh": "单次任务运行时长预算，单位秒；默认 600，范围 30–1800",
+                                  "example": "600",
+                                  "format": "int32",
+                                  "type": "integer"
+                                },
+                                "MaxTokens": {
+                                  "backendName": "maxTokens",
+                                  "description_en": "The token budget for a single task run. Default value: 3000000. Valid values: 1000 to 10000000",
+                                  "description_zh": "单次任务 Token 预算；默认 3000000，范围 1000–10000000",
+                                  "example": "3000000",
+                                  "format": "int64",
+                                  "type": "integer"
+                                },
+                                "Name": {
+                                  "backendName": "name",
+                                  "description_en": "The name of the scheduled task",
+                                  "description_zh": "定时任务名称",
+                                  "example": "Kafka 资源巡检",
+                                  "type": "string"
+                                },
+                                "RegionId": {
+                                  "backendName": "regionId",
+                                  "description_en": "The region where the queried resources reside",
+                                  "description_zh": "查询资源所在地域",
+                                  "example": "cn-beijing",
+                                  "type": "string"
+                                },
+                                "ResourceMode": {
+                                  "backendName": "resourceMode",
+                                  "description_en": "The resource scope mode. Valid values:\nACCOUNT: account-level query.\nNONE: no resource task.\nEXPLICIT: specified instances",
+                                  "description_zh": "资源范围模式：ACCOUNT 账号查询、NONE 无资源任务、EXPLICIT 指定实例",
+                                  "example": "ACCOUNT",
+                                  "type": "string"
+                                },
+                                "RunAt": {
+                                  "backendName": "runAt",
+                                  "description_en": "The one-time execution time in ISO 8601 format with time zone. This field is used only for the ONCE schedule type",
+                                  "description_zh": "一次性执行时间，带时区的 ISO 8601 格式，仅 ONCE 使用",
+                                  "example": "2026-09-18T12:00:00Z",
+                                  "type": "string"
+                                },
+                                "ScheduleType": {
+                                  "backendName": "scheduleType",
+                                  "description_en": "The schedule type. Valid values:\nONCE: one-time execution.\nCRON: cron expression.\nFIXED_INTERVAL: fixed interval",
+                                  "description_zh": "调度类型：ONCE 一次性、CRON 表达式、FIXED_INTERVAL 固定间隔",
+                                  "example": "FIXED_INTERVAL",
+                                  "type": "string"
+                                },
+                                "SessionMode": {
+                                  "backendName": "sessionMode",
+                                  "description_en": "The session mode for displaying results. Valid values:\nSHARED: shared session.\nPER_RUN: independent session for each run",
+                                  "description_zh": "结果展示会话模式：SHARED 为共享会话，PER_RUN 为每次运行独立会话",
+                                  "example": "SHARED",
+                                  "type": "string"
+                                },
+                                "TargetSessionId": {
+                                  "backendName": "targetSessionId",
+                                  "description_en": "The ID of the target session that stores run results in shared mode",
+                                  "description_zh": "共享模式下承载运行结果的目标会话 ID",
+                                  "example": "00000000-0000-4000-8000-000000000001",
+                                  "type": "string"
+                                },
+                                "Timezone": {
+                                  "backendName": "timezone",
+                                  "description_en": "The scheduling time zone. Default value: Asia/Shanghai",
+                                  "description_zh": "调度时区，默认 Asia/Shanghai",
+                                  "example": "Asia/Shanghai",
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "CreatedAt": {
+                              "backendName": "createdAt",
+                              "description_en": "The time when the record was created, in UTC ISO 8601 format",
+                              "description_zh": "当前记录创建时间，UTC ISO 8601 格式",
+                              "example": "2026-09-17T12:00:00Z",
+                              "type": "string"
+                            },
+                            "LastCompletedRun": {
+                              "backendName": "lastCompletedRun",
+                              "description_en": "The most recent completed run record, including failed runs. This field is empty if no record exists",
+                              "description_zh": "最近一次已结束的运行记录，包括失败的运行；没有记录时为空",
+                              "properties": {
+                                "ErrorCode": {
+                                  "backendName": "errorCode",
+                                  "description_en": "The error code of a failed run. This field is empty if no error occurred",
+                                  "description_zh": "运行失败的错误码；无错误时为空",
+                                  "example": "UPSTREAM_TIMEOUT",
+                                  "type": "string"
+                                },
+                                "ErrorMessage": {
+                                  "backendName": "errorMessage",
+                                  "description_en": "The user-facing failure reason. This field is empty if no error occurred",
+                                  "description_zh": "可展示给用户的失败原因；无错误时为空",
+                                  "example": "模型或工具调用超时，请稍后重试",
+                                  "type": "string"
+                                },
+                                "FinishedAt": {
+                                  "backendName": "finishedAt",
+                                  "description_en": "The time when the run finished, in UTC ISO 8601 format. This field is empty if the run has not finished",
+                                  "description_zh": "运行结束时间，UTC ISO 8601 格式；尚未结束时为空",
+                                  "example": "2026-09-17T12:01:00Z",
+                                  "type": "string"
+                                },
+                                "RunId": {
+                                  "backendName": "runId",
+                                  "description_en": "The unique identifier of a single run",
+                                  "description_zh": "单次运行唯一标识",
+                                  "example": "run_0123456789abcdef0123456789abcdef",
+                                  "type": "string"
+                                },
+                                "Status": {
+                                  "backendName": "status",
+                                  "description_en": "The status of the most recent completed run. For example, SUCCEEDED indicates success and FAILED indicates failure",
+                                  "description_zh": "最近已结束运行的状态，例如 SUCCEEDED 表示成功，FAILED 表示失败",
+                                  "example": "SUCCEEDED",
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            },
+                            "Name": {
+                              "backendName": "name",
+                              "description_en": "The name of the scheduled task",
+                              "description_zh": "定时任务名称",
+                              "example": "Kafka 资源巡检",
+                              "type": "string"
+                            },
+                            "NextRunAt": {
+                              "backendName": "nextRunAt",
+                              "description_en": "The next scheduled execution time, in UTC ISO 8601 format. This field is empty if no next run is scheduled",
+                              "description_zh": "下次计划执行时间，UTC ISO 8601 格式；无下次计划时为空",
+                              "example": "2026-09-17T12:15:00Z",
+                              "type": "string"
+                            },
+                            "ScheduleDescription": {
+                              "backendName": "scheduleDescription",
+                              "description_en": "The human-readable description of the execution schedule",
+                              "description_zh": "执行计划的可读说明",
+                              "example": "每 900 秒",
+                              "type": "string"
+                            },
+                            "SessionMode": {
+                              "backendName": "sessionMode",
+                              "description_en": "The session mode for displaying results. Valid values:\nSHARED: shared session.\nPER_RUN: independent session for each run",
+                              "description_zh": "结果展示会话模式：SHARED 为共享会话，PER_RUN 为每次运行独立会话",
+                              "example": "SHARED",
+                              "type": "string"
+                            },
+                            "SourceSessionId": {
+                              "backendName": "sourceSessionId",
+                              "description_en": "The ID of the source session from which the task was created",
+                              "description_zh": "创建任务的来源会话 ID",
+                              "example": "00000000-0000-4000-8000-000000000001",
+                              "type": "string"
+                            },
+                            "Status": {
+                              "backendName": "status",
+                              "description_en": "The status of the scheduled task. Valid values:\nDRAFT: Draft.\nENABLED: Enabled.\nPAUSED: Paused.\nNEEDS_AUTH: Pending authorization.\nCOMPLETED: Completed.\n\nThis status is independent of the running status",
+                              "description_zh": "定时任务状态。DRAFT 为草稿，ENABLED 为已启用，PAUSED 为已暂停，NEEDS_AUTH 为待授权，COMPLETED 为已完成。与运行状态独立",
+                              "example": "ENABLED",
+                              "type": "string"
+                            },
+                            "TargetSessionId": {
+                              "backendName": "targetSessionId",
+                              "description_en": "The ID of the target session that stores run results in shared mode",
+                              "description_zh": "共享模式下承载运行结果的目标会话 ID",
+                              "example": "00000000-0000-4000-8000-000000000001",
+                              "type": "string"
+                            },
+                            "TaskId": {
+                              "backendName": "taskId",
+                              "description_en": "The unique identifier of the scheduled task",
+                              "description_zh": "定时任务唯一标识",
+                              "example": "task_0123456789abcdef0123456789abcdef",
+                              "type": "string"
+                            },
+                            "UpdatedAt": {
+                              "backendName": "updatedAt",
+                              "description_en": "The time when the record was last updated, in UTC ISO 8601 format",
+                              "description_zh": "当前记录最近更新时间，UTC ISO 8601 格式",
+                              "example": "2026-09-17T12:00:00Z",
+                              "type": "string"
+                            },
+                            "Version": {
+                              "backendName": "version",
+                              "description_en": "The version number used for concurrent update verification of the current record",
+                              "description_zh": "用于当前记录并发更新校验的版本号",
+                              "example": "1",
+                              "format": "int64",
+                              "type": "integer"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "type": "array"
+                      },
+                      "NextCursor": {
+                        "backendName": "nextCursor",
+                        "description_en": "The cursor for the next page. This field is empty if no more pages are available",
+                        "description_zh": "下一页游标，没有下一页时为空",
+                        "example": "123",
+                        "type": "string"
+                      },
+                      "Total": {
+                        "backendName": "total",
+                        "description_en": "The total number of non-deleted records in the list",
+                        "description_zh": "对应列表未删除记录的总数",
+                        "example": "1",
+                        "format": "int64",
+                        "type": "integer"
+                      }
+                    },
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              },
               "ConversationIds": {
                 "backendName": "conversationIds",
                 "description_en": "The list of session IDs",
@@ -110,6 +741,81 @@
                 "example": "1",
                 "format": "int32",
                 "type": "integer"
+              },
+              "ScheduledTaskInfoBySessionId": {
+                "additionalProperties": {
+                  "description_en": "The scheduled task summary for the specified session",
+                  "description_zh": "指定会话的定时任务摘要",
+                  "properties": {
+                    "AsOf": {
+                      "backendName": "asOf",
+                      "description_en": "The time when the overview was generated, in UTC ISO 8601 format",
+                      "description_zh": "概览生成时间，UTC ISO 8601 格式",
+                      "example": "2026-09-17T12:00:00Z",
+                      "type": "string"
+                    },
+                    "EnabledCount": {
+                      "backendName": "enabledCount",
+                      "description_en": "The number of associated tasks in the ENABLED status",
+                      "description_zh": "关联任务中处于 ENABLED 状态的数量",
+                      "example": "1",
+                      "format": "int64",
+                      "type": "integer"
+                    },
+                    "HasScheduledTask": {
+                      "backendName": "hasScheduledTask",
+                      "description_en": "Indicates whether the current session has associated scheduled tasks that are in the ENABLED, PAUSED, or NEEDS_AUTH status",
+                      "description_zh": "当前会话是否关联已启用、已暂停或待授权的定时任务",
+                      "example": "true",
+                      "type": "boolean"
+                    },
+                    "TaskCount": {
+                      "backendName": "taskCount",
+                      "description_en": "The total number of associated tasks. Only tasks in the ENABLED, PAUSED, or NEEDS_AUTH status are counted",
+                      "description_zh": "关联任务总数，仅统计 ENABLED、PAUSED、NEEDS_AUTH 状态",
+                      "example": "1",
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                },
+                "backendName": "scheduledTaskInfoBySessionId",
+                "description_en": "A mapping that uses session IDs as keys and associated task summaries as values",
+                "description_zh": "以会话 ID 为键、关联任务摘要为值的映射",
+                "type": "object"
+              },
+              "ScheduledTaskQuota": {
+                "backendName": "scheduledTaskQuota",
+                "description_en": "The quota for the number of scheduled tasks of the current primary account in this environment, counted across regions",
+                "description_zh": "当前主账号在本环境中的定时任务数量配额，跨地域统计",
+                "properties": {
+                  "Limit": {
+                    "backendName": "limit",
+                    "description_en": "The maximum number of tasks or channels allowed, subject to the actual configuration",
+                    "description_zh": "对应任务或渠道的数量上限，以实际配置为准",
+                    "example": "3",
+                    "format": "int32",
+                    "type": "integer"
+                  },
+                  "Remaining": {
+                    "backendName": "remaining",
+                    "description_en": "The remaining quota, calculated as the limit minus the used quantity. The minimum value is 0",
+                    "description_zh": "剩余数量，为上限减去已用数量，最小为 0",
+                    "example": "2",
+                    "format": "int64",
+                    "type": "integer"
+                  },
+                  "Used": {
+                    "backendName": "used",
+                    "description_en": "The number of task quota slots consumed. Tasks in DRAFT, ENABLED, PAUSED, or NEEDS_AUTH status are counted. Completed and deleted tasks do not consume quota",
+                    "description_zh": "已占用任务配额，统计 DRAFT、ENABLED、PAUSED、NEEDS_AUTH；已完成及已删除任务不占用",
+                    "example": "1",
+                    "format": "int64",
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
               },
               "Size": {
                 "backendName": "size",
