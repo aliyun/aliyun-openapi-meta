@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun winnexo POST /openapi/sendAsyncChatMessage --region cn-hangzhou --header \"Content-Type=application/x-www-form-urlencoded\" --body content=示例内容 --version 2026-05-12 --force",
+  "camel_example": "aliyun winnexo POST /openapi/sendAsyncChatMessage --region cn-hangzhou --tenantId 10000 --header \"Content-Type=application/x-www-form-urlencoded\" --body digitalEmployeeName=[pcitc-magent]&reuseLastSession=false&workMode=work&stream=true&files=[{type=text,fileId=exampleFileId}]&enableWebSearch=false&model=quick&sessionId=exampleSessionId&taskExecution={operatingObjectName=string_value,executionId=exampleExecutionId,skillCodes=[code],taskUnderstand=string_value,billingId=exampleBillingId,tenantId=10000,enableWebSearch=true,taskName=string_value,userId=exampleUserId,taskId=exampleTaskId}&contentType=Text&content=示例内容&directChat=false --version 2026-05-12 --force",
   "cmd_full_name": "winnexo send-async-chat-message",
   "cmd_name": "send-async-chat-message",
   "deprecated": false,
-  "description_en": "Asynchronously sends a session message",
+  "description_en": "Sends a session message asynchronously",
   "description_zh": "异步发送会话消息",
-  "kebab_example": "aliyun winnexo send-async-chat-message --content '示例内容' --region cn-hangzhou",
+  "kebab_example": "aliyun winnexo send-async-chat-message --tenant-id 10000 --content '示例内容' --content-type Text --session-id exampleSessionId --digital-employee-name pcitc-magent --model quick --files type=text fileId=exampleFileId --stream true --reuse-last-session false --direct-chat false --enable-web-search false --task-execution '{\"operatingObjectName\":\"string_value\",\"executionId\":\"exampleExecutionId\",\"skillCodes\":[\"code\"],\"taskUnderstand\":\"string_value\",\"billingId\":\"exampleBillingId\",\"tenantId\":\"10000\",\"enableWebSearch\":true,\"taskName\":\"string_value\",\"userId\":\"exampleUserId\",\"taskId\":\"exampleTaskId\"}' --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "SendAsyncChatMessage",
@@ -85,7 +85,7 @@
         "type": "string"
       },
       "example": "string_value",
-      "help_en": "The list of digital employee names. A single string can be passed for backward compatibility with the legacy format",
+      "help_en": "The list of digital employee names. A single string is also accepted for backward compatibility with the legacy format",
       "help_zh": "数字员工名称列表（兼容旧格式可传单个字符串）",
       "location": "formData",
       "name": "digital_employee_name",
@@ -120,7 +120,7 @@
         "fields": [
           {
             "example": "exampleFileId",
-            "help_en": "The file ID, returned by the uploadChatFile operation",
+            "help_en": "The file ID returned by uploadChatFile",
             "help_zh": "文件 ID，由 uploadChatFile 返回",
             "name": "file_id",
             "options": [
@@ -145,7 +145,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The list of file references. Each item is an object. The fileId field is required and is returned by the uploadChatFile operation",
+      "help_en": "The list of file references. Each item is an object in which fileId is required and is returned by uploadChatFile",
       "help_zh": "文件引用列表；每项为对象，fileId 必传（由 uploadChatFile 返回）",
       "location": "formData",
       "name": "files",
@@ -159,7 +159,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to use streaming generation. This operation always generates backend content in streaming mode and writes it to the message stream. The value does not change the response structure",
+      "help_en": "Specifies whether to use streaming generation. This operation always generates backend content in streaming mode and writes it to the message stream. The value of this parameter does not change the response structure",
       "help_zh": "是否流式生成；本接口固定按流式生成后台内容并写入消息流，取值不改变返回结构",
       "location": "formData",
       "name": "stream",
@@ -185,7 +185,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to enable direct chat mode. If set to true, the regular scenario routing is skipped and the direct chat scenario is entered",
+      "help_en": "Specifies whether to enable direct connection mode. If set to true, the regular scenario routing is skipped and the direct conversation scenario is entered",
       "help_zh": "是否启用直连模式；true 时跳过常规场景路由，直接进入直连对话场景",
       "location": "formData",
       "name": "direct_chat",
@@ -208,6 +208,24 @@
       "raw_name": "enableWebSearch",
       "required": false,
       "type": "bool"
+    },
+    {
+      "enum": [
+        "ask",
+        "work",
+        "direct"
+      ],
+      "example": "work",
+      "help_en": "The session work mode. Valid values:\n\nask: Quick Q&A. Tools, skills, and connectors are trimmed, and a single-turn direct answer is returned.\nwork: Deep work. This is the default value.\ndirect: Direct connection mode at the request level. No sandbox is started and no context pollution occurs. This is equivalent to setting directChat to true.\n\nThe ask and work modes are session-level settings. The mode is fixed when a session is created. By default, follow-up messages in the same session inherit the session mode. If an explicit value conflicts with the session mode, a parameter error is returned. To switch modes, create a new session or fork the existing one. In multi-digital-employee or task execution scenarios, specifying ask causes the work mode to take effect. If directChat is set to true, this parameter is ignored",
+      "help_zh": "会话工作模式：ask=快速问答（裁剪工具/技能/连接器，单轮直答）；work=深度工作（缺省默认）；direct=直连模式（请求级：不启动沙箱、无上下文污染，等同 directChat=true）。ask/work 为会话级：新建会话时选定即固化，续聊缺省继承会话模式，显式传值与会话模式不一致返回参数错误（切换请新建会话或 Fork）；多数字员工或任务执行场景传 ask 时按 work 生效；directChat=true 时本参数被忽略",
+      "location": "formData",
+      "name": "work_mode",
+      "options": [
+        "--work-mode"
+      ],
+      "raw_name": "workMode",
+      "required": false,
+      "type": "string"
     },
     {
       "fields": [
@@ -335,7 +353,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The task execution metadata returned by the executeScheduledTask operation. When specified, the request is processed through the task execution pipeline",
+      "help_en": "The task execution metadata returned by executeScheduledTask. If specified, the request is processed through the task execution pipeline",
       "help_zh": "executeScheduledTask 返回的任务执行元数据；传入后按任务执行链路处理",
       "location": "formData",
       "name": "task_execution",
@@ -354,26 +372,26 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response",
+        "description_en": "The response object",
         "description_zh": "返回结果",
         "properties": {
           "code": {
             "backendName": "Code",
-            "description_en": "The business status code. A value of 200 indicates success. A failure returns a backend error code (ERR.* or InvalidParameter.*)",
+            "description_en": "The business status code. A value of 200 indicates success. A failure returns a backend error code such as ERR.* or InvalidParameter.*",
             "description_zh": "业务状态码：成功为 200，失败为后端错误码（ERR.* / InvalidParameter.*）",
             "example": "200",
             "type": "string"
           },
           "message": {
             "backendName": "Message",
-            "description_en": "The error description. This value is empty when the call is successful",
+            "description_en": "The error description. This value is empty on success",
             "description_zh": "错误描述，成功时为空",
             "example": "successful",
             "type": "string"
           },
           "messageId": {
             "backendName": "messageId",
-            "description_en": "The assistant message ID. Use this ID to call the streamChatMessage operation to subscribe to the generation results",
+            "description_en": "The assistant message ID. Use this ID to call streamChatMessage to subscribe to the generation results",
             "description_zh": "助手消息ID；用于随后调用 streamChatMessage 订阅生成结果",
             "example": "3cf84d92-f273-4bb7-ab3c-52646d25ec30",
             "type": "string"
@@ -394,7 +412,7 @@
           },
           "sessionId": {
             "backendName": "sessionId",
-            "description_en": "The session ID. When continuing an existing session, this value matches the input parameter. When a new session is created, this value is generated by the server",
+            "description_en": "The session ID. For follow-up messages in an existing session, this value matches the input parameter. For new sessions, this value is generated by the server",
             "description_zh": "会话ID；续写会话时与入参一致，新建会话时为服务端生成值",
             "example": "bd772dcc-afab-44ad-9fb8-bca716726201",
             "type": "string"
@@ -404,6 +422,13 @@
             "description_en": "The user message ID",
             "description_zh": "用户消息ID",
             "example": "60756cc6-8c53-4d1f-8db8-b8c09b81a5cb",
+            "type": "string"
+          },
+          "workMode": {
+            "backendName": "workMode",
+            "description_en": "The session work mode that takes effect for this turn. Valid values:\n\nask: Quick Q&A.\nwork: Deep work.\ndirect: Direct connection at the request level.\n\nIn multi-digital-employee or task execution scenarios, specifying ask causes the work mode to take effect",
+            "description_zh": "本轮生效的会话工作模式：ask=快速问答 / work=深度工作 / direct=直连（请求级）；多数字员工或任务执行场景传 ask 时按 work 生效",
+            "example": "work",
             "type": "string"
           }
         },

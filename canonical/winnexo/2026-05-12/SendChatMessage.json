@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun winnexo POST /openapi/sendChatMessage --region cn-hangzhou --header \"Content-Type=application/x-www-form-urlencoded\" --body content=示例内容 --version 2026-05-12 --force",
+  "camel_example": "aliyun winnexo POST /openapi/sendChatMessage --region cn-hangzhou --tenantId 10000 --header \"Content-Type=application/x-www-form-urlencoded\" --body digitalEmployeeName=[pcitc-magent]&reuseLastSession=false&workMode=work&stream=true&files=[{type=text,fileId=exampleFileId}]&enableWebSearch=false&model=quick&sessionId=exampleSessionId&taskExecution={operatingObjectName=string_value,executionId=exampleExecutionId,skillCodes=[code],taskUnderstand=string_value,billingId=exampleBillingId,tenantId=10000,enableWebSearch=true,taskName=string_value,userId=exampleUserId,taskId=exampleTaskId}&contentType=Text&content=示例内容&directChat=false --version 2026-05-12 --force",
   "cmd_full_name": "winnexo send-chat-message",
   "cmd_name": "send-chat-message",
   "deprecated": false,
   "description_en": "Sends a message",
   "description_zh": "发送消息",
-  "kebab_example": "aliyun winnexo send-chat-message --content '示例内容' --region cn-hangzhou",
+  "kebab_example": "aliyun winnexo send-chat-message --tenant-id 10000 --content '示例内容' --content-type Text --session-id exampleSessionId --digital-employee-name pcitc-magent --model quick --files type=text fileId=exampleFileId --stream true --reuse-last-session false --direct-chat false --enable-web-search false --task-execution '{\"operatingObjectName\":\"string_value\",\"executionId\":\"exampleExecutionId\",\"skillCodes\":[\"code\"],\"taskUnderstand\":\"string_value\",\"billingId\":\"exampleBillingId\",\"tenantId\":\"10000\",\"enableWebSearch\":true,\"taskName\":\"string_value\",\"userId\":\"exampleUserId\",\"taskId\":\"exampleTaskId\"}' --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "SendChatMessage",
@@ -174,7 +174,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to reuse the most recent session of the digital employee when sessionId is not passed (CLI scenario). Default value: false, which creates a new session",
+      "help_en": "Specifies whether to reuse the most recent session of the digital employee when sessionId is not provided (CLI scenario). Default value: false, which creates a new session",
       "help_zh": "不传 sessionId 时是否复用该数字员工下最近一个会话（CLI 场景），缺省 false 即新建会话",
       "location": "formData",
       "name": "reuse_last_session",
@@ -187,7 +187,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to enable direct connection mode. If set to true, the regular scenario routing is skipped and the direct conversation scenario is entered",
+      "help_en": "Specifies whether to enable direct connection mode. If set to true, the standard scenario routing is skipped and the direct conversation scenario is entered directly",
       "help_zh": "是否启用直连模式；true 时跳过常规场景路由，直接进入直连对话场景",
       "location": "formData",
       "name": "direct_chat",
@@ -200,7 +200,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to enable web search. Default value: False. In task execution scenarios (when taskExecution is passed), the task configuration takes precedence",
+      "help_en": "Specifies whether to enable web search. Default value: False. In task execution scenarios (when taskExecution is provided), the task configuration takes precedence",
       "help_zh": "是否启用联网搜索，默认 False；任务执行场景（传 taskExecution）下以任务配置为准",
       "location": "formData",
       "name": "enable_web_search",
@@ -210,6 +210,24 @@
       "raw_name": "enableWebSearch",
       "required": false,
       "type": "bool"
+    },
+    {
+      "enum": [
+        "ask",
+        "work",
+        "direct"
+      ],
+      "example": "work",
+      "help_en": "The session work mode. Valid values:\nask: Quick Q&A. Tools, skills, and connectors are trimmed, and single-turn direct answers are provided.\nwork: Deep work. This is the default value.\ndirect: Direct connection mode (request-level). The sandbox is not started and no context pollution occurs. This is equivalent to directChat=true.\n\nThe ask and work modes are session-level: the mode is selected and fixed when a session is created. By default, follow-up messages inherit the session mode. If an explicitly provided value is inconsistent with the session mode, a parameter error is returned. To switch modes, create a new session or fork the existing one. In multi-digital-employee or task execution scenarios, if ask is provided, work takes effect instead. When directChat=true, this parameter is ignored",
+      "help_zh": "会话工作模式：ask=快速问答（裁剪工具/技能/连接器，单轮直答）；work=深度工作（缺省默认）；direct=直连模式（请求级：不启动沙箱、无上下文污染，等同 directChat=true）。ask/work 为会话级：新建会话时选定即固化，续聊缺省继承会话模式，显式传值与会话模式不一致返回参数错误（切换请新建会话或 Fork）；多数字员工或任务执行场景传 ask 时按 work 生效；directChat=true 时本参数被忽略",
+      "location": "formData",
+      "name": "work_mode",
+      "options": [
+        "--work-mode"
+      ],
+      "raw_name": "workMode",
+      "required": false,
+      "type": "string"
     },
     {
       "fields": [
@@ -406,6 +424,13 @@
             "example": "think",
             "title_en": "事件类型",
             "title_zh": "事件类型",
+            "type": "string"
+          },
+          "workMode": {
+            "backendName": "workMode",
+            "description_en": "The session work mode that takes effect for the current turn. Valid values:\nask: Quick Q&A.\nwork: Deep work.\ndirect: Direct connection (request-level).\n\nIn multi-digital-employee or task execution scenarios, if ask is provided, work takes effect instead",
+            "description_zh": "本轮生效的会话工作模式：ask=快速问答 / work=深度工作 / direct=直连（请求级）；多数字员工或任务执行场景传 ask 时按 work 生效",
+            "example": "work",
             "type": "string"
           }
         },
