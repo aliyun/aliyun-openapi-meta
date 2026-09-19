@@ -1,0 +1,484 @@
+{
+  "camel_example": "aliyun eventbridge ListDocuments --region cn-hangzhou --KnowledgeBaseName 'my-knowledge-base' --Catalog my_catalog --Namespace my_namespace",
+  "cmd_full_name": "eventbridge list-documents",
+  "cmd_name": "list-documents",
+  "components": {
+    "schemas": {
+      "KnowledgeBaseDocument": {
+        "description_en": "The information about a single document entry in a knowledge base, including the document ID, file name, processing status, file size, chunk count, custom metadata, chunking configuration snapshot, and source information",
+        "description_zh": "知识库中的单个文档条目，包含文档 ID、文件名、处理状态、文件大小、切片数量、客户元数据、分块配置快照与来源信息",
+        "properties": {
+          "ChunkConfiguration": {
+            "backendName": "chunkConfiguration",
+            "description_en": "The snapshot of the document-level chunking policy actually used for this document. This field is returned only if ChunkConfiguration was explicitly specified during upload (BeginUpload) or update (UpdateDocument). If not specified, the document is chunked based on the knowledge base-level default configurations, and this field is not returned. The knowledge base-level configuration is not echoed back to avoid misleading users about the actual chunking basis for this document when the knowledge base-level configuration is subsequently changed",
+            "description_zh": "该文档实际使用的文档级分块策略快照，仅在上传（BeginUpload）或更新（UpdateDocument）时显式指定过 ChunkConfiguration 才返回；未指定时该文档按知识库级默认配置分块，本字段不返回（不回显知识库级配置，避免知识库级配置后续变更时误导该文档的实际分块依据）",
+            "properties": {
+              "HeadingLevel": {
+                "backendName": "headingLevel",
+                "description_en": "The heading level (1 to 6) used for splitting in the BY_HEADING strategy. Headings at or above this level serve as split boundaries. Deeper-level headings are retained in the chunk body",
+                "description_zh": "BY_HEADING 策略的切分标题级数（1~6），小于等于该级的标题都作为切分边界，更深级标题保留在切片正文中",
+                "example": "2",
+                "format": "int32",
+                "title": "标题切分级数",
+                "type": "integer"
+              },
+              "MaxChunkSize": {
+                "backendName": "maxChunkSize",
+                "description_en": "The maximum character length of a single chunk. Starting from revision 22, this value is character-based. Valid values: 1 to 6000",
+                "description_zh": "单个分块的最大字符长度（与入参口径一致，修订 22 起为字符制，取值 [1, 6000]）",
+                "example": "600",
+                "format": "int32",
+                "title": "分块最大长度",
+                "type": "integer"
+              },
+              "OverlapSize": {
+                "backendName": "overlapSize",
+                "description_en": "The overlap character length between adjacent chunks. This parameter takes effect only for the BY_LENGTH strategy. If the value is greater than 0, the beginning of the next chunk repeats the content from the end of the previous chunk within this window. The overlap does not cause a chunk to exceed MaxChunkSize. A value of 0 indicates no overlap",
+                "description_zh": "仅 BY_LENGTH 策略生效。相邻分块的重叠字符长度：大于 0 时后一个切片头部重复前一个切片尾部该窗口内的内容，重叠不会使切片超过 MaxChunkSize。0 表示不重叠",
+                "example": "40",
+                "format": "int32",
+                "title": "分块重叠长度",
+                "type": "integer"
+              },
+              "PreprocessRules": {
+                "backendName": "preprocessRules",
+                "description_en": "The snapshot of preprocessing rules",
+                "description_zh": "预处理规则快照",
+                "properties": {
+                  "RemoveUrlsAndEmails": {
+                    "backendName": "removeUrlsAndEmails",
+                    "description_en": "Specifies whether to remove URLs and email addresses during parsing",
+                    "description_zh": "是否在解析时删除 URL 与邮箱地址",
+                    "example": "false",
+                    "title": "删除 URL 和邮箱地址",
+                    "type": "boolean"
+                  },
+                  "ReplaceConsecutiveWhitespace": {
+                    "backendName": "replaceConsecutiveWhitespace",
+                    "description_en": "Specifies whether to replace consecutive whitespace characters (spaces, line breaks, and tab characters) with a single space",
+                    "description_zh": "是否将连续的空白字符（空格、换行、制表符）替换为单个空格",
+                    "example": "true",
+                    "title": "替换连续空白字符",
+                    "type": "boolean"
+                  }
+                },
+                "title": "预处理规则",
+                "type": "object"
+              },
+              "Separator": {
+                "backendName": "separator",
+                "description_en": "The separator used in the BY_SEPARATOR strategy. The separator is matched as a literal string (not a regular expression). The maximum length is 32 characters",
+                "description_zh": "BY_SEPARATOR 策略下的分隔符，按字面字符串整体匹配切分（非正则），最长 32 个字符",
+                "example": "\\\\n\\\\n",
+                "title": "分隔符",
+                "type": "string"
+              },
+              "Strategy": {
+                "backendName": "strategy",
+                "description_en": "The chunking strategy. Valid values:\nAUTO: intelligent splitting (heading-aware + paragraph packing).\nBY_LENGTH: sliding window splitting by length. You can specify OverlapSize.\nBY_SEPARATOR: splitting by separator. You must specify Separator.\nBY_HEADING: splitting by heading level. You must specify HeadingLevel",
+                "description_zh": "AUTO 表示智能切分（标题感知+段落打包）；BY_LENGTH 表示按长度滑动窗口切分，可指定 OverlapSize；BY_SEPARATOR 表示按分隔符切分，必须指定 Separator；BY_HEADING 表示按标题级数切分，必须指定 HeadingLevel",
+                "enum": [
+                  "AUTO",
+                  "BY_SEPARATOR",
+                  "BY_LENGTH",
+                  "BY_HEADING"
+                ],
+                "example": "BY_SEPARATOR",
+                "title": "分块策略",
+                "type": "string"
+              }
+            },
+            "title": "文档级分块策略配置",
+            "type": "object"
+          },
+          "ChunkCount": {
+            "backendName": "chunkCount",
+            "description_en": "The number of chunks generated after processing is complete",
+            "description_zh": "处理完成后生成的 Chunk 数量",
+            "example": "120",
+            "format": "int32",
+            "title": "切片数量",
+            "type": "integer"
+          },
+          "CreatedAt": {
+            "backendName": "createdAt",
+            "description_en": "The time when the document was created",
+            "description_zh": "创建时间",
+            "example": "2026-08-24T10:00:00Z",
+            "title": "创建时间",
+            "type": "string"
+          },
+          "DocumentId": {
+            "backendName": "documentId",
+            "description_en": "The unique identifier of the document",
+            "description_zh": "文档的唯一标识",
+            "example": "doc-bp1xxxxxxxxxxxx",
+            "title": "文档 ID",
+            "type": "string"
+          },
+          "ErrorCode": {
+            "backendName": "errorCode",
+            "description_en": "The stable error code returned when processing fails",
+            "description_zh": "处理失败时的稳定错误码",
+            "example": "FILE_CORRUPTED",
+            "title": "错误码",
+            "type": "string"
+          },
+          "ErrorMessage": {
+            "backendName": "errorMessage",
+            "description_en": "The desensitized error message returned when processing fails",
+            "description_zh": "处理失败时的脱敏错误信息",
+            "example": "parse pdf failed",
+            "title": "错误信息",
+            "type": "string"
+          },
+          "FileName": {
+            "backendName": "fileName",
+            "description_en": "The file name of the document",
+            "description_zh": "文档文件名",
+            "example": "manual.pdf",
+            "title": "文件名",
+            "type": "string"
+          },
+          "FileSize": {
+            "backendName": "fileSize",
+            "description_en": "The file size of the document, in bytes",
+            "description_zh": "文档文件大小，单位字节",
+            "example": "1048576",
+            "format": "int64",
+            "title": "文件大小（字节）",
+            "type": "integer"
+          },
+          "Metadata": {
+            "backendName": "metadata",
+            "description_en": "The document-level metadata key-value pairs, including constant field values and system variable values. This field is not returned if no metadata is specified",
+            "description_zh": "文档级元数据键值对，包含常量字段值和系统变量值；未指定元数据时不返回",
+            "example": "[{\"Key\":\"department\",\"Value\":\"研发\"}]",
+            "itemName": "文档元数据",
+            "items": {
+              "description_en": "The metadata key-value pair",
+              "description_zh": "元数据键值对",
+              "properties": {
+                "Key": {
+                  "backendName": "key",
+                  "description_en": "The metadata field name",
+                  "description_zh": "元数据字段名",
+                  "example": "department",
+                  "title": "元数据字段名",
+                  "type": "string"
+                },
+                "Value": {
+                  "backendName": "value",
+                  "description_en": "The metadata field value",
+                  "description_zh": "元数据字段值",
+                  "example": "研发",
+                  "title": "元数据字段值",
+                  "type": "string"
+                }
+              },
+              "title": "元数据键值对",
+              "type": "object"
+            },
+            "title": "文档元数据",
+            "type": "array"
+          },
+          "SourceModifiedTime": {
+            "backendName": "sourceModifiedTime",
+            "description_en": "The last modification time in the upstream source system, in epoch milliseconds. This field is empty if no source information is available",
+            "description_zh": "上游源系统最后修改时间，epoch 毫秒；无来源信息时为空",
+            "example": "1788000000000",
+            "format": "int64",
+            "title": "来源修改时间",
+            "type": "integer"
+          },
+          "SourceType": {
+            "backendName": "sourceType",
+            "description_en": "The delivery channel through which the document entered the knowledge base. This value is written by the system and cannot be specified by users. Valid values:\nUPLOAD: manually uploaded through the console or API.\nOSS: imported through an OSS event stream.\n\nNew values may be added when new channels are supported. The values are not restricted to a fixed enumeration",
+            "description_zh": "文档进入知识库的投递渠道，由系统写入，客户不可指定。UPLOAD 表示控制台/API 手动上传；OSS 表示 OSS 事件流导入。未来接入新渠道时扩展新取值，不做枚举限定",
+            "example": "UPLOAD",
+            "title": "投递渠道",
+            "type": "string"
+          },
+          "SourceUri": {
+            "backendName": "sourceUri",
+            "description_en": "The original source address of the document, such as oss://bucket/path/file.md. This field may be empty for manually uploaded documents",
+            "description_zh": "文档原始来源地址，如 oss://bucket/path/file.md；手动上传时可能为空",
+            "example": "oss://my-bucket/docs/handbook.pdf",
+            "title": "来源地址",
+            "type": "string"
+          },
+          "Status": {
+            "backendName": "status",
+            "description_en": "The processing status of the document. Valid values:\nUPLOADING: uploading in progress.\nPENDING: upload complete and queued for processing. This is typically a transitional state that lasts for seconds.\nPROCESSING: parsing and processing in progress.\nCOMPLETED: processing complete and searchable.\nFAILED: processing failed.\nDELETING: deletion in progress",
+            "description_zh": "UPLOADING 表示上传中，PENDING 表示上传完成已入队待处理（通常为秒级的过渡状态），PROCESSING 表示解析处理中，COMPLETED 表示处理完成可检索，FAILED 表示处理失败，DELETING 表示删除中",
+            "enum": [
+              "UPLOADING",
+              "PENDING",
+              "PROCESSING",
+              "COMPLETED",
+              "FAILED",
+              "DELETING"
+            ],
+            "example": "COMPLETED",
+            "title": "文档状态",
+            "type": "string"
+          },
+          "UpdatedAt": {
+            "backendName": "updatedAt",
+            "description_en": "The time when the document was last updated",
+            "description_zh": "最近更新时间",
+            "example": "2026-08-24T10:00:00Z",
+            "title": "最近更新时间",
+            "type": "string"
+          }
+        },
+        "title": "知识库文档信息",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Queries a list of documents",
+  "description_zh": "查询文档列表",
+  "kebab_example": "",
+  "method": "POST",
+  "multi_version": false,
+  "name": "ListDocuments",
+  "operation": {
+    "action": "ListDocuments",
+    "api_style": "RPC",
+    "api_version": "2020-04-01",
+    "method": "POST",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "list",
+    "url": ""
+  },
+  "parameters": [
+    {
+      "doc_required": true,
+      "example": "my_catalog",
+      "help_en": "The data catalog to which the knowledge base belongs. This parameter, together with Namespace and KnowledgeBaseName, uniquely identifies a knowledge base. You can call ListCatalogs to obtain this value",
+      "help_zh": "知识库所属的数据目录，与 Namespace、KnowledgeBaseName 共同定位知识库。可通过 ListCatalogs 获取",
+      "location": "query",
+      "max_length": "127",
+      "name": "catalog",
+      "options": [
+        "--catalog"
+      ],
+      "raw_name": "Catalog",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "doc_required": true,
+      "example": "my_namespace",
+      "help_en": "The namespace to which the knowledge base belongs. The namespace must belong to the specified data catalog. This parameter, together with Catalog and KnowledgeBaseName, uniquely identifies a knowledge base. You can call ListNamespaces to obtain this value",
+      "help_zh": "知识库所属的命名空间，必须属于指定的数据目录，与 Catalog、KnowledgeBaseName 共同定位知识库。可通过 ListNamespaces 获取",
+      "location": "query",
+      "max_length": "127",
+      "name": "namespace",
+      "options": [
+        "--namespace"
+      ],
+      "raw_name": "Namespace",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "doc_required": true,
+      "example": "my-knowledge-base",
+      "help_en": "The name of the knowledge base. The name is unique within a namespace and is determined at creation time. It cannot be modified",
+      "help_zh": "知识库名称，命名空间内唯一；创建时确定，不可修改",
+      "location": "query",
+      "max_length": "127",
+      "name": "knowledge_base_name",
+      "options": [
+        "--knowledge-base-name"
+      ],
+      "raw_name": "KnowledgeBaseName",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "售后政策",
+      "help_en": "Optional. Filters documents by file name prefix (prefix match, with the same semantics as the NamePrefix parameter of ListEventStreamings). If this parameter is not specified or is set to an empty string, no filtering is applied. Maximum length: 255 characters",
+      "help_zh": "可选。按文件名前缀过滤文档（前缀匹配，与 ListEventStreamings 的 NamePrefix 语义一致）；未传或传空串时不过滤。最长 255 个字符",
+      "location": "query",
+      "max_length": "255",
+      "name": "file_name_prefix",
+      "options": [
+        "--file-name-prefix"
+      ],
+      "raw_name": "FileNamePrefix",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "enum": [
+        "UPLOADING",
+        "PENDING",
+        "PROCESSING",
+        "COMPLETED",
+        "FAILED",
+        "DELETING"
+      ],
+      "example": "COMPLETED",
+      "help_en": "Optional. Filters documents by exact status match. Valid values:\n\nUPLOADING: uploading\nPENDING: pending processing\nPROCESSING: processing\nCOMPLETED: completed\nFAILED: failed\nDELETING: deleting\n\nIf this parameter is not specified, no filtering is applied",
+      "help_zh": "可选。按文档状态精确过滤：UPLOADING（上传中）、PENDING（待处理）、PROCESSING（处理中）、COMPLETED（已完成）、FAILED（失败）、DELETING（删除中）；未传时不过滤",
+      "location": "query",
+      "name": "status",
+      "options": [
+        "--status"
+      ],
+      "raw_name": "Status",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "20",
+      "help_en": "The maximum number of results to return per page. If this parameter is not specified or is set to 0, the default value of 20 is used. Maximum value: 100",
+      "help_zh": "每页最多返回的数量。未传或传 0 时使用默认值 20，最大值为 100",
+      "location": "query",
+      "name": "max_results",
+      "options": [
+        "--max-results"
+      ],
+      "raw_name": "MaxResults",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "ca1eb85f5d99c7d6a97e6****",
+      "help_en": "Not required for the first query. For subsequent queries, use the NextToken value returned in the previous response. An empty value indicates that no more pages are available",
+      "help_zh": "首次查询无需传入。后续查询使用上一次响应返回的 NextToken；为空表示没有下一页",
+      "location": "query",
+      "name": "next_token",
+      "options": [
+        "--next-token"
+      ],
+      "raw_name": "NextToken",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "",
+  "product_code": "eventbridge",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "properties": {
+          "Code": {
+            "backendName": "code",
+            "description_en": "The response code. A value of Success indicates a successful operation. If the operation fails, a specific error code is returned",
+            "description_zh": "接口返回码，Success 表示成功，失败时为具体错误码",
+            "example": "Success",
+            "nullToEmpty": false,
+            "title_en": "接口返回码，Success 表示成功",
+            "title_zh": "接口返回码，Success 表示成功",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "Data": {
+            "backendName": "data",
+            "description_en": "The document list query result, which contains document entries and pagination information",
+            "description_zh": "文档列表查询结果，包含文档条目与分页信息",
+            "nullToEmpty": false,
+            "properties": {
+              "Documents": {
+                "backendName": "documents",
+                "description_en": "The list of document entries in the knowledge base. Each entry contains information such as the document ID, file name, processing status, size, number of chunks, and metadata",
+                "description_zh": "知识库中的文档条目列表，每项包含文档 ID、文件名、处理状态、大小、切片数、元数据等信息",
+                "example": "[{\"DocumentId\":\"doc-bp1xxxxxxxxxxxx\",\"FileName\":\"manual.pdf\",\"Status\":\"COMPLETED\",\"ChunkCount\":120}]",
+                "itemName": "文档信息",
+                "items": {
+                  "$ref": "#/components/schemas/KnowledgeBaseDocument",
+                  "description_en": "The details of a single document, including the file name, processing status, size, and number of chunks",
+                  "description_zh": "单个文档的详细信息，包含文件名、处理状态、大小与切片数",
+                  "title_en": "文档信息",
+                  "title_zh": "文档信息"
+                },
+                "title_en": "文档列表",
+                "title_zh": "文档列表",
+                "type": "array"
+              },
+              "MaxResults": {
+                "backendName": "maxResults",
+                "description_en": "The maximum number of results per page that took effect for this request",
+                "description_zh": "本次请求实际生效的单页最大结果数",
+                "example": "20",
+                "format": "int32",
+                "nullToEmpty": false,
+                "title_en": "本次请求使用的最大结果数",
+                "title_zh": "本次请求使用的最大结果数",
+                "type": "integer",
+                "visibility": "Public"
+              },
+              "NextToken": {
+                "backendName": "nextToken",
+                "description_en": "The pagination token for the next page (an opaque string). Pass this value as the NextToken parameter in the next request to retrieve the next page. An empty value indicates that no more data is available",
+                "description_zh": "下一页翻页令牌（不透明字符串），传入下次请求的 NextToken 可获取下一页；为空表示已无更多数据",
+                "example": "ca1eb85f5d99c7d6a97e6****",
+                "nullToEmpty": false,
+                "title_en": "下一页令牌，为空表示没有下一页",
+                "title_zh": "下一页令牌，为空表示没有下一页",
+                "type": "string",
+                "visibility": "Public"
+              },
+              "TotalCount": {
+                "backendName": "totalCount",
+                "description_en": "The total number of documents that match the filter conditions. Use an empty NextToken value as the termination condition for pagination",
+                "description_zh": "满足过滤条件的文档总数；翻页终止以 NextToken 为空为准",
+                "example": "10",
+                "format": "int32",
+                "nullToEmpty": false,
+                "title_en": "文档总数",
+                "title_zh": "文档总数",
+                "type": "integer",
+                "visibility": "Public"
+              }
+            },
+            "title_en": "文档列表结果",
+            "title_zh": "文档列表结果",
+            "type": "object"
+          },
+          "Message": {
+            "backendName": "message",
+            "description_en": "The message returned by the operation. The value is Operation success if the operation succeeds, or a specific error description if the operation fails",
+            "description_zh": "接口返回的提示信息，成功时为 Operation success，失败时为具体错误描述",
+            "example": "Operation success",
+            "nullToEmpty": false,
+            "title_en": "接口返回信息",
+            "title_zh": "接口返回信息",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "RequestId": {
+            "backendName": "requestId",
+            "description_en": "The unique ID of the request. Use this ID for troubleshooting and when you submit a ticket",
+            "description_zh": "本次请求的唯一标识，用于问题排查与工单反馈",
+            "example": "34AD682D-5B91-5773-8132-AA38C130****",
+            "nullToEmpty": false,
+            "title_en": "请求ID",
+            "title_zh": "请求ID",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "Success": {
+            "backendName": "success",
+            "description_en": "Indicates whether the call is successful. A value of true indicates success",
+            "description_zh": "本次调用是否成功，true 表示成功",
+            "example": "true",
+            "nullToEmpty": false,
+            "title_en": "操作是否成功",
+            "title_zh": "操作是否成功",
+            "type": "boolean",
+            "visibility": "Public"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

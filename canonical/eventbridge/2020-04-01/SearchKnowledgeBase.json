@@ -1,0 +1,409 @@
+{
+  "camel_example": "aliyun eventbridge SearchKnowledgeBase --region cn-hangzhou --TopK 10 --RerankModel 'qwen3-rerank' --RankAlgorithm RRF --RrfK 60 --Query '如何配置事件规则' --Mode HYBRID --MetadataFilter '{\"AndAll\":[{\"Key\":\"env\",\"Operator\":\"In\",\"Values\":[\"prod\",\"staging\"]},{\"OrAll\":[{\"Key\":\"score\",\"Operator\":\"GreaterThan\",\"Value\":\"0.8\"},{\"Key\":\"owner\",\"Operator\":\"Equals\",\"Value\":\"alice\"}]}]}' --VectorWeight '0.7' --KnowledgeBaseName 'my-knowledge-base' --Catalog my_catalog --Namespace my_namespace --Rerank false",
+  "cmd_full_name": "eventbridge search-knowledge-base",
+  "cmd_name": "search-knowledge-base",
+  "components": {
+    "schemas": {
+      "KnowledgeBaseSearchChunk": {
+        "description_en": "The single chunk hit by knowledge base retrieval, including the relevance score, chunk body, and location information",
+        "description_zh": "知识库检索命中的单个切片，包含相关性分数、切片正文与定位信息",
+        "properties": {
+          "ChunkSeq": {
+            "backendName": "chunkSeq",
+            "description_en": "The sequence number of the chunk within the document",
+            "description_zh": "切片在文档内的序号",
+            "example": "12",
+            "format": "int32",
+            "title": "切片序号",
+            "type": "integer"
+          },
+          "Content": {
+            "backendName": "content",
+            "description_en": "The body content of the hit chunk",
+            "description_zh": "命中切片的正文内容",
+            "example": "EventBridge 支持将事件路由到多种目标服务。",
+            "title": "切片正文",
+            "type": "string"
+          },
+          "DocumentId": {
+            "backendName": "documentId",
+            "description_en": "The ID of the document to which the hit chunk belongs",
+            "description_zh": "命中切片所属文档的 ID",
+            "example": "doc-bp1xxxxxxxxxxxx",
+            "title": "文档 ID",
+            "type": "string"
+          },
+          "FileName": {
+            "backendName": "fileName",
+            "description_en": "The file name of the document to which the hit chunk belongs. This value has the same source as the FileName returned by GetDocument and can be used to render the reference source",
+            "description_zh": "命中切片所属文档的文件名，与 GetDocument 回显的 FileName 同源，可用于引用来源呈现",
+            "example": "product-handbook.pdf",
+            "title": "文件名",
+            "type": "string"
+          },
+          "Score": {
+            "backendName": "score",
+            "description_en": "The retrieval relevance score. A higher score indicates higher relevance",
+            "description_zh": "检索相关性分数，分数越高越相关",
+            "example": "0.92",
+            "format": "double",
+            "title": "相关性分数",
+            "type": "number"
+          },
+          "Scores": {
+            "backendName": "scores",
+            "description_en": "The score details for each stage. Score fields that are not involved in the calculation are not returned",
+            "description_zh": "各阶段分数明细，未参与计算的分数字段不返回",
+            "properties": {
+              "Fusion": {
+                "backendName": "fusion",
+                "description_en": "The score after hybrid search fusion (reciprocal rank fusion or weighted normalization, depending on the active fusion algorithm). Value range: [0, 1]",
+                "description_zh": "混合检索融合后的分数（RRF 或加权归一，取决于生效的融合算法），取值范围 [0, 1]",
+                "example": "0.78",
+                "format": "double",
+                "title": "融合分数",
+                "type": "number"
+              },
+              "Keyword": {
+                "backendName": "keyword",
+                "description_en": "The normalized score of keyword (full-text) search. Value range: [0, 1]",
+                "description_zh": "关键词（全文）检索的归一化分数，取值范围 [0, 1]",
+                "example": "0.62",
+                "format": "double",
+                "title": "关键词检索分数",
+                "type": "number"
+              },
+              "Rerank": {
+                "backendName": "rerank",
+                "description_en": "The score assigned by the rerank model. Value range: [0, 1]",
+                "description_zh": "Rerank 模型打分，取值范围 [0, 1]",
+                "example": "0.91",
+                "format": "double",
+                "title": "重排序分数",
+                "type": "number"
+              },
+              "Vector": {
+                "backendName": "vector",
+                "description_en": "The similarity score of vector retrieval. Value range: [0, 1]",
+                "description_zh": "向量检索的相似度分数，取值范围 [0, 1]",
+                "example": "0.85",
+                "format": "double",
+                "title": "向量相似度分数",
+                "type": "number"
+              }
+            },
+            "title": "分数明细",
+            "type": "object"
+          },
+          "SourceLocation": {
+            "backendName": "sourceLocation",
+            "description_en": "The location of the chunk in the original document. p.N indicates page N (PDF). s.N indicates slide N (PPT/PPTX)",
+            "description_zh": "切片在原文档中的位置，p.N 表示第 N 页（pdf），s.N 表示第 N 页（ppt/pptx）",
+            "example": "p.3",
+            "title": "来源定位",
+            "type": "string"
+          },
+          "TitlePath": {
+            "backendName": "titlePath",
+            "description_en": "The title path to which the chunk belongs, such as Chapter 1>1.1 Overview",
+            "description_zh": "切片所属的标题路径，如 第一章>1.1 概述",
+            "example": "安装指南>前置条件",
+            "title": "标题路径",
+            "type": "string"
+          }
+        },
+        "title": "知识库检索命中切片",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Retrieves knowledge base search results",
+  "description_zh": "知识库检索",
+  "kebab_example": "",
+  "method": "POST",
+  "multi_version": false,
+  "name": "SearchKnowledgeBase",
+  "operation": {
+    "action": "SearchKnowledgeBase",
+    "api_style": "RPC",
+    "api_version": "2020-04-01",
+    "method": "POST",
+    "operation_type": "readAndWrite",
+    "protocol": "HTTPS",
+    "system_operation_type": "get",
+    "url": ""
+  },
+  "parameters": [
+    {
+      "doc_required": true,
+      "example": "my_catalog",
+      "help_en": "The data catalog to which the knowledge base belongs. This parameter, together with Namespace and KnowledgeBaseName, uniquely identifies a knowledge base. You can call ListCatalogs to obtain the value",
+      "help_zh": "知识库所属的数据目录，与 Namespace、KnowledgeBaseName 共同定位知识库。可通过 ListCatalogs 获取",
+      "location": "query",
+      "max_length": "127",
+      "name": "catalog",
+      "options": [
+        "--catalog"
+      ],
+      "raw_name": "Catalog",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "doc_required": true,
+      "example": "my_namespace",
+      "help_en": "The namespace to which the knowledge base belongs. The namespace must belong to the specified data catalog. This parameter, together with Catalog and KnowledgeBaseName, uniquely identifies a knowledge base. You can call ListNamespaces to obtain the value",
+      "help_zh": "知识库所属的命名空间，必须属于指定的数据目录，与 Catalog、KnowledgeBaseName 共同定位知识库。可通过 ListNamespaces 获取",
+      "location": "query",
+      "max_length": "127",
+      "name": "namespace",
+      "options": [
+        "--namespace"
+      ],
+      "raw_name": "Namespace",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "doc_required": true,
+      "example": "my-knowledge-base",
+      "help_en": "The name of the knowledge base. The name is unique within a namespace and is specified at creation time. It cannot be modified",
+      "help_zh": "知识库名称，命名空间内唯一；创建时确定，不可修改",
+      "location": "query",
+      "max_length": "127",
+      "name": "knowledge_base_name",
+      "options": [
+        "--knowledge-base-name"
+      ],
+      "raw_name": "KnowledgeBaseName",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "doc_required": true,
+      "example": "如何配置事件规则",
+      "help_en": "The query text. Both keyword retrieval and vector retrieval are based on this text",
+      "help_zh": "检索文本，关键词检索与向量检索均基于该文本",
+      "location": "query",
+      "max_length": "4096",
+      "name": "query",
+      "options": [
+        "--query"
+      ],
+      "raw_name": "Query",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "enum": [
+        "KEYWORD",
+        "VECTOR",
+        "HYBRID"
+      ],
+      "example": "HYBRID",
+      "help_en": "The retrieval mode. KEYWORD indicates keyword retrieval. VECTOR indicates vector retrieval. HYBRID indicates hybrid retrieval",
+      "help_zh": "KEYWORD 表示关键词检索，VECTOR 表示向量检索，HYBRID 表示混合检索",
+      "location": "query",
+      "name": "mode",
+      "options": [
+        "--biz-mode"
+      ],
+      "raw_name": "Mode",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "10",
+      "help_en": "The number of most relevant results to return. Default value: 10. Maximum value: 100",
+      "help_zh": "返回的最相关结果数量，默认 10，最大 100",
+      "location": "query",
+      "name": "topk",
+      "options": [
+        "--topk"
+      ],
+      "raw_name": "TopK",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "{\"AndAll\": [{\"Key\": \"env\", \"Operator\": \"In\", \"Values\": [\"prod\", \"staging\"]}, {\"OrAll\": [{\"Key\": \"score\", \"Operator\": \"GreaterThan\", \"Value\": \"0.8\"}, {\"Key\": \"owner\", \"Operator\": \"Equals\", \"Value\": \"alice\"}]}]}",
+      "help_en": "Filters search results by document metadata. The value is a JSON expression tree. Nodes are classified into two types: logical nodes {\"AndAll\": [child nodes...]} (all conditions must be met), {\"OrAll\": [child nodes...]} (any condition must be met), or {\"NotAll\": [child nodes...]} (none of the conditions must be met), which support arbitrary nesting; and leaf conditions {\"Key\": field name, \"Operator\": operator, \"Value\": value}, where the In and NotIn operators use \"Values\": [values...]. Valid values of Operator: Equals, NotEquals, In, NotIn, GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual (the last four range operators apply only to LONG, DOUBLE, or DATETIME fields), StartsWith, and StringContains (applies only to STRING fields). Fields must be declared in the knowledge base schema. The nesting depth cannot exceed 5, and the total number of leaf conditions cannot exceed 20. DATETIME field value format: ISO-8601 with time zone, yyyy-MM-dd HH:mm:ss, or yyyy-MM-dd",
+      "help_zh": "按文档元数据过滤检索结果，JSON 表达式树。节点分两类：逻辑节点 {\"AndAll\": [子节点...]}（全部满足）/ {\"OrAll\": [子节点...]}（任一满足）/ {\"NotAll\": [子节点...]}（全部不满足），支持任意嵌套；叶子条件 {\"Key\": 字段名, \"Operator\": 操作符, \"Value\": 值}，In/NotIn 操作符使用 \"Values\": [值...]。操作符取值：Equals、NotEquals、In、NotIn、GreaterThan、GreaterThanOrEqual、LessThan、LessThanOrEqual（后四个范围操作符仅 LONG/DOUBLE/DATETIME 字段）、StartsWith、StringContains（仅 STRING 字段）。字段必须为知识库 Schema 声明的字段；嵌套深度不超过 5，叶子条件总数不超过 20。DATETIME 字段值格式：ISO-8601 含时区、yyyy-MM-dd HH:mm:ss 或 yyyy-MM-dd",
+      "location": "query",
+      "max_length": "8192",
+      "name": "metadata_filter",
+      "options": [
+        "--metadata-filter"
+      ],
+      "raw_name": "MetadataFilter",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "false",
+      "help_en": "Specifies whether to enable reranking for search results. Default value: false",
+      "help_zh": "是否对检索结果启用重排序，默认 false",
+      "location": "query",
+      "name": "rerank",
+      "options": [
+        "--rerank"
+      ],
+      "raw_name": "Rerank",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "example": "60",
+      "help_en": "Optional. Overrides the reciprocal rank fusion (RRF) parameter k configured for the knowledge base for this request. This parameter takes effect only in hybrid search (HYBRID) mode. The value must be greater than 0",
+      "help_zh": "可选。本次请求覆盖知识库配置的 RRF 融合参数 k，仅混合检索（HYBRID）模式生效，必须大于 0",
+      "location": "query",
+      "name": "rrf_k",
+      "options": [
+        "--rrf-k"
+      ],
+      "raw_name": "RrfK",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "enum": [
+        "RRF",
+        "WEIGHTED"
+      ],
+      "example": "RRF",
+      "help_en": "Optional. Overrides the fusion algorithm configured for the knowledge base for this request. This parameter takes effect only in hybrid search (HYBRID) mode. RRF indicates reciprocal rank fusion. WEIGHTED indicates weighted normalization fusion (used together with VectorWeight). If you set this parameter to WEIGHTED in keyword-only or vector-only mode, an InvalidParameter error is returned",
+      "help_zh": "可选。本次请求覆盖知识库配置的融合算法，仅混合检索（HYBRID）模式生效。RRF 表示倒数排名融合，WEIGHTED 表示加权归一融合（配合 VectorWeight 使用）。关键词或向量单模式传入 WEIGHTED 将返回 InvalidParameter",
+      "location": "query",
+      "name": "rank_algorithm",
+      "options": [
+        "--rank-algorithm"
+      ],
+      "raw_name": "RankAlgorithm",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "0.7",
+      "help_en": "Optional. The vector weight for the WEIGHTED fusion algorithm. Valid values: 0 to 1. The keyword weight equals 1 minus this value. If this parameter is not specified, the value configured for the knowledge base is used. If no value is configured, the default value 0.7 is used",
+      "help_zh": "可选。WEIGHTED 融合算法的向量路权重，取值 [0, 1]，关键词路权重为 1 减去该值。不传时使用知识库配置的值，未配置时默认 0.7",
+      "location": "query",
+      "name": "vector_weight",
+      "options": [
+        "--vector-weight"
+      ],
+      "raw_name": "VectorWeight",
+      "required": false,
+      "type": "float"
+    },
+    {
+      "example": "qwen3-rerank",
+      "help_en": "Optional. Overrides the reranking model configured for the knowledge base for this request. This parameter takes effect when reranking is enabled (in all search modes). Valid values: qwen3-rerank, gte-rerank-v2, and qwen3-vl-rerank. If this parameter is not specified, the value configured for the knowledge base is used. If no value is configured, the default value qwen3-rerank is used. Score distributions differ across models and cannot be compared. Use the same model consistently for a given knowledge base",
+      "help_zh": "可选。本次请求覆盖知识库配置的重排序模型，启用重排序时生效（全部检索模式）。取值范围：qwen3-rerank、gte-rerank-v2、qwen3-vl-rerank。不传时使用知识库配置的值，未配置时默认 qwen3-rerank。不同模型的分数分布不可横向比较，同一知识库建议固定使用同一模型",
+      "location": "query",
+      "name": "rerank_model",
+      "options": [
+        "--rerank-model"
+      ],
+      "raw_name": "RerankModel",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "",
+  "product_code": "eventbridge",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "properties": {
+          "Code": {
+            "backendName": "code",
+            "description_en": "The response code. A value of Success indicates a successful call. If the call fails, a specific error code is returned",
+            "description_zh": "接口返回码，Success 表示成功，失败时为具体错误码",
+            "example": "Success",
+            "nullToEmpty": false,
+            "title_en": "接口返回码，Success 表示成功",
+            "title_zh": "接口返回码，Success 表示成功",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "Data": {
+            "backendName": "data",
+            "description_en": "The search results, including the list of matched chunks and the time spent",
+            "description_zh": "检索结果，包含命中的切片列表与耗时",
+            "nullToEmpty": false,
+            "properties": {
+              "Chunks": {
+                "backendName": "chunks",
+                "description_en": "The list of matched chunks, sorted by relevance",
+                "description_zh": "检索命中的切片列表，按相关度排序",
+                "example": "[{\"DocumentId\":\"doc-bp1xxxxxxxxxxxx\",\"ChunkSeq\":3,\"Content\":\"EventBridge 支持事件路由\"}]",
+                "itemName": "检索结果切片",
+                "items": {
+                  "$ref": "#/components/schemas/KnowledgeBaseSearchChunk",
+                  "description_en": "The details of a single matched chunk, including the relevance score, chunk content, and location information",
+                  "description_zh": "单个检索命中的切片详细信息，包含相关性分数、切片正文与定位信息",
+                  "title_en": "检索结果切片",
+                  "title_zh": "检索结果切片"
+                },
+                "title_en": "按相关性排序的切片列表",
+                "title_zh": "按相关性排序的切片列表",
+                "type": "array"
+              },
+              "TimeSpent": {
+                "backendName": "timeSpent",
+                "description_en": "The server-side processing duration of this search. Unit: milliseconds",
+                "description_zh": "本次检索的服务端处理耗时，单位毫秒",
+                "example": "128",
+                "format": "int64",
+                "nullToEmpty": false,
+                "title_en": "检索耗时",
+                "title_zh": "检索耗时",
+                "type": "integer",
+                "visibility": "Public"
+              }
+            },
+            "title_en": "检索结果",
+            "title_zh": "检索结果",
+            "type": "object"
+          },
+          "Message": {
+            "backendName": "message",
+            "description_en": "The response message. A value of Operation success is returned for a successful call. A specific error description is returned for a failed call",
+            "description_zh": "接口返回的提示信息，成功时为 Operation success，失败时为具体错误描述",
+            "example": "Operation success",
+            "nullToEmpty": false,
+            "title_en": "接口返回信息",
+            "title_zh": "接口返回信息",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "RequestId": {
+            "backendName": "requestId",
+            "description_en": "The request ID",
+            "description_zh": "请求ID",
+            "example": "34AD682D-5B91-5773-8132-AA38C130****",
+            "nullToEmpty": false,
+            "title_en": "请求ID",
+            "title_zh": "请求ID",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "Success": {
+            "backendName": "success",
+            "description_en": "Indicates whether the call was successful. A value of true indicates success",
+            "description_zh": "本次调用是否成功，true 表示成功",
+            "example": "true",
+            "nullToEmpty": false,
+            "title_en": "操作是否成功",
+            "title_zh": "操作是否成功",
+            "type": "boolean",
+            "visibility": "Public"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}
