@@ -1,9 +1,9 @@
 {
-  "camel_example": "aliyun sls GET /collectionpolicy --region cn-hangzhou --productCode oss --instanceId 'your-test-bucket1' --policyName your_log_policy --pageSize 1 --attribute '{\"app\":\"example-string\",\"policyGroup\":\"example-string\"}' --dataCode access_log --pageNum 1 --header \"Content-Type=application/json\"",
+  "camel_example": "aliyun sls GET /collectionpolicy --region cn-hangzhou --centralProject 'your-central-project1' --productCode oss --instanceId 'your-test-bucket1' --size 50 --offset 0 --policyName your_log_policy --dataCode access_log --header \"Content-Type=application/json\"",
   "cmd_full_name": "sls list-collection-policies",
   "cmd_name": "list-collection-policies",
   "deprecated": false,
-  "description_en": "Lists the collection rules for logs from Alibaba Cloud services",
+  "description_en": "Lists the collection rules for cloud service log collection",
   "description_zh": "列出云产品日志采集的采集规则",
   "kebab_example": "aliyun sls list-collection-policies --product-code oss --data-code access_log --policy-name your_log_policy --instance-id your-test-bucket1 --region cn-hangzhou",
   "method": "GET",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "oss",
-      "help_en": "The code of the Alibaba Cloud service",
+      "help_en": "The product code",
       "help_zh": "产品的编码",
       "location": "query",
       "name": "product_code",
@@ -35,7 +35,7 @@
     },
     {
       "example": "access_log",
-      "help_en": "The code of the log type",
+      "help_en": "The log type code",
       "help_zh": "日志类型编码",
       "location": "query",
       "name": "data_code",
@@ -48,7 +48,7 @@
     },
     {
       "example": "your_log_policy\n",
-      "help_en": "The name of the collection rule",
+      "help_en": "The rule name",
       "help_zh": "规则名称",
       "location": "query",
       "name": "policy_name",
@@ -60,35 +60,37 @@
       "type": "string"
     },
     {
-      "help_en": "The pageSize",
-      "help_zh": "The pageSize",
+      "example": "50",
+      "help_en": "The number of entries per page in a paged query. Default value: 50. Maximum value: 100",
+      "help_zh": "分页查询时，设置的每页行数。默认值为 50，最多返回 100 个 规则信息",
       "location": "query",
       "maximum": "100",
       "minimum": "1",
-      "name": "page_size",
+      "name": "size",
       "options": [
-        "--page-size"
+        "--size"
       ],
-      "raw_name": "pageSize",
+      "raw_name": "size",
       "required": false,
       "type": "int"
     },
     {
-      "help_en": "The pageNum",
-      "help_zh": "The pageNum",
+      "example": "0",
+      "help_en": "The start row of the query. Default value: 0",
+      "help_zh": "查询开始行，默认值为 0",
       "location": "query",
-      "minimum": "1",
-      "name": "page_num",
+      "minimum": "0",
+      "name": "offset",
       "options": [
-        "--page-num"
+        "--offset"
       ],
-      "raw_name": "pageNum",
+      "raw_name": "offset",
       "required": false,
       "type": "int"
     },
     {
       "example": "your-test-bucket1\n",
-      "help_en": "The instance ID. Specify this parameter to query rules that match a specific instance. If you use this parameter, you must also specify productCode and dataCode",
+      "help_en": "The instance ID. If you specify an instance ID, you can perform a reverse query to find the rules that match the instance. This parameter must be used together with productCode and dataCode",
       "help_zh": "实例ID。如果配置实例ID，则可以根据实例ID反向查询实例命中的规则，必须和productCode、dataCode结合使用",
       "location": "query",
       "name": "instance_id",
@@ -100,41 +102,17 @@
       "type": "string"
     },
     {
-      "fields": [
-        {
-          "help_en": "The app",
-          "help_zh": "The app",
-          "name": "app",
-          "options": [
-            "--app"
-          ],
-          "raw_name": "app",
-          "required": false,
-          "type": "string"
-        },
-        {
-          "help_en": "The policyGroup",
-          "help_zh": "The policyGroup",
-          "name": "policy_group",
-          "options": [
-            "--policy-group"
-          ],
-          "raw_name": "policyGroup",
-          "required": false,
-          "type": "string"
-        }
-      ],
-      "help_en": "The attribute",
-      "help_zh": "The attribute",
+      "example": "your-central-project1",
+      "help_en": "The destination project for centralized delivery. If you specify this parameter, you can perform a reverse query to find how many rules are configured with centralized delivery to the specified centralProject",
+      "help_zh": "中心化转投目的Project。如果配置中心化转投目的Project，则可以根据Project反向查询有多少规则配置了中心化转投到该centralProejct下",
       "location": "query",
-      "name": "attribute",
+      "name": "central_project",
       "options": [
-        "--attribute"
+        "--central-project"
       ],
-      "param_style": "json",
-      "raw_name": "attribute",
+      "raw_name": "centralProject",
       "required": false,
-      "type": "object"
+      "type": "string"
     }
   ],
   "pathPattern": "/collectionpolicy",
@@ -187,64 +165,47 @@
         }
       },
       "schema": {
-        "description_en": "The response body",
+        "description_en": "The response struct",
         "description_zh": "返回结构体",
         "properties": {
           "currentCount": {
-            "description_en": "The number of collection rules returned on the current page",
+            "description_en": "The number of entries on the current page",
             "description_zh": "当前页数据条数",
             "example": "1",
             "format": "int32",
             "type": "integer"
           },
           "data": {
-            "description_en": "The collection rules that are returned on the current page",
+            "description_en": "The rule data returned based on the pagination settings for the current query conditions",
             "description_zh": "当前查询条件下按照分页配置返回的规则数据",
             "items": {
-              "description_en": "The details of the collection rule",
+              "description_en": "The rule details",
               "description_zh": "规则详情",
               "properties": {
-                "attribute": {
-                  "description_en": "",
-                  "description_zh": "",
-                  "properties": {
-                    "app": {
-                      "description_en": "",
-                      "description_zh": "",
-                      "type": "string"
-                    },
-                    "policyGroup": {
-                      "description_en": "",
-                      "description_zh": "",
-                      "type": "string"
-                    }
-                  },
-                  "type": "object"
-                },
                 "centralizeConfig": {
-                  "description_en": "The configuration for centralized data shipping",
+                  "description_en": "The centralized delivery configuration",
                   "description_zh": "中心化转投配置",
                   "properties": {
                     "destLogstore": {
-                      "description_en": "The destination Logstore for centralized data shipping",
+                      "description_en": "The destination Logstore for centralized delivery",
                       "description_zh": "中心化转投目的日志库",
                       "example": "your-sls-logstore-in-beijing\n",
                       "type": "string"
                     },
                     "destProject": {
-                      "description_en": "The destination project for centralized data shipping",
+                      "description_en": "The destination project for centralized delivery",
                       "description_zh": "中心化转投目的项目",
                       "example": "your-sls-project-in-beijing\n",
                       "type": "string"
                     },
                     "destRegion": {
-                      "description_en": "The destination region for centralized data shipping",
+                      "description_en": "The destination region for centralized delivery",
                       "description_zh": "中心化转投目的地域",
                       "example": "cn-beijing\n",
                       "type": "string"
                     },
                     "destTTL": {
-                      "description_en": "The data retention period of the destination Logstore for centralized data shipping. Unit: days",
+                      "description_en": "The data retention period in days for the centralized delivery destination",
                       "description_zh": "中心化转投目的存储天数",
                       "example": "0",
                       "format": "int32",
@@ -254,29 +215,54 @@
                   "type": "object"
                 },
                 "centralizeEnabled": {
-                  "description_en": "Indicates whether centralized data shipping is enabled",
+                  "description_en": "Indicates whether centralized delivery is enabled",
                   "description_zh": "是否开启中心化转投",
                   "example": "false",
                   "type": "boolean"
                 },
                 "dataCode": {
-                  "description_en": "The code of the log type",
+                  "description_en": "The log type code",
                   "description_zh": "日志类型编码",
                   "example": "access_log",
                   "type": "string"
                 },
+                "dataConfig": {
+                  "description_en": "The data configuration. This parameter is supported only when the log type is a global log type, such as when productCode is set to sls. Otherwise, this parameter is empty",
+                  "description_zh": "当且仅当日志类型为全局日志类型时支持配置，例如productCode为sls时的场景。否则为空",
+                  "properties": {
+                    "dataProject": {
+                      "description_en": "The data project. This parameter takes effect only when the log type is a global log type, such as when productCode is set to sls. If this parameter is empty, logs are collected to the default dedicated project of the account in the specified dataRegion",
+                      "description_zh": "当且仅当日志类型为全局日志类型时有效，例如productCode为sls时的场景，如果为空，表示日志被采集到该账号在特定dataRegion下的默认专属的Project中",
+                      "example": "\"\"",
+                      "type": "string"
+                    },
+                    "dataRegion": {
+                      "description_en": "The data region. This parameter is supported only when the log type is a global log type, such as when productCode is set to sls. This parameter specifies the region to which global logs are collected during initial configuration",
+                      "description_zh": "当且仅当日志类型为全局日志类型时支持的配置，例如productCode为sls时的场景，表示首次配置时全局日志将被采集到对应地域",
+                      "example": "cn-hangzhou",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
                 "enabled": {
-                  "description_en": "Indicates whether the collection rule is enabled",
+                  "description_en": "Indicates whether the rule is enabled",
                   "description_zh": "是否开启",
                   "example": "true",
                   "type": "boolean"
                 },
+                "internalPolicy": {
+                  "description_en": "Indicates whether the rule is a built-in policy. Built-in rules cannot be modified or deleted",
+                  "description_zh": "是否是内置规则策略，内置规则不允许修改、删除",
+                  "example": "false",
+                  "type": "boolean"
+                },
                 "policyConfig": {
-                  "description_en": "The configuration of the collection rule",
+                  "description_en": "The collection rule configuration",
                   "description_zh": "采集规则配置",
                   "properties": {
                     "instanceIds": {
-                      "description_en": "The IDs of the instances",
+                      "description_en": "The list of instance IDs",
                       "description_zh": "实例ID集合",
                       "items": {
                         "description_en": "The instance ID",
@@ -287,7 +273,7 @@
                       "type": "array"
                     },
                     "regions": {
-                      "description_en": "The regions to which the instances belong",
+                      "description_en": "The list of regions to which the instances belong",
                       "description_zh": "实例所属的地域集合",
                       "items": {
                         "description_en": "The region ID",
@@ -313,13 +299,85 @@
                   "type": "object"
                 },
                 "policyName": {
-                  "description_en": "The name of the collection rule",
+                  "description_en": "The rule name",
                   "description_zh": "规则名称",
                   "example": "your_log_policy",
                   "type": "string"
                 },
+                "policyUid": {
+                  "description_en": "The Alibaba Cloud account ID of the account to which the rule belongs. If the rule is created by a resource directory administrator or a delegated administrator of the resource directory, this parameter is set to the Alibaba Cloud account ID of that administrator",
+                  "description_zh": "规则所属的账号阿里云账号Uid，如果该规则由资源目录管理员或者资源目录委派管理员创建，则为其阿里云账号Uid",
+                  "example": "148***********50",
+                  "type": "string"
+                },
                 "productCode": {
-                  "description_en": "The code of the Alibaba Cloud service",
+                  "description_en": "The product code",
+                  "description_zh": "产品编码",
+                  "example": "oss",
+                  "type": "string"
+                },
+                "resourceDirectory": {
+                  "description_en": "The resource directory configuration. This parameter is empty if no configuration exists",
+                  "description_zh": "资源目录配置, 如有配置，否则为空",
+                  "properties": {
+                    "accountGroupType": {
+                      "description_en": "The account group type in the resource directory. Valid values: all and custom",
+                      "description_zh": "在该资源目录下，全选模式all或自定义模式custom",
+                      "example": "all,custom",
+                      "type": "string"
+                    },
+                    "members": {
+                      "description_en": "The list of member accounts when the resource directory configuration is set to custom mode",
+                      "description_zh": "当资源目录配置为custom模式时，对应的成员账号列表",
+                      "items": {
+                        "description_en": "The Alibaba Cloud account ID",
+                        "description_zh": "阿里云账号Uid",
+                        "example": "165***********50",
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "statistics": {
+            "description_en": "The statistics returned for the current query conditions",
+            "description_zh": "当前查询条件下返回的统计数据",
+            "items": {
+              "description_en": "The rule statistics grouped by productCode",
+              "description_zh": "按照productCode的规则统计结果",
+              "properties": {
+                "policySourceList": {
+                  "description_en": "The list of rule sources",
+                  "description_zh": "规则来源列表",
+                  "items": {
+                    "description_en": "The rule source object",
+                    "description_zh": "规则来源对象",
+                    "properties": {
+                      "policyName": {
+                        "description_en": "The rule name",
+                        "description_zh": "规则名称",
+                        "example": "policy_name1_from148",
+                        "type": "string"
+                      },
+                      "policyUid": {
+                        "description_en": "The Alibaba Cloud account ID of the account to which the rule belongs. If the rule is created by a resource directory administrator or a delegated administrator of the resource directory, this parameter is set to the Alibaba Cloud account ID of that administrator",
+                        "description_zh": "规则所属的账号阿里云账号Uid，如果该规则由资源目录管理员或者资源目录委派管理员创建，则为其阿里云账号Uid",
+                        "example": "148***********50",
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "productCode": {
+                  "description_en": "The product code",
                   "description_zh": "产品编码",
                   "example": "oss",
                   "type": "string"
@@ -330,7 +388,7 @@
             "type": "array"
           },
           "totalCount": {
-            "description_en": "The total number of collection rules",
+            "description_en": "The total number of entries",
             "description_zh": "总数据条数",
             "example": "1",
             "format": "int32",

@@ -3,7 +3,7 @@
   "cmd_full_name": "sls get-collection-policy",
   "cmd_name": "get-collection-policy",
   "deprecated": false,
-  "description_en": "You can call the GetCollectionPolicy operation to retrieve the details of a specific rule",
+  "description_en": "Retrieves the specified collection policy",
   "description_zh": "调用GetCollectionPolicy获取对应的规则",
   "kebab_example": "aliyun sls get-collection-policy --policy-name your_log_policy --region cn-hangzhou",
   "method": "GET",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "your_log_policy\n",
-      "help_en": "The name of the rule",
+      "help_en": "The name of the policy",
       "help_zh": "规则名称",
       "location": "path",
       "max_length": "63",
@@ -37,7 +37,7 @@
     },
     {
       "example": "oss",
-      "help_en": "The code of the product",
+      "help_en": "The product code",
       "help_zh": "产品编码",
       "location": "query",
       "name": "product_code",
@@ -50,7 +50,7 @@
     },
     {
       "example": "access_log",
-      "help_en": "The code for the log type",
+      "help_en": "The log type code",
       "help_zh": "日志类型编码",
       "location": "query",
       "name": "data_code",
@@ -112,54 +112,37 @@
         }
       },
       "schema": {
-        "description_en": "The response body",
+        "description_en": "The response struct",
         "description_zh": "返回结构体",
         "properties": {
           "collectionPolicy": {
-            "description_en": "The details of the rule",
+            "description_en": "The collection policy",
             "description_zh": "返回规则",
             "properties": {
-              "attribute": {
-                "description_en": "",
-                "description_zh": "",
-                "properties": {
-                  "app": {
-                    "description_en": "",
-                    "description_zh": "",
-                    "type": "string"
-                  },
-                  "policyGroup": {
-                    "description_en": "",
-                    "description_zh": "",
-                    "type": "string"
-                  }
-                },
-                "type": "object"
-              },
               "centralizeConfig": {
-                "description_en": "The configuration for centralized shipping",
+                "description_en": "The centralized delivery configuration",
                 "description_zh": "中心化转投配置",
                 "properties": {
                   "destLogstore": {
-                    "description_en": "The destination Logstore for centralized shipping",
+                    "description_en": "The destination Logstore for centralized delivery",
                     "description_zh": "中心化转投目的日志库",
                     "example": "your-sls-logstore-in-beijing\n",
                     "type": "string"
                   },
                   "destProject": {
-                    "description_en": "The destination project for centralized shipping",
+                    "description_en": "The destination project for centralized delivery",
                     "description_zh": "中心化转投目的项目",
                     "example": "your-sls-project-in-beijing\n",
                     "type": "string"
                   },
                   "destRegion": {
-                    "description_en": "The destination region for centralized shipping",
+                    "description_en": "The destination region for centralized delivery",
                     "description_zh": "中心化转投目的地域",
                     "example": "cn-beijing\n",
                     "type": "string"
                   },
                   "destTTL": {
-                    "description_en": "The retention period of the destination Logstore. Unit: days",
+                    "description_en": "The data retention period in days for centralized delivery",
                     "description_zh": "中心化转投目的天数",
                     "example": "0",
                     "format": "int32",
@@ -175,23 +158,48 @@
                 "type": "boolean"
               },
               "dataCode": {
-                "description_en": "The code for the log type",
+                "description_en": "The log type code",
                 "description_zh": "日志类型编码",
                 "example": "access_log",
                 "type": "string"
               },
+              "dataConfig": {
+                "description_en": "The configuration that is supported only when the log type is a global log type, such as when productCode is set to sls. Otherwise, this parameter is empty",
+                "description_zh": "当且仅当日志类型为全局日志类型时支持的配置，例如productCode为sls时的场景。否则为空",
+                "properties": {
+                  "dataProject": {
+                    "description_en": "This parameter is valid only when the log type is a global log type, such as when productCode is set to sls. If this parameter is empty, logs are collected to the default dedicated project of the account in the specified dataRegion",
+                    "description_zh": "当且仅当日志类型为全局日志类型时有效，例如productCode为sls时的场景，如果为空，表示日志被采集到该账号在特定dataRegion下的默认专属的Project中",
+                    "example": "\"\"",
+                    "type": "string"
+                  },
+                  "dataRegion": {
+                    "description_en": "The configuration that is supported only when the log type is a global log type, such as when productCode is set to sls. This parameter specifies the region to which global logs are collected during initial configuration",
+                    "description_zh": "当且仅当日志类型为全局日志类型时支持的配置，例如productCode为sls时的场景，表示首次配置时全局日志将被采集到对应地域",
+                    "example": "cn-beijing",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
               "enabled": {
-                "description_en": "Indicates whether the rule is enabled",
+                "description_en": "Indicates whether the policy is enabled",
                 "description_zh": "是否开启",
                 "example": "true\n",
-                "type": "string"
+                "type": "boolean"
+              },
+              "internalPolicy": {
+                "description_en": "Indicates whether the policy is a built-in policy. Built-in policies cannot be modified or deleted",
+                "description_zh": "是否是内置规则策略，内置规则不允许修改、删除",
+                "example": "false",
+                "type": "boolean"
               },
               "policyConfig": {
-                "description_en": "The configuration of the collection rule",
+                "description_en": "The collection policy configuration",
                 "description_zh": "采集规则配置",
                 "properties": {
                   "instanceIds": {
-                    "description_en": "The instance IDs",
+                    "description_en": "The list of instance IDs",
                     "description_zh": "实例ID集合",
                     "items": {
                       "description_en": "The instance ID",
@@ -202,7 +210,7 @@
                     "type": "array"
                   },
                   "regions": {
-                    "description_en": "The regions where the instances reside. Wildcard characters are supported",
+                    "description_en": "The list of regions to which the instances belong. Wildcards are supported",
                     "description_zh": "实例所属的地域集合，支持通配符",
                     "items": {
                       "description_en": "The region ID",
@@ -213,7 +221,7 @@
                     "type": "array"
                   },
                   "resourceMode": {
-                    "description_en": "The collection pattern for resources",
+                    "description_en": "The resource collection mode",
                     "description_zh": "资源采集模式",
                     "example": "all",
                     "type": "string"
@@ -228,16 +236,46 @@
                 "type": "object"
               },
               "policyName": {
-                "description_en": "The name of the rule",
+                "description_en": "The name of the policy",
                 "description_zh": "规则名称",
                 "example": "your_log_policy",
                 "type": "string"
               },
+              "policyUid": {
+                "description_en": "The Alibaba Cloud account ID of the account to which the policy belongs. If the policy is created by a resource directory administrator or a resource directory delegated administrator, this parameter is set to the Alibaba Cloud account ID of that administrator",
+                "description_zh": "规则所属的账号阿里云账号Uid，如果该规则由资源目录管理员或者资源目录委派管理员创建，则为其阿里云账号Uid",
+                "example": "148***********50\n",
+                "type": "string"
+              },
               "productCode": {
-                "description_en": "The code of the product",
+                "description_en": "The product code",
                 "description_zh": "产品编码",
                 "example": "oss",
                 "type": "string"
+              },
+              "resourceDirectory": {
+                "description_en": "The resource directory configuration. This parameter is empty if no resource directory is configured",
+                "description_zh": "资源目录配置, 如有配置，否则为空",
+                "properties": {
+                  "accountGroupType": {
+                    "description_en": "The account group type in the resource directory. Valid values:\nall: all accounts.\ncustom: custom accounts",
+                    "description_zh": "在该资源目录下，全选模式all或自定义模式custom",
+                    "example": "all,custom",
+                    "type": "string"
+                  },
+                  "members": {
+                    "description_en": "The list of member accounts when the resource directory configuration is set to custom mode",
+                    "description_zh": "当资源目录配置为custom模式时，对应的成员账号列表",
+                    "items": {
+                      "description_en": "The Alibaba Cloud account ID",
+                      "description_zh": "阿里云账号Uid",
+                      "example": "165***********50",
+                      "type": "string"
+                    },
+                    "type": "array"
+                  }
+                },
+                "type": "object"
               }
             },
             "type": "object"

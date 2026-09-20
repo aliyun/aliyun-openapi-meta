@@ -32,6 +32,18 @@
         "description_en": "Log group",
         "description_zh": "日志组",
         "properties": {
+          "LogItems": {
+            "description_en": "A list of logs",
+            "description_zh": "日志列表",
+            "items": {
+              "$ref": "#/components/schemas/LogItem",
+              "description_en": "A log",
+              "description_zh": "日志"
+            },
+            "required": true,
+            "title": "日志列表",
+            "type": "array"
+          },
           "LogTags": {
             "description_en": "The list of tags for the log",
             "description_zh": "日志的标签列表",
@@ -42,18 +54,6 @@
             },
             "required": false,
             "title": "日志的标签列表",
-            "type": "array"
-          },
-          "Logs": {
-            "description_en": "",
-            "description_zh": "日志列表",
-            "items": {
-              "$ref": "#/components/schemas/LogItem",
-              "description_en": "",
-              "description_zh": ""
-            },
-            "required": true,
-            "title": "日志列表",
             "type": "array"
           },
           "Source": {
@@ -97,11 +97,11 @@
         "type": "object"
       },
       "LogItem": {
-        "description_en": "A log entry",
+        "description_en": "The log",
         "description_zh": "日志",
         "properties": {
           "Contents": {
-            "description_en": "A list of log fields",
+            "description_en": "The list of log fields",
             "description_zh": "日志字段列表",
             "items": {
               "$ref": "#/components/schemas/LogContent",
@@ -113,12 +113,20 @@
             "type": "array"
           },
           "Time": {
-            "description_en": "The time of the log, formatted as a Unix timestamp. It represents the number of seconds that have elapsed since 00:00:00 UTC on January 1, 1970",
+            "description_en": "The log timestamp. The value is a UNIX timestamp representing the number of seconds that have elapsed since January 1, 1970, 00:00:00 UTC",
             "description_zh": "日志时间。Unix时间戳格式，表示从1970-1-1 00:00:00 UTC计算起的秒数",
             "example": "1690254376",
             "format": "int32",
             "required": true,
             "title": "日志时间。Unix时间戳格式，表示从1970-1-1 00:00:00 UTC计算起的秒数。",
+            "type": "integer"
+          },
+          "TimeNs": {
+            "description_en": "The nanosecond part of the log timestamp. Valid values: 0 to 999999999",
+            "description_zh": "日志时间的纳秒部分，范围为 0 到 999999999",
+            "example": "123456789",
+            "format": "int32",
+            "title": "日志时间的纳秒部分，范围为 0 到 999999999。",
             "type": "integer"
           }
         },
@@ -152,7 +160,7 @@
     }
   },
   "deprecated": false,
-  "description_en": "Call the PullLogs operation to retrieve log data from a specified cursor position. This operation retrieves raw logs. To query or analyze logs, call the GetLogsV2 operation",
+  "description_en": "Retrieves log data at a specified cursor position by calling the PullLogs operation. This operation retrieves raw logs. To query or analyze logs, use the GetLogsV2 operation",
   "description_zh": "调用PullLogs接口获取指定游标（Cursor）位置的日志数据。此接口获取的是原始日志，如要查询或分析日志，请使用GetLogsV2接口",
   "kebab_example": "aliyun sls pull-logs --project ali-test-project --log-store ali-test-logstore --shard-id 1 --cursor MTQ0NzMyOTQwMTEwMjEzMDkwNA --count 1000 --region cn-hangzhou",
   "method": "GET",
@@ -173,7 +181,7 @@
       "example": "ali-test-project",
       "help_en": "The name of the project",
       "help_zh": "Project名称",
-      "location": "path",
+      "location": "host",
       "name": "project",
       "options": [
         "--project"
@@ -210,7 +218,7 @@
     },
     {
       "example": "MTQ0NzMyOTQwMTEwMjEzMDkwNA",
-      "help_en": "The cursor that specifies the start position from which to read data",
+      "help_en": "The cursor that indicates the start position from which to read data",
       "help_zh": "游标，表示从什么位置开始读取数据，相当于起点",
       "location": "query",
       "name": "cursor",
@@ -223,7 +231,7 @@
     },
     {
       "example": "1000",
-      "help_en": "The number of LogGroups to return. The value must be an integer from 1 to 1000",
+      "help_en": "The maximum number of log groups to return. Minimum value: 1. Maximum value: 1000",
       "help_zh": "返回的Loggroup数目，最小值为1，最大值为1000",
       "location": "query",
       "maximum": "1000",
@@ -238,7 +246,7 @@
     },
     {
       "example": "MTU1NzA1NzQwMTEwMjEzMDkwCg",
-      "help_en": "The cursor that specifies the end position at which to stop reading data",
+      "help_en": "The end cursor that indicates the position at which to stop reading data. The data at this position is not included",
       "help_zh": "结束游标，表示读取数据到什么地方结束，相当于终点",
       "location": "query",
       "name": "end_cursor",
@@ -251,7 +259,7 @@
     },
     {
       "example": "* | where userId='123'",
-      "help_en": "The filter statement in the Structured Process Language (SPL) syntax. For more information, see https://help.aliyun.com/document_detail/2536530.html",
+      "help_en": "The filter statement in SPL syntax. For more information, see https://help.aliyun.com/document_detail/2536530.html",
       "help_zh": "过滤语句，spl 语法，请参见https://help.aliyun.com/document_detail/2536530.html",
       "location": "query",
       "name": "query",
@@ -264,7 +272,7 @@
     },
     {
       "example": "lz4",
-      "help_en": "The compression format of the data that the server returns. Only the lz4 format is supported",
+      "help_en": "The expected compression format of the data returned by the server. The value lz4 is supported",
       "help_zh": "期望服务端返回的数据压缩格式，支持 lz4",
       "location": "header",
       "name": "accept_encoding",
@@ -359,7 +367,7 @@
       },
       "schema": {
         "$ref": "#/components/schemas/LogGroupList",
-        "description_en": "The compressed data in protobuf format",
+        "description_en": "The compressed Protocol Buffer data",
         "description_zh": "压缩后的 pb 数据",
         "title_en": "",
         "title_zh": "压缩后的 pb 数据"
