@@ -3,7 +3,7 @@
   "cmd_full_name": "bssopenapi subscribe-bill-to-oss",
   "cmd_name": "subscribe-bill-to-oss",
   "deprecated": false,
-  "description_en": "Subscribes to bill files and stores the bill data in a specified Object Storage Service (OSS) bucket",
+  "description_en": "Subscribes to bill files by using Object Storage Service (OSS), which stores billing data in a specified OSS bucket",
   "description_zh": "使用OSS订阅账单文件，支持将账单数据存储到指定的OSS bucket中",
   "kebab_example": "aliyun bssopenapi subscribe-bill-to-oss --subscribe-bucket xxxxxx-bucket --api-version 2017-12-14 --region cn-hangzhou",
   "method": "GET|POST",
@@ -23,7 +23,7 @@
     {
       "doc_required": true,
       "example": "xxxxxx-bucket",
-      "help_en": "The name of the OSS bucket where the subscribed bill files are stored",
+      "help_en": "The name of the OSS bucket that stores the subscribed bill files",
       "help_zh": "存储订阅账单文件的OSS Bucket名称",
       "location": "query",
       "name": "subscribe_bucket",
@@ -36,7 +36,7 @@
     },
     {
       "example": "BillingItemDetailForBillingPeriod",
-      "help_en": "The subscription type. Valid values:\n\nBillingItemDetailForBillingPeriod: bill details by billing item.\n\nInstanceDetailForBillingPeriod: bill details by instance.\n\nBillingItemDetailMonthly: monthly bill summary by billing item.\n\nInstanceDetailMonthly: monthly bill summary by instance.\n\nSplitItemDetailDaily: daily summary of split bills.\n\nMonthBill: monthly bill in PDF format. You can subscribe to monthly bills only for an Alibaba Cloud account",
+      "help_en": "The type of the subscribed bill. Valid values:\nBillingItemDetailForBillingPeriod: billing item details.\nInstanceDetailForBillingPeriod: instance bill details.\nBillingItemDetailMonthly: billing item summary by billing cycle.\nInstanceDetailMonthly: instance bill summary by billing cycle.\nSplitItemDetailDaily: split bill daily summary.\nMonthBill: monthly bill PDF. Only MA subscription is supported",
       "help_zh": "订阅的账单类型。取值类型：\nBillingItemDetailForBillingPeriod：计费项消费明细。\nInstanceDetailForBillingPeriod：实例消费明细。\nBillingItemDetailMonthly：计费项消费账期汇总。\nInstanceDetailMonthly：实例消费账期汇总。\nSplitItemDetailDaily: 分账账单按天汇总。\nMonthBill：月账单PDF。仅支持订阅MA",
       "location": "query",
       "name": "subscribe_type",
@@ -49,7 +49,7 @@
     },
     {
       "example": "MA",
-      "help_en": "The type of bill to which you want to subscribe. This parameter is available only for multi-tier accounts. Valid values:\n\nMA: Pushes the bills of the Alibaba Cloud account and the bills of non-trusteeship linked accounts.\n\nACP1: Pushes the bills of sub-accounts of a virtual dealer.\n\nDefault: MA",
+      "help_en": "For multi-level accounts, specifies the type of bills to push. Valid values:\nMA: Pushes bills for the primary account and non-trusteeship linked accounts in the financial cloud.\nACP1: Pushes bills for Partner Platform V2.0 sub-accounts.\n\nDefault value: MA",
       "help_zh": "对于多级账号，可指定推送账单的类型。可选值为：\nMA：推送主账号及财务云非托管子账号账单。\nACP1：推送虚商子账号账单。\n\n默认：MA",
       "location": "query",
       "name": "mult_account_rel_subscribe",
@@ -62,7 +62,7 @@
     },
     {
       "example": "12341324",
-      "help_en": "The UID of the OSS bucket owner. This parameter is required only when a distributor subscribes to bills and saves them to an OSS bucket of a sub-account. In this case, the sub-account must be a sub-account of the distributor's account and granted the AliyunConsumeDump2OSSRole permission.\nRegular users do not need to specify this parameter. By default, the UID of the current account is used",
+      "help_en": "The UID of the OSS owner that stores the files. Specify this parameter if you are a Bid/Reseller subscriber and need to push files to a sub-account's OSS. The specified account must be a sub-account of the calling account, and the AliyunConsumeDump2OSSRole permission must be granted to this account. Regular users do not need to specify this parameter. The default value is the calling account",
       "help_zh": "存储文件的Oss Owner对应的UID。如果是Bid/ReSeller订阅，并需要推送到子账号的OSS上时指定，需要此账号为调用账号子账号，并对此账号授予AliyunConsumeDump2OSSRole权限。\n普通用户则无需指定，默认为调用账号",
       "location": "query",
       "name": "bucket_owner_id",
@@ -75,7 +75,7 @@
     },
     {
       "example": "2021-03",
-      "help_en": "The initial billing cycle from which bills are pushed. After you subscribe to the bills, the system automatically pushes the data from the initial billing cycle to the current time. This parameter is invalid for monthly bill subscriptions in PDF format. Historical data is not repushed. You can push data generated within the last year",
+      "help_en": "The start billing cycle for pushing. After a successful subscription, the system automatically pushes data from the start billing cycle to the current time. This parameter is invalid for monthly bill PDF subscriptions, and historical data is not re-pushed. Data within the last year can be pushed",
       "help_zh": "推送起始账期。订阅成功后，系统会自动推送起始账期到当前时间的数据。月账单PDF订阅时此参数无效，不会对历史数据重新推送。最多可推送最近1年内数据",
       "location": "query",
       "name": "begin_billing_cycle",
@@ -88,7 +88,7 @@
     },
     {
       "example": "testpath",
-      "help_en": "The specified folder in the bucket to which you subscribe",
+      "help_en": "The specified directory under the bucket to which the subscription is delivered",
       "help_zh": "订阅至Bucket下的指定目录",
       "location": "query",
       "name": "bucket_path",
@@ -101,7 +101,7 @@
     },
     {
       "example": "300000",
-      "help_en": "The maximum number of rows in a single file. If a bill file exceeds this limit, it is split into multiple files. The files are then merged and compressed into a ZIP package",
+      "help_en": "The maximum number of rows per file. If a bill file exceeds this limit, it is split into multiple files and compressed into a single archive",
       "help_zh": "单文件行数上限。当账单文件超过上限后，会拆成多个文件，并合并成一个压缩包",
       "location": "query",
       "name": "row_limit_per_file",
@@ -114,7 +114,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to use Secure Sockets Layer (SSL) to protect network communications. Valid values:\n\ntrue: Enables SSL encryption to ensure data security and integrity during transmission.\n\nfalse (default): Disables SSL encryption",
+      "help_en": "Specifies whether to use the Secure Sockets Layer (SSL) encryption protocol to protect network communication. Valid values:\n\ntrue: Enables SSL encryption to ensure the security and integrity of data transmission.\n\nfalse (default): Does not enable SSL encryption",
       "help_zh": "是否通过SSL（Secure Sockets Layer）加密协议来保护网络通信。取值：\n\ntrue：启用SSL加密，可以确保数据传输的安全性和完整性。\n\nfalse（默认值）：不启用SSL加密",
       "location": "query",
       "name": "using_ssl",
