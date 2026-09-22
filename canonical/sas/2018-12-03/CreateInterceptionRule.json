@@ -3,7 +3,7 @@
   "cmd_full_name": "sas create-interception-rule",
   "cmd_name": "create-interception-rule",
   "deprecated": false,
-  "description_en": "Creates a defense rule in the container firewall module",
+  "description_en": "Creates a container firewall blocking rule",
   "description_zh": "创建微隔离拦截规则",
   "kebab_example": "aliyun sas create-interception-rule --cluster-id c35xxxa416 --rule-name test-rule-1 --rule-switch 0 --cluster-name sas-test-cnnf --order-index 1 --intercept-type 1 --api-version 2018-12-03 --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,8 +22,8 @@
   "parameters": [
     {
       "example": "c35xxxa416",
-      "help_en": "The ID of the container cluster.\n\nYou can call the [DescribeGroupedContainerInstances](~~DescribeGroupedContainerInstances~~) operation to query the IDs of container clusters",
-      "help_zh": "指定要查询的容器集群的ID。\n您可以调用[DescribeGroupedContainerInstances](~~DescribeGroupedContainerInstances~~)接口获取该参数",
+      "help_en": "The ID of the container cluster to query.\nYou can call the [DescribeGroupedContainerInstances](~~DescribeGroupedContainerInstances~~) operation to obtain this parameter.\n\nThis parameter must be from an ACK cluster. You can call the DescribeClustersV1 operation of Container Service for Kubernetes (ACK) to query existing clusters, or call the CreateCluster operation to create a cluster, and then call the DescribeGroupedContainerInstances operation of Security Center to obtain the ID of a managed cluster",
+      "help_zh": "指定要查询的容器集群的ID。\n您可以调用[DescribeGroupedContainerInstances](~~DescribeGroupedContainerInstances~~)接口获取该参数。\n\n本参数必须来自 ACK 容器服务集群。可通过容器服务 CS 的 DescribeClustersV1 查询已有集群，或通过 CreateCluster 创建集群，再调用云安全中心 DescribeGroupedContainerInstances 获取已纳管的集群 ID",
       "location": "query",
       "name": "cluster_id",
       "options": [
@@ -35,7 +35,7 @@
     },
     {
       "example": "test-rule-1",
-      "help_en": "The name of the defense rule",
+      "help_en": "The name of the rule",
       "help_zh": "配置规则名称",
       "location": "query",
       "name": "rule_name",
@@ -48,7 +48,7 @@
     },
     {
       "example": "0",
-      "help_en": "Specifies the status of the defense rule. Valid values:\n\n0: disables the rule.\n1: enables the rule",
+      "help_en": "Specifies whether to enable the rule. Valid values:\n0: Disabled.\n1: Enabled",
       "help_zh": "指定启用规则的开关状态。取值：\n0：关闭\n1：开启",
       "location": "query",
       "name": "rule_switch",
@@ -61,7 +61,7 @@
     },
     {
       "example": "{\"targetId\":301940}",
-      "help_en": "The source network object. The value of this parameter contains the following field:\n\ntargetId: the ID of the source network object. You can call the [ListInterceptionTargetPage](~~ListInterceptionTargetPage~~) operation to query the ID",
+      "help_en": "The source object. The metric description is as follows:\n\ntargetId: The ID of the source object. You can invoke the [ListInterceptionTargetPage](~~ListInterceptionTargetPage~~) operation to obtain this parameter",
       "help_zh": "源对象。包含的参数说明如下：\n\ntargetId：源对象ID，您可以调用[ListInterceptionTargetPage](~~ListInterceptionTargetPage~~)接口获取该参数",
       "location": "query",
       "name": "src_target",
@@ -78,7 +78,7 @@
     },
     {
       "example": "[\n      {\n            \"targetId\": 600036,\n            \"ports\": [\n                  \"1/65535\"\n            ]\n      }\n]",
-      "help_en": "The information about the destination network object. The value of this parameter contains the following fields:\n\ntargetId: the ID of the destination network object. You can call the [ListInterceptionTargetPage](~~ListInterceptionTargetPage~~) operation to query the ID.\nports: the destination port ranges",
+      "help_en": "The list of destination objects. The metric descriptions are as follows:\n\ntargetId: The ID of the destination object. You can invoke the [ListInterceptionTargetPage](~~ListInterceptionTargetPage~~) operation to obtain this parameter.\nports: The list of destination port ranges",
       "help_zh": "目的对象列表。包含的参数说明如下：\n\ntargetId：目的对象ID，您可以调用[ListInterceptionTargetPage](~~ListInterceptionTargetPage~~)接口获取该参数。\nports：目标端口范围列表",
       "location": "query",
       "name": "dst_target_list",
@@ -95,7 +95,7 @@
     },
     {
       "example": "customize",
-      "help_en": "The type of the defense rule. Valid values:\n\ncustomize: custom rule",
+      "help_en": "The type of the rule. Valid values:\ncustomize: user-defined rule",
       "help_zh": "规则类型。取值：\ncustomize：用户规则",
       "location": "query",
       "name": "rule_type",
@@ -121,7 +121,7 @@
     },
     {
       "example": "1",
-      "help_en": "The priority of the defense rule. Valid values: 1 to 1000. A smaller value indicates a higher priority",
+      "help_en": "The priority of the rule. Valid values: 1 to 1000. A smaller value indicates a higher priority",
       "help_zh": "规则优先级，取值为1~1000，数字越小优先级越高",
       "location": "query",
       "name": "order_index",
@@ -134,7 +134,7 @@
     },
     {
       "example": "1",
-      "help_en": "The action on traffic. Valid values:\n\n1: blocks traffic.\n2: allows traffic and generates alerts.\n3: allows traffic and does not generate alerts",
+      "help_en": "The interception mode. Valid values:\n1: Block Mode.\n2: Alert mode.\n3: Allow mode",
       "help_zh": "拦截模式。取值：\n1：拦截模式\n2：告警模式\n3：放行模式",
       "location": "query",
       "name": "intercept_type",
@@ -156,7 +156,7 @@
         "properties": {
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The ID of the request, which is used to locate and troubleshoot issues",
+            "description_en": "The request ID, which is a unique identifier generated by Alibaba Cloud for the request. You can use this ID to troubleshoot issues",
             "description_zh": "本次调用请求的ID，是由阿里云为该请求生成的唯一标识符，可用于排查和定位问题",
             "example": "A01810A0-xxx5E2676",
             "type": "string"
