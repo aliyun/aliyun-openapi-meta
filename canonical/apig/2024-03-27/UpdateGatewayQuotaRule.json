@@ -77,7 +77,7 @@
     },
     {
       "example": "\t\nf8f44dc6cf369a017d56b7197eb4fb5ac4bbb6b09a92b9b41999541f50xxxxxx",
-      "help_en": "The conflict snapshot hash, used to prevent concurrent dirty overwrites when confirming an overwrite. Obtain this value from the response of a dry run request with dryRun set to true.\n\nThis parameter is not required in the following cases: no conflicts exist, the request is a dry run (dryRun=true), or overwrite is set to false.\n\nIf dryRun is set to false and overwrite is set to true but this parameter is missing or the value has expired, the backend returns accepted=false with a new conflict preview. Perform a new dry run to confirm the updated conflicts",
+      "help_en": "The conflict snapshot hash, used to prevent concurrent dirty overwrites when confirming an overwrite. Obtain this value from the response of a dry run request with dryRun set to true.\n\nThis parameter is not required in the following cases: no conflict exists, the request is a dry run with dryRun set to true, or overwrite is set to false (no overwrite confirmation).\n\nWhen dryRun is set to false and overwrite is set to true, if this parameter is not provided or the value has expired and no longer matches, the backend returns accepted=false with a new conflict preview. Perform a new dry run to confirm the updated conflicts",
       "help_zh": "冲突快照哈希，用于“确认覆盖时防并发脏覆盖”。通过先执行 dryRun=true 在返回数据提取。\n\n当以下情况不需要填写：没有冲突；只是 dryRun=true 预检；overwrite=false，即不确认覆盖。\n\n当当 dryRun = false 且 overwrite=true 时不带改参数或者该参数过期不匹配，后端会返回：accepted=false 并带新的冲突预览，需要重新执行 dryrun 确认新的冲突",
       "location": "body",
       "name": "conflict_hash",
@@ -108,7 +108,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to perform only a dry run without applying the actual configuration. A dry run checks whether conflicting rules exist on the bound API consumer. The same API consumer cannot have two natural period quotas with the same period. For example, you cannot add a calendar day quota rule to an API consumer that already has a calendar day quota rule",
+      "help_en": "Specifies whether to perform only a dry run without persisting or applying the configuration. A dry run checks whether conflicting rules exist on the bound consumer subjects. The same consumer subject cannot have two calendar-period quotas with the same period. For example, a consumer subject that already has a daily calendar quota cannot be assigned another daily calendar quota rule",
       "help_zh": "是否仅预检（预检不下发实际配置），用于检查绑定的消费主体上是否存在冲突的规则（同一消费主体不能配置两个相同周期的自然周期配额，例如已有自然日配额的消费主体不能再新增一个自然日配额规则）",
       "location": "body",
       "name": "dry_run",
@@ -121,7 +121,7 @@
       "type": "bool"
     },
     {
-      "help_en": "Specifies whether to allow overwriting when conflicts exist. If overwriting is allowed, conflicting subjects (consumers or consumer groups) are unbound from the old rule and bound to the new rule",
+      "help_en": "Specifies whether to allow overwriting when a conflict exists. If overwriting is allowed, conflicting subjects (consumers or consumer groups) are unbound from the old rule and bound to the new rule",
       "help_zh": "冲突时是否允许覆盖。注意如果选择允许覆盖，冲突主体（消费者或消费者组）会从旧规则解绑并绑定到新规则",
       "location": "body",
       "name": "overwrite",
@@ -237,7 +237,7 @@
                       "properties": {
                         "conflictPeriodType": {
                           "backendName": "conflictPeriodType",
-                          "description_en": "The period type of the existing conflicting rule on the consumer subject. Valid values: day (daily), week (weekly), month (monthly)",
+                          "description_en": "The period type of the existing conflicting rule on the consumer subject. Valid values: day (daily), week (weekly), and month (monthly)",
                           "description_zh": "消费主体上已有冲突规则的周期类型。conflictPeriodType  = \"day\"/\"week\"/\"month\"分别表示消费主体已有冲突规则的周期为日/周/月",
                           "example": "week",
                           "title_en": "消费者上已有冲突规则的周期类型。conflictPeriodType  = \"day\"/\"week\"/\"month\"分别表示消费者已有冲突规则的周期为日/周/月",
@@ -246,7 +246,7 @@
                         },
                         "conflictType": {
                           "backendName": "conflictType",
-                          "description_en": "The type of the existing conflicting rule on the consumer subject. Valid values: calendar (calendar period) and epoch (custom period)",
+                          "description_en": "The type of the existing conflicting rule on the consumer subject. A value of calendar indicates a calendar-period rule. A value of epoch indicates a custom-period rule",
                           "description_zh": "消费主体上已有冲突规则的类型。conflictType  = \"calendar\"表示消费主体已有冲突规则为自然周期；conflictType = \"epoch\"表示已有冲突规则为自定义周期",
                           "example": "calendar",
                           "title_en": "消费者上已有冲突规则的类型。conflictType  = \"calendar\"表示消费者已有冲突规则为自然周期；conflictType = \"epoch\"表示已有冲突规则为自定义周期。",
@@ -316,7 +316,7 @@
               },
               "dryRun": {
                 "backendName": "dryRun",
-                "description_en": "Indicates whether this is a dry run",
+                "description_en": "Indicates whether the request is a dry run",
                 "description_zh": "是否预检",
                 "example": "true",
                 "title_en": "是否预检",
