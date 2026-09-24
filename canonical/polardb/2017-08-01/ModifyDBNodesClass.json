@@ -3,7 +3,7 @@
   "cmd_full_name": "polardb modify-db-nodes-class",
   "cmd_name": "modify-db-nodes-class",
   "deprecated": false,
-  "description_en": "Modifies the specifications of a single node in a PolarDB cluster",
+  "description_en": "Changes the specifications of a single node in a PolarDB cluster",
   "description_zh": "变更PolarDB集群单个节点的规格",
   "kebab_example": "aliyun polardb modify-db-nodes-class --db-cluster-id pc-0000000000000 --modify-type Upgrade --db-node DBNodeId=pi-0000000000000 TargetClass=polar.mysql.x4.medium --region cn-hangzhou",
   "method": "GET|POST",
@@ -37,7 +37,7 @@
     {
       "doc_required": true,
       "example": "Upgrade",
-      "help_en": "The modification type. Valid values:\n\nUpgrade: Upgrades the specifications.\n\nDowngrade: Downgrades the specifications",
+      "help_en": "The type of the specification change. Valid values:\n\nUpgrade: Upgrades the specifications.\n\nDowngrade: Downgrades the specifications",
       "help_zh": "变更类型，取值范围如下：\n\nUpgrade：升级规格\n\nDowngrade：降级规格",
       "location": "query",
       "name": "modify_type",
@@ -54,7 +54,7 @@
         "fields": [
           {
             "example": "pi-*************",
-            "help_en": "The ID of the cluster node.\n\nIf you specify this parameter, you must also specify DBNode.N.TargetClass. N represents the index of the node in the request, starting from 1",
+            "help_en": "The cluster node ID.\nIf this parameter is specified, DBNode.N.TargetClass is required. N is an integer that starts from 1. Maximum value: 16 minus the current number of nodes",
             "help_zh": "集群节点ID。\n如果该参数传入后，DBNode.N.TargetClass必填。N为从1开始的整数，最大值=16-当前节点数。 ",
             "name": "db_node_id",
             "options": [
@@ -66,7 +66,7 @@
           },
           {
             "example": "polar.mysql.x4.medium",
-            "help_en": "The target specifications of the node. For more information about node specifications, see https://help.aliyun.com/document_detail/102542.html.\n\nIf you specify this parameter, you must also specify DBNode.N.DBNodeId. N represents the index of the node in the request, starting from 1",
+            "help_en": "The specifications of the node to be changed. For more information about node specifications, see https://help.aliyun.com/document_detail/102542.html. \n\nIf this parameter is specified, DBNode.N.DBNodeId is required. N is an integer that starts from 1. Maximum value: 16 minus the current number of nodes",
             "help_zh": "变配节点的规格。关于节点规格，请参见https://help.aliyun.com/document_detail/102542.html。 \n\n如果该参数传入后，DBNode.N.DBNodeId必填。N为从1开始的整数，最大值=16-当前节点数",
             "name": "target_class",
             "options": [
@@ -93,7 +93,7 @@
     },
     {
       "example": "6000170000591aed949d0f54a343f1a4233c1e7d1c5c******",
-      "help_en": "A client-generated token to ensure request idempotence. This token must be unique for each request and must be a case-sensitive string of up to 64 ASCII characters",
+      "help_en": "The client token that is used to ensure the idempotence of the request. You can use the client to generate the value. Make sure that the value is unique among different requests. The token is case-sensitive and cannot exceed 64 ASCII characters in length",
       "help_zh": "用于保证请求的幂等性，防止重复提交请求。由客户端生成该参数值，保证在不同请求间唯一，大小写敏感、不超过64个ASCII字符",
       "location": "query",
       "name": "client_token",
@@ -106,7 +106,7 @@
     },
     {
       "example": "2021-01-14T09:00:00Z",
-      "help_en": "The earliest time to begin the scheduled upgrade of the node specifications. Specify the time in UTC using the `YYYY-MM-DDThh:mm:ssZ` format.\n\nThis parameter takes effect only when `ModifyType` is set to `Upgrade`.\n\nThe specified time must be within the next 24 hours.\n\nIf this parameter is not specified, the upgrade task runs immediately",
+      "help_en": "The earliest time to start the scheduled (executed within the target time period) specification upgrade task. Specify the time in the `YYYY-MM-DDThh:mm:ssZ` format (UTC).\nThis parameter takes effect only when `ModifyType` is set to `Upgrade`.\nThe start time can be any time point within the next 24 hours. For example, if the current time is `2021-01-14T09:00:00Z`, the start time can range from `2021-01-14T09:00:00Z` to `2021-01-15T09:00:00Z`.\nIf this parameter is left empty, the specification upgrade task is immediately executed by default",
       "help_zh": "开始执行定时（即在目标时间段内执行）升级配置任务的最早时间。格式为`YYYY-MM-DDThh:mm:ssZ`（UTC）。\n仅当`ModifyType`取值为`Upgrade`时，该参数生效。\n开始时间的取值范围为未来24小时内的任意时间点。例如当前时间为`2021-01-14T09:00:00Z`，此处允许填入的开始时间范围为`2021-01-14T09:00:00Z`~`2021-01-15T09:00:00Z`。\n若该参数留空，默认立即执行升级配置任务",
       "location": "query",
       "name": "planned_start_time",
@@ -119,7 +119,7 @@
     },
     {
       "example": "2021-01-14T09:30:00Z",
-      "help_en": "The latest time to begin the scheduled task. Specify the time in UTC using the `YYYY-MM-DDThh:mm:ssZ` format.\n\nThe latest start time must be at least 30 minutes later than the earliest start time.\n\nIf you specify `PlannedStartTime` but not this parameter, the task starts within 30 minutes of the `PlannedStartTime`. For example, if you set `PlannedStartTime` to `2021-01-14T09:00:00Z` and leave this parameter empty, the task will start by `2021-01-14T09:30:00Z`",
+      "help_en": "The latest time to start the scheduled task. Specify the time in the `YYYY-MM-DDThh:mm:ssZ` format (UTC).\nThe latest time must be at least 30 minutes later than the start time.\nIf `PlannedStartTime` is set but this parameter is not specified, the latest time to execute the task defaults to `start time + 30 minutes`. For example, if `PlannedStartTime` is set to `2021-01-14T09:00:00Z` and this parameter is left empty, the task starts no later than `2021-01-14T09:30:00Z`",
       "help_zh": "开始执行目标定时任务的最晚时间。格式为`YYYY-MM-DDThh:mm:ssZ`（UTC）。\n最晚时间需晚于开始时间的30分钟或以上。\n若设置了`PlannedStartTime`但未指定该参数，执行目标任务的最晚时间默认为`开始时间+30分钟`。例如当设置`PlannedStartTime`为`2021-01-14T09:00:00Z`且该参数留空时，目标任务最晚将于`2021-01-14T09:30:00Z`开始执行",
       "location": "query",
       "name": "planned_end_time",
@@ -132,7 +132,7 @@
     },
     {
       "example": "normal_general",
-      "help_en": "The sub-category of the cluster. Valid values:\n\nnormal_exclusive: dedicated specifications\n\nnormal_general: general-purpose specifications",
+      "help_en": "The cluster sub-series. Valid values:\n\nnormal_exclusive: Dedicated\n\nnormal_general: General-purpose",
       "help_zh": "集群子系列。取值范围如下：\n\nnormal_exclusive：独享规格\n\nnormal_general：通用规格",
       "location": "query",
       "name": "sub_category",
@@ -145,8 +145,8 @@
     },
     {
       "example": "2021-01-14T09:30:00Z",
-      "help_en": "The planned time for the transient disconnection",
-      "help_zh": "计划闪断时间",
+      "help_en": "The planned transient disconnection time.\n\nThe time is in the ISO 8601 format in UTC (format: YYYY-MM-DDTHH:mm:ssZ)",
+      "help_zh": "计划闪断时间。\n\n时间采用 ISO 8601 格式，时区为 UTC（格式：YYYY-MM-DDTHH:mm:ssZ）",
       "location": "query",
       "name": "planned_flashing_off_time",
       "options": [
@@ -158,7 +158,7 @@
     },
     {
       "example": "ENS",
-      "help_en": "The cloud provider of the instance",
+      "help_en": "The cloud service provider to which the instance belongs",
       "help_zh": "实例所属的云服务商",
       "location": "query",
       "name": "cloud_provider",
@@ -170,7 +170,7 @@
       "type": "string"
     },
     {
-      "help_en": "Specifies whether to automatically apply a coupon. Valid values:\n\ntrue (Default): A coupon is automatically applied.\n\nfalse: A coupon is not applied",
+      "help_en": "Specifies whether to automatically use coupons. Valid values:\ntrue (default): Uses coupons.\nfalse: Does not use coupons",
       "help_zh": "是否自动使用优惠券，取值：\ntrue（默认）：使用优惠券。\nfalse：不使用优惠券",
       "location": "query",
       "name": "auto_use_coupon",
@@ -183,7 +183,7 @@
     },
     {
       "example": "727xxxxxx934",
-      "help_en": "The coupon code. If you do not specify this parameter, a default coupon is applied",
+      "help_en": "The coupon code. If this parameter is not specified, the default coupon is used",
       "help_zh": "优惠券编号，不填时使用默认优惠券",
       "location": "query",
       "name": "promotion_code",
