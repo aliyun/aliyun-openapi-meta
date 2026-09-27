@@ -3,7 +3,7 @@
   "cmd_full_name": "aidge merchandise-placement-detection",
   "cmd_name": "merchandise-placement-detection",
   "deprecated": false,
-  "description_en": "Detects and identifies products displayed on store shelves or floor stacks by combining a multimodal large language model (MLLM) with visual vector recall, targeting shelf and floor-stack inspection scenarios in offline retail and channel stores. The service first uses an MLLM to detect the bounding box and preliminary name of each product in a store photo, then performs similarity recall against a customer-specific SKU vector library to exact match each product to the customer's own SKUs, and outputs per-product structured results that can be directly integrated with business systems. This is applicable to large-scale, high-concurrent visual recognition pipelines such as remote display auditing by headquarters, SKU distribution verification, and display compliance inspection for offline stores",
+  "description_en": "Detects and identifies products displayed on store shelves or floor stacks by using a multimodal large language model (MLLM) combined with visual vector recall. The service is designed for shelf and floor stack inspection scenarios in offline retail and channel stores. It first uses the MLLM to detect the bounding box and preliminary name of each product in a store photo, then performs similarity recall against a customer-specific SKU vector library to exactly match each product to the customer's own SKUs, and outputs per-product structured results that can be directly integrated with business systems. This service is suitable for large-scale, high-concurrent visual recognition pipelines such as remote display auditing by headquarters, SKU distribution verification, and display compliance inspection for offline stores",
   "description_zh": "陈列检测是基于多模态大模型（MLLM）+ 视觉向量召回构建的门店商品陈列智能识别能力，面向线下零售 / 渠道门店的货架 / 地堆陈列巡检场景。产品对门店实拍的货架图、地堆图，先用多模态大模型检测出每个商品的边界框与初步名称，再以客户专属 SKU 向量库做相似度召回，把每个商品精确匹配到客户自有的 SKU，输出可直接对接业务系统的逐商品结构化结果。适用于总部对线下门店陈列的远程稽核、SKU 铺货核验、陈列合规巡检等大规模、高并发的视觉识别流水线",
   "kebab_example": "aliyun aidge merchandise-placement-detection --image-url https://example.com/shelf.jpg --region cn-hangzhou",
   "method": "POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "https://example.com/shelf.jpg",
-      "help_en": "The URL of the shelf or floor-stack photo to be recognized (accessible over the Internet or from OSS)",
+      "help_en": "The URL of the original shelf or floor stack image to be recognized (accessible over the Internet or through OSS)",
       "help_zh": "待识别的货架 / 地堆原图 URL（公网或 OSS 可访问）",
       "location": "query",
       "name": "image_url",
@@ -35,7 +35,7 @@
     },
     {
       "example": "rag_xxx",
-      "help_en": "The ID of the customer-specific SKU vector library, which determines which library is used for recall. The library must be created in advance through the library creation process",
+      "help_en": "The ID of the customer-specific SKU vector library, which determines which library is used for retrieval. The library must be created in advance through the library creation process",
       "help_zh": "客户专属 SKU 向量库 ID，决定在哪一份库内召回；该库需先通过建库流程建好",
       "location": "query",
       "name": "rag_id",
@@ -48,7 +48,7 @@
     },
     {
       "example": "水乳",
-      "help_en": "The business type (reserved for future routing by business line). The current release supports skincare",
+      "help_en": "The business type (reserved for future routing by business line). The current release supports skincare & lotion",
       "help_zh": "业务类型（预留，用于后续按业务线路由）；本期上线【水乳】",
       "location": "query",
       "name": "type",
@@ -61,7 +61,7 @@
     },
     {
       "example": "api_xxx",
-      "help_en": "Specify this parameter to use a custom API version. If you created a custom API during the trial phase, you can find the corresponding ApiId in the product console under Intelligent Inspection > API Management > My APIs",
+      "help_en": "Specify this parameter to use a custom API version. If you created a custom API during the trial phase, you can find the corresponding ApiId in the product console under Intelligent Inspection > API Management > My API",
       "help_zh": "如需指定自定义版本的 API 可传此参数：若在试用阶段创建过「我的 API」，可通过产品后台「智能巡检 - API 管理 - 我的 API」查询对应功能的 ApiId",
       "location": "query",
       "name": "api_id",
@@ -69,6 +69,19 @@
         "--api-id"
       ],
       "raw_name": "ApiId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "请识别图片中所有可见的饮料商品，只返回 JSON 数组。输出格式示例： [{\"bbox_2d\":[100,200,250,600],\"sku_name\":\"可口可乐\"}]",
+      "help_en": "The custom rule. Enter a detection prompt as the workflow input parameter rule. When this parameter is specified, the type parameter is not required (a dedicated rule branch is used). If Rule is empty, you must specify Type to start detection",
+      "help_zh": "自定义规则：用户输入检测 Prompt，作为工作流入参 rule 下发，不再传 type（有 rule 走独立规则分支）。空rule必须填写type才可开始检测",
+      "location": "query",
+      "name": "rule",
+      "options": [
+        "--rule"
+      ],
+      "raw_name": "Rule",
       "required": false,
       "type": "string"
     }
@@ -84,7 +97,7 @@
         "properties": {
           "Code": {
             "backendName": "code",
-            "description_en": "The error code. This parameter is not returned if the call is successful",
+            "description_en": "The error code. This parameter is not returned for successful calls",
             "description_zh": "错误码，正常调用时，不会返回该参数",
             "example": "200",
             "title_en": "错误码，正常调用时，不会返回该参数。",
@@ -108,18 +121,18 @@
               },
               "Data": {
                 "backendName": "data",
-                "description_en": "The list of recall details for each detection box",
+                "description_en": "The list of retrieval details for each detection box",
                 "description_zh": "单框召回明细列表",
                 "itemName": "DetectItem",
                 "items": {
                   "properties": {
                     "Bbox": {
                       "backendName": "bbox",
-                      "description_en": "The position coordinates of the detection box in the format [x1,y1,x2,y2]",
+                      "description_en": "The detection box position coordinates in the format [x1,y1,x2,y2]",
                       "description_zh": "检测框位置坐标 [x1,y1,x2,y2]",
                       "itemName": "Coordinate",
                       "items": {
-                        "description_en": "The type of elements in the array",
+                        "description_en": "The element type in the array",
                         "description_zh": "数组里的类型",
                         "example": "1",
                         "format": "float",
@@ -131,7 +144,7 @@
                     },
                     "Error": {
                       "backendName": "error",
-                      "description_en": "The failure reason for the detection box. The value is null if the detection is successful",
+                      "description_en": "The failure reason for a single detection box. The value is null if the detection is successful",
                       "description_zh": "单框失败原因，成功为 null",
                       "example": "“embedding失败”",
                       "title_en": "单框失败原因，成功为 null",
@@ -195,7 +208,7 @@
                         "properties": {
                           "Rank": {
                             "backendName": "rank",
-                            "description_en": "The recall rank of the product",
+                            "description_en": "The recall rank",
                             "description_zh": "召回排名",
                             "example": "1",
                             "format": "int32",
@@ -268,7 +281,7 @@
           },
           "Message": {
             "backendName": "message",
-            "description_en": "The error message. This parameter is not returned if the call is successful",
+            "description_en": "The error message. This parameter is not returned for successful calls",
             "description_zh": "错误信息，正常调用时，不会返回该参数",
             "example": "OK",
             "title_en": "错误信息，正常调用时，不会返回该参数。",
