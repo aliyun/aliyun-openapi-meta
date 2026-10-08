@@ -3,7 +3,7 @@
   "cmd_full_name": "dataphin-public list-tables",
   "cmd_name": "list-tables",
   "deprecated": false,
-  "description_en": "Performs a paged query to retrieve asset table metadata.\nOnline version: v5.4.2",
+  "description_en": "Queries the metadata of asset tables by page.\nAvailable in version v5.4.2",
   "description_zh": "分页查询查询资产表元数据。\n上线版本：v5.4.2",
   "kebab_example": "aliyun dataphin-public list-tables --op-tenant-id 30001011 --region cn-hangzhou",
   "method": "POST",
@@ -36,28 +36,53 @@
       "type": "int"
     },
     {
+      "example": "30001011",
+      "help_en": "The ID of the operator",
+      "help_zh": "操作用户ID",
+      "location": "query",
+      "name": "op_user_id",
+      "options": [
+        "--op-user-id"
+      ],
+      "raw_name": "OpUserId",
+      "required": false,
+      "type": "string"
+    },
+    {
       "fields": [
         {
           "example": "LD_test01_dev",
-          "help_en": "The asset catalog, such as the project name or business unit name",
+          "help_en": "The asset catalog: project name and business unit name",
           "help_zh": "资产目录：项目名、业务板块名",
           "name": "catalog",
           "options": [
             "--catalog"
           ],
           "raw_name": "Catalog",
-          "required": true,
+          "required": false,
           "type": "string"
         },
         {
           "example": "test",
-          "help_en": "The keyword for searching. Table names are supported",
+          "help_en": "The supported keyword: table name",
           "help_zh": "关键字支持：表名",
           "name": "keyword",
           "options": [
             "--keyword"
           ],
           "raw_name": "Keyword",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "30012011",
+          "help_en": "The ID of the owner",
+          "help_zh": "负责人id",
+          "name": "owner_id",
+          "options": [
+            "--owner-id"
+          ],
+          "raw_name": "OwnerId",
           "required": false,
           "type": "string"
         },
@@ -75,7 +100,7 @@
         },
         {
           "example": "20",
-          "help_en": "The number of records per page. Default value: 20",
+          "help_en": "The number of entries per page. Default value: 20",
           "help_zh": "分页记录数, 默认20",
           "name": "page_size",
           "options": [
@@ -84,6 +109,20 @@
           "raw_name": "PageSize",
           "required": false,
           "type": "int"
+        },
+        {
+          "element": {
+            "type": "string"
+          },
+          "help_en": "The table types. If you do not specify this parameter or pass an empty list, all table types are queried. Valid values:\nPHYSICAL_TABLE: Physical table of the compute source.\nPHYSICAL_VIEW: View of the compute source.\nPHYSICAL_MATERIALIZED_VIEW: Materialized view of the compute source.\nSTREAM_TABLE: Meta table.\nMIRROR_TABLE: Mirror table.\nDIM: Logical dimension table.\nFACT: Logical fact table.\nSUM_BIZ_UNIT: Logical aggregate table.\nLOGIC_VIEW: Logical view.\nDATASOURCE_TABLE: Data source table.\nDATASOURCE_VIEW: Data source view.\nDATASOURCE_MATERIALIZED_VIEW: Data source materialized view",
+          "help_zh": "表类型；不传或传空列表时查询全部表类型, 表类型:\nPHYSICAL_TABLE计算源物理表\nPHYSICAL_VIEW计算源视图\nPHYSICAL_MATERIALIZED_VIEW计算源物化视图\nSTREAM_TABLE元表\nMIRROR_TABLE镜像表\nDIM维度逻辑表\nFACT事实逻辑表\nSUM_BIZ_UNIT汇总逻辑表\nLOGIC_VIEW逻辑视图\nDATASOURCE_TABLE数据源表\nDATASOURCE_VIEW数据源表视图\nDATASOURCE_MATERIALIZED_VIEW数据源表物化视图",
+          "name": "sub_types",
+          "options": [
+            "--sub-types"
+          ],
+          "raw_name": "SubTypes",
+          "required": false,
+          "type": "array"
         }
       ],
       "help_en": "The paged query conditions",
@@ -97,19 +136,6 @@
       "raw_name": "ListQuery",
       "required": false,
       "type": "object"
-    },
-    {
-      "example": "30001011",
-      "help_en": "操作用户ID",
-      "help_zh": "操作用户ID",
-      "location": "query",
-      "name": "op_user_id",
-      "options": [
-        "--op-user-id"
-      ],
-      "raw_name": "OpUserId",
-      "required": false,
-      "type": "string"
     }
   ],
   "pathPattern": "",
@@ -132,7 +158,7 @@
           },
           "HttpStatusCode": {
             "backendName": "HttpStatusCode",
-            "description_en": "The HTTP status code",
+            "description_en": "The HTTP response code",
             "description_zh": "HTTP响应码",
             "example": "200",
             "format": "int32",
@@ -142,7 +168,7 @@
           },
           "Message": {
             "backendName": "Message",
-            "description_en": "The details of the backend exception",
+            "description_en": "The backend exception details",
             "description_zh": "后端相应异常详情",
             "example": "internal error",
             "title_en": "后端相应异常详情",
@@ -156,7 +182,7 @@
             "properties": {
               "TableList": {
                 "backendName": "TableList",
-                "description_en": "The list of tables",
+                "description_en": "The table list",
                 "description_zh": "表列表",
                 "itemName": "Table",
                 "items": {
@@ -180,7 +206,7 @@
                     },
                     "BizUnitId": {
                       "backendName": "BizUnitId",
-                      "description_en": "The ID of the business unit",
+                      "description_en": "The business unit ID",
                       "description_zh": "业务板块Id",
                       "example": "2011",
                       "format": "int64",
@@ -190,7 +216,7 @@
                     },
                     "BizUnitName": {
                       "backendName": "BizUnitName",
-                      "description_en": "The name of the business unit",
+                      "description_en": "The business unit name",
                       "description_zh": "业务板块名称",
                       "example": "LD_test01",
                       "title_en": "业务板块名称",
@@ -199,7 +225,7 @@
                     },
                     "Comment": {
                       "backendName": "Comment",
-                      "description_en": "The comment of the table",
+                      "description_en": "The table comment",
                       "description_zh": "表注释",
                       "example": "test",
                       "title_en": "表注释",
@@ -217,7 +243,7 @@
                     },
                     "Creator": {
                       "backendName": "Creator",
-                      "description_en": "The ID of the creator",
+                      "description_en": "The creator ID",
                       "description_zh": "创建人id",
                       "example": "30011211",
                       "title_en": "创建人id",
@@ -226,7 +252,7 @@
                     },
                     "DataDomainId": {
                       "backendName": "DataDomainId",
-                      "description_en": "The ID of the data domain",
+                      "description_en": "The data domain ID",
                       "description_zh": "数据域id",
                       "example": "211",
                       "format": "int64",
@@ -236,7 +262,7 @@
                     },
                     "DataDomainName": {
                       "backendName": "DataDomainName",
-                      "description_en": "The name of the data domain",
+                      "description_en": "The subject area name",
                       "description_zh": "主题域名称",
                       "example": "211",
                       "title_en": "主题域名称",
@@ -245,7 +271,7 @@
                     },
                     "DataSourceId": {
                       "backendName": "DataSourceId",
-                      "description_en": "The ID of the data source",
+                      "description_en": "The data source ID",
                       "description_zh": "数据源ID",
                       "example": "3301",
                       "format": "int64",
@@ -255,7 +281,7 @@
                     },
                     "DisplayName": {
                       "backendName": "DisplayName",
-                      "description_en": "The display name of the table",
+                      "description_en": "The table display name",
                       "description_zh": "表展示名",
                       "example": "学生",
                       "title_en": "表展示名",
@@ -264,7 +290,7 @@
                     },
                     "Env": {
                       "backendName": "Env",
-                      "description_en": "The environment. Valid values:\ndev\nprod",
+                      "description_en": "The environment. Valid values: dev and prod",
                       "description_zh": "所属环境：dev、prod",
                       "example": "dev",
                       "title_en": "所属环境：dev、prod",
@@ -273,7 +299,7 @@
                     },
                     "FileId": {
                       "backendName": "FileId",
-                      "description_en": "The file ID. This value is used to navigate to the ODM model",
+                      "description_en": "The file ID used to navigate to the ODM model",
                       "description_zh": "文件ID, 跳转ODM模型使用",
                       "example": "2",
                       "title_en": "文件ID, 跳转ODM模型使用",
@@ -282,7 +308,7 @@
                     },
                     "Guid": {
                       "backendName": "Guid",
-                      "description_en": "The GUID of the table",
+                      "description_en": "The table GUID",
                       "description_zh": "表Guid",
                       "example": "10011",
                       "title_en": "表Guid",
@@ -291,7 +317,7 @@
                     },
                     "IsBasicMode": {
                       "backendName": "IsBasicMode",
-                      "description_en": "Indicates whether the project or business version to which the table belongs is in Basic mode",
+                      "description_en": "Specifies whether the project or business version to which the table belongs is in Basic mode",
                       "description_zh": "表所属项目或者业务版本是否是Basic模式",
                       "title_en": "表所属项目或者业务版本是否是Basic模式",
                       "title_zh": "表所属项目或者业务版本是否是Basic模式",
@@ -299,7 +325,7 @@
                     },
                     "IsPartitionTable": {
                       "backendName": "IsPartitionTable",
-                      "description_en": "Indicates whether the table is a partitioned table",
+                      "description_en": "Specifies whether the table is a partitioned table",
                       "description_zh": "是否分区键",
                       "title_en": "是否分区键",
                       "title_zh": "是否分区键",
@@ -344,7 +370,7 @@
                     },
                     "Name": {
                       "backendName": "Name",
-                      "description_en": "The name of the table",
+                      "description_en": "The table name",
                       "description_zh": "表名",
                       "example": "t_test01",
                       "title_en": "表名",
@@ -353,7 +379,7 @@
                     },
                     "Owner": {
                       "backendName": "Owner",
-                      "description_en": "The Dataphin user ID of the table owner. This value may be empty if the owner is not bound",
+                      "description_en": "The user ID of the table owner in Dataphin. This parameter may be empty if the owner is not bound",
                       "description_zh": "表负责人在Dataphin的用户Id, 未绑定可能为空",
                       "example": "30011211",
                       "title_en": "表负责人在Dataphin的用户Id, 未绑定可能为空",
@@ -362,7 +388,7 @@
                     },
                     "ParentModelId": {
                       "backendName": "ParentModelId",
-                      "description_en": "The ID of the parent model. This value is used to navigate to the ODM model",
+                      "description_en": "The parent model ID used to navigate to the ODM model",
                       "description_zh": "父模型ID, 跳转ODM模型使用",
                       "example": "1",
                       "title_en": "父模型ID, 跳转ODM模型使用",
@@ -371,7 +397,7 @@
                     },
                     "ProjectId": {
                       "backendName": "ProjectId",
-                      "description_en": "The ID of the logical project",
+                      "description_en": "The logical project ID",
                       "description_zh": "逻辑项目id",
                       "example": "1011",
                       "format": "int64",
@@ -381,7 +407,7 @@
                     },
                     "ProjectName": {
                       "backendName": "ProjectName",
-                      "description_en": "The name of the logical project",
+                      "description_en": "The logical project name",
                       "description_zh": "逻辑项目名",
                       "example": "testPrj",
                       "title_en": "逻辑项目名",
@@ -409,7 +435,7 @@
                     },
                     "SecurityLevelName": {
                       "backendName": "SecurityLevelName",
-                      "description_en": "The name of the security classification",
+                      "description_en": "The security classification name",
                       "description_zh": "安全分级名称",
                       "example": "高级",
                       "title_en": "安全分级名称",
@@ -418,7 +444,7 @@
                     },
                     "StorageType": {
                       "backendName": "StorageType",
-                      "description_en": "The storage type. Valid values:\nHIVE\nMAX_COMPUTE",
+                      "description_en": "The storage type. Valid values: HIVE and MAX_COMPUTE",
                       "description_zh": "存储类型：HIVE、MAX_COMPUTE",
                       "example": "HIVE",
                       "title_en": "存储类型：HIVE、MAX_COMPUTE",
@@ -427,7 +453,7 @@
                     },
                     "StreamTableConfig": {
                       "backendName": "StreamTableConfig",
-                      "description_en": "The dynamic properties of the real-time meta table",
+                      "description_en": "The dynamic properties of the real-time metatable",
                       "description_zh": "实时元表类的动态属性",
                       "itemName": "StreamTableConfigItem",
                       "items": {
@@ -514,7 +540,7 @@
           },
           "Success": {
             "backendName": "Success",
-            "description_en": "Indicates whether the request was successful",
+            "description_en": "Indicates whether the request is successful",
             "description_zh": "请求成功与否",
             "title_en": "请求成功与否",
             "title_zh": "请求成功与否",
