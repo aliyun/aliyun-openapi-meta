@@ -3,7 +3,7 @@
   "cmd_full_name": "ice delete-media-infos",
   "cmd_name": "delete-media-infos",
   "deprecated": false,
-  "description_en": "Deletes multiple media assets at a time. You can delete at most 20 media assets at a time. If MediaIds is specified, it is preferentially used. If MediaIds is empty, InputURLs must be specified",
+  "description_en": "Deletes media asset information in batches. A maximum of 20 media assets can be deleted at a time. If MediaIds is not empty, MediaIds takes precedence. If MediaIds is empty, InputURLs must not be empty",
   "description_zh": "批量删除媒资信息，最多一次删20个。MediaIds不为空时，优先使用MediaIds。如果MediaIds为空，则InputURLs必须非空",
   "kebab_example": "aliyun ice delete-media-infos --media-ids 000020b48fb04483915d4f2cd8ac0000,000015d4a4b0448391508f2cb4860000 --input-urls Http_s_://example-bucket.oss-cn-shanghai.aliyuncs.com/example.mp40_or_oss://example-bucket/example.mp40 --delete-physical-files false --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "****20b48fb04483915d4f2cd8ac****,****15d4a4b0448391508f2cb486****",
-      "help_en": "The ID of the media asset that you want to delete from Intelligent Media Services (IMS).\n\nSeparate multiple IDs with commas (,).\n\nIf you leave MediaIds empty, you must specify InputURLs",
+      "help_en": "The IMS media asset IDs. Separate multiple IDs with commas (,). If the MediaIds parameter is empty, the InputURLs parameter must not be empty",
       "help_zh": "IMS 媒资ID\n多个用英文逗号分隔。\n\n若MediaIds 字段为空，则InputURLs字段必须不为空",
       "location": "query",
       "name": "media_ids",
@@ -34,8 +34,8 @@
       "type": "string"
     },
     {
-      "example": "Http(s)://example-bucket.oss-cn-shanghai.aliyuncs.com/example.mp4? or oss://example-bucket/example.mp4?",
-      "help_en": "The URL of the media asset that you want to delete. The file corresponding to the URL must be registered with IMS. Separate multiple URLs with commas (,). The following two formats are supported:\n\nhttp(s)://example-bucket.oss-cn-shanghai.aliyuncs.com/example.mp4?\n\nOSS://example-bucket/example.mp4?<br>\n   In this format, it is considered by default that the region of the OSS bucket in which the media asset resides is the same as the region in which IMS is activated",
+      "example": "http(s)://example-bucket.oss-cn-shanghai.aliyuncs.com/example.mp4?",
+      "help_en": "The URLs of the media assets to be deleted in the corresponding system. The files corresponding to the URLs must be registered in IMS first. Separate multiple URLs with commas (,). Two formats are supported: 1. http(s)://example-bucket.oss-cn-shanghai.aliyuncs.com/example.mp4? 2. OSS://example-bucket/example.mp4? In the second format, the default OSS region is the same as the service registration area",
       "help_zh": "待删除的媒资在相应系统中的地址，该地址对应的文件需要先在IMS中注册，多个URL用英文逗号分隔。\n支持两种格式\nhttp(s)://example-bucket.oss-cn-shanghai.aliyuncs.com/example.mp4?\nOSS://example-bucket/example.mp4?  \n此格式默认OSS region与服务接入区域一致",
       "location": "query",
       "name": "input_urls",
@@ -48,7 +48,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to delete the physical file of the media asset.\n\nIf the media asset is stored in your own OSS bucket, you must authorize the service role AliyunICEDefaultRole in advance. For more information<props=\"china\">, see Authorize IMS to delete recording files in OSS (https://help.aliyun.com/zh/ims/user-guide/record?spm=a2c4g.11186623.0.i8#0737d9c437bmn)</props>",
+      "help_en": "Specifies whether to delete the physical files of the media assets. If the storage address of a media asset is a user-owned OSS bucket, you must authorize the AliyunICEDefaultRole service role in advance<props=\"china\">. For more information, see Delete recorded files (OSS authorization management) (https://www.alibabacloud.com/help/en/ims/user-guide/record#0737d9c437bmn)</props>",
       "help_zh": "是否删除媒资的物理文件。\n\n若媒资的存储地址是用户自有oss，需对服务角色AliyunICEDefaultRole提前进行授权<props=\"china\">，具体操作请参见删除录制文件说明（OSS授权管理） (https://help.aliyun.com/zh/ims/user-guide/record?spm=a2c4g.11186623.0.i8#0737d9c437bmn)</props>",
       "location": "query",
       "name": "delete_physical_files",
@@ -66,16 +66,16 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response parameters",
+        "description_en": "Schema of Response",
         "description_zh": "Schema of Response",
         "properties": {
           "ForbiddenList": {
             "backendName": "data.forbiddenList",
-            "description_en": "The IDs or URLs of media assets that cannot be deleted. Generally, media assets cannot be deleted if you do not have the required permissions",
+            "description_en": "The list of media asset IDs or URLs (exactly as entered) that cannot be deleted. This is generally caused by a lack of permissions",
             "description_zh": "不可删除的媒资ID或URL（与用户输入一致）列表。一般由于无权限导致",
             "itemName": "forbiddenId",
             "items": {
-              "description_en": "The ID or URL of the media asset that cannot be deleted",
+              "description_en": "The media asset ID or URL (exactly as entered) that cannot be deleted",
               "description_zh": "不可删除的媒资ID或URL（与用户输入一致）",
               "example": "****15d4a4b0448391508f2cb486****\n",
               "type": "string"
@@ -84,11 +84,11 @@
           },
           "IgnoredList": {
             "backendName": "data.ignoredList",
-            "description_en": "The IDs or URLs of ignored media assets. An error occurred while obtaining such media assets",
+            "description_en": "The list of IDs or input URLs (exactly as entered) that encountered errors",
             "description_zh": "出现获取错误的ID或InputURL（与用户输入一致）列表",
             "itemName": "ignoredId",
             "items": {
-              "description_en": "The ID or URL of the ignored media asset. An error occurred while obtaining the media asset",
+              "description_en": "The ID or input URL (exactly as entered) that encountered an error",
               "description_zh": "出现获取错误的ID或InputURL（与用户输入一致）",
               "example": "****20b48fb04483915d4f2cd8ac****",
               "type": "string"
