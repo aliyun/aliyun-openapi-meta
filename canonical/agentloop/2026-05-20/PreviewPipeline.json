@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun agentloop POST /agentspace/my-agent-space/pipeline/preview --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"pipeline\":{\"nodes\":[{\"id\":\"node-1\",\"type\":\"transform\",\"parameters\":{\"key\":\"example-string\"}}]},\"fromTime\":1735660800,\"source\":{\"inputFields\":[{\"name\":\"question\",\"type\":\"text\"}],\"type\":\"SLS\",\"logstore\":{\"query\":\"0_SELECT_0\",\"project\":\"my-sls-project\",\"logstore\":\"my-sls-logstore\"},\"dataset\":{\"filter\":\"status_=_pending\",\"dataset\":\"my-dataset\"}},\"toTime\":1735747200}' --version 2026-05-20 --force",
+  "camel_example": "aliyun agentloop POST /agentspace/my-agent-space/pipeline/preview --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"pipeline\":{\"nodes\":[{\"id\":\"node-1\",\"type\":\"transform\",\"parameters\":{\"key\":\"example-string\"}}]},\"fromTime\":1735660800,\"source\":{\"inputFields\":[{\"name\":\"question\",\"type\":\"text\"}],\"type\":\"SLS\",\"dataset\":{\"filter\":\"status_=_pending\",\"dataset\":\"my-dataset\"},\"logstore\":{\"query\":\"0_SELECT_0\",\"project\":\"my-sls-project\",\"logstore\":\"my-sls-logstore\"},\"trajectory\":{\"enrich\":{\"columns\":[\"input\"],\"enabled\":false}}},\"toTime\":1735747200}' --version 2026-05-20 --force",
   "cmd_full_name": "agentloop preview-pipeline",
   "cmd_name": "preview-pipeline",
   "deprecated": false,
-  "description_en": "Previews a pipeline. Without creating pipeline resources, this operation performs a trial query based on the specified data source, node orchestration, and time range, and returns a small number of sample data records to authenticate parameter settings and preview processing results",
+  "description_en": "Previews a pipeline. Runs a trial query based on the specified data source, node orchestration, and time range without creating pipeline resources, and returns a small amount of sample data to authenticate parameter settings and preview processing results",
   "description_zh": "预览流水线。在不创建流水线资源的前提下，基于给定的数据源、节点编排和时间范围试运行查询，返回少量样本数据，用于验证参数配置和预览处理效果",
-  "kebab_example": "aliyun agentloop preview-pipeline --agent-space my-agent-space --source '{\"inputFields\":[{\"name\":\"question\",\"type\":\"text\"}],\"type\":\"SLS\",\"logstore\":{\"query\":\"0_SELECT_0\",\"project\":\"my-sls-project\",\"logstore\":\"my-sls-logstore\"},\"dataset\":{\"filter\":\"status_=_pending\",\"dataset\":\"my-dataset\"}}' --pipeline '{\"nodes\":[{\"id\":\"node-1\",\"type\":\"transform\",\"parameters\":{\"key\":\"example-string\"}}]}' --from-time 1735660800 --to-time 1735747200 --region cn-hangzhou",
+  "kebab_example": "aliyun agentloop preview-pipeline --agent-space my-agent-space --source '{\"inputFields\":[{\"name\":\"question\",\"type\":\"text\"}],\"type\":\"SLS\",\"dataset\":{\"filter\":\"status_=_pending\",\"dataset\":\"my-dataset\"},\"logstore\":{\"query\":\"0_SELECT_0\",\"project\":\"my-sls-project\",\"logstore\":\"my-sls-logstore\"},\"trajectory\":{\"enrich\":{\"columns\":[\"input\"],\"enabled\":false}}}' --pipeline '{\"nodes\":[{\"id\":\"node-1\",\"type\":\"transform\",\"parameters\":{\"key\":\"example-string\"}}]}' --from-time 1735660800 --to-time 1735747200 --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "PreviewPipeline",
@@ -30,7 +30,7 @@
   "parameters": [
     {
       "example": "my-agent-space",
-      "help_en": "The name of the AgentSpace in which the pipeline is located",
+      "help_en": "The name of the AgentSpace where the pipeline is located",
       "help_zh": "AgentSpace 名称，定位流水线所在的 AgentSpace",
       "location": "path",
       "name": "agent_space",
@@ -43,7 +43,7 @@
     },
     {
       "example": "1735660800",
-      "help_en": "The start time of the preview data window, in UNIX seconds",
+      "help_en": "The start time of the preview data window. The value is a UNIX timestamp in seconds",
       "help_zh": "预览数据窗口起始时间，Unix 秒",
       "location": "body",
       "name": "from_time",
@@ -56,13 +56,14 @@
       "type": "int"
     },
     {
+      "example": "{\"nodes\":[{\"id\":\"select-fields\",\"type\":\"project\",\"parameters\":{\"question\":\"user_query\"}}]}",
       "fields": [
         {
           "element": {
             "fields": [
               {
                 "example": "node-1",
-                "help_en": "The node ID",
+                "help_en": "The ID of the node",
                 "help_zh": "节点 Id",
                 "name": "id",
                 "options": [
@@ -73,7 +74,7 @@
                 "type": "string"
               },
               {
-                "help_en": "The node parameters in key-value format. The parameters vary based on the node type",
+                "help_en": "The parameters of the node. The parameters are in key-value format and vary based on the node type",
                 "help_zh": "节点参数，键值结构，随节点类型而定",
                 "name": "parameters",
                 "options": [
@@ -88,7 +89,7 @@
               },
               {
                 "example": "transform",
-                "help_en": "The node type",
+                "help_en": "The type of the node",
                 "help_zh": "节点类型",
                 "name": "type",
                 "options": [
@@ -101,6 +102,7 @@
             ],
             "type": "object"
           },
+          "example": "[{\"id\":\"select-fields\",\"type\":\"project\",\"parameters\":{}}]",
           "help_en": "The list of nodes",
           "help_zh": "节点列表",
           "name": "nodes",
@@ -112,7 +114,7 @@
           "type": "array"
         }
       ],
-      "help_en": "The pipeline configuration, which defines the node orchestration",
+      "help_en": "The pipeline configuration, including node orchestration",
       "help_zh": "Pipeline 配置（节点编排）",
       "location": "body",
       "name": "pipeline",
@@ -125,8 +127,10 @@
       "type": "object"
     },
     {
+      "example": "{\"type\":\"logstore\",\"logstore\":{\"project\":\"my-sls-project\",\"logstore\":\"agent-logs\"},\"inputFields\":[{\"name\":\"question\",\"type\":\"text\"}]}",
       "fields": [
         {
+          "example": "{\"dataset\":\"my-dataset\",\"filter\":\"status = 'pending'\"}",
           "fields": [
             {
               "example": "my-dataset",
@@ -142,7 +146,7 @@
             },
             {
               "example": "status = 'pending'",
-              "help_en": "The filter condition for dataset data",
+              "help_en": "The filter condition for the dataset data",
               "help_zh": "Dataset 数据过滤条件",
               "name": "filter",
               "options": [
@@ -153,7 +157,7 @@
               "type": "string"
             }
           ],
-          "help_en": "The Dataset datasource config under the current AgentSpace",
+          "help_en": "The dataset datasource config in the current AgentSpace",
           "help_zh": "当前 AgentSpace 下的 Dataset 数据源配置",
           "name": "dataset",
           "options": [
@@ -168,7 +172,7 @@
             "fields": [
               {
                 "example": "question",
-                "help_en": "The field name",
+                "help_en": "The name of the field",
                 "help_zh": "字段名称",
                 "name": "name",
                 "options": [
@@ -180,7 +184,7 @@
               },
               {
                 "example": "text",
-                "help_en": "The field type. Valid values: text, long, double, and json",
+                "help_en": "The type of the field. Valid values: text, long, double, and json",
                 "help_zh": "字段类型，支持 text、long、double、json",
                 "name": "type",
                 "options": [
@@ -193,7 +197,8 @@
             ],
             "type": "object"
           },
-          "help_en": "The input fields and field types. This parameter applies to all data source types",
+          "example": "[{\"name\":\"question\",\"type\":\"text\"}]",
+          "help_en": "The input fields and their data types. This applies to all data source types",
           "help_zh": "输入字段及字段类型，适用于所有数据源类型",
           "name": "input_fields",
           "options": [
@@ -204,10 +209,11 @@
           "type": "array"
         },
         {
+          "example": "{\"project\":\"my-sls-project\",\"logstore\":\"agent-logs\"}",
           "fields": [
             {
               "example": "my-sls-logstore",
-              "help_en": "The name of the SLS Logstore",
+              "help_en": "The name of the Simple Log Service Logstore",
               "help_zh": "SLS Logstore 名称",
               "name": "logstore",
               "options": [
@@ -219,7 +225,7 @@
             },
             {
               "example": "my-sls-project",
-              "help_en": "The name of the SLS project",
+              "help_en": "The name of the Simple Log Service project",
               "help_zh": "SLS Project 名称",
               "name": "project",
               "options": [
@@ -231,7 +237,7 @@
             },
             {
               "example": "* | SELECT *",
-              "help_en": "The data filtered query statement in SLS query/analysis syntax",
+              "help_en": "The filtered query statement (Simple Log Service query and analysis syntax)",
               "help_zh": "数据筛选查询语句（SLS 查询/分析语法）",
               "name": "query",
               "options": [
@@ -242,7 +248,7 @@
               "type": "string"
             }
           ],
-          "help_en": "The SLS Logstore datasource config",
+          "help_en": "The Simple Log Service Logstore datasource config",
           "help_zh": "SLS Logstore 数据源配置",
           "name": "logstore",
           "options": [
@@ -253,8 +259,63 @@
           "type": "object"
         },
         {
+          "example": "{\"enrich\":{\"enabled\":true,\"columns\":[\"input\",\"output\"]}}",
+          "fields": [
+            {
+              "example": "{\"enabled\":true,\"columns\":[\"input\",\"output\"]}",
+              "fields": [
+                {
+                  "element": {
+                    "type": "string"
+                  },
+                  "example": "[\"input\",\"output\",\"session_id\"]",
+                  "help_en": "The list of enrichment columns. This parameter is retained for compatibility. The current implementation outputs only the fixed agent_trajectory column, and this parameter no longer affects the output",
+                  "help_zh": "富化列清单（兼容保留）：当前实现固定输出单列 agent_trajectory，本参数不再影响输出",
+                  "name": "columns",
+                  "options": [
+                    "--columns"
+                  ],
+                  "raw_name": "columns",
+                  "required": false,
+                  "type": "array"
+                },
+                {
+                  "example": "false",
+                  "help_en": "Specifies whether to enable trajectory enrichment",
+                  "help_zh": "是否开启轨迹富化",
+                  "name": "enabled",
+                  "options": [
+                    "--enabled"
+                  ],
+                  "raw_name": "enabled",
+                  "required": false,
+                  "type": "bool"
+                }
+              ],
+              "help_en": "Trajectory enrichment: mounts trajectory data into the cleaning results based on the trace_id. When writing data to a dataset, the data is stored in the fixed agent_trajectory column, and the column value is the JSON content of the trajectory",
+              "help_zh": "轨迹富化：按 trace_id 将轨迹数据挂载进清洗结果；写入数据集时以固定列 agent_trajectory 承载（列值为轨迹 JSON 内容）",
+              "name": "enrich",
+              "options": [
+                "--enrich"
+              ],
+              "raw_name": "enrich",
+              "required": false,
+              "type": "object"
+            }
+          ],
+          "help_en": "The configuration of trajectory data. This parameter is optional and takes effect only when the type is set to trace. It retrieves ATIF standard trajectory data from the trajectory cleaning service and extends the data based on features",
+          "help_zh": "轨迹数据配置（可选，type 为 trace 时生效）：从轨迹清洗服务获取 ATIF 标准轨迹数据，按功能扩展",
+          "name": "trajectory",
+          "options": [
+            "--trajectory"
+          ],
+          "raw_name": "trajectory",
+          "required": false,
+          "type": "object"
+        },
+        {
           "example": "SLS",
-          "help_en": "The data source type. Currently, Simple Log Service (SLS) is supported",
+          "help_en": "The type of the data source. Simple Log Service is currently supported",
           "help_zh": "数据源类型，当前支持 SLS",
           "name": "type",
           "options": [
@@ -265,7 +326,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The pipeline data source",
+      "help_en": "The data source of the pipeline",
       "help_zh": "Pipeline 数据源",
       "location": "body",
       "name": "source",
@@ -279,7 +340,7 @@
     },
     {
       "example": "1735747200",
-      "help_en": "The end time of the preview data window, in UNIX seconds",
+      "help_en": "The end time of the preview data window. The value is a UNIX timestamp in seconds",
       "help_zh": "预览数据窗口结束时间，Unix 秒",
       "location": "body",
       "name": "to_time",
@@ -302,17 +363,18 @@
         "description_zh": "响应数据",
         "properties": {
           "data": {
-            "description_en": "`data` is a collection of sample rows (maps within an array) that contains only the first N rows (up to 5 by default) and does not reflect the complete write plan",
+            "description_en": "The collection of sample rows for the preview result. Each row is a key-value structure. The array contains only the first N rows, up to 5 rows by default, and does not reflect the complete write plan",
             "description_zh": "`data` 为样本行集合（数组内 map），仅包含前 N 行（默认最多 5 行），不反映完整写入计划",
+            "example": "[{\"status\":\"200\",\"method\":\"POST\"}]",
             "itemName": "data",
             "items": {
               "additionalProperties": {
-                "description_en": "The response data",
+                "description_en": "The returned data",
                 "description_zh": "返回数据",
                 "example": "[{'type': 'saturation', 'value': 0}, {'type': 'load', 'value': 0}, {'type': 'latency', 'value': 1}, {'type': 'error', 'value': 0}]",
                 "type": "string"
               },
-              "description_en": "The field value",
+              "description_en": "The field values",
               "description_zh": "字段值",
               "example": "200",
               "title_en": "字段值",
@@ -328,7 +390,7 @@
             "description_zh": "查询元信息",
             "properties": {
               "aggQuery": {
-                "description_en": "The aggregation analysis SPL statement",
+                "description_en": "The SPL statement for aggregation analysis",
                 "description_zh": "聚合分析 SPL 语句",
                 "example": "* | SELECT status, count(*) AS cnt GROUP BY status",
                 "title_en": "聚合分析 SPL 语句",
@@ -336,11 +398,12 @@
                 "type": "string"
               },
               "columnTypes": {
-                "description_en": "`meta.columnTypes` provides the mapping from column names to data types (string / long / double / json)",
+                "description_en": "The list of data types for each column. This field provides a mapping from column names to data types, such as string, long, double, and json",
                 "description_zh": "`meta.columnTypes` 提供列名到数据类型的映射（string / long / double / json）",
+                "example": "[\"long\",\"string\"]",
                 "itemName": "columnTypes",
                 "items": {
-                  "description_en": "`meta.columnTypes` provides the mapping from column names to data types (string / long / double / json)",
+                  "description_en": "The list of data types for each column. This field provides a mapping from column names to data types, such as string, long, double, and json",
                   "description_zh": "`meta.columnTypes` 提供列名到数据类型的映射（string / long / double / json）",
                   "example": "string",
                   "type": "string"
@@ -359,7 +422,7 @@
                 "type": "integer"
               },
               "cpuCores": {
-                "description_en": "The number of CPU cores consumed",
+                "description_en": "The number of consumed CPU cores",
                 "description_zh": "消耗的 CPU 核数",
                 "example": "2",
                 "format": "int32",
@@ -368,7 +431,7 @@
                 "type": "integer"
               },
               "cpuSec": {
-                "description_en": "The CPU time consumed, in seconds",
+                "description_en": "The consumed CPU time in seconds",
                 "description_zh": "消耗的 CPU 时间，秒",
                 "example": "0.5",
                 "format": "double",
@@ -377,7 +440,7 @@
                 "type": "number"
               },
               "elapsedMillisecond": {
-                "description_en": "The query duration, in milliseconds",
+                "description_en": "The query duration in milliseconds",
                 "description_zh": "查询耗时，毫秒",
                 "example": "1200",
                 "format": "int64",
@@ -386,18 +449,25 @@
                 "type": "integer"
               },
               "hasSQL": {
-                "description_en": "Indicates whether the query is an SQL query",
+                "description_en": "Specifies whether an SQL query is used",
                 "description_zh": "是否sql查询",
+                "example": "true",
+                "title_en": "是否有过滤条件（hasSQL=true 表示存在查询/过滤语句）",
+                "title_zh": "是否有过滤条件（hasSQL=true 表示存在查询/过滤语句）",
                 "type": "boolean"
               },
               "isAccurate": {
-                "description_en": "Indicates whether nanosecond-level ordering is enabled",
+                "description_en": "Specifies whether nanosecond-level ordering is enabled",
                 "description_zh": "是否开启纳秒级有序",
+                "example": "true",
+                "title_en": "本次查询是否为精确计数（false 时 count 为近似值）",
+                "title_zh": "本次查询是否为精确计数（false 时 count 为近似值）",
                 "type": "boolean"
               },
               "keys": {
                 "description_en": "The list of result column names",
                 "description_zh": "结果列名列表",
+                "example": "[\"status\",\"method\",\"path\"]",
                 "itemName": "keys",
                 "items": {
                   "description_en": "The list of result column names",
@@ -410,7 +480,7 @@
                 "type": "array"
               },
               "limited": {
-                "description_en": "The maximum number of rows that can be returned",
+                "description_en": "The maximum number of rows returned in the result",
                 "description_zh": "返回结果行数上限",
                 "example": "5",
                 "format": "int32",
@@ -419,7 +489,7 @@
                 "type": "integer"
               },
               "mode": {
-                "description_en": "The query mode identifier",
+                "description_en": "The identifier of the query mode",
                 "description_zh": "查询模式标识",
                 "example": "1",
                 "format": "int32",
@@ -428,7 +498,7 @@
                 "type": "integer"
               },
               "processedBytes": {
-                "description_en": "The number of data bytes processed",
+                "description_en": "The number of bytes of processed data",
                 "description_zh": "处理的数据字节数",
                 "example": "524288",
                 "format": "int64",
@@ -446,7 +516,7 @@
                 "type": "integer"
               },
               "progress": {
-                "description_en": "The Simple Log Service (SLS) query progress. A value of Complete indicates that the query is complete",
+                "description_en": "The Simple Log Service (SLS) query progress. A value of Complete indicates that the query is completed",
                 "description_zh": "SLS 查询进度，Complete 表示已完成",
                 "example": "Complete",
                 "title_en": "SLS 查询进度，Complete 表示已完成",
@@ -454,7 +524,7 @@
                 "type": "string"
               },
               "scanBytes": {
-                "description_en": "The number of raw data bytes scanned",
+                "description_en": "The number of bytes of scanned raw data",
                 "description_zh": "扫描的原始数据字节数",
                 "example": "1048576",
                 "format": "int64",
@@ -462,12 +532,38 @@
                 "title_zh": "扫描的原始数据字节数",
                 "type": "integer"
               },
+              "schema": {
+                "additionalProperties": {
+                  "description_en": "The schema description object",
+                  "description_zh": "schema说明对象",
+                  "properties": {
+                    "type": {
+                      "description_en": "The dataset field types. Valid values: text, long, double, and json",
+                      "description_zh": "Dataset 字段类型，支持 text、long、double、json",
+                      "example": "text",
+                      "title_en": "Dataset 字段类型，支持 text、long、double、json",
+                      "title_zh": "Dataset 字段类型，支持 text、long、double、json",
+                      "type": "string"
+                    }
+                  },
+                  "title_en": "schema说明对象",
+                  "title_zh": "schema说明对象",
+                  "type": "object"
+                },
+                "description_en": "The dataset schema of the final pipeline output. The keys are field names, and the type in the values supports text, long, double, and json. The field order is determined by the keys",
+                "description_zh": "Pipeline 最终输出的 Dataset Schema。键为字段名称，值中的 type 支持 text、long、double、json；字段顺序以 keys 为准",
+                "example": "{\"status\":{\"type\":\"long\"}}",
+                "title_en": "Pipeline 最终输出的 Dataset Schema。键为字段名称，值中的 type 支持 text、long、double、json；字段顺序以 keys 为准",
+                "title_zh": "Pipeline 最终输出的 Dataset Schema。键为字段名称，值中的 type 支持 text、long、double、json；字段顺序以 keys 为准",
+                "type": "object"
+              },
               "terms": {
-                "description_en": "The type and aggregation information of columns",
+                "description_en": "The column types and aggregation information",
                 "description_zh": "列的类型与聚合信息",
+                "example": "[{\"column\":\"status\",\"type\":\"long\"}]",
                 "itemName": "terms",
                 "items": {
-                  "description_en": "The type and aggregation information of columns",
+                  "description_en": "The column types and aggregation information",
                   "description_zh": "列的类型与聚合信息",
                   "type": "object"
                 },
@@ -476,7 +572,7 @@
                 "type": "array"
               },
               "whereQuery": {
-                "description_en": "The filter condition SPL statement",
+                "description_en": "The SPL statement for the filter condition",
                 "description_zh": "过滤条件 SPL 语句",
                 "example": "status: 200",
                 "title_en": "过滤条件 SPL 语句",
@@ -489,7 +585,7 @@
             "type": "object"
           },
           "requestId": {
-            "description_en": "The request ID, which is used to locate and troubleshoot issues",
+            "description_en": "The request ID. You can use this ID to locate the request when you troubleshoot issues",
             "description_zh": "请求 Id，用于排查问题时定位本次请求",
             "example": "9ACFB10A-1B2C-3D4E-5F6G-7H8I9J0K1L2M",
             "title_en": "请求 Id，用于排查问题时定位本次请求",
@@ -516,7 +612,7 @@
   ],
   "v1_parameters": [
     {
-      "help_en": "The name of the AgentSpace in which the pipeline is located",
+      "help_en": "The name of the AgentSpace where the pipeline is located",
       "help_zh": "AgentSpace 名称，定位流水线所在的 AgentSpace",
       "name": "agentSpace",
       "position": "path",

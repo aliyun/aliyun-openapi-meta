@@ -57,7 +57,7 @@
         "description_zh": "响应数据",
         "properties": {
           "committedWatermark": {
-            "description_en": "The committed watermark. The value is a UNIX timestamp in seconds",
+            "description_en": "The committed watermark in UNIX seconds",
             "description_zh": "已提交水位线，unix 秒",
             "example": "1735660800",
             "format": "int64",
@@ -68,7 +68,7 @@
           "createTime": {
             "backendParamType": "java.util.Date",
             "dateFormat": "yyyy-MM-dd'T'HH:mm:ss'Z'",
-            "description_en": "The time when the pipeline was created, in ISO 8601 UTC format",
+            "description_en": "The pipeline creation time in ISO 8601 UTC format",
             "description_zh": "流水线创建时间，ISO 8601 UTC 格式",
             "example": "2026-01-01T00:00:00Z",
             "format": "iso8601_normal",
@@ -85,68 +85,90 @@
             "type": "string"
           },
           "executePolicy": {
-            "description_en": "The scheduling method",
+            "description_en": "The execution policy",
             "description_zh": "调度方式",
+            "example": "{\"mode\":\"RunOnce\",\"runOnce\":{\"fromTime\":1735660800,\"toTime\":1735664400}}",
             "properties": {
+              "continuous": {
+                "description_en": "The continuous execution configuration. It is used when the type is trace, and the processing frequency is a fixed value managed by the server",
+                "description_zh": "持续执行配置（type 为 trace 时使用；处理频率为服务端管理的固定值）",
+                "example": "{\"fromTime\":1735660800}",
+                "properties": {
+                  "fromTime": {
+                    "description_en": "The bootstrap start time in UNIX seconds. It has the same precision as runOnce.fromTime or scheduled.fromTime. Millisecond values greater than or equal to 1e12 are automatically converted. The cursor starts from this time aligned to the grid and catches up window by window. After catching up, it switches to minute intervals. By default, it starts from the current time and processes only incremental data",
+                    "description_zh": "bootstrap 历史起点，Unix 秒时间戳（与 runOnce/scheduled.fromTime 同精度；≥1e12 的毫秒值自动兼容折算）：游标从该时刻网格对齐起步逐窗追平，追平后转分钟间隔；缺省从当前时刻起步只看增量",
+                    "example": "1735660800",
+                    "format": "int64",
+                    "title_en": "bootstrap 历史起点，Unix 秒时间戳（与 runOnce/scheduled.fromTime 同精度；≥1e12 的毫秒值自动兼容折算）：游标从该时刻网格对齐起步逐窗追平，追平后转分钟间隔；缺省从当前时刻起步只看增量",
+                    "title_zh": "bootstrap 历史起点，Unix 秒时间戳（与 runOnce/scheduled.fromTime 同精度；≥1e12 的毫秒值自动兼容折算）：游标从该时刻网格对齐起步逐窗追平，追平后转分钟间隔；缺省从当前时刻起步只看增量",
+                    "type": "integer"
+                  }
+                },
+                "title_en": "持续执行配置（type 为 trace 时使用；处理频率为服务端管理的固定值）",
+                "title_zh": "持续执行配置（type 为 trace 时使用；处理频率为服务端管理的固定值）",
+                "type": "object"
+              },
               "mode": {
-                "description_en": "The scheduling mode. For example, scheduled (timed scheduling) or runOnce (one-time execution)",
-                "description_zh": "调度模式，例如 scheduled（定时）/ runOnce（仅执行一次）",
+                "description_en": "The scheduling mode. Valid values: RunOnce (single execution), Scheduled (periodic execution), and Continuous (continuous execution, only for trace data sources; the processing frequency is a fixed value managed by the server, and automatic processing occurs at minute intervals after trace completion)",
+                "description_zh": "调度模式：RunOnce（单次执行）、Scheduled（周期执行）或 Continuous（持续执行，仅 trace 数据源；处理频率为服务端管理的固定值，Trace 完成后分钟级自动处理）",
                 "example": "scheduled",
-                "title_en": "调度模式，例如 scheduled（定时）/ runOnce（仅执行一次）",
-                "title_zh": "调度模式，例如 scheduled（定时）/ runOnce（仅执行一次）",
+                "title_en": "调度模式：RunOnce（单次执行）、Scheduled（周期执行）或 Continuous（持续执行，仅 trace 数据源；处理频率为服务端管理的固定值，Trace 完成后分钟级自动处理）",
+                "title_zh": "调度模式：RunOnce（单次执行）、Scheduled（周期执行）或 Continuous（持续执行，仅 trace 数据源；处理频率为服务端管理的固定值，Trace 完成后分钟级自动处理）",
                 "type": "string"
               },
               "runOnce": {
-                "description_en": "The configuration for one-time execution",
-                "description_zh": "仅执行一次的配置",
+                "description_en": "The single execution configuration. This parameter is required only when the mode is RunOnce",
+                "description_zh": "单次执行配置，仅 mode 为 RunOnce 时必填",
+                "example": "{\"fromTime\":1735660800,\"toTime\":1735664400}",
                 "properties": {
                   "fromTime": {
-                    "description_en": "The start time for data processing. The value is a UNIX timestamp in milliseconds",
-                    "description_zh": "数据处理起始时间，Unix 毫秒时间戳",
-                    "example": "1735660800000",
+                    "description_en": "The start time of the data processing window in UNIX seconds. The value must be less than the toTime value",
+                    "description_zh": "数据处理窗口起始时间，Unix 秒，必须小于 toTime",
+                    "example": "1735660800",
                     "format": "int64",
-                    "title_en": "数据处理起始时间，Unix 毫秒时间戳",
-                    "title_zh": "数据处理起始时间，Unix 毫秒时间戳",
+                    "title_en": "数据处理窗口起始时间，Unix 秒，必须小于 toTime",
+                    "title_zh": "数据处理窗口起始时间，Unix 秒，必须小于 toTime",
                     "type": "integer"
                   },
                   "toTime": {
-                    "description_en": "The end time for data processing. The value is a UNIX timestamp in milliseconds",
-                    "description_zh": "数据处理结束时间，Unix 毫秒时间戳",
-                    "example": "1735747200000",
+                    "description_en": "The end time of the data processing window in UNIX seconds. The value must be greater than the fromTime value",
+                    "description_zh": "数据处理窗口结束时间，Unix 秒，必须大于 fromTime",
+                    "example": "1735747200",
                     "format": "int64",
-                    "title_en": "数据处理结束时间，Unix 毫秒时间戳",
-                    "title_zh": "数据处理结束时间，Unix 毫秒时间戳",
+                    "title_en": "数据处理窗口结束时间，Unix 秒，必须大于 fromTime",
+                    "title_zh": "数据处理窗口结束时间，Unix 秒，必须大于 fromTime",
                     "type": "integer"
                   }
                 },
-                "title_en": "仅执行一次的配置",
-                "title_zh": "仅执行一次的配置",
+                "title_en": "单次执行配置，仅 mode 为 RunOnce 时必填",
+                "title_zh": "单次执行配置，仅 mode 为 RunOnce 时必填",
                 "type": "object"
               },
               "scheduled": {
-                "description_en": "The timed scheduling configuration",
-                "description_zh": "定时调度配置",
+                "description_en": "The periodic scheduling configuration. This parameter is required only when the mode is Scheduled",
+                "description_zh": "周期调度配置，仅 mode 为 Scheduled 时必填",
+                "example": "{\"interval\":\"1h\",\"fromTime\":1735660800}",
                 "properties": {
                   "fromTime": {
-                    "description_en": "The scheduling start time. The value is a UNIX timestamp in milliseconds",
-                    "description_zh": "调度起始时间，Unix 毫秒时间戳",
-                    "example": "1735660800000",
+                    "description_en": "The scheduling start time in UNIX seconds. It has the same precision as runOnce.fromTime. Millisecond values greater than or equal to 1e12 are automatically converted",
+                    "description_zh": "调度起始时间，Unix 秒时间戳（与 runOnce.fromTime 同精度；≥1e12 的毫秒值自动兼容折算）",
+                    "example": "1735660800",
                     "format": "int64",
-                    "title_en": "调度起始时间，Unix 毫秒时间戳",
-                    "title_zh": "调度起始时间，Unix 毫秒时间戳",
+                    "title_en": "调度起始时间，Unix 秒时间戳（与 runOnce.fromTime 同精度；≥1e12 的毫秒值自动兼容折算）",
+                    "title_zh": "调度起始时间，Unix 秒时间戳（与 runOnce.fromTime 同精度；≥1e12 的毫秒值自动兼容折算）",
                     "type": "integer"
                   },
                   "interval": {
-                    "description_en": "The scheduling interval. For example, 1h",
-                    "description_zh": "调度间隔，例如 1h",
+                    "description_en": "The scheduling interval. Valid values: 1h, 6h, 12h, and 1d",
+                    "description_zh": "调度间隔，支持 1h / 6h / 12h / 1d",
                     "example": "1h",
-                    "title_en": "调度间隔，例如 1h",
-                    "title_zh": "调度间隔，例如 1h",
+                    "title_en": "调度间隔，支持 1h / 6h / 12h / 1d",
+                    "title_zh": "调度间隔，支持 1h / 6h / 12h / 1d",
                     "type": "string"
                   }
                 },
-                "title_en": "定时调度配置",
-                "title_zh": "定时调度配置",
+                "title_en": "周期调度配置，仅 mode 为 Scheduled 时必填",
+                "title_zh": "周期调度配置，仅 mode 为 Scheduled 时必填",
                 "type": "object"
               }
             },
@@ -155,7 +177,7 @@
             "type": "object"
           },
           "nextTriggerTime": {
-            "description_en": "The next scheduling trigger time. The value is a UNIX timestamp in seconds",
+            "description_en": "The next scheduling trigger time in UNIX seconds",
             "description_zh": "下次调度触发时间，unix 秒",
             "example": "1735661100",
             "format": "int64",
@@ -166,10 +188,12 @@
           "pipeline": {
             "description_en": "The pipeline configuration for node orchestration",
             "description_zh": "Pipeline 配置（节点编排）",
+            "example": "{\"nodes\":[{\"id\":\"select-fields\",\"type\":\"project\",\"parameters\":{\"question\":\"user_query\"}}]}",
             "properties": {
               "nodes": {
                 "description_en": "The list of nodes",
                 "description_zh": "节点列表",
+                "example": "[{\"id\":\"select-fields\",\"type\":\"project\",\"parameters\":{}}]",
                 "itemName": "nodes",
                 "items": {
                   "description_en": "The configuration of a single node",
@@ -185,14 +209,14 @@
                     },
                     "parameters": {
                       "additionalProperties": {
-                        "description_en": "The node parameter value",
+                        "description_en": "The value of the node parameter",
                         "description_zh": "节点参数值",
                         "example": "value",
                         "title_en": "节点参数值",
                         "title_zh": "节点参数值",
                         "type": "any"
                       },
-                      "description_en": "The node parameters in key-value structure, which vary depending on the node type",
+                      "description_en": "The node parameters in a key-value structure. The parameters vary based on the node type",
                       "description_zh": "节点参数，键值结构，随节点类型而定",
                       "title_en": "节点参数，键值结构，随节点类型而定",
                       "title_zh": "节点参数，键值结构，随节点类型而定",
@@ -238,7 +262,7 @@
             "type": "string"
           },
           "requestId": {
-            "description_en": "The request ID, which is used to locate and troubleshoot issues",
+            "description_en": "The request ID used to locate the request during troubleshooting",
             "description_zh": "请求 Id，用于排查问题时定位本次请求",
             "example": "9ACFB10A-1B2C-3D4E-5F6G-7H8I9J0K1L2M",
             "title_en": "请求 Id，用于排查问题时定位本次请求",
@@ -246,19 +270,27 @@
             "type": "string"
           },
           "scheduleStatus": {
-            "description_en": "The scheduling status. Valid values:\nNone: No scheduling.\nActive: Active.\nPaused: Paused.\nTerminated: Terminated",
+            "description_en": "The scheduling status. Valid values: None (no scheduling), Active (active), Paused (paused), and Terminated (terminated)",
             "description_zh": "调度状态：None（无调度）、Active（活跃）、Paused（已暂停）、Terminated（已终止）",
             "example": "Active",
             "title_en": "调度状态：None（无调度）、Active（活跃）、Paused（已暂停）、Terminated（已终止）",
             "title_zh": "调度状态：None（无调度）、Active（活跃）、Paused（已暂停）、Terminated（已终止）",
             "type": "string"
           },
+          "scheduleType": {
+            "description_en": "The scheduling type. Valid values: RunOnce (single execution), Scheduled (periodic scheduling), and Continuous (continuous execution driven by trace source signals)",
+            "description_zh": "调度类型：RunOnce（单次执行）、Scheduled（周期调度）或 Continuous（持续执行，trace 源信号驱动）",
+            "example": "RunOnce",
+            "title_en": "调度类型：RunOnce（单次执行）、Scheduled（周期调度）或 Continuous（持续执行，trace 源信号驱动）",
+            "title_zh": "调度类型：RunOnce（单次执行）、Scheduled（周期调度）或 Continuous（持续执行，trace 源信号驱动）",
+            "type": "string"
+          },
           "sink": {
-            "description_en": "The pipeline sink, which is the data write destination",
+            "description_en": "The pipeline sink, which is the destination for data writing",
             "description_zh": "Pipeline 目标（数据写入目标）",
             "properties": {
               "condition": {
-                "description_en": "The conditional routing configuration. This parameter is used only when sink.type is set to condition",
+                "description_en": "The conditional routing configuration. This configuration is used only when the sink.type is condition",
                 "description_zh": "条件分流配置，仅 sink.type 为 condition 时使用",
                 "properties": {
                   "defaultSink": {
@@ -304,7 +336,7 @@
                     "type": "object"
                   },
                   "matchMode": {
-                    "description_en": "The route match mode. Currently, only all is supported",
+                    "description_en": "The route matching mode. Currently, only all is supported",
                     "description_zh": "路由匹配模式，当前仅支持 all",
                     "example": "all",
                     "title_en": "路由匹配模式，当前仅支持 all",
@@ -320,7 +352,7 @@
                       "description_zh": "条件路由",
                       "properties": {
                         "expression": {
-                          "description_en": "The route expression in SPL. Only where, project, and extend are supported",
+                          "description_en": "The route expression in Search Processing Language (SPL). Only where, project, and extend are supported",
                           "description_zh": "路由表达式（SPL），仅支持 where、project、extend",
                           "example": "* | where intent = 'refund'",
                           "title_en": "路由表达式（SPL），仅支持 where、project、extend",
@@ -336,11 +368,11 @@
                           "type": "string"
                         },
                         "sink": {
-                          "description_en": "The route write destination",
+                          "description_en": "The routing write destination",
                           "description_zh": "路由写入目标",
                           "properties": {
                             "dataset": {
-                              "description_en": "The route destination dataset",
+                              "description_en": "The routing destination dataset",
                               "description_zh": "路由目标 Dataset",
                               "properties": {
                                 "agentSpace": {
@@ -365,7 +397,7 @@
                               "type": "object"
                             },
                             "type": {
-                              "description_en": "The route destination type. Currently, only dataset is supported",
+                              "description_en": "The routing destination type. Currently, only dataset is supported",
                               "description_zh": "路由目标类型，当前仅支持 dataset",
                               "example": "dataset",
                               "title_en": "路由目标类型，当前仅支持 dataset",
@@ -392,11 +424,11 @@
                 "type": "object"
               },
               "dataset": {
-                "description_en": "The target dataset configuration for the dataset sink. This parameter is used only when sink.type is set to dataset",
+                "description_en": "The destination dataset configuration for the dataset sink. This is used only when sink.type is set to dataset",
                 "description_zh": "Dataset Sink 的目标数据集配置，仅 sink.type 为 dataset 时使用",
                 "properties": {
                   "agentSpace": {
-                    "description_en": "The name of the AgentSpace to which the target dataset belongs",
+                    "description_en": "The name of the AgentSpace to which the destination dataset belongs",
                     "description_zh": "目标数据集所属 AgentSpace 名称",
                     "example": "my-agent-space",
                     "title_en": "目标数据集所属 AgentSpace 名称",
@@ -404,7 +436,7 @@
                     "type": "string"
                   },
                   "dataset": {
-                    "description_en": "The target dataset name",
+                    "description_en": "The name of the destination dataset",
                     "description_zh": "目标数据集名称",
                     "example": "my-dataset",
                     "title_en": "目标数据集名称",
@@ -417,7 +449,7 @@
                 "type": "object"
               },
               "type": {
-                "description_en": "The sink type. Valid values: dataset and condition",
+                "description_en": "The destination type. Valid values: dataset and condition",
                 "description_zh": "目标类型，支持 dataset 或 condition",
                 "example": "condition",
                 "title_en": "目标类型，支持 dataset 或 condition",
@@ -432,13 +464,15 @@
           "source": {
             "description_en": "The pipeline data source",
             "description_zh": "Pipeline 数据源",
+            "example": "{\"type\":\"logstore\",\"logstore\":{\"project\":\"my-sls-project\",\"logstore\":\"agent-logs\"},\"inputFields\":[{\"name\":\"question\",\"type\":\"text\"}]}",
             "properties": {
               "dataset": {
-                "description_en": "The dataset datasource config under the current AgentSpace",
+                "description_en": "The dataset datasource config in the current AgentSpace",
                 "description_zh": "当前 AgentSpace 下的 Dataset 数据源配置",
+                "example": "{\"dataset\":\"my-dataset\",\"filter\":\"status = 'pending'\"}",
                 "properties": {
                   "dataset": {
-                    "description_en": "The source dataset name",
+                    "description_en": "The name of the source dataset",
                     "description_zh": "源 Dataset 名称",
                     "example": "my-dataset",
                     "title_en": "源 Dataset 名称",
@@ -446,7 +480,7 @@
                     "type": "string"
                   },
                   "filter": {
-                    "description_en": "The dataset data filter condition",
+                    "description_en": "The data filter condition for the dataset",
                     "description_zh": "Dataset 数据过滤条件",
                     "example": "status = 'pending'",
                     "title_en": "Dataset 数据过滤条件",
@@ -459,15 +493,16 @@
                 "type": "object"
               },
               "inputFields": {
-                "description_en": "The input fields and field types, applicable to all data source types",
+                "description_en": "The input fields and field types. This applies to all data source types",
                 "description_zh": "输入字段及字段类型，适用于所有数据源类型",
+                "example": "[{\"name\":\"question\",\"type\":\"text\"}]",
                 "itemName": "inputFields",
                 "items": {
                   "description_en": "The input field",
                   "description_zh": "输入字段",
                   "properties": {
                     "name": {
-                      "description_en": "The field name",
+                      "description_en": "The name of the field",
                       "description_zh": "字段名称",
                       "example": "question",
                       "title_en": "字段名称",
@@ -494,9 +529,10 @@
               "logstore": {
                 "description_en": "The SLS Logstore datasource config",
                 "description_zh": "SLS Logstore 数据源配置",
+                "example": "{\"project\":\"my-sls-project\",\"logstore\":\"agent-logs\"}",
                 "properties": {
                   "logstore": {
-                    "description_en": "The SLS Logstore name",
+                    "description_en": "The name of the SLS Logstore",
                     "description_zh": "SLS Logstore 名称",
                     "example": "my-sls-logstore",
                     "title_en": "SLS Logstore 名称",
@@ -504,7 +540,7 @@
                     "type": "string"
                   },
                   "project": {
-                    "description_en": "The SLS project name",
+                    "description_en": "The name of the SLS project",
                     "description_zh": "SLS Project 名称",
                     "example": "my-sls-project",
                     "title_en": "SLS Project 名称",
@@ -512,7 +548,7 @@
                     "type": "string"
                   },
                   "query": {
-                    "description_en": "The data filtered query statement in SLS query/analysis syntax",
+                    "description_en": "The data filtered query statement (SLS query and analysis syntax)",
                     "description_zh": "数据筛选查询语句（SLS 查询/分析语法）",
                     "example": "* | SELECT *",
                     "title_en": "数据筛选查询语句（SLS 查询/分析语法）",
@@ -524,12 +560,57 @@
                 "title_zh": "SLS Logstore 数据源配置",
                 "type": "object"
               },
+              "trajectory": {
+                "description_en": "The trajectory data configuration. This is optional and takes effect only when the type is set to trace. It retrieves ATIF standard trajectory data from the trajectory scrubbing service and extends it by feature",
+                "description_zh": "轨迹数据配置（可选，type 为 trace 时生效）：从轨迹清洗服务获取 ATIF 标准轨迹数据，按功能扩展",
+                "example": "{\"enrich\":{\"enabled\":true,\"columns\":[\"input\",\"output\"]}}",
+                "properties": {
+                  "enrich": {
+                    "description_en": "The trajectory enrichment. It mounts trajectory data into the scrubbing results by trace_id. When writing to a dataset, the data is stored in the fixed column agent_trajectory, where the column value is the trajectory JSON content",
+                    "description_zh": "轨迹富化：按 trace_id 将轨迹数据挂载进清洗结果；写入数据集时以固定列 agent_trajectory 承载（列值为轨迹 JSON 内容）",
+                    "example": "{\"enabled\":true,\"columns\":[\"input\",\"output\"]}",
+                    "properties": {
+                      "columns": {
+                        "description_en": "The enrichment column list. This is retained for compatibility. The current implementation outputs a single fixed column agent_trajectory, and this parameter no longer affects the output",
+                        "description_zh": "富化列清单（兼容保留）：当前实现固定输出单列 agent_trajectory，本参数不再影响输出",
+                        "example": "[\"input\",\"output\",\"session_id\"]",
+                        "itemName": "columns",
+                        "items": {
+                          "description_en": "The name of the trajectory column",
+                          "description_zh": "轨迹列名",
+                          "example": "input",
+                          "title_en": "轨迹列名",
+                          "title_zh": "轨迹列名",
+                          "type": "string"
+                        },
+                        "title_en": "富化列清单（兼容保留）：当前实现固定输出单列 agent_trajectory，本参数不再影响输出",
+                        "title_zh": "富化列清单（兼容保留）：当前实现固定输出单列 agent_trajectory，本参数不再影响输出",
+                        "type": "array"
+                      },
+                      "enabled": {
+                        "description_en": "Specifies whether trajectory enrichment is enabled",
+                        "description_zh": "是否开启轨迹富化",
+                        "example": "false",
+                        "title_en": "是否开启轨迹富化",
+                        "title_zh": "是否开启轨迹富化",
+                        "type": "boolean"
+                      }
+                    },
+                    "title_en": "轨迹富化：按 trace_id 将轨迹数据挂载进清洗结果；写入数据集时以固定列 agent_trajectory 承载（列值为轨迹 JSON 内容）",
+                    "title_zh": "轨迹富化：按 trace_id 将轨迹数据挂载进清洗结果；写入数据集时以固定列 agent_trajectory 承载（列值为轨迹 JSON 内容）",
+                    "type": "object"
+                  }
+                },
+                "title_en": "轨迹数据配置（可选，type 为 trace 时生效）：从轨迹清洗服务获取 ATIF 标准轨迹数据，按功能扩展",
+                "title_zh": "轨迹数据配置（可选，type 为 trace 时生效）：从轨迹清洗服务获取 ATIF 标准轨迹数据，按功能扩展",
+                "type": "object"
+              },
               "type": {
-                "description_en": "The data source type. Valid values: logstore and dataset",
-                "description_zh": "数据源类型，支持 logstore 或 dataset",
+                "description_en": "The data source type. Valid values: logstore, dataset, and trace. The trace value indicates a trajectory signal-driven processing mode. The validity of the enum is verified by the server",
+                "description_zh": "数据源类型，支持 logstore、dataset 或 trace（trace 为轨迹信号驱动处理模式；枚举合法性由服务端校验）",
                 "example": "dataset",
-                "title_en": "数据源类型，支持 logstore 或 dataset",
-                "title_zh": "数据源类型，支持 logstore 或 dataset",
+                "title_en": "数据源类型，支持 logstore、dataset 或 trace（trace 为轨迹信号驱动处理模式；枚举合法性由服务端校验）",
+                "title_zh": "数据源类型，支持 logstore、dataset 或 trace（trace 为轨迹信号驱动处理模式；枚举合法性由服务端校验）",
                 "type": "string"
               }
             },
@@ -540,7 +621,7 @@
           "updateTime": {
             "backendParamType": "java.util.Date",
             "dateFormat": "yyyy-MM-dd'T'HH:mm:ss'Z'",
-            "description_en": "The time when the pipeline was last updated, in ISO 8601 UTC format",
+            "description_en": "The last update time of the pipeline, in ISO 8601 UTC format",
             "description_zh": "流水线最近一次更新时间，ISO 8601 UTC 格式",
             "example": "2026-01-02T00:00:00Z",
             "format": "iso8601_normal",
