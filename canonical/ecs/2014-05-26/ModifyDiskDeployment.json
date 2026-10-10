@@ -3,7 +3,7 @@
   "cmd_full_name": "ecs modify-disk-deployment",
   "cmd_name": "modify-disk-deployment",
   "deprecated": false,
-  "description_en": "Migrates a disk into or out of a dedicated block storage cluster, or migrates a disk between dedicated block storage clusters",
+  "description_en": "Migrates a disk into or out of a dedicated block storage cluster, or migrates a disk between different dedicated block storage clusters",
   "description_zh": "将云盘迁入、迁出专属块存储集群，或将云盘在不同专属块存储集群之间迁移",
   "kebab_example": "aliyun ecs modify-disk-deployment --disk-id d-bp131n0q38u3a4zi0000 --region cn-hangzhou",
   "method": "GET|POST",
@@ -35,7 +35,7 @@
     },
     {
       "example": "cloud_essd",
-      "help_en": "The type of the cloud disk to change to. This parameter takes effect only when you migrate data between dedicated block storage clusters. Currently, only cloud_essd (enterprise SSD) is supported.\n\nDefault value: empty, which indicates that the cloud disk type is not changed",
+      "help_en": "The target disk category. This parameter is valid only during migration between different dedicated block storage clusters. Currently, only cloud_essd (ESSD) is supported.\n\nDefault value: empty, which indicates no specification change for the disk",
       "help_zh": "变更云盘类型，仅在不同专属块存储集群之间迁移时有效。当前仅支持cloud_essd（ESSD云盘）。\n\n默认值：空，表示不变配云盘",
       "location": "query",
       "name": "disk_category",
@@ -48,7 +48,7 @@
     },
     {
       "example": "PL1",
-      "help_en": "The performance level (PL) of the standard SSD. This parameter takes effect only when you migrate a disk between different dedicated block storage clusters. Valid values:\nPL0: A maximum of 10,000 random read/write IOPS per disk.\nPL1: A maximum of 50,000 random read/write IOPS per disk.\n\nDefault value: empty, which indicates that the performance level (PL) is not changed during migration",
+      "help_en": "The new ESSD performance level. This parameter is valid only during migration between different dedicated block storage clusters. Valid values:\nPL0: A single disk can deliver up to 10,000 random read/write IOPS.\nPL1: A single disk can deliver up to 50,000 random read/write IOPS.\n\nDefault value: empty, which indicates that the performance level remains unchanged",
       "help_zh": "修改ESSD云盘的性能级别，仅在不同专属块存储集群之间迁移时有效。取值范围：\nPL0：单盘最高随机读写IOPS 1万。\nPL1：单盘最高随机读写IOPS 5万。\n\n默认值：空，表示不修改性能级别",
       "location": "query",
       "name": "performance_level",
@@ -61,8 +61,8 @@
     },
     {
       "example": "dbsc-cn-c4d2uea****",
-      "help_en": "The ID of the dedicated block storage cluster.\nTo migrate a disk to a dedicated block storage cluster, you must specify StorageClusterId.\nTo migrate a disk to a public cloud block storage cluster, StorageClusterId must be empty.\n\nDefault value: empty, which indicates that the disk is migrated to a public cloud block storage cluster",
-      "help_zh": "专属块存储集群ID。\n迁移至专属块存储集群时，必须指定`StorageClusterId`。\n迁移至公共云块存储集群时，`StorageClusterId`必须为空。\n\n默认值：空，表示迁移至公共云块存储集群",
+      "help_en": "The dedicated block storage cluster ID. Before migrating a disk into a dedicated block storage cluster, you must purchase and create the cluster, and ensure that the disk and the destination cluster are in the same zone.\nWhen migrating to a dedicated block storage cluster, you must specify `StorageClusterId`.\nWhen migrating to a public cloud block storage cluster, `StorageClusterId` must be empty.\n\nDefault value: empty, which indicates that the disk is migrated to a public cloud block storage cluster",
+      "help_zh": "专属块存储集群ID。迁入专属块存储集群前，需要已购买并创建专属块存储集群，并确保云盘与目标集群位于同一可用区。\n迁移至专属块存储集群时，必须指定`StorageClusterId`。\n迁移至公共云块存储集群时，`StorageClusterId`必须为空。\n\n默认值：空，表示迁移至公共云块存储集群",
       "location": "query",
       "name": "storage_cluster_id",
       "options": [
@@ -74,7 +74,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to perform only a dry run. Valid values:\ntrue: performs only a dry run. The system checks the required parameters, request syntax, business restrictions, and ECS inventory. If the check fails, the corresponding error is returned. If the check succeeds, the DryRunOperation error code is returned.\nfalse: performs a dry run and sends the request. If the check succeeds, a 2XX HTTP status code is returned and the disk is migrated.\n\nDefault value: false",
+      "help_en": "Specifies whether to only precheck the request. Valid values:\ntrue: sends a check request. The check items include whether required parameters are specified, the request format, service limits, and ECS inventory. If the check fails, the corresponding error is returned. If the check succeeds, the DryRunOperation error code is returned.\nfalse: sends a normal request. After the check succeeds, a 2XX HTTP status code is returned and the disk is migrated directly.\n\nDefault value: false",
       "help_zh": "是否只预检此次请求。取值范围：\ntrue：发送检查请求。检查项包括是否填写了必需参数、请求格式、业务限制和ECS库存。如果检查不通过，则返回对应错误。如果检查通过，则返回错误码DryRunOperation。\nfalse：发送正常请求，通过检查后返回2XX HTTP状态码并且直接迁移云盘。\n\n默认值：false",
       "location": "query",
       "name": "dry_run",
@@ -106,7 +106,7 @@
           },
           "TaskId": {
             "backendName": "data.taskId",
-            "description_en": "The task ID of the disk migration",
+            "description_en": "The ID of the disk migration task",
             "description_zh": "云盘迁移的任务ID",
             "example": "t-bp67acfmxazb4p****",
             "type": "string"
