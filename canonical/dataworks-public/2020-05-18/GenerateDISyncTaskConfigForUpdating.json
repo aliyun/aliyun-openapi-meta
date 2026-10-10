@@ -2,7 +2,7 @@
   "cmd_full_name": "dataworks-public generate-di-sync-task-config-for-updating",
   "cmd_name": "generate-di-sync-task-config-for-updating",
   "deprecated": false,
-  "description_en": "Generates the configuration for updating a real-time synchronization task in Data Integration",
+  "description_en": "Asynchronously generates the JSON configuration for updating a synchronization task",
   "description_zh": "异步生成更新同步任务的JSON",
   "kebab_example": "aliyun dataworks-public generate-di-sync-task-config-for-updating --project-id 10000 --task-type DI_REALTIME --task-param steps_:_parameter_:_connection_:_table_:_xyx_,_name_:_Reader_,_category_:_reader --task-id 100 --api-version 2020-05-18 --region cn-hangzhou",
   "method": "POST",
@@ -22,7 +22,7 @@
     {
       "doc_required": true,
       "example": "10000",
-      "help_en": "The DataWorks workspace ID. You can log on to the DataWorks console (https://workbench.data.aliyun.com/console) and go to the workspace configuration page to obtain the workspace ID.\n\n\n\n\nYou must configure this parameter to specify the DataWorks workspace to which the API operation is applied",
+      "help_en": "The ID of the DataWorks workspace. You can log on to the DataWorks console (https://workbench.data.aliyun.com/console) and go to the workspace configuration page to obtain the workspace ID.\n\nThis parameter determines the DataWorks workspace in which the API operation is called",
       "help_zh": "DataWorks工作空间的ID。您可以登录DataWorks控制台 (https://workbench.data.aliyun.com/console)，进入工作空间配置页面获取工作空间ID。\n\n该参数用来确定本次API调用操作使用的DataWorks工作空间",
       "location": "query",
       "maximum": "10000000000",
@@ -43,7 +43,7 @@
         "DI_SOLUTION"
       ],
       "example": "DI_REALTIME",
-      "help_en": "The type of the object that you want to update in Data Integration in asynchronous mode. Valid values:\n\n\n\n\nDI_REALTIME: real-time synchronization task\nDI_SOLUTION: synchronization solution. DataWorks allows you to update real-time synchronization tasks and synchronization solutions in Data Integration only in asynchronous mode",
+      "help_en": "The type of the Data Integration synchronization task to be updated asynchronously. Valid values:\nDI_REALTIME: real-time synchronization task.\nDI_SOLUTION: solution synchronization task.\nOnly real-time and solution synchronization tasks can be updated asynchronously",
       "help_zh": "使用异步方式更新数据集成同步任务的任务类型。取值如下：\nDI_REALTIME：表示实时同步任务。\nDI_SOLUTION：表示解决方案同步任务。\n仅支持使用异步方式更新数据集成实时同步任务和解决方案同步任务",
       "location": "query",
       "name": "task_type",
@@ -57,7 +57,7 @@
     {
       "doc_required": true,
       "example": "{\"steps\":[{\"parameter\":{\"connection\":[{\"table\":[\"xyx\"]}]},\"name\":\"Reader\",\"category\":\"reader\"}]}",
-      "help_en": "The script for updating the real-time synchronization task in Data Integration. DataWorks allows you to add or remove tables for a real-time synchronization task in Data Integration only in asynchronous mode. The following types of real-time synchronization tasks are supported:\n\nSynchronization task that is used to synchronize data from MySQL to MaxCompute\n\nSynchronization task that is used to synchronize data from MySQL data to Kafka\n\nSynchronization task that is used to synchronize data from MySQL to Hologres\n\nThe SelectedTables parameter is used to specify tables that you want to synchronize from multiple databases. The Tables parameter is used to specify tables that you want to synchronize from a single database.\n\nIf the script contains the SelectedTables parameter, the system synchronizes data from the tables that you specify in the SelectedTables parameter.\n\nIf the script contains the Tables parameter, the system synchronizes data from the tables that you specify in the Tables parameter",
+      "help_en": "The script statements for updating the synchronization task.\nCurrently, the asynchronous method only supports adding or removing tables for data integration synchronization tasks. Only the following types of synchronization tasks can be updated:\nSynchronizing MySQL data to MaxCompute.\nSynchronizing MySQL data to Kafka.\nSynchronizing MySQL data to Hologres.\n\nIn a synchronization task, SelectedTables is used to select tables in multi-database mode, and Tables is used to select tables in single-database mode.\nIf the script contains the SelectedTables statement, the system uses the table information in the SelectedTables statement for synchronization.\nIf the script contains the Tables statement, the system uses the field information in the Tables statement for synchronization",
       "help_zh": "更新同步任务的脚本语句。\n目前仅支持通过异步方式为数据集成同步任务新增表或者删除表，并且仅支持更新如下类型的同步任务：\n同步MySQL数据至MaxCompute。\n同步MySQL数据至Kafka。\n同步MySQL数据至Hologres。\n\n同步任务中的SelectedTables用于多库模式选择同步表，Tables用于单库模式选择同步表。\n当脚本中包含SelectedTables语句时，系统会使用SelectedTables语句中的表信息进行同步。\n当脚本中包含Tables语句时，系统会使用Tables的字段信息进行同步",
       "location": "query",
       "name": "task_param",
@@ -70,7 +70,7 @@
     },
     {
       "example": "ABFUOEUOTRTRJKE",
-      "help_en": "The client token that is used to ensure the idempotence of the request. This parameter is used to prevent repeated operations that are caused by multiple calls",
+      "help_en": "The client token that is used to ensure idempotence. This parameter prevents duplicate operations caused by multiple calls",
       "help_zh": "幂等参数。用于避免多次调用导致操作重复",
       "location": "query",
       "name": "client_token",
@@ -84,7 +84,7 @@
     {
       "doc_required": true,
       "example": "100",
-      "help_en": "The task ID.\n\nIf you set the TaskType parameter to DI_REALTIME, set the TaskId parameter to the value of the FileId parameter for the real-time synchronization task.\n\nIf you set the TaskType parameter to DI_SOLUTION, set the TaskId parameter to the value of the FileId parameter for the synchronization solution",
+      "help_en": "The task ID.\nIf TaskType is set to DI_REALTIME, TaskId is the FileId of the real-time synchronization task.\nIf TaskType is set to DI_SOLUTION, TaskId is the FileId of the solution synchronization task",
       "help_zh": "任务ID。\n当TaskType参数配置为实时同步任务（DI_REALTIME），则TaskId为实时同步任务的FileId。\n当TaskType参数配置为解决方案同步任务（DI_SOLUTION），则TaskId为解决方案同步任务的FileId",
       "location": "query",
       "maximum": "9999999999999999",
@@ -104,18 +104,18 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The returned results",
+        "description_en": "The response",
         "description_zh": "返回结果",
         "properties": {
           "Data": {
             "backendName": "data",
-            "description_en": "The information returned for the ID of the asynchronous thread",
+            "description_en": "The result of generating the asynchronous thread ID",
             "description_zh": "异步线程ID的生成结果",
             "nullToEmpty": true,
             "properties": {
               "Message": {
                 "backendName": "message",
-                "description_en": "The reason why the ID of the asynchronous thread fails to be generated. If the ID is successfully generated, no value is returned for this parameter",
+                "description_en": "The reason why the asynchronous thread ID failed to be generated. If the asynchronous thread ID is generated, this parameter is left empty",
                 "description_zh": "异步线程ID生成失败的原因描述。 如果成功生成异步线程ID，则该参数的返回值为空",
                 "example": "XXX is invalid.",
                 "nullToEmpty": false,
@@ -124,7 +124,7 @@
               },
               "ProcessId": {
                 "backendName": "processId",
-                "description_en": "The ID of the asynchronous thread. You can call the [QueryDISyncTaskConfigProcessResult]（https://help.aliyun.com/document_detail/383465.html） operation to obtain the asynchronously generated parameters based on the ID. The parameters are used to update a real-time synchronization task in Data Integration",
+                "description_en": "The asynchronous thread ID. You must use this ID to call the [QueryDISyncTaskConfigProcessResult]（https://help.aliyun.com/document_detail/383465.html） operation to obtain the parameters required for asynchronously updating the data integration synchronization task, and then use the parameters to update the task",
                 "description_zh": "异步线程ID。您需要通过该ID，调用[QueryDISyncTaskConfigProcessResult]（https://help.aliyun.com/document_detail/383465.html）接口获取异步生成更新数据集成同步任务需要的参数，后续使用该参数更新数据集成同步任务",
                 "example": "10",
                 "format": "int64",
@@ -134,7 +134,7 @@
               },
               "Status": {
                 "backendName": "status",
-                "description_en": "Indicates whether the ID of the asynchronous thread is generated. Valid values:\n\nsuccess: indicates that the ID of the asynchronous thread is generated.\n\nfail: indicates that the ID of the asynchronous thread fails to be generated. You can view the reason for the failure and troubleshoot the issue based on the reason",
+                "description_en": "The status of generating the asynchronous thread ID. Valid values:\nsuccess: The asynchronous thread ID was generated.\nfail: The asynchronous thread ID failed to be generated. You can view the cause of the failure and resolve the issue",
                 "description_zh": "生成异步线程ID的结果状态。取值如下：\nsuccess：表示成功生成异步线程ID。\nfail：表示异步线程ID生成失败。您可以查看失败原因，处理相关问题",
                 "example": "true",
                 "nullToEmpty": false,
@@ -147,7 +147,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID. You can locate logs and troubleshoot issues based on the ID",
+            "description_en": "The request ID. You can use this ID to locate logs and troubleshoot issues",
             "description_zh": "请求ID。用于定位日志，排查问题",
             "example": "0bc1411515937635973****",
             "nullToEmpty": false,
@@ -156,7 +156,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful. Valid values:\n\ntrue\n\nfalse",
+            "description_en": "Indicates whether the request was successful. Valid values:\ntrue: The request was successful.\nfalse: The request failed",
             "description_zh": "请求是否成功。取值如下：\ntrue：成功。\nfalse：失败",
             "example": "true",
             "nullToEmpty": false,
