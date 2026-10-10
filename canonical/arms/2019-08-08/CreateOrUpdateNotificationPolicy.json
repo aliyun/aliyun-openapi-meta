@@ -3,7 +3,7 @@
   "cmd_full_name": "arms create-or-update-notification-policy",
   "cmd_name": "create-or-update-notification-policy",
   "deprecated": false,
-  "description_en": "Creates or modifies a notification policy",
+  "description_en": "Creates or updates a notification policy",
   "description_zh": "创建或更新通知策略",
   "kebab_example": "aliyun arms create-or-update-notification-policy --name notificationpolicy_test --notify-rule notifyStartTime_:_00:00_,_notifyEndTime_:_23:59_,_notifyChannels_:_dingTalk_,_email_,_sms_,_tts_,_webhook_,_notifyObjects_:_notifyObjectType_:_CONTACT_,_notifyObjectId_:_123,_notifyObjectName_:_test_,_notifyChannels_:_email_,_sms_,_tts_, --biz-region-id cn-hangzhou --api-version 2019-08-08 --region cn-hangzhou",
   "method": "GET|POST",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "1234",
-      "help_en": "The ID of the notification policy.\n\nIf you do not specify this parameter, a new notification policy is created.\nIf you specify this parameter, the specified notification policy is modified",
+      "help_en": "The notification policy ID.\n\nIf you leave this parameter empty, a new notification policy is created.\nIf you specify this parameter, the specified notification policy is updated",
       "help_zh": "通知策略ID。\n\n不填代表创建新的通知策略。\n填写代表修改指定通知策略信息",
       "location": "formData",
       "name": "id",
@@ -37,7 +37,7 @@
     },
     {
       "example": "notificationpolicy_test",
-      "help_en": "The name of the notification policy",
+      "help_en": "The Policy Name",
       "help_zh": "通知策略名称",
       "location": "formData",
       "name": "name",
@@ -50,7 +50,7 @@
     },
     {
       "example": "[ \t\t { \t\t \"matchingConditions\": [          { \t\t \"value\": \"test\", \t\t \"key\": \"alertname\", \t\t \"operator\": \"eq\"         }       ]     }   ]",
-      "help_en": "The matching rules. Format:\n\n    [\n     {\n     \"matchingConditions\": [\n     { \n     \"value\": \"test\",    // The value of the matching condition. \n     \"key\": \"alertname\",     // The key of the matching condition. \n     \"operator\": \"eq\"   // The logical operator of the matching condition, including eq (equal to), neq (not equal to), in (contains), nin (does not contain), re (regular expression match), and nre (regular expression mismatch).   \n     }\n     ]\n     } \n     ]",
+      "help_en": "The rules for matching alert events. Format:\n\n```\n[\n {\n \"matchingConditions\": [\n { \n \"value\": \"test\",    // The value of the alert event matching rule.\n \"key\": \"alertname\",     // The key of the alert event matching rule.\n \"operator\": \"eq\"   // The matching operator. Valid values: eq (equal to), neq (not equal to), in (contains), nin (does not contain), re (matches regular expression), nre (does not match regular expression).  \n }\n ]\n } \n ]\n```",
       "help_zh": "匹配告警事件规则。格式如下：\n\n```\n[\n {\n \"matchingConditions\": [\n { \n \"value\": \"test\",    //匹配告警事件规则Value。\n \"key\": \"alertname\",     //匹配告警事件规则Key。\n \"operator\": \"eq\"   //规则聚合方式，包括eq（等于）、neq（不等于）、in（包含）、nin（不包含）、re（匹配正则）、nre（正则不匹配）。  \n }\n ]\n } \n ]\n```",
       "location": "formData",
       "name": "matching_rules",
@@ -63,7 +63,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether the status of an alert automatically changes to Resolved when all events related to the alert change to the Restored state. ARMS notifies contacts when the alert status changes to Resolved.\n\n`true`: The system sends a notification.\n`false`: The system does not send a notification",
+      "help_en": "Specifies whether the alert status is automatically changed to resolved when all events under the alert are recovered. When the alert is recovered, the system sends a notification to the handler.\n\n`true` (default): Sends a notification.\n`false`: Does not send a notification",
       "help_zh": "当告警下面全部事件都恢复时，告警状态是否自动恢复为已解决。当告警恢复时，系统将会发送通知给处理人。\n\n`true`（默认）：发送通知。\n`false`：不发送通知",
       "location": "formData",
       "name": "send_recover_message",
@@ -76,7 +76,7 @@
     },
     {
       "example": "{ \t\"groupWait\":5, \t\"groupInterval\":30, \t\"groupingFields\":[\"alertname\"] }",
-      "help_en": "An array of alert event group objects.\n\nIf you do not specify the groupingFields field, all alerts will be sent to contacts based on `alertname`.\nIf you specify the groupingFields field, alerts with the same field will be sent to contacts in one notification.\n\nSample statement:\n\n    { \n    \"groupWait\":5,    // The waiting time for grouping. \n    \"groupInterval\":30,     // The time interval of grouping. \n    \"groupingFields\":[\"alertname\"]       // The field that is used to group alert events. \n    }",
+      "help_en": "The event grouping settings.\n\nIf you leave this parameter empty (default), all alerts are grouped by `alertname` and sent to the handler.\nIf you specify grouping fields, alerts with the same field values are sent to the handler in separate messages.\n\nGrouping format:\n\n```\n{ \n\"groupWait\":5,    // The group wait time.\n\"groupInterval\":30,     // The group interval.\n\"groupingFields\":[\"alertname\"]       // The grouping fields.\n}\n```",
       "help_zh": "设置事件分组。\n\n\n不填（默认）：所有告警会按`alertname`分组发送给处理人。\n设置分组字段：相同字段的告警内容会分别通过独立信息发送给处理人。\n分组格式如下：\n\n```\n{ \n\"groupWait\":5,    //分组等待时间。\n\"groupInterval\":30,     //分组间隔时间。\n\"groupingFields\":[\"alertname\"]       //分组字段。\n}\n```",
       "location": "formData",
       "name": "group_rule",
@@ -89,7 +89,7 @@
     },
     {
       "example": "{\n    \"notifyStartTime\": \"00:00\",\n    \"notifyEndTime\": \"23:59\",\n    \"notifyChannels\": [\n        \"dingTalk\",\n        \"email\",\n        \"sms\",\n        \"tts\",\n        \"webhook\"\n    ],\n    \"notifyObjects\": [\n        {\n            \"notifyObjectType\": \"CONTACT\",\n            \"notifyObjectId\": 123,\n            \"notifyObjectName\": \"test\",\n            \"notifyChannels\": [\n                \"email\",\n                \"sms\",\n                \"tts\"\n            ],\n            \n        }\n    ]\n}\n",
-      "help_en": "An array of notification rule objects. Format:\n\n    { \n     \"notifyStartTime\":\"00:00\",      // The start time of the notification window. \n     \"notifyEndTime\":\"23:59\",       // The end time of the notification window. \n     \"notifyChannels\":[\"dingTalk\", \"email\", \"sms\", \"tts\", \"webhook\"],       // The notification methods. Valid values: dingTalk, email, sms, tts, and webhook. \n     \"notifyObjects\":[{       // An array of notification objects. \n     \"notifyObjectType\":\"CONTACT\",       // The type of the notification object. Valid values: CONTACT (contact), CONTACT_GROUP (contact group), ARMS_CONTACT (ARMS contact), ARMS_CONTACT_GROUP (ARMS contact group), DING_ROBOT_GROUP (DingTalk, Lark, WeCom, or IM robot), and CONTACT_SCHEDULE (user on duty defined by a schedule). \n     \"notifyObjectId\":123,       // The ID of the notification object. \n     \"notifyObjectName\":\"test\"       // The name of the notification object. \n     }]",
+      "help_en": "The notification rule settings. Format:\n```\n{ \n \"notifyStartTime\":\"00:00\",      // The start time of the notification period.\n \"notifyEndTime\":\"23:59\",       // The end time of the notification period.\n \"notifyChannels\":[\"dingTalk\", \"email\", \"sms\", \"tts\", \"webhook\"],       // The notification methods. Valid values: dingTalk (DingTalk), email, sms (text message), tts (phone call), and webhook.\n \"notifyObjects\":[{       // The notification recipients.\n \"notifyObjectType\":\"CONTACT\",       // The object type of the notification recipient. Valid values: CONTACT (contact), CONTACT_GROUP (contact group), ARMS_CONTACT (ARMS contact), ARMS_CONTACT_GROUP (ARMS contact group), DING_ROBOT_GROUP (DingTalk/Lark/WeCom IM bot), CONTACT_SCHEDULE (on-call schedule).\n \"notifyObjectId\":123,       // The ID of the notification recipient.\n \"notifyObjectName\":\"test\"       // The name of the notification recipient.\n \"notifyChannels\": [// The notification methods specified for a contact. Valid values: email, sms (text message), tts (phone call).\n                \"email\",\n                \"sms\",\n                \"tts\"\n            ],\n }]\n```",
       "help_zh": "设置通知规则。格式如下：\n```\n{ \n \"notifyStartTime\":\"00:00\",      //通知时间段开始时间。\n \"notifyEndTime\":\"23:59\",       //通知时间段结束时间。\n \"notifyChannels\":[\"dingTalk\", \"email\", \"sms\", \"tts\", \"webhook\"],       //通知方式，包括dingTalk(钉钉）、email（邮件）、sms（短信）、tts（电话）和webhook。\n \"notifyObjects\":[{       //通知对象。\n \"notifyObjectType\":\"CONTACT\",       //通知对象类型，包括CONTACT（联系人）、CONTACT_GROUP（联系人组）、ARMS_CONTACT（ARMS联系人）、ARMS_CONTACT_GROUP（ARMS联系人组）、DING_ROBOT_GROUP（钉钉/飞书/企业微信 IM机器人）、CONTACT_SCHEDULE（排班表）。\n \"notifyObjectId\":123,       //通知对象ID。\n \"notifyObjectName\":\"test\"       //通知对象名称。\n \"notifyChannels\": [//通知对象为联系人时单独指定的联系方式。包括email（邮件）、sms（短信）、tts（电话）\n                \"email\",\n                \"sms\",\n                \"tts\"\n            ],\n }]\n```",
       "location": "formData",
       "name": "notify_rule",
@@ -102,7 +102,7 @@
     },
     {
       "example": "{ \"robotContent\":\"{{if .commonLabels.clustername }}   >  集群名称：{{ .commonLabels.clustername }}    {{ end }}{{if eq \"app\" .commonLabels._aliyun_arms_involvedObject_kind }}   >  应用名称：{{ .commonLabels._aliyun_arms_involvedObject_name }}    {{ end }}{{ for .alerts }} >  {{ .annotations.message }} {{if .generatorURL }} [详情链接]({{.generatorURL}}) {{end}} {{if  eq \"true\" .labels._aliyun_arms_is_denoise_filtered }} （疑似噪音） {{end}}  {{end}}\" }",
-      "help_en": "The notification template. The default notification template is provided below the table",
+      "help_en": "The notification template. For a sample template, refer to the description below the table",
       "help_zh": "通知模板。示例模板请参见表格下方说明",
       "location": "formData",
       "name": "notify_template",
@@ -115,7 +115,7 @@
     },
     {
       "example": "123",
-      "help_en": "The ID of the escalation policy",
+      "help_en": "The ID of the alert escalation policy",
       "help_zh": "升级规则ID",
       "location": "formData",
       "name": "escalation_policy_id",
@@ -128,7 +128,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to resend a notification for a long-lasting unresolved alert. Default value: true. Valid values:\n\n`true`: If you set this parameter to `true`, you must set RepeatInterval.\n`false`: If you set this parameter to `false`, you must set EscalationPolicyId",
+      "help_en": "Specifies whether to send repeated notifications for alerts that remain unresolved for an extended period.\n\n`true` (default): If set to `true`, you must specify RepeatInterval.\n`false`: If set to `false`, you must specify EscalationPolicyId",
       "help_zh": "对于长期未解决的告警是否发送重复通知。\n\n`true`（默认）：设置为`true`后，必须设置RepeatInterval。\n`false`：设置为`false`后，必须设置EscalationPolicyId",
       "location": "formData",
       "name": "repeat",
@@ -141,7 +141,7 @@
     },
     {
       "example": "600",
-      "help_en": "The time interval at which a notification is resent for a long-lasting unresolved alert. Unit: seconds",
+      "help_en": "The interval for repeated notifications. Unit: seconds",
       "help_zh": "重复通知时间间隔，单位为秒",
       "location": "formData",
       "name": "repeat_interval",
@@ -167,7 +167,7 @@
     },
     {
       "example": "cn-hangzhou",
-      "help_en": "The ID of the region",
+      "help_en": "The region ID",
       "help_zh": "地域ID",
       "location": "formData",
       "name": "region_id",
@@ -180,7 +180,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to enable simple mode",
+      "help_en": "Specifies whether to enable simplified mode",
       "help_zh": "极简模式",
       "location": "formData",
       "name": "directed_mode",
@@ -193,7 +193,7 @@
     },
     {
       "example": "enable",
-      "help_en": "Specifies whether to enable the notification policy. Valid values: enable and disable",
+      "help_en": "Specifies whether the notification policy is enabled. Valid values:\n\nenable: enabled.\ndisable: disabled",
       "help_zh": "通知策略是否启用，enable 启用，disable 停用",
       "location": "formData",
       "name": "state",
@@ -216,12 +216,12 @@
         "properties": {
           "NotificationPolicy": {
             "backendName": "data",
-            "description_en": "An array of notification policy objects",
+            "description_en": "The notification policy object",
             "description_zh": "通知策略对象",
             "properties": {
               "DirectedMode": {
                 "backendName": "directedMode",
-                "description_en": "Specifies whether to enable simple mode",
+                "description_en": "Specifies whether to enable simplified mode",
                 "description_zh": "极简模式",
                 "title_en": "极简模式",
                 "title_zh": "极简模式",
@@ -229,7 +229,7 @@
               },
               "EscalationPolicyId": {
                 "backendName": "escalationPolicyId",
-                "description_en": "The ID of the escalation policy",
+                "description_en": "The ID of the alert escalation policy",
                 "description_zh": "升级规则ID",
                 "example": "123",
                 "format": "int64",
@@ -239,12 +239,12 @@
               },
               "GroupRule": {
                 "backendName": "groupRule",
-                "description_en": "An array of alert event group objects",
+                "description_en": "The event grouping settings",
                 "description_zh": "事件分组",
                 "properties": {
                   "GroupInterval": {
                     "backendName": "groupInterval",
-                    "description_en": "The time interval of grouping. Unit: seconds. Default value: 30",
+                    "description_en": "The group interval. Default value: 30 seconds",
                     "description_zh": "分组间隔时间，默认为30秒",
                     "example": "30",
                     "format": "int64",
@@ -254,7 +254,7 @@
                   },
                   "GroupWait": {
                     "backendName": "groupWait",
-                    "description_en": "The waiting time for grouping. Unit: seconds. Default value: 5",
+                    "description_en": "The group wait time. Default value: 5 seconds",
                     "description_zh": "分组等待时间，默认为5秒",
                     "example": "5",
                     "format": "int64",
@@ -264,11 +264,11 @@
                   },
                   "GroupingFields": {
                     "backendName": "groupingFields",
-                    "description_en": "An array of alert event group objects.\n\nIf you do not specify the groupingFields field, all alerts will be sent to contacts based on `alertname`.\nIf you specify the groupingFields field, alerts with the same field will be sent to contacts in one notification",
+                    "description_en": "The event grouping settings.\n\nNot specified (default): All alerts are grouped by `alertname` and sent to the handler.\nSpecified grouping fields: Alerts with the same field values are sent to the handler in separate messages",
                     "description_zh": "设置事件分组。\n\n\n不填（默认）：所有告警会按`alertname`分组发送给处理人。\n设置分组字段：相同字段的告警内容会分别通过独立信息发送给处理人",
                     "itemName": "groupingFields",
                     "items": {
-                      "description_en": "The field that is used for grouping",
+                      "description_en": "The grouping field",
                       "description_zh": "分组字段",
                       "example": "[\"alertName\",\"clustname\"]",
                       "type": "string"
@@ -284,7 +284,7 @@
               },
               "Id": {
                 "backendName": "id",
-                "description_en": "The ID of the notification policy",
+                "description_en": "The notification policy ID",
                 "description_zh": "通知策略ID",
                 "example": "1234",
                 "format": "int64",
@@ -294,7 +294,7 @@
               },
               "IntegrationId": {
                 "backendName": "integrationId",
-                "description_en": "The integration ID of the ticket system to which alerts are pushed",
+                "description_en": "The ticket system to which alerts are pushed. The value is the integration ID of the ticket system",
                 "description_zh": "告警需要推送到的工单系统，显示为工单系统的集成ID",
                 "example": "34",
                 "format": "int64",
@@ -304,7 +304,7 @@
               },
               "MatchingRules": {
                 "backendName": "matchingRules",
-                "description_en": "The matching rules",
+                "description_en": "The rules for matching alert events",
                 "description_zh": "匹配告警事件规则",
                 "itemName": "matchingRules",
                 "items": {
@@ -327,7 +327,7 @@
                           },
                           "Operator": {
                             "backendName": "operator",
-                            "description_en": "The logical operator of the matching condition. Valid values:\n\n`eq`: equal to\n`neq`: not equal to\n`in`: contains\n`nin`: does not contain\n`re`: regular expression match\n`nre`: regular expression mismatch",
+                            "description_en": "The operator of the matching condition.\n\n`eq`: equal to\n`neq`: not equal to\n`in`: contains\n`nin`: does not contain\n`re`: matches regular expression\n`nre`: does not match regular expression",
                             "description_zh": "匹配条件聚合方式。\n\n`eq`：等于\n`neq`：不等于\n`in`：包含\n`nin`：不包含\n`re`：匹配正则\n`nre`：正则不匹配",
                             "example": "eq",
                             "title_en": "对应关系",
@@ -357,7 +357,7 @@
               },
               "Name": {
                 "backendName": "name",
-                "description_en": "The name of the notification policy",
+                "description_en": "The notification policy name",
                 "description_zh": "通知策略名称",
                 "example": "notificationpolicy_test",
                 "title_en": "通知策略名称",
@@ -366,16 +366,16 @@
               },
               "NotifyRule": {
                 "backendName": "notifyRule",
-                "description_en": "An array of notification rule objects",
+                "description_en": "The notification rule",
                 "description_zh": "通知规则",
                 "properties": {
                   "NotifyChannels": {
                     "backendName": "notifyChannels",
-                    "description_en": "The notification method",
+                    "description_en": "The notification channels",
                     "description_zh": "通知方式",
                     "itemName": "notifyChannels",
                     "items": {
-                      "description_en": "The notification methods. Valid values:\n\n`dingTalk`: DingTalk\n`email`: email\n`sms`: text message\n`tts`: phone call\n`webhook`: webhook",
+                      "description_en": "The notification channel.\n\n`dingTalk`: DingTalk\n`email`: email\n`sms`: text message\n`tts`: phone call\n`webhook`: Webhook",
                       "description_zh": "通知方式。\n\n`dingTalk`：钉钉\n`email`：邮件\n`sms`：短信\n`tts`：电话\n`webhook`：Webhook",
                       "example": "[\"dingTalk\", \"email\", \"sms\", \"tts\", \"webhook\"]",
                       "type": "string"
@@ -386,7 +386,7 @@
                   },
                   "NotifyEndTime": {
                     "backendName": "notifyEndTime",
-                    "description_en": "The end time of the notification window",
+                    "description_en": "The end time of the notification period",
                     "description_zh": "通知时间段结束时间",
                     "example": "23:59",
                     "title_en": "通知时间段结束时间",
@@ -395,20 +395,20 @@
                   },
                   "NotifyObjects": {
                     "backendName": "notifyObjects",
-                    "description_en": "An array of notification objects",
+                    "description_en": "The list of notification recipients",
                     "description_zh": "通知对象列表",
                     "itemName": "notifyObjects",
                     "items": {
-                      "description_en": "The information about the notification object",
+                      "description_en": "The notification recipient",
                       "description_zh": "通知对象",
                       "properties": {
                         "NotifyChannels": {
                           "backendName": "notifyChannels",
-                          "description_en": "The notification methods specified for a contact",
+                          "description_en": "The individual contact methods when the notification recipient is a contact",
                           "description_zh": "通知对象为联系人时的单独的联系方式",
                           "itemName": "notifyChannels",
                           "items": {
-                            "description_en": "The notification methods. Valid values:\n\nemail: email\nsms: text message\ntts: phone call",
+                            "description_en": "The notification channel.\n\n`email`: email\n`sms`: text message\n`tts`: phone call",
                             "description_zh": "通知方式。\n\n`email`：邮件\n`sms`：短信\n`tts`：电话",
                             "example": "sms",
                             "title_en": "",
@@ -421,7 +421,7 @@
                         },
                         "NotifyObjectId": {
                           "backendName": "notifyObjectId",
-                          "description_en": "The ID of the notification object",
+                          "description_en": "The ID of the notification recipient",
                           "description_zh": "通知对象ID",
                           "example": "123",
                           "format": "int64",
@@ -431,7 +431,7 @@
                         },
                         "NotifyObjectName": {
                           "backendName": "notifyObjectName",
-                          "description_en": "The name of the notification object",
+                          "description_en": "The name of the notification recipient",
                           "description_zh": "通知对象名称",
                           "example": "test",
                           "title_en": "通知对象名称",
@@ -440,7 +440,7 @@
                         },
                         "NotifyObjectType": {
                           "backendName": "notifyObjectType",
-                          "description_en": "The type of the notification object. Valid values:\n\nCONTACT: contact\nCONTACT_GROUP: contact group\nARMS_CONTACT: ARMS contact\nARMS_CONTACT_GROUP: ARMS contact group\nDING_ROBOT_GROUP: DingTalk, Lark, WeCom, or IM robot\nCONTACT_SCHEDULE: user on duty defined by a schedule",
+                          "description_en": "The object type of the notification recipient.\n\nCONTACT: contact\nCONTACT_GROUP: contact group \nARMS_CONTACT: ARMS contact\nARMS_CONTACT_GROUP: ARMS contact group\nDING_ROBOT_GROUP: DingTalk/Lark/WeCom IM chatbot\nCONTACT_SCHEDULE: on-call schedule",
                           "description_zh": "通知对象类型。\n\nCONTACT：联系人\nCONTACT_GROUP：联系人组 \nARMS_CONTACT：ARMS联系人\nARMS_CONTACT_GROUP：ARMS联系人组\nDING_ROBOT_GROUP：钉钉/飞书/企业微信 IM机器人\nCONTACT_SCHEDULE：排班表",
                           "example": "CONTACT",
                           "title_en": "通知对象类型，CONTACT, CONTACT_GROUP, ARMS_CONTACT, DING_ROBOT",
@@ -456,7 +456,7 @@
                   },
                   "NotifyStartTime": {
                     "backendName": "notifyStartTime",
-                    "description_en": "The start time of the notification window",
+                    "description_en": "The start time of the notification period",
                     "description_zh": "通知时间段开始时间",
                     "example": "00:00",
                     "title_en": "通知时间段开始时间",
@@ -475,7 +475,7 @@
                 "properties": {
                   "EmailContent": {
                     "backendName": "emailContent",
-                    "description_en": "The content of the alert notification sent through email",
+                    "description_en": "The content of the email alert notification",
                     "description_zh": "邮件告警通知内容",
                     "example": "告警名称：{{ .commonLabels.alertname }}{{if .commonLabels.clustername }} 集群名称：{{ .commonLabels.clustername }} {{ end }}{{if eq \"app\" .commonLabels._aliyun_arms_involvedObject_kind }} 应用名称：{{ .commonLabels._aliyun_arms_involvedObject_name }} {{ end }} 通知策略：{{ .dispatchRuleName }} 告警时间：{{ .startTime }} 告警内容：{{ for .alerts }} {{ .annotations.message }}  {{if .generatorURL }}  <a href=\"{{.generatorURL}}\" > 详情链接</a>  {{ end }} {{ end }}",
                     "title_en": "邮件内容",
@@ -484,7 +484,7 @@
                   },
                   "EmailRecoverContent": {
                     "backendName": "emailRecoverContent",
-                    "description_en": "The content of the alert resolution notification sent through email",
+                    "description_en": "The content of the email alert recovery notification",
                     "description_zh": "邮件告警恢复通知内容",
                     "example": "告警名称：{{ .commonLabels.alertname }}{{if .commonLabels.clustername }} 集群名称：{{ .commonLabels.clustername }} {{ end }}{{if eq \"app\" .commonLabels._aliyun_arms_involvedObject_kind }} 应用名称：{{ .commonLabels._aliyun_arms_involvedObject_name }} {{ end }} 通知策略：{{ .dispatchRuleName }} 恢复时间：{{ .endTime }} 告警内容：{{ for .alerts }} {{ .annotations.message }}  {{if .generatorURL }} <a href=\"{{.generatorURL}}\" > 详情链接</a>  {{ end }} {{ end }}",
                     "title_en": "恢复告警邮件内容",
@@ -493,7 +493,7 @@
                   },
                   "EmailRecoverTitle": {
                     "backendName": "emailRecoverTitle",
-                    "description_en": "The title of the alert resolution notification sent through email",
+                    "description_en": "The title of the email alert recovery notification",
                     "description_zh": "邮件告警恢复通知标题",
                     "example": "{{ .commonLabels.alertname }}",
                     "title_en": "恢复告警邮件标题",
@@ -502,7 +502,7 @@
                   },
                   "EmailTitle": {
                     "backendName": "emailTitle",
-                    "description_en": "The title of the alert notification sent through email",
+                    "description_en": "The title of the email alert notification",
                     "description_zh": "邮件告警通知标题",
                     "example": "{{ .commonLabels.alertname }}",
                     "title_en": "邮件标题",
@@ -511,7 +511,7 @@
                   },
                   "RobotContent": {
                     "backendName": "robotContent",
-                    "description_en": "The content of the alert notification sent by the IM robot",
+                    "description_en": "The content of the chatbot alert notification",
                     "description_zh": "机器人告警通知内容",
                     "example": "{{if .commonLabels.clustername }}   >  集群名称：{{ .commonLabels.clustername }}    {{ end }}{{if eq \"app\" .commonLabels._aliyun_arms_involvedObject_kind }}   >  应用名称：{{ .commonLabels._aliyun_arms_involvedObject_name }}    {{ end }}{{ for .alerts }} >  {{ .annotations.message }} {{if .generatorURL }} [详情链接]({{.generatorURL}}) {{end}} {{if  eq \"true\" .labels._aliyun_arms_is_denoise_filtered }} （疑似噪音） {{end}}  {{end}}",
                     "title_en": "机器人告警内容",
@@ -520,7 +520,7 @@
                   },
                   "SmsContent": {
                     "backendName": "smsContent",
-                    "description_en": "The content of the alert notification sent through text message",
+                    "description_en": "The content of the text message alert notification",
                     "description_zh": "短信告警通知内容",
                     "example": "发生{{ .level }}告警 告警名称：{{ .commonLabels.alertname }}{{if .commonLabels.clustername }} 集群名称：{{ .commonLabels.clustername }} {{ end }}{{if eq \"app\" .commonLabels._aliyun_arms_involvedObject_kind }} 应用名称：{{ .commonLabels._aliyun_arms_involvedObject_name }} {{ end }} 通知策略：{{ .dispatchRuleName }} 告警时间：{{ .startTime }} 告警内容：{{ for .alerts }} {{ .annotations.message }} {{ end }}",
                     "title_en": "短信内容",
@@ -529,7 +529,7 @@
                   },
                   "SmsRecoverContent": {
                     "backendName": "smsRecoverContent",
-                    "description_en": "The content of the alert resolution notification sent through text message",
+                    "description_en": "The content of the text message alert recovery notification",
                     "description_zh": "短信告警恢复通知内容",
                     "example": "告警已经恢复 告警名称：{{ .commonLabels.alertname }}{{if .commonLabels.clustername }} 集群名称：{{ .commonLabels.clustername }} {{ end }}{{if eq \"app\" .commonLabels._aliyun_arms_involvedObject_kind }} 应用名称：{{ .commonLabels._aliyun_arms_involvedObject_name }} {{ end }} 通知策略：{{ .dispatchRuleName }} 恢复时间：{{ .endTime }} 告警内容：{{ for .alerts }} {{ .annotations.message }} {{ end }}",
                     "title_en": "恢复告警短信内容",
@@ -538,7 +538,7 @@
                   },
                   "TtsContent": {
                     "backendName": "ttsContent",
-                    "description_en": "The content of the alert notification by phone",
+                    "description_en": "The content of the phone call alert notification",
                     "description_zh": "电话告警通知内容",
                     "example": "告警名称：{{ .commonLabels.alertname }}{{if .commonLabels.clustername }} 集群名称：{{ .commonLabels.clustername }} {{ end }}{{if eq \"app\" .commonLabels._aliyun_arms_involvedObject_kind }} 应用名称：{{ .commonLabels._aliyun_arms_involvedObject_name }} {{ end }} 通知策略：{{ .dispatchRuleName }} 告警时间：{{ .startTime }} 告警内容：{{ for .alerts }} {{ .annotations.message }} {{ end }}",
                     "title_en": "智能语音告警内容",
@@ -547,7 +547,7 @@
                   },
                   "TtsRecoverContent": {
                     "backendName": "ttsRecoverContent",
-                    "description_en": "The content of the alert resolution notification by phone",
+                    "description_en": "The content of the phone call alert recovery notification",
                     "description_zh": "电话告警恢复通知内容",
                     "example": "告警名称：{{ .commonLabels.alertname }}{{if .commonLabels.clustername }} 集群名称：{{ .commonLabels.clustername }} {{ end }}{{if eq \"app\" .commonLabels._aliyun_arms_involvedObject_kind }} 应用名称：{{ .commonLabels._aliyun_arms_involvedObject_name }} {{ end }} 通知策略：{{ .dispatchRuleName }} 恢复时间：{{ .endTime }} 告警内容：{{ for .alerts }} {{ .annotations.message }} {{ end }}",
                     "title_en": "智能语音恢复告警内容",
@@ -561,7 +561,7 @@
               },
               "Repeat": {
                 "backendName": "repeat",
-                "description_en": "Indicates whether a notification is resent for a long-lasting unresolved alert. Default value: true. Valid values:\n\n`true`: The system resends a notification for a long-lasting unresolved alert at a specified time interval.\n`false`: The system sends a notification for a long-lasting unresolved alert based on an escalation policy",
+                "description_en": "Specifies whether to send repeated notifications for long-unresolved alerts.\n\n`true` (default): Notifications are sent at the configured repeat notification interval.\n`false`: Notifications are sent based on the configured alert escalation policy",
                 "description_zh": "对于长期未解决的告警是否发送重复通知。\n\n`true`（默认）：按设置的重复通知时间间隔发送通知。\n`false`：根据设置升级策略发送通知",
                 "example": "true",
                 "title_en": "是否重复通知",
@@ -570,7 +570,7 @@
               },
               "RepeatInterval": {
                 "backendName": "repeatInterval",
-                "description_en": "The time interval at which a notification is resent for a long-lasting unresolved alert. Unit: seconds",
+                "description_en": "The interval for repeated notifications. Unit: seconds",
                 "description_zh": "重复通知时间间隔，单位为秒",
                 "example": "600",
                 "format": "int64",
@@ -580,7 +580,7 @@
               },
               "SendRecoverMessage": {
                 "backendName": "sendRecoverMessage",
-                "description_en": "Indicates whether the status of an alert automatically changes to Resolved when all events related to the alert change to the Restored state. ARMS notifies contacts when the alert status changes to Resolved.\n\n`true`: The system sends a notification.\n`false`: The system does not send a notification",
+                "description_en": "Specifies whether the alert status is automatically changed to resolved when all events under the alert are recovered. When the alert is recovered, the system sends a notification to the handler.\n\n`true` (default): Sends a notification.\n`false`: Does not send a notification",
                 "description_zh": "当告警下面全部事件都恢复时，告警状态是否自动恢复为已解决。当告警恢复时，系统将会发送通知给处理人。\n\n`true`（默认）：发送通知。\n`false`：不发送通知",
                 "example": "true",
                 "title_en": "是否发送恢复通知",
@@ -589,7 +589,7 @@
               },
               "State": {
                 "backendName": "state",
-                "description_en": "Indicates whether the notification policy is enabled. Valid values: enable and disable",
+                "description_en": "Specifies whether the notification policy is enabled. Valid values:\n\nenable: enabled.\ndisable: disabled",
                 "description_zh": "通知策略是否启用，enable 启用，disable 停用",
                 "example": "enable",
                 "title_en": "通知策略是否启用，enable 启用，disable 停用",
@@ -603,7 +603,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The ID of the request",
+            "description_en": "The request ID",
             "description_zh": "请求ID",
             "example": "A5EC8221-08F2-4C95-9AF1-49FD998C****",
             "title_en": "Id of the request",

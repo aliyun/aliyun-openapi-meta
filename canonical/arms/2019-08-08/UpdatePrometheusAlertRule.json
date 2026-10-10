@@ -3,7 +3,7 @@
   "cmd_full_name": "arms update-prometheus-alert-rule",
   "cmd_name": "update-prometheus-alert-rule",
   "deprecated": false,
-  "description_en": "Updates a Prometheus alert rule",
+  "description_en": "Updates a Prometheus alert rule by calling the UpdatePrometheusAlertRule operation",
   "description_zh": "调用UpdatePrometheusAlertRule接口更新Prometheus报警规则",
   "kebab_example": "aliyun arms update-prometheus-alert-rule --biz-region-id cn-hangzhou --alert-name Prometheus_Alert --cluster-id c0bad479465464e1d8c1e641b0afb0000 --expression 100_0_sum_rate_container_cpu_usage_seconds_total_1m_by_pod_name_/_sum_label_replace_kube_pod_container_resource_limits_cpu_cores,_pod_name_,_1_,_pod_,_.0_by_pod_name_75 --duration 1 --message 'labels.pod_name_CPU使用率大于80%，当前值_value_%' --alert-id 3888704 --api-version 2019-08-08 --region cn-hangzhou",
   "method": "GET|POST",
@@ -64,7 +64,7 @@
     },
     {
       "example": "Kubernetes组件告警",
-      "help_en": "The type of the alert rule",
+      "help_en": "The type of the custom alert rule",
       "help_zh": "自定义告警规则类型",
       "location": "query",
       "name": "type",
@@ -77,7 +77,7 @@
     },
     {
       "example": "ALERT_MANAGER",
-      "help_en": "The method that is used to send alert notifications. Valid values:\n\n`ALERT_MANAGER`: Alert notifications are sent by Operation Center. This is the default value.\n\n`DISPATCH_RULE`: Alert notifications are sent based on the specified notification policy",
+      "help_en": "The notification type. Valid values:\n\n`ALERT_MANAGER`: Notifications are sent through the alert operations center.\n`DISPATCH_RULE`: Notifications are sent based on a specified notification policy",
       "help_zh": "通知类型， 取值：\n\n`ALERT_MANAGER`：通过告警运维中心通知。\n`DISPATCH_RULE`：指定通知策略进行通知",
       "location": "query",
       "name": "notify_type",
@@ -90,7 +90,7 @@
     },
     {
       "example": "10282",
-      "help_en": "The ID of the notification policy. This parameter is required if the NotifyType parameter is set to `DISPATCH_RULE`",
+      "help_en": "The ID of the notification policy. This parameter is required when NotifyType is set to `DISPATCH_RULE`",
       "help_zh": "通知策略ID，当NotifyType指定为`DISPATCH_RULE`时必填",
       "location": "query",
       "name": "dispatch_rule_id",
@@ -104,7 +104,7 @@
     {
       "doc_required": true,
       "example": "100 * (sum(rate(container_cpu_usage_seconds_total[1m])) by (pod_name) / sum(label_replace(kube_pod_container_resource_limits_cpu_cores, \\\"pod_name\\\", \\\"$1\\\", \\\"pod\\\", \\\"(.*)\\\")) by (pod_name))>75",
-      "help_en": "The expression of the alert rule. The expression must follow the PromQL syntax",
+      "help_en": "The alert expression, which must be a PromQL statement",
       "help_zh": "告警表达式，需要使用PromQL语句",
       "location": "query",
       "name": "expression",
@@ -118,7 +118,7 @@
     {
       "doc_required": true,
       "example": "1",
-      "help_en": "The duration. The value ranges from 1 to 1440 minutes",
+      "help_en": "The duration. Valid values: 1m to 1440m. Unit: minutes",
       "help_zh": "持续时间，范围在1m~1440m，单位为分钟",
       "location": "query",
       "name": "duration",
@@ -132,7 +132,7 @@
     {
       "doc_required": true,
       "example": "${{$labels.pod_name}}CPU使用率大于80%，当前值{{$value}}%",
-      "help_en": "The alert message. Tags can be referenced in the {{$labels.xxx}} format",
+      "help_en": "The alert message. You can reference labels in the {{$labels.xxx}} format",
       "help_zh": "告警消息，支持按照{{$labels.xxx}}格式来引用标签",
       "location": "query",
       "name": "message",
@@ -145,7 +145,7 @@
     },
     {
       "example": "[{\"Value\": \"critical\",\"Name\": \"severity\"}]",
-      "help_en": "The tags that are described in a JSON string. You must specify the name and value of each tag",
+      "help_en": "The label JSON string. You must set the Name and Value of the label",
       "help_zh": "标签JSON串。需要设置标签的Name和Value",
       "location": "query",
       "name": "labels",
@@ -158,7 +158,7 @@
     },
     {
       "example": "[{\"Value\": \"xxx\",\"Name\": \"description\"}]",
-      "help_en": "The annotations that are described in a JSON string. You must specify the name and value of each annotation",
+      "help_en": "The annotation JSON string. You must set the Name and Value of the annotation",
       "help_zh": "注释JSON串。需要设置注释的Name和Value",
       "location": "query",
       "name": "annotations",
@@ -172,7 +172,7 @@
     {
       "doc_required": true,
       "example": "3888704",
-      "help_en": "The ID of the alert rule. You can call the ListPrometheusAlertRules operation to query the ID of the alert rule",
+      "help_en": "The ID of the alerting rule. You can obtain the ID from the response data of the ListPrometheusAlertRules API operation",
       "help_zh": "告警规则ID，您可以在ListPrometheusAlertRules API接口的返回数据中查看",
       "location": "query",
       "name": "alert_id",
@@ -188,7 +188,7 @@
         "fields": [
           {
             "example": "TestKey",
-            "help_en": "The tag key",
+            "help_en": "The key of the tag",
             "help_zh": "标签的键（key）",
             "name": "key",
             "options": [
@@ -200,7 +200,7 @@
           },
           {
             "example": "TestValue",
-            "help_en": "The tag value",
+            "help_en": "The value of the tag",
             "help_zh": "标签的值（value）",
             "name": "value",
             "options": [
@@ -235,7 +235,7 @@
         "properties": {
           "Code": {
             "backendName": "code",
-            "description_en": "The status code. The status code 200 indicates that the request was successful",
+            "description_en": "The status code. A value of 200 indicates success. Other values indicate errors",
             "description_zh": "状态码。200为成功，其他状态码为异常",
             "example": "200",
             "format": "int64",
@@ -250,7 +250,7 @@
           },
           "PrometheusAlertRule": {
             "backendName": "data",
-            "description_en": "The returned struct",
+            "description_en": "The response struct",
             "description_zh": "返回结构体",
             "properties": {
               "AlertId": {
@@ -274,7 +274,7 @@
               },
               "Annotations": {
                 "backendName": "annotations",
-                "description_en": "The annotation of the alert rule",
+                "description_en": "The annotations of the alert rule",
                 "description_zh": "告警规则的注释",
                 "itemName": "Annotation",
                 "items": {
@@ -306,7 +306,7 @@
               },
               "ClusterId": {
                 "backendName": "k8sId",
-                "description_en": "The ID of the cluster",
+                "description_en": "The cluster ID",
                 "description_zh": "集群ID",
                 "example": "c0bad479465464e1d8c1e641b0afb****",
                 "mappingResourcePropertyName": "$.ClusterId",
@@ -325,7 +325,7 @@
               },
               "Duration": {
                 "backendName": "duration",
-                "description_en": "The duration. The value ranges from 1 to 1440 minutes",
+                "description_en": "The duration. Valid values: 1m to 1440m. Unit: minutes",
                 "description_zh": "持续时间，范围在1m~1440m，单位为分钟",
                 "example": "1",
                 "mappingResourcePropertyName": "$.Duration",
@@ -334,7 +334,7 @@
               },
               "Expression": {
                 "backendName": "expr",
-                "description_en": "The expression of the alert rule",
+                "description_en": "The alert expression",
                 "description_zh": "告警表达式",
                 "example": "100 * (sum(rate(container_cpu_usage_seconds_total[1m])) by (pod_name) / sum(label_replace(kube_pod_container_resource_limits_cpu_cores, \\\"pod_name\\\", \\\"$1\\\", \\\"pod\\\", \\\"(.*)\\\")) by (pod_name))>75",
                 "mappingResourcePropertyName": "$.Expression",
@@ -343,7 +343,7 @@
               },
               "Labels": {
                 "backendName": "labels",
-                "description_en": "The tags of the alert rule",
+                "description_en": "The labels of the alert rule",
                 "description_zh": "告警规则的标签",
                 "itemName": "Label",
                 "items": {
@@ -351,7 +351,7 @@
                   "properties": {
                     "Name": {
                       "backendName": "name",
-                      "description_en": "The name of the tag",
+                      "description_en": "The name of the label",
                       "description_zh": "标签的名称",
                       "example": "severity",
                       "mappingResourcePropertyName": "$.Labels[*].Name",
@@ -360,7 +360,7 @@
                     },
                     "Value": {
                       "backendName": "value",
-                      "description_en": "The value of the tag",
+                      "description_en": "The value of the label",
                       "description_zh": "标签的值",
                       "example": "critical",
                       "mappingResourcePropertyName": "$.Labels[*].Value",
@@ -375,7 +375,7 @@
               },
               "Message": {
                 "backendName": "message",
-                "description_en": "The returned message",
+                "description_en": "The alert notification message. You can reference labels in the {{$labels.xxx}} format",
                 "description_zh": "告警通知消息，支持按照{{$labels.xxx}}格式来引用标签",
                 "example": "${{$labels.pod_name}}CPU使用率大于80%，当前值{{$value}}%",
                 "mappingResourcePropertyName": "$.Message",
@@ -384,7 +384,7 @@
               },
               "NotifyType": {
                 "backendName": "notifyWay",
-                "description_en": "The method of that is used to send alert notifications. Valid values:\n\n`ALERT_MANAGER`: Alert notifications are sent by Operation Center.\n\n`DISPATCH_RULE`: Alert notifications are sent based on the specified notification policy",
+                "description_en": "The notification type. Valid values:\n\n`ALERT_MANAGER`: Notifications are sent through the alert operations center.\n`DISPATCH_RULE`: Notifications are sent based on a specified notification policy",
                 "description_zh": "通知类型， 取值：\n\n`ALERT_MANAGER`：通过报警运维中心通知。\n`DISPATCH_RULE`：指定通知策略进行通知",
                 "example": "ALERT_MANAGER",
                 "mappingResourcePropertyName": "$.NotifyType",
@@ -393,7 +393,7 @@
               },
               "Status": {
                 "backendName": "status",
-                "description_en": "Indicates whether the alert rule is enabled. Valid values:\n\n`1`: The alert rule is enabled.\n\n`0`: The alert rule is disabled",
+                "description_en": "The status of the alert rule. Valid values:\n\n`1`: enabled\n`0`: disabled",
                 "description_zh": "告警规则启用状态，取值：\n\n`1`：开启\n`0`：关闭",
                 "example": "1",
                 "format": "int32",
@@ -424,7 +424,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful. Valid values:\n\n`true`\n\n`false`",
+            "description_en": "Indicates whether the operation was successful. Valid values:\n\n`true`: The operation was successful.\n`false`: The operation failed",
             "description_zh": "操作是否成功：\n\n`true`：操作成功\n`false`：操作失败",
             "example": "True",
             "type": "boolean"
