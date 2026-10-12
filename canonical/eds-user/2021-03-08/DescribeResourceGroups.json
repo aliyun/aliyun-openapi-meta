@@ -4,7 +4,7 @@
   "deprecated": false,
   "description_en": "Queries resource groups",
   "description_zh": "查看资源组",
-  "kebab_example": "aliyun eds-user describe-resource-groups --resource-group-name '部门A资源组' --resource-group-ids rg-9th3k8twp3ox2000 --page-size 20 --page-number 1 --need-contain-resource-group-with-office-site 0 --platform AliyunConsole --business-channel ENTERPRISE --aliyun-resource-group-ids rg-as8nlsbsxsldk000 --resource-classification example-string --agent-type example-string --api-version 2021-03-08 --region cn-hangzhou",
+  "kebab_example": "aliyun eds-user describe-resource-groups --resource-group-name '部门A资源组' --resource-group-ids rg-9th3k8twp3ox2000 --page-size 20 --page-number 1 --need-contain-resource-group-with-office-site 0 --platform AliyunConsole --business-channel ENTERPRISE --aliyun-resource-group-ids rg-as8nlsbsxsldk000 --resource-classification Default --agent-type example-string --api-version 2021-03-08 --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": true,
   "name": "DescribeResourceGroups",
@@ -21,7 +21,7 @@
   "parameters": [
     {
       "example": "部门A资源组",
-      "help_en": "The resource group name",
+      "help_en": "The name of the resource group",
       "help_zh": "资源组名称",
       "location": "query",
       "name": "resource_group_name",
@@ -89,7 +89,7 @@
     },
     {
       "example": "AliyunConsole",
-      "help_en": "Fixed value: AliyunConsole.\nFor Elastic Desktop Service Enterprise Edition, set this parameter to AliyunConsole. Other platforms are not publicly available",
+      "help_en": "Fixed value: AliyunConsole.\nFor Alibaba Cloud Workspace Enterprise Edition, set the value to AliyunConsole. Other platforms are not publicly available",
       "help_zh": "固定值：AliyunConsole。\n无影企业版固定传AliyunConsole，其他平台暂不对外开放",
       "location": "query",
       "name": "platform",
@@ -117,7 +117,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The Alibaba Cloud resource group ID",
+      "help_en": "The cloud platform resource group IDs",
       "help_zh": "云平台资源组ID",
       "location": "query",
       "name": "aliyun_resource_group_ids",
@@ -132,9 +132,13 @@
     {
       "enum": [
         "Default",
+        "Timer",
+        "OfficeSite",
+        "PolicyGroup",
         "DesktopAgent"
       ],
-      "help_en": "The resource classification within the resource group",
+      "example": "Default",
+      "help_en": "The resource classification in the resource group",
       "help_zh": "资源组内的资源分类",
       "location": "query",
       "name": "resource_classification",
@@ -164,7 +168,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response information collection",
+        "description_en": "The returned information",
         "description_zh": "返回信息集合",
         "properties": {
           "RequestId": {
@@ -178,11 +182,11 @@
           },
           "ResourceGroup": {
             "backendName": "data",
-            "description_en": "The list of resource group information",
+            "description_en": "The list of resource group details",
             "description_zh": "资源组信息列表",
             "itemName": "ResourceGroup",
             "items": {
-              "description_en": "The resource group information",
+              "description_en": "The resource group details",
               "description_zh": "资源组信息",
               "properties": {
                 "AgentType": {
@@ -223,21 +227,21 @@
                 },
                 "AuthCount": {
                   "backendName": "authCount",
-                  "description_en": "The number of administrators authorized for the resource group",
+                  "description_en": "The number of authorized administrators in the resource group",
                   "description_zh": "资源组授权的管理员数量",
                   "example": "3",
                   "type": "string"
                 },
                 "CreateTime": {
                   "backendName": "createTime",
-                  "description_en": "The creation time",
-                  "description_zh": "创建时间",
+                  "description_en": "The creation time in UTC format that follows the ISO 8601 standard",
+                  "description_zh": "创建时间，采用 ISO 8601 格式的 UTC 时间",
                   "example": "2022-11-29T17:25:40.000000000Z",
                   "type": "string"
                 },
                 "Policies": {
                   "backendName": "policies",
-                  "description_en": "The policies associated with the resource group.\nAssociated policies take effect on cloud computers in the resource group. If multiple policies are associated, they take effect based on policy priority.\nIf a cloud computer in the resource group already has other policies specified, the policies associated with the resource group take effect first",
+                  "description_en": "The policies associated with the resource group.\nThe associated policies take effect on the cloud computers in the resource group. If multiple policies are associated, they take effect based on their priorities.\nIf a cloud computer in the resource group is already assigned another policy, the policy associated with the resource group takes precedence",
                   "description_zh": "资源组关联的策略。\n关联策略会对资源组内的云电脑生效，如果有多个策略，会按策略的优先级生效。\n如果资源组内的云电脑本身已指定其他策略，资源组关联的策略优先生效",
                   "itemName": "Policy",
                   "items": {
@@ -251,7 +255,7 @@
                       },
                       "IsDefault": {
                         "backendName": "default",
-                        "description_en": "Indicates whether this is the default policy",
+                        "description_en": "Indicates whether the policy is the default policy",
                         "description_zh": "是否默认策略",
                         "example": "False",
                         "type": "boolean"
@@ -275,6 +279,15 @@
                   "example": "119",
                   "type": "string"
                 },
+                "ResourceGroupDescription": {
+                  "backendName": "resourceGroupDescription",
+                  "description_en": "The description of the resource group. If no description is set, an empty string is returned",
+                  "description_zh": "资源组描述，未设置时为空字符串",
+                  "example": "部门A资源组",
+                  "title_en": "资源组描述，未设置时为空字符串。",
+                  "title_zh": "资源组描述，未设置时为空字符串。",
+                  "type": "string"
+                },
                 "ResourceGroupId": {
                   "backendName": "resourceGroupId",
                   "description_en": "The resource group ID",
@@ -284,14 +297,14 @@
                 },
                 "ResourceGroupName": {
                   "backendName": "resourceGroupName",
-                  "description_en": "The resource group name",
+                  "description_en": "The name of the resource group",
                   "description_zh": "资源组名称",
                   "example": "测试资源组",
                   "type": "string"
                 },
                 "Timers": {
                   "backendName": "timers",
-                  "description_en": "The associated scheduled tasks.\nAssociated scheduled tasks take effect on cloud computers in the resource group. If a cloud computer in the resource group already has other scheduled tasks associated, the tasks associated with the resource group take effect first",
+                  "description_en": "The associated scheduled tasks.\nThe associated scheduled tasks take effect on the cloud computers in the resource group. If a cloud computer in the resource group is already associated with another scheduled task, the task associated with the resource group takes precedence",
                   "description_zh": "关联的定时任务。\n关联的定时任务会对资源组内的云电脑生效，如果资源组内的云电脑本身已关联其他定时任务，资源组关联的任务优先生效",
                   "itemName": "Timer",
                   "items": {
