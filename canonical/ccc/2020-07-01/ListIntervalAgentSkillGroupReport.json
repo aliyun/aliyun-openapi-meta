@@ -2,8 +2,8 @@
   "cmd_full_name": "ccc list-interval-agent-skill-group-report",
   "cmd_name": "list-interval-agent-skill-group-report",
   "deprecated": false,
-  "description_en": "Retrieves the interval-based statistical report for a specified agent in a specified instance",
-  "description_zh": "获取指定实例下指定坐席的分段统计报表",
+  "description_en": "Retrieves the interval statistical report for a specified agent in a specified instance",
+  "description_zh": "调用ListIntervalAgentSkillGroupReport获取指定实例下指定坐席的分段统计报表",
   "kebab_example": "aliyun ccc list-interval-agent-skill-group-report --agent-id agent@ccc-test --instance-id ccc-test --skill-group-id skg-default@ccc-test --api-version 2020-07-01 --region cn-hangzhou",
   "method": "GET",
   "multi_version": true,
@@ -35,7 +35,7 @@
     },
     {
       "example": "1532448000000",
-      "help_en": "The start timestamp. The default value is 00:00 on the current day. The statistics are measured in hours and rounded down to the nearest hour. This is a closed interval",
+      "help_en": "The start timestamp. Default value: 00:00:00 of the current day. The statistical time precision is hourly. The start time is rounded down to the nearest hour, and the interval is closed",
       "help_zh": "开始时间戳，默认为当天的0时。统计的时间精度为小时，向前取整，闭区间",
       "location": "query",
       "maximum": "4133952000000",
@@ -50,7 +50,7 @@
     },
     {
       "example": "1558443508000",
-      "help_en": "The end time. This is a UNIX timestamp in milliseconds. This parameter is not required. The default value is the current time. If Interval is set to Daily, the maximum interval between StartTime and EndTime is 180 days. If Interval is set to Hourly, the maximum interval is 10 days. The statistics are measured in hours and rounded up to the nearest hour. This is an open interval. For example, if the start time is 11:12:20 and the end time is 11:45:50, the aligned time range for the input parameters is [11:00:00, 12:00:00), which means greater than or equal to 11:00 and less than 12:00",
+      "help_en": "The end time in UNIX timestamp format. Unit: milliseconds. This parameter is optional. Default value: the current time. If Interval is set to Daily, the maximum interval between StartTime and EndTime is 180 days. If Interval is set to Hourly, the maximum interval is 10 days. The statistical time precision is hourly. The end time is rounded up to the nearest hour, and the interval is open. For example, if the start time is 11:12:20 and the end time is 11:45:50, the aligned time range is [11:00:00, 12:00:00), which means greater than or equal to 11:00:00 and less than 12:00:00",
       "help_zh": "截止时间，格式为Unix时间戳，单位毫秒，非必填，默认是当前时间，如果Interval为Daily，StartTime和EndTime最大间隔是180天。如果Interval为Hourly，最大间隔时间为10天。统计的时间精度为小时，向后取整，开区间。例如：开始时间为11:12:20，结束时间为11:45:50，则对齐后的入参时间范围为[11:00:00,12:00:00)，即大于等于11点，小于12点",
       "location": "query",
       "maximum": "4133952000000",
@@ -79,7 +79,7 @@
     },
     {
       "example": "Daily",
-      "help_en": "The type of interval-based statistics. This parameter is not required. The default value is Daily (summarized by day)",
+      "help_en": "The interval statistics type. This parameter is optional. Default value: Daily, which indicates daily aggregation",
       "help_zh": "分段统计类型，非必填，默认为Daily（按天汇总）",
       "location": "query",
       "name": "interval",
@@ -110,6 +110,8 @@
   "responses": {
     "200": {
       "schema": {
+        "description_en": "The response data",
+        "description_zh": "返回数据",
         "properties": {
           "Code": {
             "backendName": "code",
@@ -122,21 +124,21 @@
           },
           "Data": {
             "backendName": "data",
-            "description_en": "A list of interval-based statistical data for the agent in the skill group",
+            "description_en": "The list of segmented statistics for agents in the corresponding skill group",
             "description_zh": "坐席在对应技能组中的分段统计数据列表",
             "itemName": "Data",
             "items": {
-              "description_en": "The interval-based statistical data for the agent in the skill group",
+              "description_en": "The segmented statistics for an agent in the corresponding skill group",
               "description_zh": "坐席在对应技能组中的分段统计数据",
               "properties": {
                 "Back2Back": {
                   "backendName": "back2back",
-                  "description_en": "Back-to-back call metrics",
+                  "description_en": "The back-to-back call metrics",
                   "description_zh": "双呼指标",
                   "properties": {
                     "AgentAnswerRate": {
                       "backendName": "AgentAnswerRate",
-                      "description_en": "The answer rate on the agent side",
+                      "description_en": "The agent answer rate",
                       "description_zh": "坐席测应答率",
                       "example": "100",
                       "format": "float",
@@ -144,7 +146,7 @@
                     },
                     "AgentHandleRate": {
                       "backendName": "AgentAnswerRate",
-                      "description_en": "The agent answer rate",
+                      "description_en": "The agent handle rate",
                       "description_zh": "坐席应答率",
                       "example": "1",
                       "format": "float",
@@ -152,7 +154,7 @@
                     },
                     "AnswerRate": {
                       "backendName": "AnswerRate",
-                      "description_en": "The connection rate. Formula: CallsAnswered / CallsDialed. The result may exceed 100% because the connection event and the answer event may occur in different time ranges",
+                      "description_en": "The answer rate. Calculation formula: CallsAnswered/CallsDialed. The result may be greater than 100% in some cases because answer events and dial events may fall into different time periods",
                       "description_zh": "接通率，计算公式为：CallsAnswered/CallsDialed（由于接听事件与应答事件可能落在不同的时间范围内，所以某些情况下结果可能大于100%）",
                       "example": "0.5",
                       "format": "float",
@@ -160,7 +162,7 @@
                     },
                     "AverageCustomerRingTime": {
                       "backendName": "AverageCustomerRingTime",
-                      "description_en": "The average ring duration on the customer side, in seconds",
+                      "description_en": "The average customer ringing time in seconds",
                       "description_zh": "平均客户测振铃时长，单位秒",
                       "example": "100",
                       "format": "float",
@@ -168,7 +170,7 @@
                     },
                     "AverageRingTime": {
                       "backendName": "AverageRingTime",
-                      "description_en": "The average ring duration, in seconds",
+                      "description_en": "The average ring time in seconds",
                       "description_zh": "平均振铃时长，单位秒",
                       "example": "100",
                       "format": "float",
@@ -176,7 +178,7 @@
                     },
                     "AverageTalkTime": {
                       "backendName": "AverageTalkTime",
-                      "description_en": "The average talk duration, in seconds",
+                      "description_en": "The average talk time in seconds",
                       "description_zh": "平均通话时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -184,7 +186,7 @@
                     },
                     "CallsAgentHandled": {
                       "backendName": "CallsAgentHandled",
-                      "description_en": "The number of calls answered by the agent",
+                      "description_en": "The number of calls answered by agents",
                       "description_zh": "坐席接听电话数量",
                       "example": "5",
                       "format": "int64",
@@ -192,7 +194,7 @@
                     },
                     "CallsAnswered": {
                       "backendName": "CallsAnswered",
-                      "description_en": "The number of connected calls",
+                      "description_en": "The number of answered calls",
                       "description_zh": "接通量",
                       "example": "100",
                       "format": "int64",
@@ -200,7 +202,7 @@
                     },
                     "CallsCustomerAnswered": {
                       "backendName": "CallsCustomerHandled",
-                      "description_en": "The number of calls answered by the customer",
+                      "description_en": "The number of calls answered by customers",
                       "description_zh": "客户接听电话数量",
                       "example": "12",
                       "format": "int64",
@@ -208,7 +210,7 @@
                     },
                     "CallsCustomerHandled": {
                       "backendName": "CallsCustomerHandled",
-                      "description_en": "The number of calls answered on the customer side",
+                      "description_en": "The number of calls handled by customers",
                       "description_zh": "客户测接起次数",
                       "example": "100",
                       "format": "int64",
@@ -224,7 +226,7 @@
                     },
                     "CustomerAnswerRate": {
                       "backendName": "CustomerHandleRate",
-                      "description_en": "The customer connection rate",
+                      "description_en": "The customer answer rate",
                       "description_zh": "客户接通率",
                       "example": "0.6",
                       "format": "float",
@@ -232,7 +234,7 @@
                     },
                     "CustomerHandleRate": {
                       "backendName": "CustomerHandleRate",
-                      "description_en": "The answer rate on the customer side",
+                      "description_en": "The customer handle rate",
                       "description_zh": "客户测接起率",
                       "example": "100",
                       "format": "float",
@@ -240,7 +242,7 @@
                     },
                     "MaxCustomerRingTime": {
                       "backendName": "MaxCustomerRingTime",
-                      "description_en": "The maximum ring duration on the customer side, in seconds",
+                      "description_en": "The maximum customer ringing time in seconds",
                       "description_zh": "最大客户测振铃时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -248,7 +250,7 @@
                     },
                     "MaxRingTime": {
                       "backendName": "MaxRingTime",
-                      "description_en": "The maximum ring duration, in seconds",
+                      "description_en": "The maximum ring time in seconds",
                       "description_zh": "最大振铃时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -256,7 +258,7 @@
                     },
                     "MaxTalkTime": {
                       "backendName": "MaxTalkTime",
-                      "description_en": "The maximum talk duration, in seconds",
+                      "description_en": "The maximum talk time in seconds",
                       "description_zh": "最大通话时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -264,7 +266,7 @@
                     },
                     "TotalCustomerRingTime": {
                       "backendName": "TotalCustomerRingTime",
-                      "description_en": "The total ring duration on the customer side, in seconds",
+                      "description_en": "The total customer ringing time in seconds",
                       "description_zh": "总客户测振岭时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -272,7 +274,7 @@
                     },
                     "TotalRingTime": {
                       "backendName": "TotalRingTime",
-                      "description_en": "The total ring duration, in seconds",
+                      "description_en": "The total ring time in seconds",
                       "description_zh": "总振铃时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -280,7 +282,7 @@
                     },
                     "TotalTalkTime": {
                       "backendName": "TotalTalkTime",
-                      "description_en": "The total talk duration, in seconds",
+                      "description_en": "The total talk time in seconds",
                       "description_zh": "总通话时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -291,13 +293,13 @@
                 },
                 "Inbound": {
                   "backendName": "inbound",
-                  "description_en": "Inbound metrics",
+                  "description_en": "The inbound metrics",
                   "description_zh": "呼入指标",
                   "nullToEmpty": true,
                   "properties": {
                     "AverageFirstResponseTime": {
                       "backendName": "AverageFirstResponseTime",
-                      "description_en": "The average first response time for chat sessions, in seconds",
+                      "description_en": "The average first response time for chat sessions in seconds",
                       "description_zh": "Chat会话平均首次响应时长，单位为秒",
                       "example": "6",
                       "format": "float",
@@ -305,7 +307,7 @@
                     },
                     "AverageHoldTime": {
                       "backendName": "AverageHoldTime",
-                      "description_en": "The average hold duration, in seconds. Formula: TotalHoldTime / CallsHold",
+                      "description_en": "The average hold time in seconds. Calculation formula: TotalHoldTime/CallsHold",
                       "description_zh": "平均通话保持时长，单位秒。计算公式为：TotalHoldTime/CallsHold",
                       "example": "100",
                       "format": "float",
@@ -323,7 +325,7 @@
                     },
                     "AverageRingTime": {
                       "backendName": "AverageRingTime",
-                      "description_en": "The average ring duration, in seconds",
+                      "description_en": "The average ring time in seconds",
                       "description_zh": "平均振铃时长，单位秒",
                       "example": "11",
                       "format": "float",
@@ -333,7 +335,7 @@
                     },
                     "AverageTalkTime": {
                       "backendName": "AverageTalkTime",
-                      "description_en": "The average talk duration, in seconds. Formula: TotalTalkTime / CallsHandled",
+                      "description_en": "The average talk time in seconds. Calculation formula: TotalTalkTime/CallsHandled",
                       "description_zh": "平均通话时长，单位秒。计算公式为： TotalTalkTime/CallsHandled",
                       "example": "100",
                       "format": "float",
@@ -343,7 +345,7 @@
                     },
                     "AverageWorkTime": {
                       "backendName": "AverageWorkTime",
-                      "description_en": "The average post-processing duration, in seconds. Formula: TotalWorkTime / CallsHandled",
+                      "description_en": "The average after-call work time in seconds. Calculation formula: TotalWorkTime/CallsHandled",
                       "description_zh": "平均话后处理时长，单位秒。计算公式为： TotalWorkTime/CallsHandled",
                       "example": "100",
                       "format": "float",
@@ -353,7 +355,7 @@
                     },
                     "CallsAttendedTransferIn": {
                       "backendName": "CallsAttendedTransferIn",
-                      "description_en": "The number of consulted transfers-in. If a call is transferred to the agent multiple times, each transfer is counted as one",
+                      "description_en": "The number of attended transfer-ins. If a call is transferred to the agent multiple times, each transfer is counted as one",
                       "description_zh": "咨询转入量。若一通电话多次转入给该坐席，每次转入算一次",
                       "example": "100",
                       "format": "int64",
@@ -363,7 +365,7 @@
                     },
                     "CallsAttendedTransferOut": {
                       "backendName": "CallsAttendedTransferOut",
-                      "description_en": "The number of consulted transfers-out. If a call is transferred to other agents multiple times, each transfer is counted as one",
+                      "description_en": "The number of attended transfer-outs. If a call is transferred to other agents multiple times, each transfer is counted as one",
                       "description_zh": "咨询转出量。若一通电话多次转出给其他坐席，每次转出算一次",
                       "example": "10",
                       "format": "int64",
@@ -373,7 +375,7 @@
                     },
                     "CallsBlindTransferIn": {
                       "backendName": "CallsBlindTransferIn",
-                      "description_en": "The number of blind transfers-in. If a call is transferred to the agent multiple times, each transfer is counted as one",
+                      "description_en": "The number of blind transfer-ins. If a call is transferred to the agent multiple times, each transfer is counted as one",
                       "description_zh": "直接转入量。若一通电话多次转入给该坐席，每次转入算一次",
                       "example": "100",
                       "format": "int64",
@@ -383,7 +385,7 @@
                     },
                     "CallsBlindTransferOut": {
                       "backendName": "CallsBlindTransferOut",
-                      "description_en": "The number of blind transfers-out. If a call is transferred to other agents multiple times, each transfer is counted as one",
+                      "description_en": "The number of blind transfer-outs. If a call is transferred to other agents multiple times, each transfer is counted as one",
                       "description_zh": "直接转出量。若一通电话多次转出给其他坐席，每次转出算一次",
                       "example": "100",
                       "format": "int64",
@@ -393,7 +395,7 @@
                     },
                     "CallsHandled": {
                       "backendName": "CallsHandled",
-                      "description_en": "The number of answered calls. This is the number of times the agent answered a call",
+                      "description_en": "The number of handled calls, which is the number of times the agent answered calls",
                       "description_zh": "应答量，即坐席应答的次数",
                       "example": "7",
                       "format": "int64",
@@ -403,7 +405,7 @@
                     },
                     "CallsHold": {
                       "backendName": "CallsHold",
-                      "description_en": "The number of held calls. This is the number of times a call was put on hold",
+                      "description_en": "The number of held calls, which is the number of times a call was placed on hold",
                       "description_zh": "保持量，即发生通话保持的次数",
                       "example": "100",
                       "format": "int64",
@@ -413,7 +415,7 @@
                     },
                     "CallsOffered": {
                       "backendName": "CallsOffered",
-                      "description_en": "The number of calls assigned to the agent. This includes calls that are blind transferred or consult transferred to the agent",
+                      "description_en": "The number of offered calls, which is the number of calls assigned to the agent, including blind transfers and attended transfers from other agents",
                       "description_zh": "分配量，即分配给此坐席的电话次数, 包括其他坐席盲转和咨询转给此坐席的电话",
                       "example": "100",
                       "format": "int64",
@@ -433,7 +435,7 @@
                     },
                     "HandleRate": {
                       "backendName": "HandleRate",
-                      "description_en": "The answer rate. Formula: CallsHandled / CallsOffered. The result may exceed 100% because the answer event and the assignment event may occur in different time ranges",
+                      "description_en": "The handle rate. Calculation formula: CallsHandled/CallsOffered. The result may be greater than 100% in some cases because handle events and offer events may fall into different time periods",
                       "description_zh": "应答率。计算公式为：CallsHandled/CallsOffered（由于应答事件与分配事件可能落在不同的时间范围内，所以某些情况下结果可能大于100%）",
                       "example": "0.5",
                       "format": "float",
@@ -443,7 +445,7 @@
                     },
                     "MaxHoldTime": {
                       "backendName": "MaxHoldTime",
-                      "description_en": "The maximum hold duration, in seconds",
+                      "description_en": "The maximum hold time in seconds",
                       "description_zh": "最大通话保持时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -453,7 +455,7 @@
                     },
                     "MaxRingTime": {
                       "backendName": "MaxRingTime",
-                      "description_en": "The maximum ring duration, in seconds",
+                      "description_en": "The maximum ring time in seconds",
                       "description_zh": "最大振铃时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -463,7 +465,7 @@
                     },
                     "MaxTalkTime": {
                       "backendName": "MaxTalkTime",
-                      "description_en": "The maximum talk duration, in seconds",
+                      "description_en": "The maximum talk time in seconds",
                       "description_zh": "最大通话时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -473,7 +475,7 @@
                     },
                     "MaxWorkTime": {
                       "backendName": "MaxWorkTime",
-                      "description_en": "The maximum post-processing duration, in seconds",
+                      "description_en": "The maximum after-call work time in seconds",
                       "description_zh": "最大话后处理时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -483,7 +485,7 @@
                     },
                     "SatisfactionIndex": {
                       "backendName": "SatisfactionIndex",
-                      "description_en": "The satisfaction index. This is the average value of the single-digit numbers pressed for satisfaction surveys",
+                      "description_en": "The satisfaction index, which is the average value of the satisfaction rating digits",
                       "description_zh": "满意度指数，即满意度按键数字（1位数字）的平均值",
                       "example": "100",
                       "format": "float",
@@ -493,7 +495,7 @@
                     },
                     "SatisfactionRate": {
                       "backendName": "SatisfactionRate",
-                      "description_en": "The satisfaction rate. Formula: Number of satisfactory ratings / Number of satisfaction survey responses",
+                      "description_en": "The satisfaction rate. Calculation formula: Number of satisfied ratings / Number of satisfaction survey responses",
                       "description_zh": "满意率，计算公式为：标记为满意的评价数/满意度调查响应次数",
                       "example": "0.5",
                       "format": "float",
@@ -503,7 +505,7 @@
                     },
                     "SatisfactionSurveysOffered": {
                       "backendName": "SatisfactionSurveysOffered",
-                      "description_en": "The number of satisfaction surveys sent",
+                      "description_en": "The number of satisfaction surveys offered",
                       "description_zh": "满意度调查发送次数",
                       "example": "100",
                       "format": "int64",
@@ -523,7 +525,7 @@
                     },
                     "TotalHoldTime": {
                       "backendName": "TotalHoldTime",
-                      "description_en": "The total hold duration, in seconds",
+                      "description_en": "The total hold time in seconds",
                       "description_zh": "总通话保持时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -549,7 +551,7 @@
                     },
                     "TotalMessagesSentByCustomer": {
                       "backendName": "TotalMessagesSentByCustomer",
-                      "description_en": "The total number of messages sent by the customer in chat sessions",
+                      "description_en": "The total number of messages sent by customers in chat sessions",
                       "description_zh": "Chat会话中客户发送的总消息量",
                       "example": "5",
                       "format": "int64",
@@ -557,7 +559,7 @@
                     },
                     "TotalRingTime": {
                       "backendName": "TotalRingTime",
-                      "description_en": "The total ring duration, in seconds",
+                      "description_en": "The total ring time in seconds",
                       "description_zh": "总振铃时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -567,7 +569,7 @@
                     },
                     "TotalTalkTime": {
                       "backendName": "TotalTalkTime",
-                      "description_en": "The total talk duration, in seconds",
+                      "description_en": "The total talk time in seconds",
                       "description_zh": "总通话时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -577,7 +579,7 @@
                     },
                     "TotalWorkTime": {
                       "backendName": "TotalWorkTime",
-                      "description_en": "The total post-processing duration, in seconds",
+                      "description_en": "The total after-call work time in seconds",
                       "description_zh": "总话后处理时长，单位秒",
                       "example": "85",
                       "format": "int64",
@@ -591,12 +593,12 @@
                 },
                 "Internal": {
                   "backendName": "internal",
-                  "description_en": "Internal call metrics",
+                  "description_en": "The internal call metrics",
                   "description_zh": "内部呼叫指标",
                   "properties": {
                     "AverageTalkTime": {
                       "backendName": "AverageTalkTime",
-                      "description_en": "The average talk duration, in seconds",
+                      "description_en": "The average talk time in seconds",
                       "description_zh": "平均通话时长，单位秒",
                       "example": "100",
                       "format": "float",
@@ -604,7 +606,7 @@
                     },
                     "CallsAnswered": {
                       "backendName": "CallsAnswered",
-                      "description_en": "The number of connected calls",
+                      "description_en": "The number of answered calls",
                       "description_zh": "接通量",
                       "example": "100",
                       "format": "int64",
@@ -620,7 +622,7 @@
                     },
                     "CallsHandled": {
                       "backendName": "CallsHandled",
-                      "description_en": "The number of answered calls. This is the number of times the agent answered a call. If a call enters a queue and is answered by multiple agents, it is counted as one",
+                      "description_en": "The number of handled calls, which is the number of times agents answer calls. If a call enters a queue and is answered by multiple agents, it is counted as one call",
                       "description_zh": "应答量，即坐席应答的次数。一通电话每次进入队列后，若被多个坐席应答，算一次",
                       "example": "100",
                       "format": "int64",
@@ -628,7 +630,7 @@
                     },
                     "CallsOffered": {
                       "backendName": "CallsOffered",
-                      "description_en": "The number of calls assigned to the agent. This includes calls that are blind transferred or consult transferred to the agent",
+                      "description_en": "The number of offered calls, which is the number of calls assigned to the agent, including blind transfers and attended transfers from other agents",
                       "description_zh": "分配量，即分配给此坐席的电话次数, 包括其他坐席盲转和咨询转给此坐席的电话",
                       "example": "100",
                       "format": "int64",
@@ -636,7 +638,7 @@
                     },
                     "CallsTalk": {
                       "backendName": "CallsTalk",
-                      "description_en": "This parameter is deprecated. Use CallsTalked instead",
+                      "description_en": "[Deprecated] This field is deprecated. Refer to CallsTalked",
                       "description_zh": "已废弃，该字段参考CallsTalked",
                       "example": "100",
                       "format": "int64",
@@ -652,7 +654,7 @@
                     },
                     "MaxTalkTime": {
                       "backendName": "MaxTalkTime",
-                      "description_en": "The maximum talk duration, in seconds",
+                      "description_en": "The maximum talk time in seconds",
                       "description_zh": "最大通话时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -660,7 +662,7 @@
                     },
                     "TotalTalkTime": {
                       "backendName": "TotalTalkTime",
-                      "description_en": "The total talk duration, in seconds",
+                      "description_en": "The total talk time in seconds",
                       "description_zh": "总通话时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -671,13 +673,13 @@
                 },
                 "Outbound": {
                   "backendName": "outbound",
-                  "description_en": "Outbound metrics",
+                  "description_en": "The outbound metrics",
                   "description_zh": "呼出指标",
                   "nullToEmpty": true,
                   "properties": {
                     "AnswerRate": {
                       "backendName": "AnswerRate",
-                      "description_en": "The connection rate. Formula: CallsAnswered / CallsDialed. The result may exceed 100% because the connection event and the answer event may occur in different time ranges",
+                      "description_en": "The answer rate. Calculation formula: CallsAnswered/CallsDialed. The result may be greater than 100% in some cases because answer events and dial events may fall into different time periods",
                       "description_zh": "接通率，计算公式为：CallsAnswered/CallsDialed（由于接听事件与应答事件可能落在不同的时间范围内，所以某些情况下结果可能大于100%）",
                       "example": "0.5",
                       "format": "float",
@@ -687,7 +689,7 @@
                     },
                     "AverageDialingTime": {
                       "backendName": "AverageDialingTime",
-                      "description_en": "The average dialing duration, in seconds. Formula: TotalDialingTime / CallsDialed",
+                      "description_en": "The average dialing time in seconds. Calculation formula: TotalDialingTime/CallsDialed",
                       "description_zh": "平均拨号时长，单位秒。计算公式为：TotalDialingTime/CallsDialed",
                       "example": "100",
                       "format": "float",
@@ -697,7 +699,7 @@
                     },
                     "AverageHoldTime": {
                       "backendName": "AverageHoldTime",
-                      "description_en": "The average hold duration, in seconds. Formula: TotalHoldTime / CallsHold",
+                      "description_en": "The average hold time in seconds. Calculation formula: TotalHoldTime/CallsHold",
                       "description_zh": "平均通话保持时长，单位秒。计算公式为：TotalHoldTime/CallsHold",
                       "example": "100",
                       "format": "float",
@@ -707,7 +709,7 @@
                     },
                     "AverageRingTime": {
                       "backendName": "AverageRingTime",
-                      "description_en": "The average ring duration, in seconds",
+                      "description_en": "The average ring time in seconds",
                       "description_zh": "平均振铃时长，单位秒",
                       "example": "100",
                       "format": "float",
@@ -717,7 +719,7 @@
                     },
                     "AverageTalkTime": {
                       "backendName": "AverageTalkTime",
-                      "description_en": "The average talk duration, in seconds. Formula: TotalTalkTime / CallsAnswered",
+                      "description_en": "The average talk time in seconds. Calculation formula: TotalTalkTime/CallsAnswered",
                       "description_zh": "平均通话时长，单位秒。计算公式为：TotalTalkTime/CallsAnswered",
                       "example": "100",
                       "format": "float",
@@ -727,7 +729,7 @@
                     },
                     "AverageWorkTime": {
                       "backendName": "AverageWorkTime",
-                      "description_en": "The average post-processing duration, in seconds. Formula: TotalWorkTime / CallsDialed",
+                      "description_en": "The average after-call work time in seconds. Calculation formula: TotalWorkTime/CallsDialed",
                       "description_zh": "平均话后处理时长，单位秒。计算公式为：TotalWorkTime/CallsDialed",
                       "example": "100",
                       "format": "float",
@@ -737,7 +739,7 @@
                     },
                     "CallsAnswered": {
                       "backendName": "CallsAnswered",
-                      "description_en": "The number of connected calls",
+                      "description_en": "The number of answered calls",
                       "description_zh": "接通量",
                       "example": "100",
                       "format": "int64",
@@ -747,7 +749,7 @@
                     },
                     "CallsAttendedTransferIn": {
                       "backendName": "CallsAttendedTransferIn",
-                      "description_en": "The number of consulted transfers-in. If a call is transferred to the agent multiple times, each transfer is counted as one",
+                      "description_en": "The number of attended transfer-ins. If a call is transferred to the agent multiple times, each transfer is counted as one",
                       "description_zh": "咨询转入量。若一通电话多次转入给该坐席，每次转入算一次",
                       "example": "100",
                       "format": "int64",
@@ -757,7 +759,7 @@
                     },
                     "CallsAttendedTransferOut": {
                       "backendName": "CallsAttendedTransferOut",
-                      "description_en": "The number of consulted transfers-out. If a call is transferred to other agents multiple times, each transfer is counted as one",
+                      "description_en": "The number of attended transfer-outs. If a call is transferred to other agents multiple times, each transfer is counted as one",
                       "description_zh": "咨询转出量。若一通电话多次转出给其他坐席，每次转出算一次",
                       "example": "100",
                       "format": "int64",
@@ -767,7 +769,7 @@
                     },
                     "CallsBlindTransferIn": {
                       "backendName": "CallsBlindTransferIn",
-                      "description_en": "The number of blind transfers-in. If a call is transferred to the agent multiple times, each transfer is counted as one",
+                      "description_en": "The number of blind transfer-ins. If a call is transferred to the agent multiple times, each transfer is counted as one",
                       "description_zh": "直接转入量。若一通电话多次转入给该坐席，每次转入算一次",
                       "example": "100",
                       "format": "int64",
@@ -777,7 +779,7 @@
                     },
                     "CallsBlindTransferOut": {
                       "backendName": "CallsBlindTransferOut",
-                      "description_en": "The number of blind transfers-out. If a call is transferred to other agents multiple times, each transfer is counted as one",
+                      "description_en": "The number of blind transfer-outs. If a call is transferred to other agents multiple times, each transfer is counted as one",
                       "description_zh": "直接转出量。若一通电话多次转出给其他坐席，每次转出算一次",
                       "example": "100",
                       "format": "int64",
@@ -797,7 +799,7 @@
                     },
                     "CallsHold": {
                       "backendName": "CallsHold",
-                      "description_en": "The number of held calls. This is the number of times a call was put on hold",
+                      "description_en": "The number of held calls, which is the number of times a call was placed on hold",
                       "description_zh": "保持量，即发生通话保持的次数",
                       "example": "100",
                       "format": "int64",
@@ -817,7 +819,7 @@
                     },
                     "MaxDialingTime": {
                       "backendName": "MaxDialingTime",
-                      "description_en": "The maximum dialing duration, in seconds",
+                      "description_en": "The maximum dialing time in seconds",
                       "description_zh": "最大拨号时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -827,7 +829,7 @@
                     },
                     "MaxHoldTime": {
                       "backendName": "MaxHoldTime",
-                      "description_en": "The maximum hold duration, in seconds",
+                      "description_en": "The maximum hold time in seconds",
                       "description_zh": "最大通话保持时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -837,7 +839,7 @@
                     },
                     "MaxRingTime": {
                       "backendName": "MaxRingTime",
-                      "description_en": "The maximum ring duration, in seconds",
+                      "description_en": "The maximum ring time in seconds",
                       "description_zh": "最大振铃时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -847,7 +849,7 @@
                     },
                     "MaxTalkTime": {
                       "backendName": "MaxTalkTime",
-                      "description_en": "The maximum talk duration, in seconds",
+                      "description_en": "The maximum talk time in seconds",
                       "description_zh": "最大通话时长，单位秒",
                       "example": "0",
                       "format": "int64",
@@ -857,7 +859,7 @@
                     },
                     "MaxWorkTime": {
                       "backendName": "MaxWorkTime",
-                      "description_en": "The maximum post-processing duration, in seconds",
+                      "description_en": "The maximum after-call work time in seconds",
                       "description_zh": "最大话后处理时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -867,7 +869,7 @@
                     },
                     "SatisfactionIndex": {
                       "backendName": "SatisfactionIndex",
-                      "description_en": "The satisfaction index. This is the average value of the single-digit numbers pressed for satisfaction surveys",
+                      "description_en": "The satisfaction index, which is the average value of the satisfaction rating digits",
                       "description_zh": "满意度指数，即满意度按键数字（1位数字）的平均值",
                       "example": "100",
                       "format": "float",
@@ -877,7 +879,7 @@
                     },
                     "SatisfactionRate": {
                       "backendName": "SatisfactionRate",
-                      "description_en": "The satisfaction rate. Formula: Number of satisfactory ratings / Number of satisfaction survey responses",
+                      "description_en": "The satisfaction rate. Calculation formula: Number of satisfied ratings / Number of satisfaction survey responses",
                       "description_zh": "满意率，计算公式为：标记为满意的评价数/满意度调查响应次数",
                       "example": "100",
                       "format": "float",
@@ -887,7 +889,7 @@
                     },
                     "SatisfactionSurveysOffered": {
                       "backendName": "SatisfactionSurveysOffered",
-                      "description_en": "The number of satisfaction surveys sent",
+                      "description_en": "The number of satisfaction surveys offered",
                       "description_zh": "满意度调查发送次数",
                       "example": "100",
                       "format": "int64",
@@ -907,7 +909,7 @@
                     },
                     "TotalDialingTime": {
                       "backendName": "TotalDialingTime",
-                      "description_en": "The total dialing duration, in seconds",
+                      "description_en": "The total dialing time in seconds",
                       "description_zh": "总拨号时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -917,7 +919,7 @@
                     },
                     "TotalHoldTime": {
                       "backendName": "TotalHoldTime",
-                      "description_en": "The total hold duration, in seconds",
+                      "description_en": "The total hold time in seconds",
                       "description_zh": "总通话保持时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -927,7 +929,7 @@
                     },
                     "TotalRingTime": {
                       "backendName": "TotalRingTime",
-                      "description_en": "The total ring duration, in seconds",
+                      "description_en": "The total ring time in seconds",
                       "description_zh": "总振铃时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -937,7 +939,7 @@
                     },
                     "TotalTalkTime": {
                       "backendName": "TotalTalkTime",
-                      "description_en": "The total talk duration, in seconds",
+                      "description_en": "The total talk time in seconds",
                       "description_zh": "总通话时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -947,7 +949,7 @@
                     },
                     "TotalWorkTime": {
                       "backendName": "TotalWorkTime",
-                      "description_en": "The total post-processing duration, in seconds",
+                      "description_en": "The total after-call work time in seconds",
                       "description_zh": "总话后处理时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -961,13 +963,13 @@
                 },
                 "Overall": {
                   "backendName": "overall",
-                  "description_en": "Overall metrics",
+                  "description_en": "The overall metrics",
                   "description_zh": "整体指标",
                   "nullToEmpty": true,
                   "properties": {
                     "AverageBreakTime": {
                       "backendName": "AverageBreakTime",
-                      "description_en": "The average break duration, in seconds",
+                      "description_en": "The average break duration in seconds",
                       "description_zh": "平均小休时长，单位秒",
                       "example": "100",
                       "format": "float",
@@ -977,7 +979,7 @@
                     },
                     "AverageHoldTime": {
                       "backendName": "AverageHoldTime",
-                      "description_en": "The average hold duration, in seconds. Formula: TotalHoldTime / (Inbound.CallsHold + Outbound.CallsHold)",
+                      "description_en": "The average hold time in seconds. Calculation formula: TotalHoldTime / (Inbound.CallsHold + Outbound.CallsHold)",
                       "description_zh": "平均通话保持时长，单位秒。计算公式为：TotalHoldTime/(Inbound.CallsHold+Outbound.CallsHold)",
                       "example": "100",
                       "format": "float",
@@ -987,7 +989,7 @@
                     },
                     "AverageReadyTime": {
                       "backendName": "AverageReadyTime",
-                      "description_en": "The average ready duration, in seconds. Formula: TotalReadyTime / Number of times in Ready state. The number of times in the Ready state is not a statistical field of the API",
+                      "description_en": "The average ready time in seconds. Calculation formula: TotalReadyTime / ready count. The ready count is not a statistical field returned by the API",
                       "description_zh": "平均就绪时长，单位秒。计算公式为：TotalReadyTime/就绪次数。就绪次数为非接口统计字段",
                       "example": "100",
                       "format": "float",
@@ -997,7 +999,7 @@
                     },
                     "AverageTalkTime": {
                       "backendName": "AverageTalkTime",
-                      "description_en": "The average talk duration, in seconds. Formula: TotalTalkTime / (CallsAnswered + CallsHandled)",
+                      "description_en": "The average talk time in seconds. Calculation formula: TotalTalkTime / (CallsAnswered + CallsHandled)",
                       "description_zh": "平均通话时长，单位秒。计算公式为： TotalTalkTime/(CallsAnswered+CallsHandled)",
                       "example": "100",
                       "format": "float",
@@ -1007,7 +1009,7 @@
                     },
                     "AverageWorkTime": {
                       "backendName": "AverageWorkTime",
-                      "description_en": "The average post-processing duration, in seconds. Formula: TotalWorkTime / TotalCalls",
+                      "description_en": "The average after-call work time in seconds. Calculation formula: TotalWorkTime/TotalCalls",
                       "description_zh": "平均话后处理时长，单位秒。计算公式为：TotalWorkTime/TotalCalls",
                       "example": "100",
                       "format": "float",
@@ -1033,7 +1035,7 @@
                           },
                           "Count": {
                             "backendName": "Count",
-                            "description_en": "The number of times",
+                            "description_en": "The count",
                             "description_zh": "次数",
                             "example": "1",
                             "format": "int64",
@@ -1041,7 +1043,7 @@
                           },
                           "Duration": {
                             "backendName": "Duration",
-                            "description_en": "The duration, in seconds",
+                            "description_en": "The duration in seconds",
                             "description_zh": "时长，单位秒",
                             "example": "100",
                             "format": "int64",
@@ -1054,7 +1056,7 @@
                     },
                     "FirstCheckInTime": {
                       "backendName": "FirstCheckInTime",
-                      "description_en": "This parameter has a value only when Interval is set to Daily. It indicates the first up time of the day",
+                      "description_en": "The first up time of the day when the agent goes online. This field has a value only when the Interval request parameter is set to Daily",
                       "description_zh": "入参Interval为Daily才有值，当天的首次上线时间",
                       "example": "100",
                       "format": "int64",
@@ -1064,7 +1066,7 @@
                     },
                     "LastCheckOutTime": {
                       "backendName": "LastCheckOutTime",
-                      "description_en": "The last check-out time. This is a UNIX timestamp in milliseconds",
+                      "description_en": "The last check-out time in UNIX timestamp format, in milliseconds",
                       "description_zh": "最后签出时间，格式是unix时间戳，单位毫秒",
                       "example": "1712548421000",
                       "format": "int64",
@@ -1074,7 +1076,7 @@
                     },
                     "LastCheckoutTime": {
                       "backendName": "lastCheckOutTime",
-                      "description_en": "The last check-out time. This is a UNIX timestamp in milliseconds",
+                      "description_en": "The last check-out time of the day. This field has a value only when the Interval request parameter is set to Daily",
                       "description_zh": "入参Interval为Daily才有值，当天的最后下线时间",
                       "example": "100",
                       "format": "int64",
@@ -1082,7 +1084,7 @@
                     },
                     "MaxBreakTime": {
                       "backendName": "MaxBreakTime",
-                      "description_en": "The maximum break duration, in seconds",
+                      "description_en": "The maximum break time in seconds",
                       "description_zh": "最大小休时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -1092,7 +1094,7 @@
                     },
                     "MaxHoldTime": {
                       "backendName": "MaxHoldTime",
-                      "description_en": "The maximum hold duration, in seconds",
+                      "description_en": "The maximum hold time in seconds",
                       "description_zh": "最大通话保持时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -1102,7 +1104,7 @@
                     },
                     "MaxReadyTime": {
                       "backendName": "MaxReadyTime",
-                      "description_en": "The maximum ready duration, in seconds",
+                      "description_en": "The maximum ready time in seconds",
                       "description_zh": "最大就绪时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -1112,7 +1114,7 @@
                     },
                     "MaxTalkTime": {
                       "backendName": "MaxTalkTime",
-                      "description_en": "The maximum talk duration, in seconds",
+                      "description_en": "The maximum talk time in seconds",
                       "description_zh": "最大通话时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -1122,7 +1124,7 @@
                     },
                     "MaxWorkTime": {
                       "backendName": "MaxWorkTime",
-                      "description_en": "The maximum post-processing duration, in seconds",
+                      "description_en": "The maximum after-call work time in seconds",
                       "description_zh": "最大话后处理时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -1142,7 +1144,7 @@
                     },
                     "SatisfactionIndex": {
                       "backendName": "SatisfactionIndex",
-                      "description_en": "The satisfaction index. This is the average value of the single-digit numbers pressed for satisfaction surveys",
+                      "description_en": "The satisfaction index, which is the average value of the satisfaction rating digits",
                       "description_zh": "满意度指数，即满意度按键数字（1位数字）的平均值",
                       "example": "1.4",
                       "format": "float",
@@ -1152,7 +1154,7 @@
                     },
                     "SatisfactionRate": {
                       "backendName": "SatisfactionRate",
-                      "description_en": "The satisfaction rate. Formula: Number of satisfactory ratings / Number of satisfaction survey responses",
+                      "description_en": "The satisfaction rate. Calculation formula: Number of satisfied ratings / Number of satisfaction survey responses",
                       "description_zh": "满意率，计算公式为：标记为满意的评价数/满意度调查响应次数",
                       "example": "100",
                       "format": "float",
@@ -1162,7 +1164,7 @@
                     },
                     "SatisfactionSurveysOffered": {
                       "backendName": "SatisfactionSurveysOffered",
-                      "description_en": "The number of satisfaction surveys sent",
+                      "description_en": "The number of satisfaction surveys offered",
                       "description_zh": "满意度调查发送次数",
                       "example": "100",
                       "format": "int64",
@@ -1182,7 +1184,7 @@
                     },
                     "TotalBreakTime": {
                       "backendName": "TotalBreakTime",
-                      "description_en": "The total break duration, in seconds",
+                      "description_en": "The total break duration in seconds",
                       "description_zh": "总小休时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -1192,7 +1194,7 @@
                     },
                     "TotalCalls": {
                       "backendName": "TotalCalls",
-                      "description_en": "The total number of calls. Formula: CallsOffered + CallsDialed",
+                      "description_en": "The total number of calls. Calculation formula: CallsOffered + CallsDialed",
                       "description_zh": "总电话量。计算公式为：CallsOffered + CallsDialed",
                       "example": "100",
                       "format": "int64",
@@ -1202,7 +1204,7 @@
                     },
                     "TotalHoldTime": {
                       "backendName": "TotalHoldTime",
-                      "description_en": "The total hold duration, in seconds",
+                      "description_en": "The total hold time in seconds",
                       "description_zh": "总保持时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -1212,7 +1214,7 @@
                     },
                     "TotalLoggedInTime": {
                       "backendName": "TotalLoggedInTime",
-                      "description_en": "The total logon duration, in seconds. Note: This does not include offline and break durations",
+                      "description_en": "The total logged-in time in seconds. Note: This does not include offline and break durations",
                       "description_zh": "总登录时长，单位秒。注意：不包含离线和小休时长",
                       "example": "100",
                       "format": "int64",
@@ -1222,28 +1224,28 @@
                     },
                     "TotalOffSiteLoggedInTime": {
                       "backendName": "TotalOffSiteOnlineTime",
-                      "description_en": "The total off-site online duration, in seconds",
+                      "description_en": "The total off-site logged-in time in seconds",
                       "description_zh": "总场外在线时长，单位秒",
                       "example": "100",
                       "type": "string"
                     },
                     "TotalOfficePhoneLoggedInTime": {
                       "backendName": "TotalOfficePhoneOnlineTime",
-                      "description_en": "The online duration of the office phone, in seconds",
+                      "description_en": "The total office phone logged-in time in seconds",
                       "description_zh": "办公电话在线时长，单位秒",
                       "example": "100",
                       "type": "string"
                     },
                     "TotalOnSiteLoggedInTime": {
                       "backendName": "TotalOnSiteOnlineTime",
-                      "description_en": "The total on-site online duration, in seconds",
+                      "description_en": "The total on-site logged-in time in seconds",
                       "description_zh": "总场内在线时长，单位秒",
                       "example": "100",
                       "type": "string"
                     },
                     "TotalOutboundScenarioLoggedInTime": {
                       "backendName": "TotalOutboundScenarioLoggedInTime",
-                      "description_en": "The total online duration in outbound-only scenarios, in seconds",
+                      "description_en": "The total logged-in time in outbound-only scenarios in seconds",
                       "description_zh": "总仅外呼在线时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -1251,7 +1253,7 @@
                     },
                     "TotalOutboundScenarioReadyTime": {
                       "backendName": "TotalOutboundScenarioReadyTime",
-                      "description_en": "The total idle duration in outbound-only scenarios, in seconds",
+                      "description_en": "The total idle time in outbound-only scenarios in seconds",
                       "description_zh": "总仅外呼空闲时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -1259,7 +1261,7 @@
                     },
                     "TotalOutboundScenarioTime": {
                       "backendName": "TotalOutboundScenarioTime",
-                      "description_en": "The total duration of outbound-only scenarios, in seconds",
+                      "description_en": "The total duration of outbound-only scenarios in seconds",
                       "description_zh": "总仅外呼时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -1267,7 +1269,7 @@
                     },
                     "TotalReadyTime": {
                       "backendName": "TotalReadyTime",
-                      "description_en": "The total ready duration, in seconds",
+                      "description_en": "The total ready time in seconds",
                       "description_zh": "总就绪时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -1277,7 +1279,7 @@
                     },
                     "TotalTalkTime": {
                       "backendName": "TotalTalkTime",
-                      "description_en": "The total talk duration, in seconds",
+                      "description_en": "The total talk time in seconds",
                       "description_zh": "总通话时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -1287,7 +1289,7 @@
                     },
                     "TotalWorkTime": {
                       "backendName": "TotalWorkTime",
-                      "description_en": "The total post-processing duration, in seconds",
+                      "description_en": "The total after-call work time in seconds",
                       "description_zh": "总话后处理时长，单位秒",
                       "example": "100",
                       "format": "int64",
@@ -1301,7 +1303,7 @@
                 },
                 "StatsTime": {
                   "backendName": "timestamp",
-                  "description_en": "The start time of the time range. This is a UNIX timestamp in milliseconds",
+                  "description_en": "The start time of the time period. The value is a UNIX timestamp in milliseconds",
                   "description_zh": "时间段的开始时间，格式为Unix时间戳，单位毫秒",
                   "example": "1620291600000",
                   "format": "int64",
