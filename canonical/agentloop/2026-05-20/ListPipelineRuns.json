@@ -3,8 +3,8 @@
   "cmd_full_name": "agentloop list-pipeline-runs",
   "cmd_name": "list-pipeline-runs",
   "deprecated": false,
-  "description_en": "Queries the execution history list of a pipeline",
-  "description_zh": "查询流水线执行历史列表",
+  "description_en": "Queries the run history. Supports filtering by status, trigger type, and time range, and cursor-based pagination",
+  "description_zh": "查询运行历史列表。支持按状态、触发类型、时间范围过滤，Cursor 分页",
   "kebab_example": "aliyun agentloop list-pipeline-runs --agent-space my-agent-space --pipeline-name my-pipeline --status Succeeded --trigger-type Scheduled --start-time 1735574400 --end-time 1735660800 --next-token MTIzNDU2Nzg5MA== --max-results 50 --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
@@ -48,7 +48,7 @@
     },
     {
       "example": "Succeeded",
-      "help_en": "Filters by run status. Valid values: Pending, Running, Succeeded, Failed, and Cancelled. If this parameter is not specified, no filtering is applied",
+      "help_en": "Filters runs by status. Valid values: Pending, Running, Succeeded, Failed, and Cancelled. If you do not specify this parameter, no filtering is applied",
       "help_zh": "按 Run 状态过滤：Pending / Running / Succeeded / Failed / Cancelled；不传不过滤",
       "location": "query",
       "name": "status",
@@ -61,8 +61,8 @@
     },
     {
       "example": "Scheduled",
-      "help_en": "Filters by trigger type. Valid values: Manual, Scheduled, and RunOnce. If this parameter is not specified, no filtering is applied",
-      "help_zh": "按触发类型过滤：Manual / Scheduled / RunOnce；不传不过滤",
+      "help_en": "Filters runs by trigger type. Valid values: Continuous, RunOnce, and Scheduled. If you do not specify this parameter, no filtering is applied",
+      "help_zh": "按触发类型过滤：Continuous / RunOnce / Scheduled（持续执行 / 单次执行 / 周期执行）；不传不过滤",
       "location": "query",
       "name": "trigger_type",
       "options": [
@@ -74,7 +74,7 @@
     },
     {
       "example": "1735574400",
-      "help_en": "按触发时间过滤下界（triggered_at >= startTime），unix 秒",
+      "help_en": "The lower bound for filtering by trigger time (triggered_at >= startTime), in UNIX seconds",
       "help_zh": "按触发时间过滤下界（triggered_at >= startTime），unix 秒",
       "location": "query",
       "name": "start_time",
@@ -87,7 +87,7 @@
     },
     {
       "example": "1735660800",
-      "help_en": "按触发时间过滤上界（triggered_at <= endTime），unix 秒",
+      "help_en": "The upper bound for filtering by trigger time (triggered_at <= endTime), in UNIX seconds",
       "help_zh": "按触发时间过滤上界（triggered_at <= endTime），unix 秒",
       "location": "query",
       "name": "end_time",
@@ -100,7 +100,7 @@
     },
     {
       "example": "MTIzNDU2Nzg5MA==",
-      "help_en": "The pagination token. Set this parameter to the nextToken value returned in the previous response to retrieve the next page. Do not specify this parameter for the first request",
+      "help_en": "The pagination token. Pass the nextToken value from the previous response to retrieve the next page. Do not specify this parameter for the first request",
       "help_zh": "分页 Token，传入上一次响应中的 nextToken 翻页；首次请求不传",
       "location": "query",
       "name": "next_token",
@@ -113,7 +113,7 @@
     },
     {
       "example": "50",
-      "help_en": "The maximum number of entries to return. Default value: 50. Maximum value: 200",
+      "help_en": "The maximum number of entries to return in the current request. Default value: 50. Maximum value: 200",
       "help_zh": "本次最多返回的条数，默认 50，最大 200",
       "location": "query",
       "name": "max_results",
@@ -135,7 +135,7 @@
         "description_zh": "响应数据",
         "properties": {
           "maxResults": {
-            "description_en": "The maximum number of entries per page specified in the request. This value is echoed back",
+            "description_en": "The maximum number of entries per page specified in the request, echoed in the response",
             "description_zh": "请求时传入的本页最大条数，回显",
             "example": "50",
             "format": "int32",
@@ -152,7 +152,7 @@
             "type": "string"
           },
           "requestId": {
-            "description_en": "The request ID, which is used to locate and troubleshoot issues",
+            "description_en": "The request ID, which is used to locate the request during troubleshooting",
             "description_zh": "请求 Id，用于排查问题时定位本次请求",
             "example": "9ACFB10A-1B2C-3D4E-5F6G-7H8I9J0K1L2M",
             "title_en": "请求 Id，用于排查问题时定位本次请求",
@@ -161,7 +161,7 @@
           },
           "runs": {
             "backendName": "runs",
-            "description_en": "The list of pipeline runs",
+            "description_en": "The list of runs",
             "description_zh": "运行列表",
             "itemName": "runs",
             "items": {
@@ -177,7 +177,7 @@
                   "type": "string"
                 },
                 "attempt": {
-                  "description_en": "The current retry count",
+                  "description_en": "The current number of retries",
                   "description_zh": "当前重试次数",
                   "example": "0",
                   "format": "int32",
@@ -213,7 +213,7 @@
                   "type": "string"
                 },
                 "fromTime": {
-                  "description_en": "The start of the data window, in UNIX seconds",
+                  "description_en": "The start time of the data window, in UNIX seconds",
                   "description_zh": "数据窗口起始，unix 秒",
                   "example": "1735660800",
                   "format": "int64",
@@ -272,7 +272,7 @@
                   "additionalProperties": {
                     "type": "any"
                   },
-                  "description_en": "The run statistics, including processedRows (number of processed rows), processedBytes (number of processed bytes), outputRows (number of output rows), outputBytes (number of output bytes), elapsedMs (elapsed time in milliseconds), cpuSec (CPU seconds), cpuCores (number of CPU cores), and tokenCount (number of tokens consumed)",
+                  "description_en": "The run statistics, including processedRows (number of processed rows), processedBytes (number of processed bytes), outputRows (number of output rows), outputBytes (number of output bytes), elapsedMs (elapsed time in milliseconds), cpuSec (CPU seconds), cpuCores (number of CPU cores), and tokenCount (number of consumed tokens)",
                   "description_zh": "运行统计指标，包含：processedRows（处理行数）、processedBytes（处理字节数）、outputRows（输出行数）、outputBytes（输出字节数）、elapsedMs（耗时毫秒）、cpuSec（CPU 秒）、cpuCores（CPU 核数）、tokenCount（Token 消耗数）",
                   "title_en": "运行统计指标，包含：processedRows（处理行数）、processedBytes（处理字节数）、outputRows（输出行数）、outputBytes（输出字节数）、elapsedMs（耗时毫秒）、cpuSec（CPU 秒）、cpuCores（CPU 核数）、tokenCount（Token 消耗数）",
                   "title_zh": "运行统计指标，包含：processedRows（处理行数）、processedBytes（处理字节数）、outputRows（输出行数）、outputBytes（输出字节数）、elapsedMs（耗时毫秒）、cpuSec（CPU 秒）、cpuCores（CPU 核数）、tokenCount（Token 消耗数）",
@@ -287,7 +287,7 @@
                   "type": "string"
                 },
                 "toTime": {
-                  "description_en": "The end of the data window, in UNIX seconds",
+                  "description_en": "The end time of the data window, in UNIX seconds",
                   "description_zh": "数据窗口结束，unix 秒",
                   "example": "1735747200",
                   "format": "int64",
@@ -307,11 +307,11 @@
                   "type": "string"
                 },
                 "triggerType": {
-                  "description_en": "The trigger type. Valid values: Scheduled, Manual, and RunOnce",
-                  "description_zh": "触发类型：Scheduled / Manual / RunOnce",
+                  "description_en": "The trigger type. Valid values: Scheduled, Manual, RunOnce, and Continuous (continuous micro-batch execution)",
+                  "description_zh": "触发类型：Scheduled / Manual / RunOnce / Continuous（持续执行微批）",
                   "example": "Scheduled",
                   "title_en": "触发类型：Scheduled / Manual / RunOnce / Continuous（持续执行微批）",
-                  "title_zh": "触发类型：Scheduled / Manual / RunOnce",
+                  "title_zh": "触发类型：Scheduled / Manual / RunOnce / Continuous（持续执行微批）",
                   "type": "string"
                 }
               },
@@ -324,7 +324,7 @@
             "type": "array"
           },
           "totalCount": {
-            "description_en": "The total number of pipeline runs that match the filter conditions",
+            "description_en": "The total number of pipeline runs that meet the filter conditions",
             "description_zh": "满足过滤条件的 Pipeline Run 总数",
             "example": "100",
             "format": "int32",
@@ -349,7 +349,7 @@
       "type": "string"
     },
     {
-      "help_en": "按触发时间过滤上界（triggered_at <= endTime），unix 秒",
+      "help_en": "The upper bound for filtering by trigger time (triggered_at <= endTime), in UNIX seconds",
       "help_zh": "按触发时间过滤上界（triggered_at <= endTime），unix 秒",
       "name": "endTime",
       "position": "query",
@@ -357,7 +357,7 @@
       "type": "int"
     },
     {
-      "help_en": "The maximum number of entries to return. Default value: 50. Maximum value: 200",
+      "help_en": "The maximum number of entries to return in the current request. Default value: 50. Maximum value: 200",
       "help_zh": "本次最多返回的条数，默认 50，最大 200",
       "name": "maxResults",
       "position": "query",
@@ -365,7 +365,7 @@
       "type": "int"
     },
     {
-      "help_en": "The pagination token. Set this parameter to the nextToken value returned in the previous response to retrieve the next page. Do not specify this parameter for the first request",
+      "help_en": "The pagination token. Pass the nextToken value from the previous response to retrieve the next page. Do not specify this parameter for the first request",
       "help_zh": "分页 Token，传入上一次响应中的 nextToken 翻页；首次请求不传",
       "name": "nextToken",
       "position": "query",
@@ -381,7 +381,7 @@
       "type": "string"
     },
     {
-      "help_en": "按触发时间过滤下界（triggered_at >= startTime），unix 秒",
+      "help_en": "The lower bound for filtering by trigger time (triggered_at >= startTime), in UNIX seconds",
       "help_zh": "按触发时间过滤下界（triggered_at >= startTime），unix 秒",
       "name": "startTime",
       "position": "query",
@@ -389,7 +389,7 @@
       "type": "int"
     },
     {
-      "help_en": "Filters by run status. Valid values: Pending, Running, Succeeded, Failed, and Cancelled. If this parameter is not specified, no filtering is applied",
+      "help_en": "Filters runs by status. Valid values: Pending, Running, Succeeded, Failed, and Cancelled. If you do not specify this parameter, no filtering is applied",
       "help_zh": "按 Run 状态过滤：Pending / Running / Succeeded / Failed / Cancelled；不传不过滤",
       "name": "status",
       "position": "query",
@@ -397,8 +397,8 @@
       "type": "string"
     },
     {
-      "help_en": "Filters by trigger type. Valid values: Manual, Scheduled, and RunOnce. If this parameter is not specified, no filtering is applied",
-      "help_zh": "按触发类型过滤：Manual / Scheduled / RunOnce；不传不过滤",
+      "help_en": "Filters runs by trigger type. Valid values: Continuous, RunOnce, and Scheduled. If you do not specify this parameter, no filtering is applied",
+      "help_zh": "按触发类型过滤：Continuous / RunOnce / Scheduled（持续执行 / 单次执行 / 周期执行）；不传不过滤",
       "name": "triggerType",
       "position": "query",
       "required": false,
