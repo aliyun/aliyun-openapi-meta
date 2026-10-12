@@ -3,8 +3,8 @@
   "cmd_full_name": "alikafkakopilot kopilot-list-conversation-chat-messages",
   "cmd_name": "kopilot-list-conversation-chat-messages",
   "deprecated": false,
-  "description_en": "Queries historical conversations",
-  "description_zh": "查询历史对话",
+  "description_en": "Queries the historical messages of a specified session and returns the associated scheduled tasks and task quota information",
+  "description_zh": "查询指定会话的历史消息，并返回关联定时任务及任务配额信息",
   "kebab_example": "aliyun alikafkakopilot kopilot-list-conversation-chat-messages --session-id e356c91c-8220-425c-9d86-00000000 --biz-region-id cn-hangzhou --page-size 10 --before-turn-id 2345 --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
@@ -48,8 +48,8 @@
     },
     {
       "example": "10",
-      "help_en": "The page size",
-      "help_zh": "分页大小",
+      "help_en": "The maximum number of conversation turns to return per page. Default value: 10. Valid values: 1 to 50. If the value exceeds the range, the boundary value is used. This parameter only affects the pagination of historical messages",
+      "help_zh": "每页返回的对话轮次上限，默认 10，范围 1–50；超过范围时按边界值处理。仅影响历史消息分页",
       "location": "query",
       "name": "page_size",
       "options": [
@@ -61,8 +61,8 @@
     },
     {
       "example": "2345",
-      "help_en": "The cursor.\n\nIf this parameter is not specified, the last pageSize turn IDs are returned. If this parameter is specified, the turn IDs before the specified turn ID are returned",
-      "help_zh": "游标。\n\n不传时返回最后 pageSize 个 turnId，传入时返回 turn ID",
+      "help_en": "The pagination cursor for conversation history. If this parameter is not specified in the first query, the latest turns specified by PageSize are returned. To continue pagination, pass the Data.NextBeforeTurnId value from the previous response to return earlier records with a turn ID less than the cursor",
+      "help_zh": "对话历史分页游标。首次查询不传时返回最新的 PageSize 轮；继续翻页时传入上次响应的 Data.NextBeforeTurnId，返回轮次 ID 小于该游标的更早记录",
       "location": "query",
       "name": "before_turn_id",
       "options": [
@@ -74,8 +74,8 @@
     },
     {
       "example": "20",
-      "help_en": "The number of scheduled tasks per page. Default value: 20. Valid values: 1 to 100",
-      "help_zh": "定时任务列表每页条数，默认 20，范围 1–100",
+      "help_en": "The number of associated scheduled tasks to return per page. Default value: 20. Valid values: 1 to 100. If the value exceeds the range, the boundary value is used. This parameter is independent of the PageSize pagination for historical messages",
+      "help_zh": "关联定时任务列表每页条数，默认 20，范围 1–100；超过范围时按边界值处理。与历史消息的 PageSize 分页独立",
       "location": "query",
       "name": "task_page_size",
       "options": [
@@ -87,8 +87,8 @@
     },
     {
       "example": "123",
-      "help_en": "The pagination cursor. Do not specify this parameter for the first query. For subsequent queries, pass in the value of Data.ScheduledTaskInfo.NextTaskCursor from the previous response",
-      "help_zh": "分页游标。首次查询不传，后续原样传入上次响应的 Data.ScheduledTaskInfo.NextTaskCursor",
+      "help_en": "The pagination cursor for the list of associated scheduled tasks. Do not specify this parameter in the first query. To continue pagination, pass the Data.ScheduledTaskInfo.NextTaskCursor value from the previous response as is. This parameter only affects the Tasks list",
+      "help_zh": "关联定时任务列表的分页游标。首次查询不传；继续翻页时原样传入上次响应的 Data.ScheduledTaskInfo.NextTaskCursor。仅影响 Tasks 列表",
       "location": "query",
       "name": "task_cursor",
       "options": [
@@ -110,7 +110,7 @@
         "properties": {
           "Code": {
             "backendName": "code",
-            "description_en": "The response code. A value of 200 indicates success",
+            "description_en": "The return code. A value of 200 indicates success",
             "description_zh": "返回码。返回200代表成功",
             "example": "200",
             "format": "int64",
@@ -123,14 +123,14 @@
             "properties": {
               "HasMore": {
                 "backendName": "hasMore",
-                "description_en": "Indicates whether more data is available",
-                "description_zh": "是否有更多数据",
+                "description_en": "Indicates whether there are earlier conversation turns",
+                "description_zh": "是否还有更早的对话轮次",
                 "example": "true",
                 "type": "boolean"
               },
               "Messages": {
                 "backendName": "messages",
-                "description_en": "The list of messages",
+                "description_en": "The list of message bodies",
                 "description_zh": "消息体列表",
                 "itemName": "messages",
                 "items": {
@@ -146,7 +146,7 @@
                     },
                     "CreateTime": {
                       "backendName": "createTime",
-                      "description_en": "The UNIX timestamp when the message was created, in milliseconds",
+                      "description_en": "The UNIX timestamp of the creation time, in milliseconds",
                       "description_zh": "创建时间的 Unix 时间戳，单位为毫秒",
                       "example": "17575885545677",
                       "type": "string"
@@ -179,15 +179,15 @@
               },
               "NextBeforeTurnId": {
                 "backendName": "nextBeforeTurnId",
-                "description_en": "The cursor for the next page",
-                "description_zh": "下一页游标",
+                "description_en": "The cursor for the next page, returned when earlier turns exist. This parameter is empty when there is no next page. Pass this value as the BeforeTurnId request parameter to continue the query",
+                "description_zh": "存在更早轮次时返回下一页游标；没有下一页时为空。继续查询时作为请求参数 BeforeTurnId 传入",
                 "example": "1",
                 "format": "int64",
                 "type": "integer"
               },
               "ScheduledTaskInfo": {
                 "backendName": "scheduledTaskInfo",
-                "description_en": "The details of scheduled tasks associated with the current session. Only tasks in the enabled, paused, or pending authorization state are counted",
+                "description_en": "The details of the scheduled tasks associated with the current session. Only enabled, paused, and authorization-pending tasks are counted",
                 "description_zh": "当前会话关联的定时任务详情，仅统计已启用、已暂停和待授权任务",
                 "properties": {
                   "AsOf": {
@@ -214,14 +214,14 @@
                   },
                   "HasScheduledTask": {
                     "backendName": "hasScheduledTask",
-                    "description_en": "Indicates whether the current session has associated scheduled tasks in the enabled, paused, or pending authorization state",
+                    "description_en": "Indicates whether the current session is associated with any enabled, paused, or authorization-pending scheduled tasks",
                     "description_zh": "当前会话是否关联已启用、已暂停或待授权的定时任务",
                     "example": "true",
                     "type": "boolean"
                   },
                   "NextTaskCursor": {
                     "backendName": "nextTaskCursor",
-                    "description_en": "The cursor for the next page. This value is empty if there is no next page",
+                    "description_en": "The cursor for the next page. This parameter is empty when there is no next page",
                     "description_zh": "下一页游标；没有下一页时为空",
                     "example": "123",
                     "type": "string"
@@ -245,26 +245,26 @@
                       "properties": {
                         "ActiveRun": {
                           "backendName": "activeRun",
-                          "description_en": "The run record that is currently queued or running. This value is empty if there is no active run",
+                          "description_en": "The run record that is currently queued or running. This parameter is empty when there is no active run",
                           "description_zh": "当前排队中或执行中的运行记录，无活动运行时为空",
                           "properties": {
                             "FinishedAt": {
                               "backendName": "finishedAt",
-                              "description_en": "The time when the run ended, in UTC ISO 8601 format. This value is typically empty for queued or running tasks",
+                              "description_en": "The end time of the run, in UTC ISO 8601 format. This parameter is usually empty for queued and running tasks",
                               "description_zh": "运行结束时间，UTC ISO 8601 格式；排队中和执行中通常为空",
                               "example": "2026-09-17T12:01:00Z",
                               "type": "string"
                             },
                             "RunId": {
                               "backendName": "runId",
-                              "description_en": "The unique identifier of a single run",
+                              "description_en": "The unique identifier of the single run",
                               "description_zh": "单次运行唯一标识",
                               "example": "run_0123456789abcdef0123456789abcdef",
                               "type": "string"
                             },
                             "Status": {
                               "backendName": "status",
-                              "description_en": "The status of a single run. A value of QUEUED indicates that the run is queued. A value of RUNNING indicates that the run is in progress",
+                              "description_en": "The status of the single run. Valid values: QUEUED: The task is queued. RUNNING: The task is running",
                               "description_zh": "单次运行状态：QUEUED 为排队中，RUNNING 为执行中",
                               "example": "RUNNING",
                               "type": "string"
@@ -274,26 +274,26 @@
                         },
                         "LastCompletedRun": {
                           "backendName": "lastCompletedRun",
-                          "description_en": "The most recent completed run record, including failed runs. This value is empty if no record exists",
+                          "description_en": "The most recently completed run record, including failed runs. This parameter is empty when there is no record",
                           "description_zh": "最近一次已结束的运行记录，包括失败的运行；没有记录时为空",
                           "properties": {
                             "FinishedAt": {
                               "backendName": "finishedAt",
-                              "description_en": "The time when the run ended, in UTC ISO 8601 format. This value is empty if the run has not ended",
+                              "description_en": "The end time of the run, in UTC ISO 8601 format. This parameter is empty if the run has not ended",
                               "description_zh": "运行结束时间，UTC ISO 8601 格式；尚未结束时为空",
                               "example": "2026-09-17T12:01:00Z",
                               "type": "string"
                             },
                             "RunId": {
                               "backendName": "runId",
-                              "description_en": "The unique identifier of a single run",
+                              "description_en": "The unique identifier of the single run",
                               "description_zh": "单次运行唯一标识",
                               "example": "run_0123456789abcdef0123456789abcdef",
                               "type": "string"
                             },
                             "Status": {
                               "backendName": "status",
-                              "description_en": "The status of the most recent completed run. For example, SUCCEEDED indicates success and FAILED indicates failure",
+                              "description_en": "The status of the most recently completed run, such as SUCCEEDED for success and FAILED for failure",
                               "description_zh": "最近已结束运行的状态，例如 SUCCEEDED 表示成功，FAILED 表示失败",
                               "example": "SUCCEEDED",
                               "type": "string"
@@ -310,7 +310,7 @@
                         },
                         "NextRunAt": {
                           "backendName": "nextRunAt",
-                          "description_en": "The next scheduled execution time, in UTC ISO 8601 format. This value is empty if no next execution is scheduled",
+                          "description_en": "The next scheduled execution time, in UTC ISO 8601 format. This parameter is empty when there is no next schedule",
                           "description_zh": "下次计划执行时间，UTC ISO 8601 格式；无下次计划时为空",
                           "example": "2026-09-17T12:15:00Z",
                           "type": "string"
@@ -324,7 +324,7 @@
                         },
                         "Status": {
                           "backendName": "status",
-                          "description_en": "The status of the scheduled task. Valid values:\nDRAFT: The task is a draft.\nENABLED: The task is enabled.\nPAUSED: The task is paused.\nNEEDS_AUTH: The task is pending authorization.\nCOMPLETED: The task is completed.\n\nThis status is independent of the run status",
+                          "description_en": "The status of the scheduled task. Valid values: DRAFT: The task is a draft. ENABLED: The task is enabled. PAUSED: The task is paused. NEEDS_AUTH: Authorization is pending. COMPLETED: The task is completed. This status is independent of the run status",
                           "description_zh": "定时任务状态。DRAFT 为草稿，ENABLED 为已启用，PAUSED 为已暂停，NEEDS_AUTH 为待授权，COMPLETED 为已完成。与运行状态独立",
                           "example": "ENABLED",
                           "type": "string"
@@ -346,12 +346,12 @@
               },
               "ScheduledTaskQuota": {
                 "backendName": "scheduledTaskQuota",
-                "description_en": "The scheduled task quota for the current Alibaba Cloud account in this environment, counted across regions",
+                "description_en": "The quota for the number of scheduled tasks for the current Alibaba Cloud account in this environment, counted across regions",
                 "description_zh": "当前主账号在本环境中的定时任务数量配额，跨地域统计",
                 "properties": {
                   "Limit": {
                     "backendName": "limit",
-                    "description_en": "The maximum number of tasks or channels allowed, subject to the actual configuration",
+                    "description_en": "The maximum number of corresponding tasks or channels, subject to the actual configuration",
                     "description_zh": "对应任务或渠道的数量上限，以实际配置为准",
                     "example": "3",
                     "format": "int32",
@@ -359,7 +359,7 @@
                   },
                   "Remaining": {
                     "backendName": "remaining",
-                    "description_en": "The remaining quota, calculated as the limit minus the used quota. The minimum value is 0",
+                    "description_en": "The remaining quota, which is the limit minus the used quota. The minimum value is 0",
                     "description_zh": "剩余数量，为上限减去已用数量，最小为 0",
                     "example": "2",
                     "format": "int64",
@@ -367,7 +367,7 @@
                   },
                   "Used": {
                     "backendName": "used",
-                    "description_en": "The used task quota. Tasks in the DRAFT, ENABLED, PAUSED, or NEEDS_AUTH state are counted. Completed or deleted tasks do not consume the quota",
+                    "description_en": "The used task quota. Tasks in the DRAFT, ENABLED, PAUSED, or NEEDS_AUTH state are counted. Completed and deleted tasks do not consume the quota",
                     "description_zh": "已占用任务配额，统计 DRAFT、ENABLED、PAUSED、NEEDS_AUTH；已完成及已删除任务不占用",
                     "example": "1",
                     "format": "int64",
@@ -385,8 +385,8 @@
               },
               "TotalTurns": {
                 "backendName": "totalTurns",
-                "description_en": "The total number of turn IDs",
-                "description_zh": "trunId总条数",
+                "description_en": "The total number of conversation turns saved for the session, which is not limited by the current page size",
+                "description_zh": "该会话保存的对话轮次总数，不受本次分页大小限制",
                 "example": "2",
                 "format": "int64",
                 "type": "integer"
@@ -405,7 +405,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful",
+            "description_en": "Indicates whether the request is successful",
             "description_zh": "请求是否成功",
             "example": "True",
             "type": "boolean"
