@@ -3,7 +3,7 @@
   "cmd_full_name": "ros list-chat-sessions",
   "cmd_name": "list-chat-sessions",
   "deprecated": false,
-  "description_en": "Queries the ROS Agent V2 session list of the current user by using paging",
+  "description_en": "Performs a paged query for paging through the ROS Agent V2 sessions of the current user",
   "description_zh": "分页查询当前用户的ROS Agent V2会话列表",
   "kebab_example": "aliyun ros list-chat-sessions --max-results 20 --next-token CAES... --agent-version V2 --biz-mode IaCCodePipeline --region cn-hangzhou",
   "method": "POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "20",
-      "help_en": "The number of sessions to return per page. Valid values: 1 to 100. Default value: 20",
+      "help_en": "The number of sessions returned per page. Valid values: 1 to 100. Default value: 20",
       "help_zh": "每页返回的会话数量，范围 1 到 100，默认值为 20",
       "location": "query",
       "name": "max_results",
@@ -35,7 +35,7 @@
     },
     {
       "example": "CAES...",
-      "help_en": "The pagination token returned from the previous response. Do not specify this parameter for the first page. Do not reuse an old token after switching Mode",
+      "help_en": "The pagination token returned by the previous response. Do not specify this parameter for the first request. Do not reuse the previous token after you change the mode",
       "help_zh": "上一次响应返回的翻页 Token；第一页不传，切换 Mode 后不要复用旧 Token",
       "location": "query",
       "name": "next_token",
@@ -48,7 +48,7 @@
     },
     {
       "example": "V2",
-      "help_en": "Set this parameter to V2 to route requests to the ROS Agent V2 backend",
+      "help_en": "The agent service version. Set this parameter to V2 to route the request to the ROS Agent V2 backend",
       "help_zh": "传 V2 路由到 ROS Agent V2 后端",
       "location": "query",
       "name": "agent_version",
@@ -88,7 +88,7 @@
         "properties": {
           "MaxResults": {
             "backendName": "MaxResults",
-            "description_en": "A compatibility field. This field is not returned in the current V2 response. Use the MaxResults request parameter instead",
+            "description_en": "A compatibility field. This field is not returned in the current V2 response. Refer to the MaxResults request parameter for the actual page size",
             "description_zh": "兼容字段。V2 当前响应不返回，请以请求参数 MaxResults 为准",
             "example": "20",
             "format": "int32",
@@ -98,7 +98,7 @@
           },
           "NextToken": {
             "backendName": "NextToken",
-            "description_en": "The token for the next page. This field may not be returned or may be null on the last page",
+            "description_en": "The pagination token for the next page. This field may not be returned or may be null on the last page",
             "description_zh": "下一页 Token；最后一页可能不返回或为 null",
             "example": "CAES...",
             "title_en": "下一页分页令牌。存在时作为下一页请求的 NextToken 入参传回;不返回该字段表示已到末页。",
@@ -107,7 +107,7 @@
           },
           "RequestId": {
             "backendName": "RequestId",
-            "description_en": "The request ID",
+            "description_en": "The ID of the request",
             "description_zh": "OpenAPI 请求 ID",
             "example": "4C68F7A5-2D16-5C8F-A4B1-01E9C6A9B0D2",
             "title_en": "请求 ID。用于问题排查与日志追踪。",
@@ -116,7 +116,7 @@
           },
           "Sessions": {
             "backendName": "Sessions",
-            "description_en": "The session list of the current user, sorted by update time in descending order",
+            "description_en": "The list of sessions for the current user, sorted in descending order of update time",
             "description_zh": "当前用户的会话列表，按更新时间倒序",
             "example": "[]",
             "itemName": "Sessions",
@@ -127,6 +127,7 @@
               "properties": {
                 "HistoryReadiness": {
                   "backendName": "HistoryReadiness",
+                  "description_en": "The readiness status of session history messages. History can be loaded only when the status is READY. History cannot be loaded when the status is STARTING, RUNNING, STOPPING, FINALIZING (processing), NOT_READY (not ready), RECOVERY_REQUIRED (recovery required), or UNKNOWN (unknown)",
                   "description_zh": "会话历史消息可读状态。仅 READY 时可加载历史;STARTING/RUNNING/STOPPING/FINALIZING(处理中)、NOT_READY(未就绪)、RECOVERY_REQUIRED(待恢复)、UNKNOWN(未知)均暂不可加载",
                   "example": "STARTING",
                   "title_en": "会话历史消息可读状态。仅 READY 时可加载历史;STARTING/RUNNING/STOPPING/FINALIZING(处理中)、NOT_READY(未就绪)、RECOVERY_REQUIRED(待恢复)、UNKNOWN(未知)均暂不可加载。",
@@ -144,7 +145,7 @@
                 },
                 "PipelineName": {
                   "backendName": "PipelineName",
-                  "description_en": "The pipeline name. Valid values: EvaluationFirstSelling and SolutionFirstSelling",
+                  "description_en": "The name of the pipeline. Valid values: EvaluationFirstSelling and SolutionFirstSelling. This field is empty for non-pipeline sessions",
                   "description_zh": "流水线名称，取值为 EvaluationFirstSelling 或 SolutionFirstSelling",
                   "example": "SolutionFirstSelling",
                   "title_en": "会话所属 pipeline 名称。非 Pipeline 会话为空;",
@@ -153,7 +154,7 @@
                 },
                 "SessionId": {
                   "backendName": "SessionId",
-                  "description_en": "The session ID. You can use this ID to re-enter a session with StartChat, stop a session with StopChat, or query messages with ListChatMessages",
+                  "description_en": "The session ID. You can use this ID to re-enter a session in StartChat, or to reference the session in StopChat and ListChatMessages",
                   "description_zh": "会话 ID，可用于 StartChat 重入、StopChat 和 ListChatMessages",
                   "example": "7f4e2a8c6d9b4a1f8e3c5b7d2a6f9012",
                   "title_en": "会话 ID。与 Id 字段同值;ListChatMessages、StopChat 等接口通过此 ID 引用会话。",
@@ -180,8 +181,8 @@
                 },
                 "UpdatedTime": {
                   "backendName": "UpdatedTime",
-                  "description_en": "A compatibility field. This field is not returned in the current V2 response. Use UpdatedAt instead",
-                  "description_zh": "兼容字段。V2 当前响应不返回，请使用 UpdatedAt",
+                  "description_en": "A compatibility field. This field is not returned in the current V2 response. Use UpdatedAt instead. The time follows the ISO 8601 standard in UTC, accurate to seconds, and ends with Z",
+                  "description_zh": "兼容字段。V2 当前响应不返回，请使用 UpdatedAt。采用 UTC 的 ISO 8601 格式，精确到秒并以 Z 结尾",
                   "example": "2026-08-26T10:00:00Z",
                   "title_en": "会话最近活动时间。UTC ISO 8601 格式,秒精度,以 Z 结尾。",
                   "title_zh": "会话最近活动时间。UTC ISO 8601 格式,秒精度,以 Z 结尾。",
