@@ -3,7 +3,7 @@
   "cmd_full_name": "fnf stop-execution",
   "cmd_name": "stop-execution",
   "deprecated": false,
-  "description_en": "Stops an execution that is in progress in a flow",
+  "description_en": "Stops a running flow",
   "description_zh": "停止一个正在执行的流程",
   "kebab_example": "aliyun fnf stop-execution --flow-name my_flow_name --execution-name my_exec_name --region cn-hangzhou",
   "method": "POST",
@@ -25,7 +25,7 @@
     {
       "doc_required": true,
       "example": "my_flow_name",
-      "help_en": "The name of the workflow to be stopped. You can call the ListFlows operation to obtain the value of this parameter",
+      "help_en": "The name of the flow to stop. You can obtain the flow name from the response of the ListFlows operation",
       "help_zh": "需要停止的流程名称，可以通过ListFlows的返回值获取",
       "location": "formData",
       "name": "flow_name",
@@ -39,7 +39,7 @@
     {
       "doc_required": true,
       "example": "my_exec_name",
-      "help_en": "The name of the execution to be stopped. You can call the ListExecutions operation to obtain the value of this parameter",
+      "help_en": "The name of the execution to stop. You can obtain the execution name from the response of the ListExecutions operation",
       "help_zh": "需要停止的执行名称，可以通过ListExecutions的返回值获取",
       "location": "formData",
       "name": "execution_name",
@@ -52,7 +52,7 @@
     },
     {
       "example": "for test",
-      "help_en": "The reason for stopping the execution. The value must be 1 to 4,096 characters in length",
+      "help_en": "The cause of the stop error. The value must be 1 to 4,096 characters in length",
       "help_zh": "停止错误原因。长度为1~4096个字符",
       "location": "formData",
       "name": "cause",
@@ -65,7 +65,7 @@
     },
     {
       "example": "InvalidArgument",
-      "help_en": "The error code for stopping the execution. The error code must be 1 to 128 characters in length",
+      "help_en": "The error code for the stop operation. The value must be 1 to 128 characters in length",
       "help_zh": "停止错误代码。长度为1~128个字符",
       "location": "formData",
       "name": "error",
@@ -83,14 +83,14 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "Schema of response",
+        "description_en": "The response data",
         "description_zh": "返回数据",
         "properties": {
           "FlowDefinition": {
             "backendName": "FlowDefinition",
-            "description_en": "The definition of the flow",
+            "description_en": "The flow definition of the execution",
             "description_zh": "执行的流程定义",
-            "example": "Legacy version:\n\"type: flow\\nversion: v1\\nname: my_flow_name\\nsteps:\\n - type: pass\\n name: mypass\"\n\nNew version:\n\"Type: StateMachine\\nSpecVersion: v1\\nName: my_flow_name\\nStartAt: my_state\\nStates:\\n - Type: Pass\\n Name: my_state\\n End: true\"",
+            "example": "旧版：\n\"type: flow\\nversion: v1\\nname: my_flow_name\\nsteps:\\n  - type: pass\\n    name: mypass\"\n\n新版：\n\"Type: StateMachine\\nSpecVersion: v1\\nName: my_flow_name\\nStartAt: my_state\\nStates:\\n  - Type: Pass\\n    Name: my_state\\n    End: true\"",
             "type": "string",
             "visibility": "Public"
           },
@@ -104,7 +104,7 @@
           },
           "Input": {
             "backendName": "Input",
-            "description_en": "The input of the execution, which is in the JSON format",
+            "description_en": "The input of the execution, in JSON object format",
             "description_zh": "执行的输入，为JSON对象格式",
             "example": "{\"key\":\"value\"}",
             "type": "string",
@@ -120,7 +120,7 @@
           },
           "Output": {
             "backendName": "Output",
-            "description_en": "The execution result, which is in the JSON format",
+            "description_en": "The output of the execution, in JSON object format",
             "description_zh": "执行的输出，为JSON对象格式",
             "example": "{\"key\":\"value\"}",
             "type": "string",
@@ -136,22 +136,22 @@
           },
           "RoleArn": {
             "backendName": "RoleArn",
-            "description_en": "The Alibaba Cloud resource name (ARN) of the role that executed the flow. If the RoleArn in the flow definition is changed during the execution of the flow, the system records and returns a snapshot of the original RoleArn.\n\nIf you do not specify the RoleArn parameter in the request parameters, the response parameters do not contain the RoleArn parameter",
+            "description_en": "The role permission configuration for the execution. If the RoleArn in the flow definition changes during the execution, the system records and returns a snapshot of the RoleArn at the time the execution started.\nIf no execution role is configured for your flow during execution, this field is not returned",
             "description_zh": "执行的角色权限配置。若流程定义中的RoleArn在执行期间发生变更，系统将记录并返回执行初始时刻的RoleArn的快照。\n如果您的流程在执行时未配置执行角色，则该字段不会出现",
             "example": "acs:ram:${region}:${accountID}:${role}",
             "type": "string"
           },
           "StartedTime": {
             "backendName": "StartedTime",
-            "description_en": "The time when the execution started",
-            "description_zh": "执行开始时间",
+            "description_en": "The time when the execution started. The time is displayed in UTC and follows the ISO 8601 standard in the YYYY-MM-DDThh:mm:ss.sssZ format",
+            "description_zh": "执行开始时间，采用 ISO 8601 标准的 UTC 时间，格式为 YYYY-MM-DDThh:mm:ss.sssZ",
             "example": "2019-01-01T01:01:01.001Z",
             "type": "string",
             "visibility": "Public"
           },
           "Status": {
             "backendName": "Status",
-            "description_en": "The execution status. Valid values:\n\nStarting\nRunning\nStopped\nSucceeded\nFailed\nTimedOut",
+            "description_en": "The execution status. Valid values:\nStarting\nRunning\nStopped\nSucceeded\nFailed\nTimedOut",
             "description_zh": "执行状态。取值说明如下：\nStarting\nRunning\nStopped\nSucceeded\nFailed\nTimedOut",
             "example": "Running",
             "type": "string",
@@ -159,8 +159,8 @@
           },
           "StoppedTime": {
             "backendName": "StoppedTime",
-            "description_en": "The time when the execution stopped",
-            "description_zh": "执行停止时间",
+            "description_en": "The time when the execution was stopped. The time is displayed in UTC and follows the ISO 8601 standard in the YYYY-MM-DDThh:mm:ss.sssZ format",
+            "description_zh": "执行停止时间，采用 ISO 8601 标准的 UTC 时间，格式为 YYYY-MM-DDThh:mm:ss.sssZ",
             "example": "2019-01-01T01:01:01.001Z",
             "type": "string",
             "visibility": "Public"
