@@ -3,7 +3,7 @@
   "cmd_full_name": "r-kvstore migrate-to-other-zone",
   "cmd_name": "migrate-to-other-zone",
   "deprecated": false,
-  "description_en": "Migrates a Tair (Redis® OSS-Compatible) database instance to a different zone within the same region",
+  "description_en": "Migrates an ApsaraDB Tair (Redis OSS-Compatible) instance to another zone in the same region",
   "description_zh": "将云数据库 Tair（兼容 Redis）实例迁移到同地域内的其它可用区",
   "kebab_example": "aliyun r-kvstore migrate-to-other-zone --db-instance-id r-bp1zxszhcgatnx0000 --zone-id cn-hangzhou-g --region cn-hangzhou",
   "method": "GET|POST",
@@ -37,7 +37,7 @@
     {
       "doc_required": true,
       "example": "cn-hangzhou-g",
-      "help_en": "The ID of the destination primary zone. You can call the https://help.aliyun.com/document_detail/473764.html operation to query available zones",
+      "help_en": "The ID of the destination primary zone. You can call the https://help.aliyun.com/document_detail/473764.html operation to query the zone ID",
       "help_zh": "要迁移到的目标主可用区ID，可调用https://help.aliyun.com/document_detail/473764.html接口查询",
       "location": "query",
       "name": "zone_id",
@@ -50,7 +50,7 @@
     },
     {
       "example": "vsw-bp1e7clcw529l773d****",
-      "help_en": "The vSwitch ID.\n\nThe vSwitch must reside in the same zone as the destination zone specified by ZoneId. \nThis parameter is required if the network type of the instance is VPC",
+      "help_en": "The vSwitch ID.\n\nThe zone where the vSwitch resides must be the same as the destination zone specified by ZoneId. \nThis parameter is required if the network type of the instance is VPC",
       "help_zh": "虚拟交换机的ID 。\n\nvSwitch所在可用区须与ZoneId（目的可用区）一致； \n如果实例的网络类型为VPC，则该参数为必选",
       "location": "query",
       "name": "vswitch_id",
@@ -69,7 +69,7 @@
         "MaintainTime"
       ],
       "example": "Immediately",
-      "help_en": "The time when the database is switched after data migration. Valid values: \nImmediately: The database is switched immediately after data migration is complete.\nMaintainTime: The database is switched within the maintenance window.\n\nDefault value: Immediately",
+      "help_en": "The time when the database switchover is performed after data migration. Valid values: \nImmediately: The switchover is performed immediately after the migration.\nMaintainTime: The switchover is performed within the maintenance window.\n\nDefault value: Immediately",
       "help_zh": "数据迁移后执行数据库切换的时间，取值： \nImmediately：迁移完立即切换。\nMaintainTime：在可维护时间段内切换。\n\n默认值：Immediately",
       "location": "query",
       "name": "effective_time",
@@ -82,7 +82,7 @@
     },
     {
       "example": "cn-hangzhou-h",
-      "help_en": "The ID of the destination secondary zone. You can call the https://help.aliyun.com/document_detail/473764.html operation to query available zones.\nYou can specify this parameter to distribute the primary and secondary data nodes across different zones for cross-zone disaster recovery, which can withstand data center-level failures",
+      "help_en": "The ID of the destination secondary zone. You can call the https://help.aliyun.com/document_detail/473764.html operation to query the zone ID.\nIf you specify this parameter, the primary and secondary data nodes are distributed across different zones. This implements cross-zone disaster recovery and tolerates data center-level failures",
       "help_zh": "要迁移到的目标备可用区ID，可调用https://help.aliyun.com/document_detail/473764.html接口查询。\n传入本参数可以实现主备数据节点分布在不同的可用区，实现跨可用区容灾，可承受机房级别的故障",
       "location": "query",
       "name": "secondary_zone_id",
@@ -95,7 +95,7 @@
     },
     {
       "example": "1",
-      "help_en": "The number of replica nodes in the primary zone.\nThe ReplicaCount and SlaveReplicaCount parameters apply only to cloud-native instances. When you migrate to a multi-zone deployment, you can use these parameters to adjust the distribution of replica nodes across the primary and secondary zones. This operation does not support adding or removing nodes. Therefore, the sum of `ReplicaCount + SlaveReplicaCount` must remain the same as before the migration.\nWhen you migrate from a single zone to multiple zones, if you do not specify these parameters, one replica node is migrated to the secondary zone by default, and the remaining replica nodes stay in the primary zone.\nIf the instance uses the cluster architecture, these parameters specify the number of replica nodes per shard in the primary and secondary zones respectively",
+      "help_en": "The number of secondary nodes in the primary zone.\nThe ReplicaCount and SlaveReplicaCount parameters apply only to cloud-native instances. When you migrate an instance to multiple zones, you can use these parameters to adjust the distribution of secondary nodes across the primary and secondary zones. This operation does not support adding or removing nodes. Therefore, the total number of secondary nodes calculated by ReplicaCount + SlaveReplicaCount must remain the same as that before the migration.\nWhen you migrate an instance from a single zone to multiple zones and do not specify these parameters, one secondary node is migrated to the secondary zone by default, and the remaining secondary nodes stay in the primary zone.\nIf the instance uses the cluster architecture, these parameters specify the number of secondary nodes per shard in the primary and secondary zones",
       "help_zh": "主可用区的备节点数（个）。\nReplicaCount与SlaveReplicaCount参数仅适用于云原生版实例。在迁移至多可用区时，您可以通过本组参数调整实例主、备可用区的备节点分布。本接口不支持增、减节点数量，因此`ReplicaCount + SlaveReplicaCount`的总数需与迁移前保持一致。\n在单可用区迁移至多可用区时，如果不填本组参数，则默认迁移1个备节点到备可用区，其余都在主可用区。\n如果实例为集群架构，则上述参数分别表示单分片的（主、备可用区）备节点数",
       "location": "query",
       "minimum": "0",
@@ -109,7 +109,7 @@
     },
     {
       "example": "1",
-      "help_en": "The number of replica nodes in the secondary zone",
+      "help_en": "The number of secondary nodes in the secondary zone",
       "help_zh": "备可用区的备节点数（个）",
       "location": "query",
       "minimum": "0",
@@ -123,7 +123,7 @@
     },
     {
       "example": "1",
-      "help_en": "The number of read-only nodes in the primary zone.\nThe ReadOnlyCount and SlaveReadOnlyCount parameters apply only to cloud-native instances that have read/write splitting enabled. When you migrate to a multi-zone deployment, you can use these parameters to adjust the distribution of read-only nodes across the primary and secondary zones. This operation does not support adding or removing nodes. Therefore, the sum of `ReadOnlyCount + SlaveReadOnlyCount` must remain the same as before the migration.\nWhen you migrate from a single zone to multiple zones, if you do not specify these parameters, one read-only node is migrated to the secondary zone by default, and the remaining read-only nodes stay in the primary zone.\nIf the instance uses the cluster architecture, these parameters specify the number of read-only nodes per shard in the primary and secondary zones respectively",
+      "help_en": "The number of read-only nodes in the primary zone.\nThe ReadOnlyCount and SlaveReadOnlyCount parameters apply only to cloud-native instances with read/write splitting enabled. When you migrate an instance to multiple zones, you can use these parameters to adjust the distribution of read-only nodes across the primary and secondary zones. This operation does not support adding or removing nodes. Therefore, the total number of read-only nodes calculated by ReadOnlyCount + SlaveReadOnlyCount must remain the same as that before the migration.\nWhen you migrate an instance from a single zone to multiple zones and do not specify these parameters, one read-only node is migrated to the secondary zone by default, and the remaining read-only nodes stay in the primary zone.\nIf the instance uses the cluster architecture, these parameters specify the number of read-only nodes per shard in the primary and secondary zones",
       "help_zh": "主可用区的只读节点数（个）。\nReadOnlyCount与SlaveReadOnlyCount参数仅适用于云原生版、开启读写分离的实例。在迁移多可用区时，您可以通过本组参数调整实例主、备可用区的只读节点分布。本接口不支持增、减节点数量，因此`ReadOnlyCount + SlaveReadOnlyCount`的总数需与迁移前保持一致。\n在单可用区迁移至多可用区时，如果不填本组参数，则默认迁移1个只读节点到备可用区，其余都在主可用区。\n如果实例为集群架构，则上述参数分别表示单分片的（主、备可用区）只读节点数",
       "location": "query",
       "maximum": "9",
