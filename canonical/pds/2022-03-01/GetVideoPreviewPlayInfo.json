@@ -1,5 +1,5 @@
 {
-  "camel_example": "",
+  "camel_example": "aliyun pds POST /v2/file/get_video_preview_play_info --region cn-hangzhou --header \"Content-Type=application/json\" --version 2022-03-01 --force",
   "cmd_full_name": "pds get-video-preview-play-info",
   "cmd_name": "get-video-preview-play-info",
   "components": {
@@ -251,7 +251,7 @@
     }
   },
   "deprecated": false,
-  "description_en": "Gets video playback information",
+  "description_en": "Retrieves video playback information",
   "description_zh": "获取视频播放信息",
   "kebab_example": "aliyun pds get-video-preview-play-info --region cn-hangzhou",
   "method": "POST",
@@ -266,6 +266,7 @@
       "drive_id": "drive_id",
       "file_id": "file_id",
       "get_master_url": "get_master_url",
+      "get_subtitle_info": "get_subtitle_info",
       "get_without_url": "get_without_url",
       "re_transcode": "re_transcode",
       "share_id": "share_id",
@@ -274,6 +275,7 @@
     },
     "content_type": "application/json",
     "method": "POST",
+    "operation_type": "read",
     "protocol": "HTTPS",
     "req_body_type": "json",
     "system_operation_type": "get",
@@ -282,7 +284,7 @@
   "parameters": [
     {
       "example": "quick_video",
-      "help_en": "The transcoding category. The corresponding feature must be enabled. Valid values:\n\n`live_transcoding`: live transcoding\n\n`quick_video`: quick video transcoding\n\n`offline_audio`: offline audio transcoding\n\n`offline_video`: offline video transcoding",
+      "help_en": "The category. You must enable the corresponding transcoding feature. Valid values:\nlive_transcoding: live transcoding and streaming\nquick_video: quick transcoding and streaming\noffline_audio: offline audio transcoding\noffline_video: offline video transcoding",
       "help_zh": "所属分类。\n需要开通对应的转码功能，枚举如下：\nlive_transcoding（live边转边播）\nquick_video（quick边转边播）\noffline_audio（离线音频转码）\noffline_video（离线视频转码）",
       "location": "body",
       "name": "category",
@@ -324,7 +326,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to retrieve the URL of the master M3U8 playlist. This parameter is valid only when `category` is set to `quick_video`",
+      "help_en": "Specifies whether to obtain the URL of the master m3u8 file. This parameter is valid only when category is set to quick_video",
       "help_zh": "是否获取 master m3u8 的 url，仅在 category = quick_video 时有效",
       "location": "body",
       "name": "get_master_url",
@@ -337,8 +339,21 @@
       "type": "bool"
     },
     {
+      "help_en": "The get_subtitle_info",
+      "help_zh": "是否获取字幕信息",
+      "location": "body",
+      "name": "get_subtitle_info",
+      "options": [
+        "--get-subtitle-info"
+      ],
+      "param_style": "json",
+      "raw_name": "get_subtitle_info",
+      "required": false,
+      "type": "bool"
+    },
+    {
       "example": "true",
-      "help_en": "Specifies whether to retrieve the playback URL. Set to `true` to return only transcoding metadata without triggering a transcode; the response will not include a playback URL. If set to `false` or omitted, the playback URL is returned. If the video has not yet been transcoded for the specified `template_id`, the backend initiates the process, which incurs value-added service fees",
+      "help_en": "Specifies whether to exclude the playback URL. If you set this parameter to true, only transcoding metadata is obtained, TS transcoding is not triggered, and the returned information does not contain the playback URL. Otherwise, the playback URL is returned. If the video for this template_id has not been transcoded, the backend triggers transcoding. Transcoding incurs corresponding value-added service fees",
       "help_zh": "是否不获取播放url。\n如果填true，只会获取转码元信息，并不会触发ts转码，返回的信息中没有播放url。否则会返回播放url，如果此template_id的视频还未转码，后台将触发器转码。\n转码会产生对应的增值服务费用",
       "location": "body",
       "name": "get_without_url",
@@ -352,7 +367,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to re-transcode the file. If set to `true`, the file is re-transcoded, and the API returns a `202` response, prompting you to wait and retry. Contact technical support to enable this parameter before use",
+      "help_en": "Specifies whether to initiate re-transcoding. If you set this parameter to true, re-transcoding is initiated for the file, and a 202 response is returned to prompt you to wait and retry. Before you use this parameter, contact us to enable the support",
       "help_zh": "是否发起重转。设置为 true 时会对文件发起重转，固定响应 202 等待重试。使用该参数前请先联系我们配置开启支持",
       "location": "body",
       "name": "re_transcode",
@@ -366,7 +381,7 @@
     },
     {
       "example": "7JQX1FswpQ8",
-      "help_en": "Specify this parameter and use the `x-share-token` header for authentication when accessing a file from a share. In this scenario, `drive_id` is ignored. For all other cases, use an `AK/SK` pair or an `access token` for authentication and specify `drive_id`. You must specify either `share_id` or `drive_id`",
+      "help_en": "The share ID. If you manage files through a share, include the `x-share-token` header for authentication and pass this field. In this case, `drive_id` is invalid. Otherwise, use the `aksk` or `access_token` method for authentication and pass the `drive_id` field. You must specify either `share_id` or `drive_id`",
       "help_zh": "分享id。\n如果通过分享操作文件，请携带`x-share-token` header鉴权并传递此字段，此时`drive_id`无效。否则请使用`aksk`或者`access_token`方式鉴权，并传递`drive_id`字段。\n`share_id`和`drive_id`两者必须有一个字段赋值",
       "location": "body",
       "name": "share_id",
@@ -380,7 +395,7 @@
     },
     {
       "example": "264_480p",
-      "help_en": "The ID of the transcoding template. If this parameter is omitted, all available transcoding templates are retrieved",
+      "help_en": "The definition template ID. If you leave this parameter empty, all available definition templates are retrieved",
       "help_zh": "清晰度模板id。\n填空表示取所有可用清晰度模板",
       "location": "body",
       "name": "template_id",
@@ -394,7 +409,7 @@
     },
     {
       "example": "3600",
-      "help_en": "The expiration time of the URL, in seconds. Default value: 900 (15 minutes). Maximum value: 14400 (4 hours)",
+      "help_en": "The URL timeout period. Unit: seconds. Default value: 15 minutes. Maximum value: 4 hours",
       "help_zh": "url超时时间，单位：秒。\n默认15分钟，最大4小时",
       "location": "body",
       "name": "url_expire_sec",
@@ -413,7 +428,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response body",
+        "description_en": "Schema of Response",
         "description_zh": "Schema of Response",
         "properties": {
           "domain_id": {
@@ -438,17 +453,17 @@
             "description_en": "The share ID",
             "description_zh": "分享id",
             "example": "7JQX1FswpQ8",
-            "title_en": "Id of the request",
+            "title_en": "",
             "title_zh": "Id of the request",
             "type": "string"
           },
           "video_preview_play_info": {
             "$ref": "#/components/schemas/VideoPreviewPlayInfo",
-            "description_en": "The detailed playback information, including transcoding status and URLs",
+            "description_en": "The playback information",
             "description_zh": "播放信息"
           }
         },
-        "title_en": "Schema of Response",
+        "title_en": "",
         "title_zh": "Schema of Response",
         "type": "object"
       }
@@ -459,7 +474,7 @@
   ],
   "v1_body_parameters": [
     {
-      "help_en": "The request body",
+      "help_en": "The request body parameters",
       "help_zh": "请求体参数",
       "name": "body",
       "param_style": "json",
@@ -470,7 +485,7 @@
   ],
   "v1_parameters": [
     {
-      "help_en": "The request body",
+      "help_en": "The request body parameters",
       "help_zh": "请求体参数",
       "name": "body",
       "param_style": "json",
@@ -480,6 +495,7 @@
     },
     {
       "help_en": "The domain ID",
+      "help_zh": "域 ID",
       "name": "domain_id",
       "position": "host",
       "required": true,
