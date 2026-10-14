@@ -3,7 +3,7 @@
   "cmd_full_name": "ice submit-ai-agent-video-audit-task",
   "cmd_name": "submit-ai-agent-video-audit-task",
   "deprecated": false,
-  "description_en": "Submits a video to a specified AI agent for content moderation. This operation supports video input from OSS and delivers the results asynchronously via callbacks. You can define custom frame-capturing policies and moderation prompts",
+  "description_en": "Submits a video moderation task that uses an AI agent to review video content. This operation supports Object Storage Service (OSS) input, allows you to customize video frame capture policies and moderation rules, and returns moderation results through asynchronous callbacks",
   "description_zh": "该接口是一个视频送审服务,通过AI智能体对视频内容进行审核,支持OSS输入,允许用户自定义视频截帧策略和审核规则,并通过异步回调的方式返回审核结果",
   "kebab_example": "aliyun ice submit-ai-agent-video-audit-task --ai-agent-id 00000003b3d94abda22000000 --input Type=OSS Media=http://my-bucket.oss-cn-shanghai.aliyuncs.com/object-id.mp4 --capture-policies FrameCount=2 StartTime=0 Duration=10 Prompt=请分析视频中的场景 --region cn-hangzhou",
   "method": "POST",
@@ -37,7 +37,7 @@
       "fields": [
         {
           "example": "http://my-bucket.oss-cn-shanghai.aliyuncs.com/object-id.mp4",
-          "help_en": "The OSS URL of the input file. Format:\n\nhttp(s)://{BucketName}.{Endpoint}/{ObjectName}",
+          "help_en": "The information about the input file. OSS URLs are supported. The URL format is as follows:\n\nhttp(s)://{BucketName}.{Endpoint}/{ObjectName}\n\nOnly OSS buckets in the same region as the service are supported. For example, the API service in the China (Shanghai) region supports only OSS buckets in the China (Shanghai) region",
           "help_zh": "输入文件信息，支持OSS地址。\n形如\n\nhttp(s)://{BucketName}.{Endpoint}/{ObjectName}\n\n当前只支持和服务同地域的OSS，比如上海区域的接口服务只支持上海的OSS",
           "name": "media",
           "options": [
@@ -49,7 +49,7 @@
         },
         {
           "example": "OSS",
-          "help_en": "The type of the input file. Valid values:\n\nOSS: an OSS object",
+          "help_en": "The input type. Valid values:\n\nOSS: the URL of an OSS file",
           "help_zh": "输入类型，取值：\n\nOSS：OSS文件地址",
           "name": "type",
           "options": [
@@ -60,7 +60,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The details of the input file",
+      "help_en": "The input file",
       "help_zh": "输入文件",
       "location": "query",
       "name": "input",
@@ -74,7 +74,7 @@
     },
     {
       "example": "{\"Custom\":\"hello\"}",
-      "help_en": "The user-defined data",
+      "help_en": "The custom user data",
       "help_zh": "用户自定义消息",
       "location": "query",
       "name": "user_data",
@@ -90,7 +90,7 @@
       "fields": [
         {
           "example": "Bearer Token",
-          "help_en": "The authentication token for callback",
+          "help_en": "The authentication token for the callback",
           "help_zh": "回调的鉴权token，",
           "name": "token",
           "options": [
@@ -102,7 +102,7 @@
         },
         {
           "example": "https://yourcallback",
-          "help_en": "The URL for receiving callback notifications",
+          "help_en": "The URL where you want to receive callback notifications",
           "help_zh": "用户希望接收回调通知的URL",
           "name": "url",
           "options": [
@@ -113,7 +113,7 @@
           "type": "string"
         }
       ],
-      "help_en": "Callback configurations",
+      "help_en": "The callback configuration",
       "help_zh": "回调配置",
       "location": "query",
       "name": "callback_config",
@@ -127,7 +127,7 @@
     },
     {
       "example": "3000",
-      "help_en": "The interval, in milliseconds, at which to submit captured frames to the AI agent. Valid values: 0 to 5000. Default value: 3000. If it is set to 0, all captured frames are sent to the model in a single batch request. Otherwise, frames are sent sequentially with the specified interval between each request",
+      "help_en": "The moderation interval, in milliseconds. Valid values: 0 to 5000. Default value: 3000. If you set this parameter to 0, all captured frame data specified in CapturePolicies is sent to the large model in the corresponding agent at a time. If you set this parameter to a non-zero value, such as 3000, all captured frame data is sent to the large model in sequence at an interval of 3,000 milliseconds",
       "help_zh": "送审节奏（毫秒）：范围为0-5000ms，默认值为3000ms。 当入参为0时，则将CapturePolicies中的所有截帧后的数据一次性请求对应Agent中的大模型。 如果值为非0，例如3000ms，则代表着将所有截帧后的数据按3000ms为间隔有序请求大模型",
       "location": "query",
       "name": "audit_interval",
@@ -143,7 +143,7 @@
         "fields": [
           {
             "example": "10",
-            "help_en": "The duration over which to capture the specified number of frames. Unit: seconds",
+            "help_en": "The duration of a single frame capture, in seconds",
             "help_zh": "单次截帧时长（秒）",
             "name": "duration",
             "options": [
@@ -166,8 +166,8 @@
             "type": "int"
           },
           {
-            "example": "请分析视频中的场景",
-            "help_en": "The text prompt to send to the MLLM along with the captured frames",
+            "example": "Please analyze the scene in the video",
+            "help_en": "The text parameter used when you call the multimodal large model",
             "help_zh": "请求多模态大模型时的文本参数",
             "name": "prompt",
             "options": [
@@ -179,7 +179,7 @@
           },
           {
             "example": "0",
-            "help_en": "The timestamp in the video at which to start capturing frames. Unit: seconds",
+            "help_en": "The time when frame capture is triggered, in seconds",
             "help_zh": "触发截帧的时刻（秒）",
             "name": "start_time",
             "options": [
@@ -192,7 +192,7 @@
         ],
         "type": "object"
       },
-      "help_en": "An array of frame-capturing policies. Each policy defines a set of frames to be analyzed and will generate a separate result from the model",
+      "help_en": "The array of moderation policies. Each policy generates a model result",
       "help_zh": "送审策略数组。每个策略会得到一个模型结果",
       "location": "query",
       "name": "capture_policies",
@@ -223,7 +223,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID",
+            "description_en": "The ID of the request",
             "description_zh": "请求Id",
             "example": "**********-586A-AC29-742247******",
             "type": "string"
