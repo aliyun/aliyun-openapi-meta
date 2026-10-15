@@ -34,19 +34,6 @@
       "type": "string"
     },
     {
-      "example": "pm-2ze4x2mwo81knj08a",
-      "help_en": "The ID of the PolarDB AI 3.0 logical instance",
-      "help_zh": "PolarDB AI 3.0 逻辑实例 ID",
-      "location": "query",
-      "name": "db_cluster_id",
-      "options": [
-        "--db-cluster-id"
-      ],
-      "raw_name": "DBClusterId",
-      "required": true,
-      "type": "string"
-    },
-    {
       "example": "Qwen3-32B",
       "help_en": "The custom model registration key and model directory name",
       "help_zh": "自定义模型登记键及模型目录名",
@@ -74,7 +61,7 @@
     },
     {
       "example": "models/qwen3",
-      "help_en": "The model path within the OSS bucket",
+      "help_en": "The model path in the OSS bucket",
       "help_zh": "OSS Bucket 内的模型路径",
       "location": "query",
       "name": "custom_oss_bucket_path",
@@ -87,7 +74,7 @@
     },
     {
       "example": "my-qwen3",
-      "help_en": "The display name shown in the candidate list and the initial client-facing invocation name",
+      "help_en": "The display name in the candidate list and the initial invocation name for clients",
       "help_zh": "候选清单展示名和初始对客调用名",
       "location": "query",
       "name": "display_model_name",
@@ -95,6 +82,118 @@
         "--display-model-name"
       ],
       "raw_name": "DisplayModelName",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "vllm",
+      "help_en": "The inference engine. Required when configuring deployment parameters. Valid values: vllm and sglang",
+      "help_zh": "推理引擎。配置部署参数时必填，支持 vllm 或 sglang",
+      "location": "query",
+      "name": "inference_engine",
+      "options": [
+        "--inference-engine"
+      ],
+      "raw_name": "InferenceEngine",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "polardb.gpu.gn8is.4xlarge",
+      "help_en": "The GPU instance type used for model deployment. Required when configuring deployment parameters",
+      "help_zh": "模型部署使用的 GPU 实例规格。配置部署参数时必填",
+      "location": "query",
+      "name": "db_instance_class",
+      "options": [
+        "--db-instance-class"
+      ],
+      "raw_name": "DBInstanceClass",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "{\"--max-model-len\":\"32768\"}",
+      "help_en": "The model startup parameters. Parameter keys must start with --",
+      "help_zh": "模型启动参数。参数键需以 -- 开头",
+      "location": "query",
+      "name": "model_params",
+      "options": [
+        "--model-params"
+      ],
+      "param_style": "json",
+      "raw_name": "ModelParams",
+      "required": false,
+      "type": "map",
+      "value": {
+        "type": "string"
+      }
+    },
+    {
+      "example": "python -m vllm.entrypoints.openai.api_server",
+      "help_en": "The direct startup command for the model container",
+      "help_zh": "模型容器直接启动命令",
+      "location": "query",
+      "name": "direct_command",
+      "options": [
+        "--direct-command"
+      ],
+      "raw_name": "DirectCommand",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "{\"HF_HOME\":\"/cache/hf\",\"EMPTY_VALUE\":\"\"}",
+      "help_en": "The container startup environment variables. Variable names cannot be empty or contain whitespace. Variable values can be empty strings",
+      "help_zh": "容器启动环境变量。变量名不能为空或包含空白，变量值可为空字符串",
+      "location": "query",
+      "name": "container_env",
+      "options": [
+        "--container-env"
+      ],
+      "param_style": "json",
+      "raw_name": "ContainerEnv",
+      "required": false,
+      "type": "map",
+      "value": {
+        "type": "string"
+      }
+    },
+    {
+      "example": "registry.example.com/customer/model:v1",
+      "help_en": "The full reference of the customer-owned inference image, in the format of registry/repository:tag",
+      "help_zh": "客户自有推理镜像的完整引用，格式为 registry/repository:tag",
+      "location": "query",
+      "name": "image_name",
+      "options": [
+        "--image-name"
+      ],
+      "raw_name": "ImageName",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "temporary-user",
+      "help_en": "The username for the customer image repository. Required when ImageName is specified",
+      "help_zh": "客户镜像仓库用户名。传入 ImageName 时必填",
+      "location": "query",
+      "name": "registry_username",
+      "options": [
+        "--registry-username"
+      ],
+      "raw_name": "RegistryUsername",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "temporary-token",
+      "help_en": "The password or temporary token for the customer image repository. Required when ImageName is specified",
+      "help_zh": "客户镜像仓库密码或临时令牌。传入 ImageName 时必填",
+      "location": "query",
+      "name": "registry_password",
+      "options": [
+        "--registry-password"
+      ],
+      "raw_name": "RegistryPassword",
       "required": false,
       "type": "string"
     }
@@ -111,7 +210,7 @@
           "Created": {
             "backendName": "data.created",
             "default": "false",
-            "description_en": "Indicates whether the registration is newly created. A value of false indicates that an existing registration was updated",
+            "description_en": "Indicates whether a new registration is created. A value of false indicates that an existing registration is updated",
             "description_zh": "是否新建；false 表示更新已有登记",
             "example": "true",
             "title_en": "是否新建；false 表示更新已有登记。",
@@ -121,11 +220,21 @@
           "DisplayModelName": {
             "backendName": "data.displayModelName",
             "default": "",
-            "description_en": "The display name and initial client-facing invocation name",
+            "description_en": "The display name and the initial invocation name for clients",
             "description_zh": "展示名和初始对客调用名",
             "example": "my-qwen3",
             "title_en": "展示名和初始对客调用名。",
             "title_zh": "展示名和初始对客调用名。",
+            "type": "string"
+          },
+          "ImageImportStatus": {
+            "backendName": "data.imageImportStatus",
+            "default": "",
+            "description_en": "The image import status. The initial value is Importing after an image is registered",
+            "description_zh": "镜像导入状态。带镜像登记后初始值为 Importing",
+            "example": "Importing",
+            "title_en": "镜像导入状态。带镜像登记后初始值为 Importing。",
+            "title_zh": "镜像导入状态。带镜像登记后初始值为 Importing。",
             "type": "string"
           },
           "ModelId": {
