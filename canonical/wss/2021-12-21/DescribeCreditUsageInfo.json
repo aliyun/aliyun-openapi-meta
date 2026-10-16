@@ -3,7 +3,7 @@
   "cmd_full_name": "wss describe-credit-usage-info",
   "cmd_name": "describe-credit-usage-info",
   "deprecated": false,
-  "description_en": "Queries credit usage details by a specified dimension such as user, credit package, or agent",
+  "description_en": "Queries the credit usage of users, credit packages, or agents based on a specified dimension",
   "description_zh": "按指定维度查询用户、积分包或Agent的积分使用情况",
   "kebab_example": "aliyun wss describe-credit-usage-info --biz-type BUSINESS --usage-type User --scene-type JzYearlyShare --instance-ids cp-0bszoespx7o1ehjxs --region cn-hangzhou",
   "method": "GET|POST",
@@ -35,8 +35,8 @@
     },
     {
       "example": "User",
-      "help_en": "The usage type (UsageType). Valid values:\nUser: Returns the usage, remaining credits, and consumption trends of the current user's active credit packages.\nCreditPackage: Requires a CreditPackageId. Returns the total and remaining credits of the specified credit package.\nAgent: Requires an AgentId. Returns the cumulative credit usage, cumulative allocated quota, and the percentage of both",
-      "help_zh": "用量类型（UseageType）：User、CreditPackage、Agent\nUser：返回用户当前生效积分包的用量、余量及消耗趋势\nCreditPackage：需要传入CreditPackageId，返回指定积分包的总量、余量\nAgent：需要传入AgentId，返回累计积分用量、累计分配额度及两者百分比",
+      "help_en": "The usage type. Valid values:\nUser: Returns the used amount, remaining amount, and consumption trend of the currently active credit packages for the user.\nCreditPackage: Requires a credit package ID. Returns the total amount and remaining amount of the specified credit package.\nAgent: Requires an agent ID. Returns the cumulative credit usage, cumulative allocated quota, and the percentage between the two.\nEndUser: Requires a Wuying ID. Returns the shared credit usage, pay-as-you-go credit usage, and total credit usage for the current period of the Wuying user",
+      "help_zh": "用量类型（UseageType）：User、CreditPackage、Agent、EndUser\nUser：返回用户当前生效积分包的用量、余量及消耗趋势\nCreditPackage：需要传入CreditPackageId，返回指定积分包的总量、余量\nAgent：需要传入AgentId，返回累计积分用量、累计分配额度及两者百分比\nEndUser：需要传入无影ID，返回无影用户的当前周期共享积分用量、按量积分用量及积分总用量",
       "location": "query",
       "name": "usage_type",
       "options": [
@@ -48,7 +48,7 @@
     },
     {
       "example": "JzYearlyShare",
-      "help_en": "The operator scenarios type. Valid values:\nEmpty or NaturalMonthlyOwn: natural monthly exclusive.\nJzYearlyShare: Jiaozi yearly shared.\nJzYearlyOwn: Jiaozi yearly exclusive",
+      "help_en": "The operator Scenarios type. Valid values:\nNot specified or NaturalMonthlyOwn: Natural monthly exclusive.\nJzYearlyShare: Jz annual shared.\nJzYearlyOwn: Jz annual exclusive",
       "help_zh": "操作符使用场景类型。取值：\n不传或者NaturalMonthlyOwn：自然月度独享\nJzYearlyShare：饺子-年度共享\nJzYearlyOwn：饺子-年度独享",
       "location": "query",
       "name": "scene_type",
@@ -63,7 +63,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "A JSON string of instance IDs. This parameter can be omitted when `UsageType=User`. Set it to the credit package instance ID when `UsageType=CreditPackage`, or to the `AgentId` when `UsageType=Agent`",
+      "help_en": "The JSON string of the instance ID list. This parameter can be omitted when `UsageType` is set to `User`. Set it to the credit package instance ID when `UsageType` is `CreditPackage`, and the agent ID when `UsageType` is `Agent`",
       "help_zh": "实例 ID 列表 JSON 字符串；`UsageType=User` 时可省略，`CreditPackage` 时传积分包实例 ID，`Agent` 时传 `AgentId`",
       "location": "query",
       "name": "instance_ids",
@@ -82,7 +82,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The return type: `ListResult<CreditUsageInfoModel>`",
+        "description_en": "The response type: `ListResult<CreditUsageInfoModel>`",
         "description_zh": "返回类型：`ListResult<CreditUsageInfoModel>`",
         "properties": {
           "RequestId": {
@@ -96,11 +96,11 @@
           },
           "UsageInfoList": {
             "backendName": "data",
-            "description_en": "The array of business data",
+            "description_en": "The business data array",
             "description_zh": "业务数据数组",
             "itemName": "UsageInfo",
             "items": {
-              "description_en": "The array of business data",
+              "description_en": "The business data array",
               "description_zh": "业务数据数组",
               "properties": {
                 "UsageInfo": {
@@ -110,7 +110,7 @@
                   "properties": {
                     "AvailableAmount": {
                       "backendName": "availableAmount",
-                      "description_en": "The number of instances currently available for the registered resource",
+                      "description_en": "The number of currently available instances for the reported resources",
                       "description_zh": "报备资源当前可使用实例数量",
                       "example": "9976.00",
                       "format": "int32",
@@ -124,7 +124,7 @@
                       "description_zh": "联系人群组名称列表",
                       "itemName": "ContactGroupName",
                       "items": {
-                        "description_en": "The contact group name",
+                        "description_en": "The first contact group name in the list",
                         "description_zh": "联系人群组名称列表中的第一个",
                         "example": "CQGG",
                         "title_en": "联系人群组名称列表中的第一个",
@@ -146,14 +146,14 @@
                         "properties": {
                           "TimePoint": {
                             "backendName": "timePoint",
-                            "description_en": "The time point in the format `yyyy-MM-dd HH` (accurate to the hour)",
+                            "description_en": "The time point in the `yyyy-MM-dd HH` format, accurate to the hour",
                             "description_zh": "时间点，格式 `yyyy-MM-dd HH`（精确到小时）",
                             "example": "2026-05-02 10",
                             "type": "string"
                           },
                           "UsedCredit": {
                             "backendName": "usedCredit",
-                            "description_en": "The number of credits consumed during the hour",
+                            "description_en": "The number of credits consumed in the hour",
                             "description_zh": "该小时消耗积分数",
                             "example": "12",
                             "format": "int64",
@@ -168,7 +168,7 @@
                     },
                     "CurrentInstanceExpiredTime": {
                       "backendName": "currentInstanceExpiredTime",
-                      "description_en": "The time when the current instance expires, in the format YYYY-MM-DD HH:mm:ss",
+                      "description_en": "The time when the current instance expires, in the `YYYY-MM-DD HH:mm:ss` format",
                       "description_zh": "当前实例到期时间，格式为 YYYY-MM-DD HH:mm:ss",
                       "example": "2026-12-02 00:00:00",
                       "title_en": "当前实例到期时间",
@@ -184,7 +184,7 @@
                     },
                     "CurrentRemainCredit": {
                       "backendName": "currentRemainCredit",
-                      "description_en": "The remaining credits of the currently active credit package",
+                      "description_en": "The remaining amount of the currently active credit package",
                       "description_zh": "当前生效积分包余量",
                       "example": "当前周期积分余量",
                       "format": "int64",
@@ -192,7 +192,7 @@
                     },
                     "CurrentTotalCredit": {
                       "backendName": "currentTotalCredit",
-                      "description_en": "The total credits of the currently active credit package",
+                      "description_en": "The total amount of the currently active credit package",
                       "description_zh": "当前生效积分包总量",
                       "example": "当前周期积分配额",
                       "format": "int64",
@@ -200,7 +200,7 @@
                     },
                     "CurrentUsedCredit": {
                       "backendName": "currentUsedCredit",
-                      "description_en": "The used credits of the currently active credit package",
+                      "description_en": "The used amount of the currently active credit package",
                       "description_zh": "当前生效积分包用量",
                       "example": "当前周期积分消耗",
                       "format": "int64",
@@ -208,7 +208,7 @@
                     },
                     "DayUsedCredit": {
                       "backendName": "dayUsedCredit",
-                      "description_en": "The credit usage in the last 1 day",
+                      "description_en": "The credit usage in the last day",
                       "description_zh": "最近 1 天积分用量",
                       "example": "最近一天消耗积分",
                       "format": "int64",
@@ -216,7 +216,7 @@
                     },
                     "LastTriggeredAt": {
                       "backendName": "lastTriggeredAt",
-                      "description_en": "The time when the alert was last triggered",
+                      "description_en": "The last trigger time",
                       "description_zh": "最后一次触发时间",
                       "example": "2026-05-02 10:10:10",
                       "title_en": "最后一次触发时间",
@@ -281,7 +281,7 @@
                     },
                     "RemainCredit": {
                       "backendName": "remainCredit",
-                      "description_en": "The cumulative remaining credits",
+                      "description_en": "The cumulative remaining billable credits",
                       "description_zh": "累计计费余量",
                       "example": "积分余量",
                       "format": "int64",
@@ -294,7 +294,7 @@
                       "properties": {
                         "DeductingAmount": {
                           "backendName": "deductingCount",
-                          "description_en": "The number of instances currently being deducted",
+                          "description_en": "The number of instances being deducted",
                           "description_zh": "抵扣中实例数量",
                           "example": "23",
                           "format": "int32",
@@ -304,7 +304,7 @@
                         },
                         "PendingAmount": {
                           "backendName": "pendingCount",
-                          "description_en": "The number of instances pending activation",
+                          "description_en": "The number of instances pending to take effect",
                           "description_zh": "待生效实例数量",
                           "example": "24",
                           "format": "int32",
@@ -319,7 +319,7 @@
                     },
                     "TodayUsed": {
                       "backendName": "todayUsedCredit",
-                      "description_en": "The quota used today",
+                      "description_en": "The used quota for today",
                       "description_zh": "今日已使用的额度",
                       "example": "200",
                       "title_en": "今日已使用的额度。",
@@ -328,7 +328,7 @@
                     },
                     "TotalCredit": {
                       "backendName": "totalCredit",
-                      "description_en": "The total cumulative credits",
+                      "description_en": "The cumulative total credits",
                       "description_zh": "累计积分总量",
                       "example": "积分配额",
                       "format": "int64",
@@ -353,7 +353,7 @@
                     },
                     "WarnPercent": {
                       "backendName": "warnPercent",
-                      "description_en": "The alert threshold percentage (0–100)",
+                      "description_en": "The alert threshold percentage, ranging from 0 to 100",
                       "description_zh": "告警阈值百分比（0–100）",
                       "example": "80",
                       "format": "int32",
@@ -361,7 +361,7 @@
                     },
                     "WeekUsedCredit": {
                       "backendName": "weekUsedCredit",
-                      "description_en": "The credit usage in the last 1 week",
+                      "description_en": "The credit usage in the last week",
                       "description_zh": "最近 1 周积分用量",
                       "example": "最近一周消耗积分",
                       "format": "int64",
@@ -372,7 +372,7 @@
                 },
                 "UsageInfoKey": {
                   "backendName": "usageKey",
-                  "description_en": "The usage primary key. When `UsageType=User`, this is the `aliUid`. When `UsageType=CreditPackage`, this is the credit package instance ID. When `UsageType=Agent`, this is the `AgentId`",
+                  "description_en": "The primary key for usage. The value is `aliUid` when `UsageType` is `User`, the credit package instance ID when `UsageType` is `CreditPackage`, and the agent ID when `UsageType` is `Agent`",
                   "description_zh": "用量主键：`UsageType=User` 时为 `aliUid`；`CreditPackage` 时为积分包实例 ID；`Agent` 时为 `AgentId`",
                   "example": "agent-abc",
                   "type": "string"
