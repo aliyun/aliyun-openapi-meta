@@ -3,7 +3,7 @@
   "cmd_full_name": "ros start-chat",
   "cmd_name": "start-chat",
   "deprecated": false,
-  "description_en": "Streams agent events through Server-Sent Events (SSE) and supports creating a new session or resuming an existing session",
+  "description_en": "Streams agent events through Server-Sent Events (SSE) to create a new session or resume an existing session",
   "description_zh": "通过SSE流式返回智能体事件，支持创建新会话或继续已有会话",
   "kebab_example": "aliyun ros start-chat --query '创建一个_VPC_和_VSwitch_的_ROS_模板' --session-id 7f4e2a8c6d9b4a1f8e3c5b7d2a6f9012 --enable-partial-message true --biz-mode IaCCodeNormal --attachments Type=image OssObjectKey=user-id/attachments/topology.png MimeType=image/png Url=https://example.com/topology.png Name=topology.png --agent-version V2 --enable-thinking true --biz-region-id cn-hangzhou --region cn-hangzhou",
   "method": "POST",
@@ -36,7 +36,7 @@
     },
     {
       "example": "7f4e2a8c6d9b4a1f8e3c5b7d2a6f9012",
-      "help_en": "If you do not specify this parameter, a new session is created. If you specify this parameter, an existing session of the current user is resumed",
+      "help_en": "Omit this parameter to create a new session, or pass it to resume an existing session for the current user",
       "help_zh": "不传则创建新会话；传入则继续当前用户已有会话",
       "location": "query",
       "name": "session_id",
@@ -49,7 +49,7 @@
     },
     {
       "example": "true",
-      "help_en": "The compatibility field. V2 always returns an event stream through SSE, and the current service does not consume this field",
+      "help_en": "A compatibility field. V2 always returns an event stream through SSE. The current service does not consume this field",
       "help_zh": "兼容字段。V2 始终通过 SSE 返回事件流，当前服务不消费该字段",
       "location": "query",
       "name": "enable_partial_message",
@@ -73,7 +73,7 @@
         "IaCCodePipeline"
       ],
       "example": "IaCCodeNormal",
-      "help_en": "V2 supports only the IaCCodeNormal and IaCCodePipeline modes. The default mode for a new session is IaCCodeNormal. You cannot change the mode of an existing session",
+      "help_en": "V2 supports only IaCCodeNormal or IaCCodePipeline. The default mode for new sessions is IaCCodeNormal. You cannot switch the mode for an existing session",
       "help_zh": "V2 仅支持 IaCCodeNormal 或 IaCCodePipeline；新会话默认 IaCCodeNormal，已有会话不能切换模式",
       "location": "query",
       "name": "mode",
@@ -89,7 +89,7 @@
         "fields": [
           {
             "example": "image/png",
-            "help_en": "The media type of the image. Valid values: image/png, image/jpeg, image/webp, and image/gif",
+            "help_en": "The image media type. Valid values: image/png, image/jpeg, image/webp, and image/gif",
             "help_zh": "图片媒体类型，支持 image/png、image/jpeg、image/webp、image/gif",
             "name": "mime_type",
             "options": [
@@ -101,7 +101,7 @@
           },
           {
             "example": "topology.png",
-            "help_en": "The file name of the attachment. If you do not specify this parameter, the file name is obtained from OssObjectKey",
+            "help_en": "The file name of the attachment. If you do not pass this parameter, the file name is obtained from OssObjectKey",
             "help_zh": "附件文件名；不传时从 OssObjectKey 获取文件名",
             "name": "name",
             "options": [
@@ -113,7 +113,7 @@
           },
           {
             "example": "user-id/attachments/topology.png",
-            "help_en": "The OSS object key in the current user directory. It cannot contain absolute paths or path traversal",
+            "help_en": "The OSS object key in the current user directory. It must not contain absolute paths or path traversal characters",
             "help_zh": "当前用户目录下的 OSS object key，不能包含绝对路径或路径穿越",
             "name": "oss_object_key",
             "options": [
@@ -141,7 +141,7 @@
           },
           {
             "example": "https://example.com/topology.png",
-            "help_en": "V2 does not support direct URL upload. Use OssObjectKey instead",
+            "help_en": "V2 does not currently support direct URL transmission. Use OssObjectKey instead",
             "help_zh": "V2 暂不支持 URL 直传，请使用 OssObjectKey",
             "name": "url",
             "options": [
@@ -155,7 +155,7 @@
         "type": "object"
       },
       "example": "[{\"Type\":\"image\",\"MimeType\":\"image/png\",\"Name\":\"topology.png\",\"OssObjectKey\":\"user-id/attachments/topology.png\"}]",
-      "help_en": "The array of image attachments. A maximum of five attachments are supported, and only the image type is supported",
+      "help_en": "An array of image attachments. Up to five attachments are supported. Only the image type is currently supported",
       "help_zh": "图片附件数组，最多 5 个；当前仅支持 image 类型",
       "location": "query",
       "name": "attachments",
@@ -186,7 +186,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to output thinking content. Default value: true. You can reset this parameter in each request for the same session",
+      "help_en": "Specifies whether to output thinking content. Default value: true. You can reset this parameter in each request during the same session",
       "help_zh": "是否输出 thinking 内容，默认 true；同一会话重入时可按请求重新设置",
       "location": "query",
       "name": "enable_thinking",
@@ -199,7 +199,7 @@
     },
     {
       "example": "cn-hangzhou",
-      "help_en": "The region for the current resource operation",
+      "help_en": "The region for this resource operation",
       "help_zh": "本次资源操作的地域",
       "location": "query",
       "name": "region_id",
@@ -207,6 +207,21 @@
         "--biz-region-id"
       ],
       "raw_name": "RegionId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "07484e4b81708f7586",
+      "help_en": "A client-defined session identifier. It is used only for the client to identify its own sessions. The server does not provide capabilities such as uniqueness verification or list filtering",
+      "help_zh": "客户端自定义的会话标识。仅用于客户端标识自己会话，服务端不提供唯一性校验、列表筛选等能力",
+      "location": "query",
+      "max_length": "128",
+      "min_length": "1",
+      "name": "client_reference_id",
+      "options": [
+        "--client-reference-id"
+      ],
+      "raw_name": "ClientReferenceId",
       "required": false,
       "type": "string"
     }
@@ -217,7 +232,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The SSE event stream. Each frame starts with data: and ends with an empty line. Continue reading the stream until the final business state is reached",
+        "description_en": "The SSE event stream. Each frame starts with `data:` and ends with an empty line. Continue reading until the final business state is reached",
         "description_zh": "SSE 事件流。每个 frame 以 data: 开头并以空行结束；请持续读取直到业务终态",
         "example": "data: {\"event\":\"...\"}\n\n",
         "title_en": "服务端推送事件流(Server-Sent Events)。每条事件以 data: 携带 JSON 负载(内容按 AgentProtocol 序列化,分别对应 a2a 与 agui);服务端会定时下发心跳注释行以保活长连接。",

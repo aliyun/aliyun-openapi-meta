@@ -35,7 +35,7 @@
     },
     {
       "example": "20",
-      "help_en": "The compatibility field. V2 does not return message arrays in pages, and the service does not consume this field",
+      "help_en": "The compatibility field. V2 does not return message arrays by page, and the service does not consume this field",
       "help_zh": "兼容字段。V2 当前不按页返回消息数组，服务不消费该字段",
       "location": "query",
       "name": "max_results",
@@ -48,7 +48,7 @@
     },
     {
       "example": "CAES...",
-      "help_en": "The compatibility field. V2 does not return message arrays in pages, and the service does not consume this field",
+      "help_en": "The compatibility field. V2 does not return message arrays by page, and the service does not consume this field",
       "help_zh": "兼容字段。V2 当前不按页返回消息数组，服务不消费该字段",
       "location": "query",
       "name": "next_token",
@@ -61,7 +61,7 @@
     },
     {
       "example": "V2",
-      "help_en": "The agent version. Set this parameter to V2 to route the request to the ROS Agent V2 backend",
+      "help_en": "Set this parameter to V2 to route the request to the ROS Agent V2 backend",
       "help_zh": "传 V2 路由到 ROS Agent V2 后端",
       "location": "query",
       "name": "agent_version",
@@ -82,6 +82,17 @@
         "description_en": "Schema of Response",
         "description_zh": "Schema of Response",
         "properties": {
+          "HistoryReadiness": {
+            "backendName": "HistoryReadiness",
+            "description_en": "The readiness status of session history messages. History can be loaded only when the status is READY. History cannot be loaded when the status is STARTING, RUNNING, STOPPING, or FINALIZING (processing), NOT_READY (not ready), RECOVERY_REQUIRED (recovery required), or UNKNOWN (unknown)",
+            "description_zh": "会话历史消息可读状态。仅 READY 时可加载历史;STARTING/RUNNING/STOPPING/FINALIZING(处理中)、NOT_READY(未就绪)、RECOVERY_REQUIRED(待恢复)、UNKNOWN(未知)均暂不可加载",
+            "enum": [],
+            "example": "READY",
+            "required": false,
+            "title_en": "会话历史消息可读状态。仅 READY 时可加载历史;STARTING/RUNNING/STOPPING/FINALIZING(处理中)、NOT_READY(未就绪)、RECOVERY_REQUIRED(待恢复)、UNKNOWN(未知)均暂不可加载。",
+            "title_zh": "会话历史消息可读状态。仅 READY 时可加载历史;STARTING/RUNNING/STOPPING/FINALIZING(处理中)、NOT_READY(未就绪)、RECOVERY_REQUIRED(待恢复)、UNKNOWN(未知)均暂不可加载。",
+            "type": "string"
+          },
           "MaxResults": {
             "backendName": "MaxResults",
             "description_en": "The compatibility field. The V2 response does not return MaxResults",
@@ -124,14 +135,14 @@
           },
           "PipelineSnapshotDownloadUrl": {
             "backendName": "PipelineSnapshotDownloadUrl",
-            "description_en": "The presigned download URL for the pipeline snapshot in `a2a-snapshot.json`. The URL is valid for 1,800 seconds",
+            "description_en": "The presigned download URL for the a2a-snapshot.json file of the pipeline. The URL is valid for 1,800 seconds",
             "description_zh": "Pipeline 的 a2a-snapshot.json 预签名下载 URL，有效期 1800 秒",
             "example": "https://oss.example/a2a-snapshot.json?signature=REDACTED",
             "type": "string"
           },
           "RequestId": {
             "backendName": "RequestId",
-            "description_en": "The OpenAPI request ID",
+            "description_en": "The ID of the OpenAPI request",
             "description_zh": "OpenAPI 请求 ID",
             "example": "4C68F7A5-2D16-5C8F-A4B1-01E9C6A9B0D2",
             "title_en": "RequestId",
@@ -140,7 +151,7 @@
           },
           "SessionMessagesDownloadUrl": {
             "backendName": "SessionMessagesDownloadUrl",
-            "description_en": "The presigned download URL for the session messages in `session.jsonl`. The URL is valid for 1,800 seconds",
+            "description_en": "The presigned download URL for the session.jsonl file of session messages. The URL is valid for 1,800 seconds",
             "description_zh": "会话消息 session.jsonl 的预签名下载 URL，有效期 1800 秒",
             "example": "https://oss.example/session.jsonl?signature=REDACTED",
             "type": "string"
@@ -151,6 +162,16 @@
             "description_zh": "会话标题，可能为空",
             "example": "创建 VPC 模板",
             "type": "string"
+          },
+          "Workspace": {
+            "backendName": "Workspace",
+            "description_en": "The session workspace data",
+            "description_zh": "会话工作空间数据",
+            "example": "{}",
+            "required": false,
+            "title_en": "会话工作空间数据",
+            "title_zh": "会话工作空间数据",
+            "type": "object"
           },
           "WorkspaceTemplates": {
             "backendName": "WorkspaceTemplates",
@@ -163,21 +184,21 @@
               "properties": {
                 "DownloadUrl": {
                   "backendName": "DownloadUrl",
-                  "description_en": "The temporary download URL of the template file. This field is returned only when `Status` is `available`. The URL is valid for 300 seconds. After the URL expires, you must call the operation again to obtain a new URL",
+                  "description_en": "The temporary download URL of the template file. This field is returned only when Status is available. The URL is valid for 300 seconds. After the URL expires, you must call the operation again to obtain a new URL",
                   "description_zh": "模板文件的临时下载地址。仅当 `Status` 为 `available` 时返回，有效期为 300 秒；过期后需重新调用接口获取",
                   "example": "https://example.com/templates/0-vpc.yml?expires=300",
                   "type": "string"
                 },
                 "Status": {
                   "backendName": "Status",
-                  "description_en": "The downloadable status of the template. Valid values:\n`available`: The template is ready and can be downloaded, and the `DownloadUrl` is also returned.\n`not_ready`: The template path is determined, but the file is not ready. Try again later.\n`unavailable`: The template cannot be downloaded, for example, because the file is too large or the temporary download URL fails to be generated",
+                  "description_en": "The download availability status of the template. Valid values:\navailable: The template is ready and can be downloaded. DownloadUrl is also returned.\nnot_ready: The template path is determined, but the file is not ready. Try again later.\nunavailable: The template cannot be downloaded. For example, the file is too large or the temporary download URL fails to be generated",
                   "description_zh": "模板的可下载状态。取值如下：\n`available`：模板已准备完成，可以下载，同时返回 `DownloadUrl`。\n`not_ready`：模板路径已确定，但文件尚未准备完成，请稍后重试。\n`unavailable`：模板当前无法下载，例如文件过大或临时下载地址生成失败",
                   "example": "available",
                   "type": "string"
                 },
                 "TemplatePath": {
                   "backendName": "TemplatePath",
-                  "description_en": "The relative path of the template in the session workspace. The `.yml`, `.yaml`, and `.json` formats are supported",
+                  "description_en": "The relative path of the template in the session workspace. The .yml, .yaml, and .json formats are supported",
                   "description_zh": "模板在会话工作区中的相对路径。支持`.yml`、`.yaml`和`.json`格式",
                   "example": "templates/0-vpc.yml",
                   "type": "string"
