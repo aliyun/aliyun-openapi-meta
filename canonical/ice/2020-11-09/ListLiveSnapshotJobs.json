@@ -3,7 +3,7 @@
   "cmd_full_name": "ice list-live-snapshot-jobs",
   "cmd_name": "list-live-snapshot-jobs",
   "deprecated": false,
-  "description_en": "Queries the list of live snapshot jobs with pagination support",
+  "description_en": "Queries a paginated list of real-time snapshot jobs",
   "description_zh": "调用ListLiveSnapshotJobs获取实时截图任务列表，可分页获取",
   "kebab_example": "aliyun ice list-live-snapshot-jobs --start-time 2022-02-02T00:00:00Z --end-time 2022-02-02T23:59:59Z --search-key-word 0000a046-263c-3560-978a-fb2877820000 --status example-string --page-no 1 --page-size 10 --sort-by desc --region cn-hangzhou",
   "method": "GET",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "2022-02-02T00:00:00Z",
-      "help_en": "The start time of the query. Specify the time in UTC in the yyyy-MM-ddTHH:mm:ssZ format.\nDefault value: 7 days before the current time.\nThe interval between StartTime and EndTime cannot exceed 30 days",
+      "help_en": "The start time of the query. Specify the time in the ISO 8601 standard in the yyyy-MM-ddTHH:mm:ssZ format. The time must be in UTC.\nDefault value: 7 days ago.\nThe interval between StartTime and EndTime cannot exceed 30 days",
       "help_zh": "查询开始时间。UTC时间，格式：yyyy-MM-ddTHH:mm:ssZ。\n默认为7天前。\nStartTime与EndTime间隔不能超过30天",
       "location": "query",
       "name": "start_time",
@@ -35,7 +35,7 @@
     },
     {
       "example": "2022-02-02T23:59:59Z",
-      "help_en": "The end time of the query. Specify the time in UTC in the yyyy-MM-ddTHH:mm:ssZ format.\nDefault value: StartTime + 7 days.\nThe interval between StartTime and EndTime cannot exceed 30 days",
+      "help_en": "The end time of the query. Specify the time in the ISO 8601 standard in the yyyy-MM-ddTHH:mm:ssZ format. The time must be in UTC.\nDefault value: 7 days after the start time.\nThe interval between StartTime and EndTime cannot exceed 30 days",
       "help_zh": "查询结束时间。UTC时间，格式：yyyy-MM-ddTHH:mm:ssZ。\n默认为StartTime+7天。\nStartTime与EndTime间隔不能超过30天",
       "location": "query",
       "name": "end_time",
@@ -48,7 +48,7 @@
     },
     {
       "example": "****a046-263c-3560-978a-fb287782****",
-      "help_en": "The search keyword. You can search by job ID or name. Fuzzy match is supported for names.\nMaximum length: 128",
+      "help_en": "The search keyword. You can search by job ID or job name. Fuzzy match is supported for job names.\nThe maximum length is 128 characters",
       "help_zh": "搜索关键词，任务ID/名称，名称支持模糊搜索。\n最大长度为128",
       "location": "query",
       "name": "search_key_word",
@@ -60,7 +60,7 @@
       "type": "string"
     },
     {
-      "help_en": "The job status filter. By default, all jobs are queried",
+      "help_en": "The job status used to filter jobs. By default, all jobs are queried",
       "help_zh": "任务状态过滤，默认查询全部",
       "location": "query",
       "name": "status",
@@ -73,7 +73,7 @@
     },
     {
       "example": "1",
-      "help_en": "The page number. Valid values: [1, n). Default value: 1",
+      "help_en": "The page number. Default value: 1",
       "help_zh": "页码，[1, n)，默认是1",
       "location": "query",
       "name": "page_no",
@@ -86,7 +86,7 @@
     },
     {
       "example": "10",
-      "help_en": "The number of entries per page. Valid values: [1, 100]. Default value: 10",
+      "help_en": "The number of entries per page. Valid values: 1 to 100. Default value: 10",
       "help_zh": "页宽，[1, 100]，默认是10",
       "location": "query",
       "name": "page_size",
@@ -99,7 +99,7 @@
     },
     {
       "example": "desc",
-      "help_en": "The sort order. Jobs are sorted by CreateTime. Default value: desc",
+      "help_en": "The sort order. Jobs are sorted by creation time. Default value: desc",
       "help_zh": "排序，按CreateTime排序，默认是desc",
       "location": "query",
       "name": "sort_by",
@@ -117,7 +117,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response parameters",
+        "description_en": "The response data",
         "description_zh": "返回数据",
         "properties": {
           "JobList": {
@@ -126,10 +126,12 @@
             "description_zh": "任务列表",
             "itemName": "JobInfo",
             "items": {
+              "description_en": "The information about the live streaming snapshot job",
+              "description_zh": "直播截图任务信息",
               "properties": {
                 "CreateTime": {
                   "backendName": "createTime",
-                  "description_en": "The creation time",
+                  "description_en": "The creation time. The time is displayed in the ISO 8601 format in UTC",
                   "description_zh": "创建时间。时间格式为 ISO 8601，使用 UTC 时间（以 Z 结尾）",
                   "example": "2022-07-20T02:48:58Z",
                   "title_en": "创建时间。",
@@ -161,7 +163,7 @@
                   "properties": {
                     "Bucket": {
                       "backendName": "bucket",
-                      "description_en": "The bucket of the output endpoint. If type is set to oss, the OSS bucket is returned",
+                      "description_en": "The output bucket. If the storage type is OSS, the OSS bucket name is returned",
                       "description_zh": "输出终端的Bucket，type=oss时返回OSS Bucket",
                       "example": "testbucket",
                       "title_en": "输出终端的Bucket，type=oss时返回OSS Bucket。",
@@ -170,7 +172,7 @@
                     },
                     "Endpoint": {
                       "backendName": "endpoint",
-                      "description_en": "The output endpoint. If type is set to oss, the OSS domain name is returned",
+                      "description_en": "The output endpoint. If the storage type is OSS, the OSS domain name is returned",
                       "description_zh": "输出终端，type=oss时返回OSS域名",
                       "example": "oss-cn-shanghai.aliyuncs.com",
                       "title_en": "输出终端，type=oss时返回OSS域名。",
@@ -179,7 +181,7 @@
                     },
                     "StorageType": {
                       "backendName": "storageType",
-                      "description_en": "The storage type. Currently, only oss is supported",
+                      "description_en": "The storage type. Only OSS is supported",
                       "description_zh": "存储类型，目前只支持oss",
                       "example": "oss",
                       "title_en": "存储类型，目前只支持oss。",
@@ -220,7 +222,7 @@
                 },
                 "TimeInterval": {
                   "backendName": "timeInterval",
-                  "description_en": "The snapshot time interval. Unit: seconds",
+                  "description_en": "The snapshot interval. Unit: seconds",
                   "description_zh": "截图时间间隔，单位：秒",
                   "example": "5",
                   "format": "int32",
