@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun aidge VideoTranslation --region cn-hangzhou --Capabilities '[\"visual\"]' --TargetLanguage ru --VideoUrl 'https://example.com/video.mp4' --version 2026-04-28 --method POST --force",
+  "camel_example": "aliyun aidge VideoTranslation --region cn-hangzhou --Capabilities '[\"speech\"]' --TargetLanguage ru --VideoUrl 'https://cdn.example.com/product-demo.mp4' --version 2026-04-28 --method POST --force",
   "cmd_full_name": "aidge video-translation",
   "cmd_name": "video-translation",
   "deprecated": false,
-  "description_en": "Translates embedded text, such as subtitles and selling point text, in video frames into a target language and erases the original text",
+  "description_en": "Translates embedded text, such as subtitles and selling points, in video frames into a target language and erases the original text",
   "description_zh": "视频翻译 API 支持将视频画面中的嵌字（字幕、卖点文字等）翻译为目标语言，并擦除原文",
-  "kebab_example": "aliyun aidge video-translation --video-url https://example.com/video.mp4 --target-language ru --capabilities visual --region cn-hangzhou",
+  "kebab_example": "aliyun aidge video-translation --video-url https://cdn.example.com/product-demo.mp4 --target-language ru --capabilities speech --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "VideoTranslation",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "https://cdn.example.com/product-demo.mp4",
-      "help_en": "The video URL. Supported formats: MP4 and MOV. Maximum size: 200 MB",
+      "help_en": "The URL of the video. Supported formats: MP4 and MOV. Maximum size: 200 MB",
       "help_zh": "视频地址（MP4/MOV，≤ 200MB）",
       "location": "formData",
       "name": "video_url",
@@ -45,12 +45,12 @@
         "--target-language"
       ],
       "raw_name": "TargetLanguage",
-      "required": true,
+      "required": false,
       "type": "string"
     },
     {
       "example": "zh",
-      "help_en": "The source language. For supported languages, see \"Supported languages\"",
+      "help_en": "The source language. For supported languages, see Language support",
       "help_zh": "源语言，支持范围见“语言支持”",
       "location": "formData",
       "name": "source_language",
@@ -65,7 +65,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The list of translation features. Valid values: `speech` and `visual`. You can select both. At least one feature is required. Duplicate values are not accepted",
+      "help_en": "The list of translation features. Valid values: speech and visual. You can select both. At least one feature is required. Duplicate values are not accepted",
       "help_zh": "翻译能力列表：speech、visual，支持同时选择；至少一项，不接受重复值",
       "location": "formData",
       "name": "capabilities",
@@ -78,8 +78,47 @@
       "type": "array"
     },
     {
+      "example": "erase",
+      "help_en": "The subtitle processing mode. This parameter is valid only when speech is included. Valid values: erase (erases only the original subtitles) and replace (erases the original subtitles and adds new subtitles). If this parameter is omitted, the original subtitles are not processed and no new subtitles are added",
+      "help_zh": "字幕处理模式，仅含 speech 时可传：erase＝仅消除原字幕；replace＝消除原字幕并添加新字幕；省略＝不处理原字幕不新增",
+      "location": "query",
+      "name": "subtitle_mode",
+      "options": [
+        "--subtitle-mode"
+      ],
+      "raw_name": "SubtitleMode",
+      "required": false,
+      "type": "string"
+    },
+    {
       "example": "true",
-      "help_en": "Default value: false. If `visual` is included and this parameter is explicitly set to true, the quality check for on-screen text processing is enabled. If only `speech` is selected, this parameter is ignored. No quality check is performed, no quality check fields are returned, and no errors are reported due to this parameter. Enabling the quality check may increase the waiting time. Do not enable it unless necessary",
+      "help_en": "Specifies whether to only erase the source language text in the video frames without translating it. This parameter is valid only when visual is included. Valid values: true (erases only) and false (translates the on-screen text). Default value: false",
+      "help_zh": "仅消除画面源语向文字不翻译，仅含 visual 时适用：true＝仅消除；false＝翻译画面文字；省略＝false",
+      "location": "query",
+      "name": "erase_only",
+      "options": [
+        "--erase-only"
+      ],
+      "raw_name": "EraseOnly",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "example": "true",
+      "help_en": "Specifies whether to erase brand logos. This parameter is valid only when visual is included. Valid values: true (erases brand logos) and false (retains logos). Default value: false. This parameter is independent of eraseOnly",
+      "help_zh": "品牌 LOGO 消除，仅含 visual 时适用：true＝消除品牌 LOGO；false＝保留 LOGO；省略＝false。与 eraseOnly 相互独立",
+      "location": "query",
+      "name": "remove_logo",
+      "options": [
+        "--remove-logo"
+      ],
+      "raw_name": "RemoveLogo",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "example": "true",
+      "help_en": "Specifies whether to enable the quality check for on-screen text processing. Default value: false. The quality check is enabled when visual is included and this parameter is explicitly set to true. If only speech is selected, this parameter is ignored, no quality check is performed, no quality check fields are returned, and no errors are reported due to this parameter. Enabling the quality check may increase the waiting time. Do not enable it unless necessary",
       "help_zh": "默认 false。包含 visual 且显式传 true 时启用画面文字处理质检；仅选择 speech 时忽略此参数，不执行质检、不返回质检字段，也不因该参数报错。开启质检可能延长等待时间，如无必要建议不开启",
       "location": "formData",
       "name": "enable_quality_check",
@@ -148,7 +187,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the call is successful. Valid values:\ntrue: The call is successful.\nfalse: The call fails",
+            "description_en": "Indicates whether the call is successful. Valid values: true (successful) and false (failed)",
             "description_zh": "是否调用成功：true：调用成功。false：调用失败",
             "example": "True",
             "title_en": "是否调用成功：true：调用成功。false：调用失败。",
