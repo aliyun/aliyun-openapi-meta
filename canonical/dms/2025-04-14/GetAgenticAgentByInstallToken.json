@@ -3,8 +3,8 @@
   "cmd_full_name": "dms get-agentic-agent-by-install-token",
   "cmd_name": "get-agentic-agent-by-install-token",
   "deprecated": false,
-  "description_en": "Queries agent information by install token",
-  "description_zh": "根据 install token 查询 Agent 信息",
+  "description_en": "Queries the agent associated with an install token after redemption. Data is empty if the token has not been redeemed",
+  "description_zh": "根据 install token 查询其兑换后关联的 Agent 信息。尚未完成兑换时，Data 为空",
   "kebab_example": "aliyun dms get-agentic-agent-by-install-token --install-token example-string --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
@@ -21,8 +21,9 @@
   },
   "parameters": [
     {
-      "help_en": "The InstallToken",
-      "help_zh": "The InstallToken",
+      "example": "dit_0123456789abcdefghijklmnopqrstuvwxyzABCD",
+      "help_en": "The one-time install token issued by IssueAgenticInstallToken. The token starts with dit_ followed by 40 URL-safe Base64 characters, making a total length of 44 characters",
+      "help_zh": "IssueAgenticInstallToken 签发的一次性安装令牌。令牌以 dit_ 开头，后跟 40 位 URL-safe Base64 字符，总长度为 44 个字符",
       "location": "query",
       "max_length": "256",
       "name": "install_token",
@@ -40,49 +41,81 @@
   "responses": {
     "200": {
       "schema": {
+        "description_en": "Schema of Response",
+        "description_zh": "Schema of Response",
         "properties": {
           "Data": {
             "backendName": "data",
+            "description_en": "The agent information associated with the install token after redemption. This parameter is empty if the token has not been redeemed, or if the associated credential or agent does not exist",
+            "description_zh": "install token 已完成兑换时返回关联的 Agent 信息。令牌尚未完成兑换，或关联的凭证、Agent 不存在时为空",
             "properties": {
               "ActiveApiKeyPrefixes": {
                 "backendName": "activeApiKeyPrefixes",
+                "description_en": "The prefix list of visible access tokens that are neither revoked nor expired under the agent. This parameter is empty if no access tokens are returned or no access tokens meet the conditional criteria. The prefix is used only to identify the credential and does not contain the complete secret",
+                "description_zh": "Agent 名下未吊销且未过期的 Access Token 可见前缀列表；未返回或没有符合条件的 Access Token 时为空。前缀仅用于识别凭证，不包含完整 Secret",
                 "itemName": "ActiveApiKeyPrefix",
                 "items": {
+                  "description_en": "The visible prefix of an access token that is neither revoked nor expired",
+                  "description_zh": "一个未吊销且未过期的 Access Token 的可见前缀",
+                  "example": "dms_sk_3f9a",
                   "type": "string"
                 },
                 "type": "array"
               },
               "AgentId": {
                 "backendName": "agentId",
+                "description_en": "The unique identifier of the agent",
+                "description_zh": "Agent 的唯一标识",
+                "example": "agent-7f3c9a2b",
                 "type": "string"
               },
               "AgentName": {
                 "backendName": "agentName",
+                "description_en": "The name of the agent",
+                "description_zh": "Agent 的名称",
+                "example": "my-data-agent",
                 "type": "string"
               },
               "AgentType": {
                 "backendName": "agentType",
+                "description_en": "The permission type of the agent. Valid values: HUMAN_BOUND (inherits user permissions), PERMISSION_NARROW (narrowed down from user permissions), and STANDALONE (independent permissions). The agent generated through the install token redemption process is of the HUMAN_BOUND type",
+                "description_zh": "Agent 的权限类型。取值包括 HUMAN_BOUND（继承用户权限）、PERMISSION_NARROW（在用户权限基础上收窄）、和 STANDALONE（独立权限）。install token 兑换链路生成的 Agent 类型为 HUMAN_BOUND",
+                "example": "HUMAN_BOUND",
                 "type": "string"
               },
               "CreatedAt": {
                 "backendName": "createdAt",
-                "format": "date-time",
+                "description_en": "The creation time of the agent, in the yyyy-MM-dd HH:mm:ss format",
+                "description_zh": "Agent 的创建时间，格式为 yyyy-MM-dd HH:mm:ss",
+                "example": "2026-07-13 10:30:00",
                 "type": "string"
               },
               "CreationType": {
                 "backendName": "creationType",
+                "description_en": "The creation method of the agent. A value of auto indicates automatic creation by the system, and a value of manual indicates manual creation by a user. The agent generated through the install token redemption process is auto",
+                "description_zh": "Agent 的创建方式。auto 表示系统自动创建，manual 表示用户手动创建；install token 兑换链路生成的 Agent 为 auto",
+                "example": "auto",
                 "type": "string"
               },
               "Description": {
                 "backendName": "description",
+                "description_en": "The description of the agent. This parameter is empty if it is not set",
+                "description_zh": "Agent 的描述信息；未设置时为空",
+                "example": "用于数据分析的 Agent",
                 "type": "string"
               },
               "OwnerId": {
                 "backendName": "ownerId",
+                "description_en": "The ID of the user to whom the agent belongs",
+                "description_zh": "Agent 归属用户的 ID",
+                "example": "27400000000000001",
                 "type": "string"
               },
               "Status": {
                 "backendName": "status",
+                "description_en": "The status of the agent. A value of active indicates that the agent is enabled, and a value of disabled indicates that the agent is disabled",
+                "description_zh": "Agent 的状态。active 表示已启用，disabled 表示已停用",
+                "example": "active",
                 "type": "string"
               }
             },
@@ -90,16 +123,25 @@
           },
           "ErrorCode": {
             "backendName": "errorCode",
+            "description_en": "The error code returned when the request fails. Programs use this code to determine the failure type. This parameter is empty when the request succeeds",
+            "description_zh": "请求失败时返回的错误码，用于程序判断失败类型；请求成功时为空",
+            "example": "INSTALL_TOKEN_INVALID",
             "type": "string",
             "visibility": "Public"
           },
           "ErrorMessage": {
             "backendName": "errorMessage",
+            "description_en": "The error message returned when the request fails. This message helps with manual troubleshooting. This parameter is empty when the request succeeds",
+            "description_zh": "请求失败时返回的错误描述信息，便于人工定位问题；请求成功时为空",
+            "example": "install_token not found",
             "type": "string",
             "visibility": "Public"
           },
           "RequestId": {
             "backendName": "requestId",
+            "description_en": "The unique identifier of the request, used for troubleshooting and log correlation",
+            "description_zh": "本次请求的唯一标识，用于问题排查与日志关联",
+            "example": "1AD222E9-E606-4A42-BF6C-2C4DD51BD5E7",
             "title_en": "",
             "title_zh": "",
             "type": "string",
@@ -107,6 +149,8 @@
           },
           "Success": {
             "backendName": "success",
+            "description_en": "Indicates whether the request is successful. A value of true indicates that the query succeeded. A value of false indicates that the query failed. In this case, you can use ErrorCode and ErrorMessage to identify the cause",
+            "description_zh": "本次请求是否成功。true 表示查询成功；false 表示失败，此时可结合 ErrorCode 与 ErrorMessage 定位原因",
             "type": "boolean",
             "visibility": "Public"
           }
