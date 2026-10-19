@@ -3,7 +3,7 @@
   "cmd_full_name": "r-kvstore transform-to-ecs",
   "cmd_name": "transform-to-ecs",
   "deprecated": false,
-  "description_en": "Converts a classic architecture instance to cloud-native",
+  "description_en": "Converts a local disk instance to a cloud-native instance",
   "description_zh": "转换本地盘到云原生",
   "kebab_example": "aliyun r-kvstore transform-to-ecs --instance-class tair.rdb.1g_tair.rdb.with.proxy.1g --instance-id r-bp1zxszhcgatnx0000 --engine-version 5.0 --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "tair.rdb.1g\ntair.rdb.with.proxy.1g",
-      "help_en": "The instance type of the target cloud-native instance. For more information, see https://help.aliyun.com/document_detail/26350.html.\n\nThis is the description content.\nFor cluster instances, specify the corresponding cloud-native cluster instance type with .proxy, and specify the ShardCount parameter for the number of shards",
+      "help_en": "The instance type of the destination cloud-native instance. For more information, see https://help.aliyun.com/document_detail/26350.html.\n\nNote:\nFor a cluster instance, you must specify a cloud-native cluster instance type that includes with.proxy and specify the ShardCount parameter",
       "help_zh": "转换目标云原生实例的规格，详细信息请参见https://help.aliyun.com/document_detail/26350.html。\n\n这是说明的内容\n集群实例需要传入对应云原生带 with.proxy 的集群规格，同时需要指定分片数量 ShardCount 参数",
       "location": "query",
       "name": "instance_class",
@@ -39,7 +39,7 @@
         "PostPaid"
       ],
       "example": "PostPaid",
-      "help_en": "The billing method to convert to. Valid values:\nPostPaid: pay-as-you-go.\nPrePaid: subscription. If you set this parameter to PrePaid, you must also specify the Period parameter",
+      "help_en": "The billing method of the destination instance. Valid values:\nPostPaid: pay-as-you-go.\nPrePaid: subscription. If you set this parameter to PrePaid, you must also specify the Period parameter",
       "help_zh": "要转换到的付费类型，取值：\nPostPaid：按量付费。\nPrePaid：包年包月，传入本值时，您还需要传入Period参数",
       "location": "query",
       "name": "charge_type",
@@ -52,7 +52,7 @@
     },
     {
       "example": "1",
-      "help_en": "The subscription duration. Unit: months. Valid values: 1 to 9, 12, 24, and 36.\nThis parameter is available and required only when ChargeType is set to PrePaid",
+      "help_en": "The subscription duration. Unit: months. Valid values: 1 to 9, 12, 24, and 36.\nThis parameter is available and required only when the ChargeType parameter is set to PrePaid",
       "help_zh": "包年包月的付费时长，单位为月，取值：1~9、12、24、36。\n当ChargeType参数取值为PrePaid时，本参数才可用且必须传入",
       "location": "query",
       "name": "period",
@@ -65,7 +65,7 @@
     },
     {
       "example": "2",
-      "help_en": "The number of data shard nodes in the cloud-native cluster instance",
+      "help_en": "The number of data shards in the cloud-native cluster instance",
       "help_zh": "云原生集群实例中的数据分片节点的数量",
       "location": "query",
       "name": "shard_count",
@@ -78,7 +78,7 @@
     },
     {
       "example": "r-bp1zxszhcgatnx****",
-      "help_en": "The ID of the classic architecture instance to convert",
+      "help_en": "The ID of the classic instance to be converted",
       "help_zh": "要做转换的经典实例的ID",
       "location": "query",
       "name": "instance_id",
@@ -93,7 +93,8 @@
       "enum": [
         "5.0",
         "6.0",
-        "7.0"
+        "7.0",
+        "8.1"
       ],
       "example": "5.0",
       "help_en": "The Redis-compatible engine version of the instance. Valid values: 5.0, 6.0, and 7.0",
@@ -113,7 +114,7 @@
         "MaintainTime"
       ],
       "example": "Immediately",
-      "help_en": "The time when the database switchover is performed after data migration. Valid values: \nImmediately: The switchover is performed immediately after the migration is complete.\nMaintainTime: The switchover is performed during the maintenance window.\n\nDefault value: Immediately",
+      "help_en": "The time when the database switchover is performed after data migration. Valid values: \nImmediately: The switchover is performed immediately after the migration is completed.\nMaintainTime: The switchover is performed within the maintenance window.\n\nDefault value: Immediately",
       "help_zh": "数据迁移后执行数据库切换的时间，取值： \nImmediately：迁移完立即切换。\nMaintainTime：在可维护时间段内切换。\n\n默认值：Immediately",
       "location": "query",
       "name": "effective_time",
@@ -130,7 +131,7 @@
         "false"
       ],
       "example": "false",
-      "help_en": "Specifies whether to enable auto-renewal. Valid values:\n\ntrue: enabled.\nfalse: disabled",
+      "help_en": "Specifies whether to enable auto-renewal. Valid values:\n\ntrue: Enabled.\nfalse: Disabled",
       "help_zh": "是否开启自动续费。取值：\n\ntrue：开启\nfalse：关闭",
       "location": "query",
       "name": "auto_renew",
@@ -150,7 +151,7 @@
         "12"
       ],
       "example": "1",
-      "help_en": "The auto-renewal period. Unit: months. Valid values: 1, 2, 3, 6, and 12.\n\nThis parameter is required when AutoRenew is set to true",
+      "help_en": "The auto-renewal epoch. Unit: months. Valid values: 1, 2, 3, 6, and 12.\n\nThis parameter is required only when the AutoRenew parameter is set to true",
       "help_zh": "自动续费周期，单位为月，取值：1、2、3、6、12。\n\n当AutoRenew取值为true时，本参数必须传入",
       "location": "query",
       "name": "auto_renew_period",
@@ -163,7 +164,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to perform a dry run for this operation. Valid values:\ntrue: performs a dry run without creating the cloud-native instance. The system checks items such as the request parameters, request format, service limits, and available inventory. If the check fails, the corresponding error is returned. If the check succeeds, the error code `DryRunOperation` is returned.\nfalse (default): sends the request. If the check succeeds, the instance is created",
+      "help_en": "Specifies whether to perform a dry run on the instance creation operation. Valid values:\ntrue: Performs a dry run without creating the cloud-native instance. The system checks the request parameters, request format, service limits, and inventory. If the request fails the dry run, an error is returned. If the request passes the dry run, the `DryRunOperation` error code is returned.\nfalse (default): Sends a normal request. If the request passes the dry run, the instance is created",
       "help_zh": "是否对本次创建实例的操作执行预检查，取值：\ntrue：执行预检查操作，不创建云原生实例。检查项目包含请求参数、请求格式、业务限制和库存。如果检查不通过，则返回对应错误。如果检查通过，则返回错误码`DryRunOperation`。\nfalse（默认）：发送正常请求，通过检查后直接创建实例",
       "location": "query",
       "name": "dry_run",
