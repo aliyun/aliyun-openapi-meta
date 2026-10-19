@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun dms-enterprise ListTagMetaAsset --region cn-hangzhou --TagName 'sys::DMS-DA::cn-hangzhou::space:abcde' --PageSize 50 --PageNumber 1 --MetaType META_DATABASE",
+  "camel_example": "aliyun dms-enterprise ListTagMetaAsset --region cn-hangzhou --TagName 'sys::DMS-DA::cn-hangzhou::space:abcde' --PageSize 50 --PageNumber 1 --SearchKey test --Tid 3000 --MetaParentId 123456 --MetaType META_DATABASE",
   "cmd_full_name": "dms-enterprise list-tag-meta-asset",
   "cmd_name": "list-tag-meta-asset",
   "deprecated": false,
-  "description_en": "Lists Database and Table assets associated with a specific Tag in a DataAgent Workspace",
+  "description_en": "Retrieves the database and table information added to the data center of a DataAgent workspace",
   "description_zh": "获取DataAgent协作空间数据中心添加库表信息",
-  "kebab_example": "aliyun dms-enterprise list-tag-meta-asset --tag-name sys::DMS-DA::cn-hangzhou::space:abcde --meta-type META_DATABASE --page-number 1 --page-size 50 --region cn-hangzhou",
+  "kebab_example": "aliyun dms-enterprise list-tag-meta-asset --tid 3000 --tag-name sys::DMS-DA::cn-hangzhou::space:abcde --meta-type META_DATABASE --meta-parent-id 123456 --search-key test --page-number 1 --page-size 50 --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": false,
   "name": "ListTagMetaAsset",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "3***",
-      "help_en": "The ID of the tenant.\n\nYou can find the tenant ID by hovering the pointer over the profile picture in the upper-right corner of the Data Management Service (DMS) console. For more information, see https://help.aliyun.com/document_detail/181330.html",
+      "help_en": "The tenant ID.\nYou can obtain the tenant ID by hovering over the profile picture in the upper-right corner of the system. For more information, see https://help.aliyun.com/document_detail/181330.html",
       "help_zh": "租户ID。\n取自系统右上角头像处悬停展示的租户ID信息，详情请参见https://help.aliyun.com/document_detail/181330.html",
       "location": "query",
       "maximum": "9223372036854775807",
@@ -37,7 +37,7 @@
     },
     {
       "example": "sys::DMS-DA::cn-hangzhou::space:abcde",
-      "help_en": "The name of the tag. To retrieve database and table assets from a DataAgent Workspace, specify the tag name in the format `sys::DMS-DA::${DataAgentRegionId}::space:${DataAgentWorkspaceId}`",
+      "help_en": "The tag name. To retrieve the database and table information in a DataAgent workspace, pass the value in the following format: `sys::DMS-DA::${DataAgentRegionId}::space:${DataAgentWorkspaceId}`",
       "help_zh": "标签名字，需要获取DataAgent协作空间下的库表信息，传递格式为 `sys::DMS-DA::${DataAgentRegionId}::space:${DataAgentWorkspaceId}`",
       "location": "query",
       "name": "tag_name",
@@ -50,7 +50,7 @@
     },
     {
       "example": "META_DATABASE",
-      "help_en": "Specify `META_DATABASE` to retrieve databases.\n\nSpecify `META_TABLE` to retrieve tables in a specific database",
+      "help_en": "The metadata type.\nTo retrieve the database list, set this parameter to META_DATABASE.\nTo retrieve the table list of a specific database, set this parameter to META_TABLE",
       "help_zh": "获取库列表，传递为 META_DATABASE\n当获取某个库详情的表列表，传递为 META_TABLE",
       "location": "query",
       "name": "meta_type",
@@ -63,7 +63,7 @@
     },
     {
       "example": "123456",
-      "help_en": "The ID of the parent asset.\n\nOmit this parameter to retrieve databases.\n\nTo retrieve tables in a specific database, set this parameter to the `dbId` of the database",
+      "help_en": "The parent MetaId of the asset.\nTo retrieve the database list on the left side of the DataAgent data center, you do not need to specify this parameter.\nTo retrieve the table list of a specific database, set this parameter to the corresponding dbId",
       "help_zh": "资产对应的父级MetaId：\n当获取DataAgent数据中心左侧库列表，此值无需传递\n当获取某个库详情的表列表，此值传递为 对应的 dbId",
       "location": "query",
       "name": "meta_parent_id",
@@ -76,7 +76,7 @@
     },
     {
       "example": "test",
-      "help_en": "A keyword for fuzzy search",
+      "help_en": "The search keyword. Fuzzy search is supported",
       "help_zh": "搜索关键词，支持模糊搜索",
       "location": "query",
       "name": "search_key",
@@ -126,22 +126,23 @@
         "properties": {
           "Data": {
             "backendName": "data",
-            "description_en": "A list of assets",
+            "description_en": "The returned data",
             "description_zh": "返回的数据信息",
             "itemName": "TagMetaAsset",
             "items": {
+              "description_en": "The returned data",
               "description_zh": "返回的数据信息",
               "properties": {
                 "MetaEntityAttrs": {
                   "backendName": "metaEntityAttrs",
-                  "description_en": "If `MetaType` is `META_DATABASE`, this object contains the following fields:\n\n`schemaName`: The name of the database. For PostgreSQL-compatible databases, this field indicates the schema name.\n\n`catalogName`: The name of the catalog. This field applies only to PostgreSQL-compatible databases.\n\n`dbId`: The ID of the database in Data Management Service (DMS).\n\n`instanceResourceId`: The resource ID of the instance. If the database is in an ApsaraDB RDS instance, this field indicates the ID of the RDS instance.\n\n`dbType`: The type of the database in DMS.\n\nIf `MetaType` is `META_TABLE`, this object contains the following fields:\n\n`schemaName`: The name of the database containing the table. For PostgreSQL-compatible databases, this field indicates the schema name.\n\n`catalogName`: The name of the catalog. This field applies only to PostgreSQL-compatible databases.\n\n`dbId`: The ID of the database in DMS.\n\n`dbType`: The type of the database in DMS.\n\n`tableName`: The name of the table.\n\n`tableSchemaName`: The name of the table schema. This field is valid only for SQL Server",
+                  "description_en": "The metadata entity attributes.\nWhen MetaType is set to META_DATABASE, the following information is included:\nschemaName: the database name. For PostgreSQL databases, this is the schema name.\ncatalogName: the catalog name. For PostgreSQL databases, this is the database name.\ndbId: the DMS database ID.\ninstanceResourceId: the instance resource ID. If the database is an ApsaraDB RDS instance, this value is the RDS instance ID.\ndbType: the DMS database type.\n\nWhen MetaType is set to META_TABLE, the following information is included:\nschemaName: the database name. For PostgreSQL databases, this is the schema name.\ncatalogName: the catalog name. For PostgreSQL databases, this is the database name.\ndbId: the DMS database ID.\ndbType: the DMS database type.\ntableName: the table name.\ntableSchemaName: the table schema name. This parameter is valid only for SQL Server databases",
                   "description_zh": "MetaType=META_DATABASE时包含如下信息：\nschemaName：库名，PG系为schema名\ncatalogName：PG系为库名\ndbId：DMS dbId\ninstanceResourceId：实例资源id，如果是RDS，此值为RDS实例id\ndbType：DMS dbType\n\nMetaType=META_TABLE时包含如下信息：\nschemaName：库名，PG系为schema名\ncatalogName：PG系为库名\ndbId：DMS dbId\ndbType：DMS dbType\ntableName：表名\ntableSchemaName：表架构名，SQLServer下才有效",
                   "example": "{\"schemaName\": \"test\"}",
                   "type": "object"
                 },
                 "MetaType": {
                   "backendName": "metaType",
-                  "description_en": "`META_DATABASE`: The asset is a database.\n\n`META_TABLE`: The asset is a table",
+                  "description_en": "The metadata type. Valid values:\nMETA_DATABASE: database information.\nMETA_TABLE: table information",
                   "description_zh": "META_DATABASE：库信息\nMETA_TABLE：表信息",
                   "example": "META_DATABASE",
                   "type": "string"
@@ -153,7 +154,7 @@
           },
           "ErrorCode": {
             "backendName": "errorCode",
-            "description_en": "The error code for a failed request",
+            "description_en": "The error code. This parameter is returned when an error occurs",
             "description_zh": "错误码，请求异常时返回",
             "example": "UnknownError",
             "nullToEmpty": false,
@@ -162,7 +163,7 @@
           },
           "ErrorMessage": {
             "backendName": "message",
-            "description_en": "The error message for a failed request",
+            "description_en": "The error message returned when the request fails",
             "description_zh": "调用失败时，返回的出错信息",
             "example": "UnknownError",
             "nullToEmpty": false,
@@ -180,7 +181,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful. Valid values:\n\ntrue: The request was successful.\n\nfalse: The request failed",
+            "description_en": "Indicates whether the request was successful. Valid values:\ntrue: The request was successful.\nfalse: The request failed",
             "description_zh": "请求是否成功，返回值如下：\ntrue：请求成功\nfalse：请求失败",
             "example": "true",
             "nullToEmpty": false,
@@ -189,7 +190,7 @@
           },
           "TotalCount": {
             "backendName": "totalCount",
-            "description_en": "The total number of matching entries",
+            "description_en": "The total number of records that meet the specified conditions",
             "description_zh": "满足条件的记录总数",
             "example": "100",
             "format": "int64",
