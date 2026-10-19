@@ -2,7 +2,7 @@
   "cmd_full_name": "appstream-center get-runtime-model-config",
   "cmd_name": "get-runtime-model-config",
   "deprecated": false,
-  "description_en": "Queries the model configuration details of a cloud computer",
+  "description_en": "Queries the details of the model configuration for a cloud desktop",
   "description_zh": "查询云电脑模型配置详情",
   "kebab_example": "aliyun appstream-center get-runtime-model-config --runtime-type CloudDesktop --runtime-id ecd-xxxx --agent-provider OpenClaw --api-version 2021-09-01 --region cn-hangzhou",
   "method": "POST",
@@ -21,7 +21,7 @@
   "parameters": [
     {
       "example": "CloudDesktop",
-      "help_en": "The Agent runtime type",
+      "help_en": "The type of the agent runtime",
       "help_zh": "Agent运行时类型",
       "location": "query",
       "name": "runtime_type",
@@ -34,7 +34,7 @@
     },
     {
       "example": "ecd-xxxx",
-      "help_en": "The Agent runtime ID. The ID mappings are as follows:\n\nJVS Computer: JVS Computer ID, in the format of jvs-xxxx.\n\nOpenClaw: Cloud computer ID, in the format of ecd-xxxx.\n\nHermes Agent: Hermes Agent ID, in the format of jvs-xxxx",
+      "help_en": "The ID of the agent runtime. The ID mappings are as follows:\n\nJVS Computer: JVS Computer ID, in the format of jvs-xxxx.\n\nOpenClaw: Cloud desktop ID, in the format of ecd-xxxx.\n\nHermes Agent: Hermes Agent ID, in the format of jvs-xxxx",
       "help_zh": "Agent 运行时 ID ，ID 对应关系如下：\n\nJVS Computer：JVS Computer ID，格式如 jvs-xxxx。\n\nOpenClaw：云电脑 ID，格式如 ecd-xxxx。\n\nHermes Agent：Hermes Agent ID，格式如 jvs-xxxx",
       "location": "query",
       "name": "runtime_id",
@@ -47,7 +47,7 @@
     },
     {
       "example": "ENTERPRISE",
-      "help_en": "The Agent platform",
+      "help_en": "The agent platform",
       "help_zh": "Agent平台",
       "location": "query",
       "name": "agent_platform",
@@ -60,7 +60,7 @@
     },
     {
       "example": "OpenClaw",
-      "help_en": "The Agent provider",
+      "help_en": "The agent provider",
       "help_zh": "Agent提供商",
       "location": "query",
       "name": "agent_provider",
@@ -83,6 +83,19 @@
       "raw_name": "IncludeRiskInfo",
       "required": false,
       "type": "bool"
+    },
+    {
+      "example": "true",
+      "help_en": "The smart model filter. Valid values:\ntrue: Queries the system wuying-preset provider models based on the business type of the runtime.\nfalse: Excludes wuying-preset from the effective configuration.\nEmpty: Returns both smart and non-smart models in the effective configuration.\nThe business type is read by the server from runtime.biz_type, and the BizType input parameter is not required. Risk information is still independently controlled by IncludeRiskInfo",
+      "help_zh": "智能模型筛选。true：按 Runtime 的业务类型查询系统 wuying-preset 厂商模型；false：从生效配置中排除 wuying-preset；不传：返回生效配置中的智能和非智能模型。业务类型由服务端从 runtime.biz_type 读取，无需 BizType 入参；风险信息仍由 IncludeRiskInfo 独立控制",
+      "location": "query",
+      "name": "smart_model",
+      "options": [
+        "--smart-model"
+      ],
+      "raw_name": "SmartModel",
+      "required": false,
+      "type": "bool"
     }
   ],
   "pathPattern": "",
@@ -101,7 +114,7 @@
             "properties": {
               "DefaultModel": {
                 "backendName": "defaultModel",
-                "description_en": "The default model (format: providerName/llmCode)",
+                "description_en": "The default model, in the format of providerName/llmCode",
                 "description_zh": "默认模型（格式：providerName/llmCode）",
                 "example": "bailian/qwen3.6-plus",
                 "title_en": "默认模型（格式：providerName/llmCode，如 bailian/qwen-plus）",
@@ -124,13 +137,13 @@
                         "properties": {
                           "CreditMultiplier": {
                             "backendName": "creditMultiplier",
-                            "description_en": "The credit consumption multiplier. A null value indicates that the model does not participate in credit-based billing",
+                            "description_en": "The credit consumption multiplier. If this parameter is empty, it indicates that the model does not participate in credit billing",
                             "description_zh": "积分消耗系数（倍率）。为空表示该模型不参与积分计费",
                             "parseType": "struct",
                             "properties": {
                               "Max": {
                                 "backendName": "max",
-                                "description_en": "The maximum multiplier. A null value indicates no upper limit. For example, Min=1 with a null Max is displayed as 1x and above",
+                                "description_en": "The upper limit of the multiplier. If this parameter is empty, it indicates that there is no upper limit. For example, if Min is 1 and Max is empty, it is displayed as 1x and above",
                                 "description_zh": "倍率上限。为空表示无上限，如 Min=1、Max 为空展示为 1x 起",
                                 "example": "3",
                                 "format": "float",
@@ -140,7 +153,7 @@
                               },
                               "Min": {
                                 "backendName": "min",
-                                "description_en": "The minimum multiplier. When equal to Max, the multiplier is fixed. For example, Min=Max=2 is displayed as 2x",
+                                "description_en": "The lower limit of the multiplier. When it is equal to Max, it is a fixed multiplier. For example, if Min and Max are both 2, it is displayed as 2x",
                                 "description_zh": "倍率下限。与 Max 相等时为固定倍率，如 Min=Max=2 展示为 2x",
                                 "example": "2",
                                 "format": "float",
@@ -164,7 +177,7 @@
                           },
                           "Features": {
                             "backendName": "features",
-                            "description_en": "The list of model features (such as function-calling, web-search, and structured-outputs)",
+                            "description_en": "The list of model features, such as function-calling, web-search, and structured-outputs",
                             "description_zh": "模型特性列表（如：function-calling、web-search、structured-outputs 等）",
                             "itemName": "Feature",
                             "items": {
@@ -179,12 +192,12 @@
                           },
                           "InferenceMetadata": {
                             "backendName": "inferenceMetadata",
-                            "description_en": "The inference metadata (request and response modalities)",
+                            "description_en": "The inference metadata, including request and response modalities",
                             "description_zh": "推理元数据（请求和响应模态）",
                             "properties": {
                               "RequestModality": {
                                 "backendName": "requestModality",
-                                "description_en": "The list of request modalities (such as Text, Image, and Audio)",
+                                "description_en": "The list of request modalities, such as Text, Image, and Audio",
                                 "description_zh": "请求模态列表（如：Text、Image、Audio）",
                                 "itemName": "RequestModality",
                                 "items": {
@@ -199,7 +212,7 @@
                               },
                               "ResponseModality": {
                                 "backendName": "responseModality",
-                                "description_en": "The list of response modalities (such as Text, Image, and Audio)",
+                                "description_en": "The list of response modalities, such as Text, Image, and Audio",
                                 "description_zh": "响应模态列表（如：Text、Image、Audio）",
                                 "itemName": "ResponseModality",
                                 "items": {
@@ -237,7 +250,7 @@
                           },
                           "PublishedTime": {
                             "backendName": "publishedTime",
-                            "description_en": "The publish time (ISO 8601 format)",
+                            "description_en": "The published time in ISO 8601 format",
                             "description_zh": "发布时间（ISO 8601 格式）",
                             "example": "2026-03-04T06:25:17.000+00:00",
                             "title_en": "发布时间（ISO 8601 格式，如：2026-03-04T06:25:17.000+00:00）",
@@ -246,7 +259,7 @@
                           },
                           "RiskType": {
                             "backendName": "riskType",
-                            "description_en": "The model risk type (returned only when the request parameter IncludeRiskInfo is set to true)",
+                            "description_en": "The model risk type. This parameter is returned only when the IncludeRiskInfo request parameter is set to true",
                             "description_zh": "模型风险类型（仅在请求参数 IncludeRiskInfo=true 时返回）",
                             "example": "Normal",
                             "title_en": "模型风险类型（仅 includeRiskInfo=true 时返回）",
@@ -262,7 +275,7 @@
                     },
                     "ModelProviderTemplateId": {
                       "backendName": "modelProviderTemplateId",
-                      "description_en": "The model provider template ID",
+                      "description_en": "The ID of the model provider template",
                       "description_zh": "模型服务商模板ID",
                       "example": "mpt-xxxx",
                       "title_en": "提供商模板 ID",
@@ -271,7 +284,7 @@
                     },
                     "Name": {
                       "backendName": "name",
-                      "description_en": "The model provider template name",
+                      "description_en": "The name of the model provider template",
                       "description_zh": "模型服务商模板名称",
                       "example": "百炼",
                       "title_en": "提供商模板名称",
@@ -280,7 +293,7 @@
                     },
                     "ProviderName": {
                       "backendName": "providerName",
-                      "description_en": "The model provider name",
+                      "description_en": "The name of the model provider",
                       "description_zh": "模型服务商名称",
                       "example": "bailian",
                       "title_en": "提供商名称（如 bailian, moonshot）",
@@ -296,7 +309,7 @@
               },
               "ModelTemplateId": {
                 "backendName": "modelTemplateId",
-                "description_en": "The configured model group ID",
+                "description_en": "The ID of the configured model group",
                 "description_zh": "已配置的模型分组ID",
                 "example": "mt-xxxx",
                 "title_en": "当前绑定的模型模板 ID（未配置时为 null）",
@@ -305,7 +318,7 @@
               },
               "ModelTemplateName": {
                 "backendName": "modelTemplateName",
-                "description_en": "The model group name",
+                "description_en": "The name of the model group",
                 "description_zh": "模型分组名称",
                 "example": "model-template-001",
                 "title_en": "模型模板名称",
@@ -314,7 +327,7 @@
               },
               "ModelTemplateRefType": {
                 "backendName": "modelTemplateRefType",
-                "description_en": "The model template association type (only when present)",
+                "description_en": "The model template association type",
                 "description_zh": "模型模板关联类型（仅在存在",
                 "example": "Runtime",
                 "title_en": "模型模板关联类型（仅在存在",
@@ -323,7 +336,7 @@
               },
               "ResourceGroupId": {
                 "backendName": "resourceGroupId",
-                "description_en": "The resource group ID to which the runtime belongs (null if not assigned to a resource group)",
+                "description_en": "The ID of the resource group to which the runtime belongs. If the runtime does not belong to any resource group, the value is null",
                 "description_zh": "Runtime 所属的资源组 ID（未归属资源组时为 null）",
                 "example": "rg-xxxxx",
                 "title_en": "Runtime 所属的资源组 ID（未归属资源组时为 null）",
