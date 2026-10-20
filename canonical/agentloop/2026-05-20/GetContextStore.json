@@ -77,7 +77,7 @@
                 "description_zh": "审计配置",
                 "properties": {
                   "droppedCandidates": {
-                    "description_en": "Specifies whether to write item events for dropped candidates during recall. Default value: false",
+                    "description_en": "Specifies whether to write item events for candidates dropped during retrieval. Default value: false",
                     "description_zh": "召回被丢弃的候选是否也写 item 事件，默认 false",
                     "example": "false",
                     "title_en": "召回被丢弃的候选是否也写 item 事件，默认 false",
@@ -85,7 +85,7 @@
                     "type": "boolean"
                   },
                   "queryMode": {
-                    "description_en": "The recording mode for recall queries. Valid values: raw (plaintext) and hash (HMAC only). Default value: raw",
+                    "description_en": "The recording mode for retrieval queries. Valid values: raw (plaintext) and hash (HMAC only). Default value: raw",
                     "description_zh": "召回 query 记录方式：raw（明文）/ hash（仅 HMAC），默认 raw",
                     "example": "raw",
                     "title_en": "召回 query 记录方式：raw（明文）/ hash（仅 HMAC），默认 raw",
@@ -129,7 +129,7 @@
                     "type": "array"
                   },
                   "customInstructions": {
-                    "description_en": "The custom extraction instructions. This parameter is required when preset is set to custom. Length: 1 to 8000 characters",
+                    "description_en": "The custom extraction instructions. This parameter is required when preset is set to custom. Length: 1 to 8,000 characters",
                     "description_zh": "自定义抽取指令，preset=custom 时必填，长度 1-8000",
                     "example": "只抽取用户的产品偏好",
                     "title_en": "自定义抽取指令，preset=custom 时必填，长度 1-8000",
@@ -214,9 +214,14 @@
               },
               "metadataField": {
                 "additionalProperties": {
+                  "description_en": "The name of the storage field in the metadata field mapping",
+                  "description_zh": "元数据字段映射中的存储字段名称",
+                  "example": "user_id",
+                  "title_en": "元数据字段映射中的存储字段名称。",
+                  "title_zh": "元数据字段映射中的存储字段名称。",
                   "type": "string"
                 },
-                "description_en": "The metadata field mapping. The key is the business field and the value is the storage field",
+                "description_en": "The metadata field mapping, where the key is the business field and the value is the storage field",
                 "description_zh": "元数据字段映射，key 为业务字段，value 为存储字段",
                 "example": "{\"userId\":\"user_id\",\"sessionId\":\"session_id\"}",
                 "title_en": "元数据字段映射，key 为业务字段，value 为存储字段",
@@ -235,6 +240,14 @@
                 "example": "1d",
                 "title_en": "经验挖掘间隔，可选 1h/6h/12h/1d，默认 1d",
                 "title_zh": "经验挖掘间隔，可选 1h/6h/12h/1d，默认 1d",
+                "type": "string"
+              },
+              "miningTaskName": {
+                "description_en": "The name of the internal running task associated with the server. Continuous libraries use this for read-only viewing of consumption records, while manual libraries can run limited mining. This is not inferred by the client and cannot replace the ingestion and retrieval criteria of the native experience library",
+                "description_zh": "服务端关联的内部运行任务名称；持续库用于只读查看消费记录，手动库可运行有限挖掘。不由客户端推断，不能替代原生经验库入库及召回判据",
+                "example": "experience-review-library",
+                "title_en": "服务端关联的内部运行任务名称；持续库用于只读查看消费记录，手动库可运行有限挖掘。不由客户端推断，不能替代原生经验库入库及召回判据",
+                "title_zh": "服务端关联的内部运行任务名称；持续库用于只读查看消费记录，手动库可运行有限挖掘。不由客户端推断，不能替代原生经验库入库及召回判据",
                 "type": "string"
               },
               "observability": {
@@ -317,7 +330,7 @@
                 "description_zh": "scope 约束策略",
                 "properties": {
                   "requiredAnyOf": {
-                    "description_en": "At least one of the specified scope fields must be non-empty. Valid values for elements: userId, agentId, appId, and runId",
+                    "description_en": "At least one of the specified scope fields must be non-empty. Valid element values: userId, agentId, appId, and runId",
                     "description_zh": "至少需要其中一个 scope 字段非空；元素取值 userId / agentId / appId / runId",
                     "example": "[\"userId\"]",
                     "itemName": "requiredAnyOf",
@@ -340,7 +353,7 @@
                 "type": "object"
               },
               "serviceNames": {
-                "description_en": "The list of service names, used in conjunction with source.agentSpace to locate the trace data source. This parameter cannot be modified in the current phase",
+                "description_en": "The list of service names, which are used together with source.agentSpace to locate the trace data source. This parameter cannot be modified in the current phase",
                 "description_zh": "服务名列表，与 source.agentSpace 协同定位 trace 数据源；本期不可变更",
                 "example": "[\"order-service\",\"payment-service\"]",
                 "itemName": "serviceNames",
@@ -362,16 +375,25 @@
                 "description_zh": "用户传入的数据源配置，仅作为数据源根标识",
                 "properties": {
                   "agentSpace": {
-                    "description_en": "The AgentSpace where the trace data source is located. This must be consistent with the associated AgentSpace at the time of creation",
+                    "description_en": "The AgentSpace where the trace data source resides. It must be the same as the AgentSpace specified during creation",
                     "description_zh": "trace 数据源所在的 AgentSpace；与创建时归属 AgentSpace 一致",
                     "example": "my-agent-space",
                     "title_en": "trace 数据源所在的 AgentSpace；与创建时归属 AgentSpace 一致",
                     "title_zh": "trace 数据源所在的 AgentSpace；与创建时归属 AgentSpace 一致",
                     "type": "string"
                   },
+                  "binding": {
+                    "description_en": "The DatasetBinding v1 shared with optimization tasks, which retains fixed column validation, supplementary column usage, and all/window selection",
+                    "description_zh": "与优化任务共用的 DatasetBinding v1，保留固定列校验、补充列用途及 all/window 选择",
+                    "example": "{\"version\":1,\"selection\":{\"mode\":\"all\"}}",
+                    "parseType": "json",
+                    "title_en": "与优化任务共用的 DatasetBinding v1，保留固定列校验、补充列用途及 all/window 选择",
+                    "title_zh": "与优化任务共用的 DatasetBinding v1，保留固定列校验、补充列用途及 all/window 选择",
+                    "type": "object"
+                  },
                   "dataset": {
-                    "description_en": "The dataset datasource config. This parameter is required when source.type is set to dataset",
-                    "description_zh": "Dataset 数据源配置（source.type=dataset 时必填）",
+                    "description_en": "The Dataset datasource config for the memory type. This parameter is required when the type is memory and source.type is dataset",
+                    "description_zh": "memory 类型 Dataset 数据源配置（memory 且 source.type=dataset 时必填）",
                     "properties": {
                       "customFields": {
                         "description_en": "The list of custom field declarations",
@@ -382,7 +404,7 @@
                           "description_zh": "自定义字段声明",
                           "properties": {
                             "description": {
-                              "description_en": "The description of the field. This parameter is required when usage is set to extraction-input and is appended to the extraction prompt",
+                              "description_en": "The description of the field. This parameter is required when usage is extraction-input and is appended to the extraction prompt",
                               "description_zh": "字段说明，usage=extraction-input 时必填，拼入抽取提示词",
                               "example": "客户等级",
                               "title_en": "字段说明，usage=extraction-input 时必填，拼入抽取提示词",
@@ -406,7 +428,7 @@
                               "type": "string"
                             },
                             "target": {
-                              "description_en": "The target write path, such as metadata.customerTier",
+                              "description_en": "The target path for writing data, such as metadata.customerTier",
                               "description_zh": "写入目标路径，例如 metadata.customerTier",
                               "example": "metadata.customerTier",
                               "title_en": "写入目标路径，例如 metadata.customerTier",
@@ -414,7 +436,7 @@
                               "type": "string"
                             },
                             "usage": {
-                              "description_en": "The usage of the field. Valid values: extraction-input (participates in extraction) and ignore (ignored)",
+                              "description_en": "The usage of the field. Valid values:\nextraction-input: Participates in extraction.\nignore: Ignored",
                               "description_zh": "用途：extraction-input（参与抽取）/ ignore（忽略）",
                               "example": "extraction-input",
                               "title_en": "用途：extraction-input（参与抽取）/ ignore（忽略）",
@@ -432,7 +454,7 @@
                         "type": "array"
                       },
                       "datasetName": {
-                        "description_en": "The name of the dataset in the same AgentSpace. This parameter cannot be modified after creation",
+                        "description_en": "The name of the Dataset in the same AgentSpace. This parameter cannot be modified after creation",
                         "description_zh": "同 AgentSpace 下的 Dataset 名称；创建后不可变更",
                         "example": "trajectory-with-crm-profile",
                         "title_en": "同 AgentSpace 下的 Dataset 名称；创建后不可变更",
@@ -440,11 +462,11 @@
                         "type": "string"
                       },
                       "filter": {
-                        "description_en": "The row filter condition",
+                        "description_en": "The row filter conditions",
                         "description_zh": "行过滤条件",
                         "properties": {
                           "where": {
-                            "description_en": "The subset of the pipeline where clause, which is pushed down to SQL",
+                            "description_en": "The subset of the Pipeline where clause, which is pushed down to SQL",
                             "description_zh": "Pipeline where 子集，下推到 SQL",
                             "example": "appId = 'crm-service'",
                             "title_en": "Pipeline where 子集，下推到 SQL",
@@ -466,7 +488,7 @@
                         "type": "integer"
                       },
                       "schemaContract": {
-                        "description_en": "The row schema contract of the dataset. The value is fixed to MemorySourceV1 in the current phase",
+                        "description_en": "The row schema contract of the Dataset. The value is fixed to MemorySourceV1 in the current phase",
                         "description_zh": "Dataset 行 Schema 契约，本期固定 MemorySourceV1",
                         "example": "MemorySourceV1",
                         "title_en": "Dataset 行 Schema 契约，本期固定 MemorySourceV1",
@@ -474,11 +496,11 @@
                         "type": "string"
                       },
                       "versionPolicy": {
-                        "description_en": "The version consumption policy of the dataset",
+                        "description_en": "The version consumption policy of the Dataset",
                         "description_zh": "Dataset 版本消费策略",
                         "properties": {
                           "mode": {
-                            "description_en": "The consumption mode. Valid values: follow (incremental consumption based on __dataset_seq) and fixed (full consumption of the specified ACTIVE version once)",
+                            "description_en": "The consumption mode. Valid values:\nfollow: Consumes data incrementally based on __dataset_seq.\nfixed: Consumes the specified ACTIVE version in full at once",
                             "description_zh": "follow：按 __dataset_seq 增量消费；fixed：指定 ACTIVE version 全量一次",
                             "example": "follow",
                             "title_en": "follow：按 __dataset_seq 增量消费；fixed：指定 ACTIVE version 全量一次",
@@ -486,7 +508,7 @@
                             "type": "string"
                           },
                           "startSeq": {
-                            "description_en": "The starting __dataset_seq in follow mode",
+                            "description_en": "The starting __dataset_seq for the follow mode",
                             "description_zh": "follow 模式起始 __dataset_seq",
                             "example": "0",
                             "format": "int64",
@@ -495,7 +517,7 @@
                             "type": "integer"
                           },
                           "version": {
-                            "description_en": "The dataset version specified in fixed mode",
+                            "description_en": "The Dataset version specified for the fixed mode",
                             "description_zh": "fixed 模式指定的 Dataset version",
                             "example": "v3",
                             "title_en": "fixed 模式指定的 Dataset version",
@@ -508,9 +530,34 @@
                         "type": "object"
                       }
                     },
-                    "title_en": "Dataset 数据源配置（source.type=dataset 时必填）",
-                    "title_zh": "Dataset 数据源配置（source.type=dataset 时必填）",
+                    "title_en": "memory 类型 Dataset 数据源配置（memory 且 source.type=dataset 时必填）",
+                    "title_zh": "memory 类型 Dataset 数据源配置（memory 且 source.type=dataset 时必填）",
                     "type": "object"
+                  },
+                  "datasetName": {
+                    "description_en": "The name of the source Dataset for the experience type in the current AgentSpace",
+                    "description_zh": "experience 类型在当前 AgentSpace 内的来源 Dataset 名称",
+                    "example": "reviewed_trajectories",
+                    "title_en": "experience 类型在当前 AgentSpace 内的来源 Dataset 名称",
+                    "title_zh": "experience 类型在当前 AgentSpace 内的来源 Dataset 名称",
+                    "type": "string"
+                  },
+                  "format": {
+                    "description_en": "The input format of the Dataset. For Datasets from the experience library, the value is atif",
+                    "description_zh": "Dataset 输入格式，经验库 Dataset 来源为 atif",
+                    "example": "atif",
+                    "title_en": "Dataset 输入格式，经验库 Dataset 来源为 atif",
+                    "title_zh": "Dataset 输入格式，经验库 Dataset 来源为 atif",
+                    "type": "string"
+                  },
+                  "maxRecords": {
+                    "description_en": "The maximum number of records to read from the Dataset at a time. Valid values: 1 to 1000",
+                    "description_zh": "单次 Dataset 读取上限，1—1000",
+                    "example": "1000",
+                    "format": "int32",
+                    "title_en": "单次 Dataset 读取上限，1—1000",
+                    "title_zh": "单次 Dataset 读取上限，1—1000",
+                    "type": "integer"
                   },
                   "startTime": {
                     "backendParamType": "java.util.Date",
@@ -524,11 +571,11 @@
                     "type": "string"
                   },
                   "trajectory": {
-                    "description_en": "The trajectory datasource config. This parameter is required when source.type is set to trajectory",
-                    "description_zh": "轨迹数据源配置（source.type=trajectory 时必填）",
+                    "description_en": "The trajectory datasource config for the memory type. This parameter is required when the type is memory and source.type is trajectory",
+                    "description_zh": "memory 类型轨迹数据源配置（memory 且 source.type=trajectory 时必填）",
                     "properties": {
                       "filter": {
-                        "description_en": "The trajectory filter conditions. Conditions are combined with AND, and items within a list are combined with OR",
+                        "description_en": "The trajectory filter conditions. Conditions are combined with AND, while items within a list are combined with OR",
                         "description_zh": "轨迹过滤条件；各条件之间 AND，列表内 OR",
                         "properties": {
                           "agentNames": {
@@ -537,7 +584,7 @@
                             "example": "[\"sales-copilot\"]",
                             "itemName": "agentNames",
                             "items": {
-                              "description_en": "The name of the agent",
+                              "description_en": "The agent name",
                               "description_zh": "Agent 名",
                               "example": "sales-copilot",
                               "title_en": "Agent 名",
@@ -558,7 +605,7 @@
                             "type": "boolean"
                           },
                           "minStepCount": {
-                            "description_en": "The minimum number of steps, which must be greater than or equal to 0",
+                            "description_en": "The minimum number of steps. The value must be greater than or equal to 0",
                             "description_zh": "最小步数，大于等于 0",
                             "example": "2",
                             "format": "int32",
@@ -615,11 +662,11 @@
                         "type": "integer"
                       },
                       "scopeMapping": {
-                        "description_en": "The scope field mapping. The value is a JSONPath expression, and only the $.a.b and $.a[0] formats are supported",
+                        "description_en": "The scope field mapping. The value is a JSONPath expression. Only the $.a.b and $.a[0] formats are supported",
                         "description_zh": "scope 字段映射，值为 JSONPath（仅支持 $.a.b 与 $.a[0] 形式）",
                         "properties": {
                           "agentId": {
-                            "description_en": "The JSONPath for agentId. Default value: $.agent_name",
+                            "description_en": "The JSONPath expression for agentId. Default value: $.agent_name",
                             "description_zh": "agentId 的 JSONPath，默认 $.agent_name",
                             "example": "$.agent_name",
                             "title_en": "agentId 的 JSONPath，默认 $.agent_name",
@@ -627,7 +674,7 @@
                             "type": "string"
                           },
                           "appId": {
-                            "description_en": "The JSONPath for appId. Default value: $.service_names[0]",
+                            "description_en": "The JSONPath expression for appId. Default value: $.service_names[0]",
                             "description_zh": "appId 的 JSONPath，默认 $.service_names[0]",
                             "example": "$.service_names[0]",
                             "title_en": "appId 的 JSONPath，默认 $.service_names[0]",
@@ -635,7 +682,7 @@
                             "type": "string"
                           },
                           "runId": {
-                            "description_en": "The JSONPath for runId. Default value: $.trajectory_id",
+                            "description_en": "The JSONPath expression for runId. Default value: $.trajectory_id",
                             "description_zh": "runId 的 JSONPath，默认 $.trajectory_id",
                             "example": "$.trajectory_id",
                             "title_en": "runId 的 JSONPath，默认 $.trajectory_id",
@@ -643,7 +690,7 @@
                             "type": "string"
                           },
                           "userId": {
-                            "description_en": "The JSONPath for userId. By default, this field is not mapped",
+                            "description_en": "The JSONPath expression for userId. By default, this field is not mapped",
                             "description_zh": "userId 的 JSONPath；缺省不映射",
                             "example": "$.trajectory_extensions.user_id",
                             "title_en": "userId 的 JSONPath；缺省不映射",
@@ -667,30 +714,55 @@
                         "type": "string"
                       }
                     },
-                    "title_en": "轨迹数据源配置（source.type=trajectory 时必填）",
-                    "title_zh": "轨迹数据源配置（source.type=trajectory 时必填）",
+                    "title_en": "memory 类型轨迹数据源配置（memory 且 source.type=trajectory 时必填）",
+                    "title_zh": "memory 类型轨迹数据源配置（memory 且 source.type=trajectory 时必填）",
                     "type": "object"
                   },
                   "type": {
-                    "description_en": "The type of the memory data source. Valid values: trajectory and dataset. If not specified, the value defaults to manual (written only by AddContexts). This parameter cannot be modified after creation",
-                    "description_zh": "memory 类型数据源类型：trajectory / dataset；不传表示 manual（仅 AddContexts 写入）。创建后不可变更",
-                    "example": "trajectory",
-                    "title_en": "memory 类型数据源类型：trajectory / dataset；不传表示 manual（仅 AddContexts 写入）。创建后不可变更",
-                    "title_zh": "memory 类型数据源类型：trajectory / dataset；不传表示 manual（仅 AddContexts 写入）。创建后不可变更",
+                    "description_en": "The source type, which can be trajectory or dataset. For experience, if not specified, it inherits the trajectory configuration. For Dataset, it uses the datasetName, format, and binding at this level. The default is manual. If versionPolicy.mode is follow, it continuously processes and automatically applies changes to this experience store. For memory, if not specified, it indicates manual, meaning only AddContexts writes data. Otherwise, it uses the sub-configuration of the trajectory or dataset with the same name. This property cannot be modified after creation",
+                    "description_zh": "来源类型 trajectory / dataset：experience 不传沿用 trajectory，Dataset 使用本层 datasetName/format/binding，缺省手动、versionPolicy.mode=follow 持续处理并自动应用至本经验库；memory 不传表示 manual（仅 AddContexts 写入），否则使用同名 trajectory/dataset 子配置。创建后不可变更",
+                    "example": "dataset",
+                    "title_en": "来源类型 trajectory / dataset：experience 不传沿用 trajectory，Dataset 使用本层 datasetName/format/binding，缺省手动、versionPolicy.mode=follow 持续处理并自动应用至本经验库；memory 不传表示 manual（仅 AddContexts 写入），否则使用同名 trajectory/dataset 子配置。创建后不可变更",
+                    "title_zh": "来源类型 trajectory / dataset：experience 不传沿用 trajectory，Dataset 使用本层 datasetName/format/binding，缺省手动、versionPolicy.mode=follow 持续处理并自动应用至本经验库；memory 不传表示 manual（仅 AddContexts 写入），否则使用同名 trajectory/dataset 子配置。创建后不可变更",
                     "type": "string"
+                  },
+                  "versionPolicy": {
+                    "description_en": "The continuous consumption configuration for the native experience store Dataset. The default is manual. The follow mode only allows binding.selection.mode=all and consumes by append sequence. This cannot be changed after creation",
+                    "description_zh": "原生经验库 Dataset 持续消费配置；缺省为手动。follow 仅允许 binding.selection.mode=all，按追加序号消费，创建后不可变更",
+                    "properties": {
+                      "mode": {
+                        "description_en": "The continuous consumption mode, which is fixed to follow",
+                        "description_zh": "持续消费模式，固定 follow",
+                        "example": "follow",
+                        "title_en": "持续消费模式，固定 follow",
+                        "title_zh": "持续消费模式，固定 follow",
+                        "type": "string"
+                      },
+                      "startSeq": {
+                        "description_en": "The initial consumed append sequence, which is a decimal string of a non-negative int64. The default is 0. It uses __dataset_seq. Business timestamps are not used as consumption checkpoints",
+                        "description_zh": "初始已消费追加序号，非负 int64 的十进制字符串，缺省 0。使用 __dataset_seq，业务 timestamp 不作为消费位点",
+                        "example": "0",
+                        "title_en": "初始已消费追加序号，非负 int64 的十进制字符串，缺省 0。使用 __dataset_seq，业务 timestamp 不作为消费位点",
+                        "title_zh": "初始已消费追加序号，非负 int64 的十进制字符串，缺省 0。使用 __dataset_seq，业务 timestamp 不作为消费位点",
+                        "type": "string"
+                      }
+                    },
+                    "title_en": "原生经验库 Dataset 持续消费配置；缺省为手动。follow 仅允许 binding.selection.mode=all，按追加序号消费，创建后不可变更",
+                    "title_zh": "原生经验库 Dataset 持续消费配置；缺省为手动。follow 仅允许 binding.selection.mode=all，按追加序号消费，创建后不可变更",
+                    "type": "object"
                   }
                 },
-                "title_en": "用户传入的数据源配置，仅作为数据源根标识",
-                "title_zh": "用户传入的数据源配置，仅作为数据源根标识",
+                "title_en": "创建时冻结的数据源配置；经验库 Dataset 来源共用优化任务 ATIF 合同，memory 类型保留独立来源配置",
+                "title_zh": "创建时冻结的数据源配置；经验库 Dataset 来源共用优化任务 ATIF 合同，memory 类型保留独立来源配置",
                 "type": "object"
               },
               "sourceStatus": {
-                "description_en": "The running status of the data source for the memory type",
-                "description_zh": "数据源运行状态（memory 类型）",
+                "description_en": "The data source running status for memory type and experience Dataset follow mode. The experience store submits a checkpoint only after successful publishing and automatic application. Pausing and restarting retain the checkpoint",
+                "description_zh": "数据源运行状态（memory 类型与 experience Dataset follow）；经验库仅在发布且自动应用成功后提交 checkpoint，暂停与重启保留位点",
                 "properties": {
                   "checkpoint": {
                     "additionalProperties": {
-                      "description_en": "The value of the checkpoint field",
+                      "description_en": "The checkpoint field values",
                       "description_zh": "checkpoint 字段值",
                       "example": "1788796800000",
                       "parseType": "json",
@@ -698,23 +770,46 @@
                       "title_zh": "checkpoint 字段值",
                       "type": "any"
                     },
-                    "description_en": "The consumption progress. The format varies by type: trajectory uses {processTimeNs, watermarkMs}, dataset uses {seq}, and manual uses {}",
-                    "description_zh": "消费进度；trajectory：{processTimeNs, watermarkMs}，dataset：{seq}，manual：{}",
+                    "description_en": "The processing progress. For memory trajectory, it includes processTimeNs and watermarkMs. For dataset, it includes seq. For manual, it is empty. For experience Dataset follow mode, seq uses an exact int64 decimal string",
+                    "description_zh": "处理进度；memory trajectory：{processTimeNs, watermarkMs}，dataset：{seq}，manual：{}；experience Dataset follow 的 seq 使用精确 int64 十进制字符串",
                     "parseType": "json",
-                    "title_en": "消费进度；trajectory：{processTimeNs, watermarkMs}，dataset：{seq}，manual：{}",
-                    "title_zh": "消费进度；trajectory：{processTimeNs, watermarkMs}，dataset：{seq}，manual：{}",
+                    "title_en": "处理进度；memory trajectory：{processTimeNs, watermarkMs}，dataset：{seq}，manual：{}；experience Dataset follow 的 seq 使用精确 int64 十进制字符串",
+                    "title_zh": "处理进度；memory trajectory：{processTimeNs, watermarkMs}，dataset：{seq}，manual：{}；experience Dataset follow 的 seq 使用精确 int64 十进制字符串",
+                    "type": "object"
+                  },
+                  "currentWindow": {
+                    "additionalProperties": {
+                      "description_en": "The window field values. after and until are decimal strings of __dataset_seq, and the read range is (after, until]. runId is the optimization run ID corresponding to this window",
+                      "description_zh": "窗口字段值。after 和 until 为 __dataset_seq 的十进制字符串，读取范围为 (after, until]；runId 为该窗口对应的优化运行 ID",
+                      "example": "9007199254740993",
+                      "title_en": "窗口字段值。after 和 until 为 __dataset_seq 的十进制字符串，读取范围为 (after, until]；runId 为该窗口对应的优化运行 ID。",
+                      "title_zh": "窗口字段值。after 和 until 为 __dataset_seq 的十进制字符串，读取范围为 (after, until]；runId 为该窗口对应的优化运行 ID。",
+                      "type": "string"
+                    },
+                    "description_en": "The current scheduled sequence window for experience Dataset follow mode, including after, until, and runId. All sequences are decimal strings. Failures do not advance the submitted checkpoint",
+                    "description_zh": "experience Dataset follow 当前预约的序号窗口 {after,until,runId}；序号均为十进制字符串，失败不推进已提交位点",
+                    "title_en": "experience Dataset follow 当前预约的序号窗口 {after,until,runId}；序号均为十进制字符串，失败不推进已提交位点",
+                    "title_zh": "experience Dataset follow 当前预约的序号窗口 {after,until,runId}；序号均为十进制字符串，失败不推进已提交位点",
                     "type": "object"
                   },
                   "lastError": {
-                    "description_en": "The most recent error message. This field is empty when the status is normal",
-                    "description_zh": "最近一次错误信息，正常时为空",
+                    "description_en": "The desensitized latest error message. It is empty when the status is normal",
+                    "description_zh": "脱敏后的最近一次错误信息，正常时为空",
                     "example": "读取数据源超时",
-                    "title_en": "最近一次错误信息，正常时为空",
-                    "title_zh": "最近一次错误信息，正常时为空",
+                    "title_en": "脱敏后的最近一次错误信息，正常时为空",
+                    "title_zh": "脱敏后的最近一次错误信息，正常时为空",
+                    "type": "string"
+                  },
+                  "lastRunId": {
+                    "description_en": "The run ID of the last successful automatic application to the native experience store. This is for audit purposes only",
+                    "description_zh": "最近一次成功自动应用至原生经验库的运行标识，仅供审计",
+                    "example": "opr-example",
+                    "title_en": "最近一次成功自动应用至原生经验库的运行标识，仅供审计",
+                    "title_zh": "最近一次成功自动应用至原生经验库的运行标识，仅供审计",
                     "type": "string"
                   },
                   "lastWindowAt": {
-                    "description_en": "The time of the most recent window processing, in ISO 8601 UTC format",
+                    "description_en": "The last window processing time in ISO 8601 UTC format",
                     "description_zh": "最近一次窗口处理时间，ISO 8601 UTC 格式",
                     "example": "2026-10-01T08:00:00Z",
                     "title_en": "最近一次窗口处理时间，ISO 8601 UTC 格式",
@@ -722,7 +817,7 @@
                     "type": "string"
                   },
                   "retryCount": {
-                    "description_en": "The number of consecutive retries",
+                    "description_en": "The consecutive retry count",
                     "description_zh": "连续重试次数",
                     "example": "0",
                     "format": "int32",
@@ -731,7 +826,7 @@
                     "type": "integer"
                   },
                   "state": {
-                    "description_en": "The status of the data source. Valid values: Validating, Ready, Running, Retrying, Paused, SourceSchemaChanged, and Failed",
+                    "description_en": "The data source status. Valid values: Validating, Ready, Running, Retrying, Paused, SourceSchemaChanged, and Failed",
                     "description_zh": "数据源状态：Validating / Ready / Running / Retrying / Paused / SourceSchemaChanged / Failed",
                     "example": "Running",
                     "title_en": "数据源状态：Validating / Ready / Running / Retrying / Paused / SourceSchemaChanged / Failed",
@@ -739,8 +834,8 @@
                     "type": "string"
                   }
                 },
-                "title_en": "数据源运行状态（memory 类型）",
-                "title_zh": "数据源运行状态（memory 类型）",
+                "title_en": "数据源运行状态（memory 类型与 experience Dataset follow）；经验库仅在发布且自动应用成功后提交 checkpoint，暂停与重启保留位点",
+                "title_zh": "数据源运行状态（memory 类型与 experience Dataset follow）；经验库仅在发布且自动应用成功后提交 checkpoint，暂停与重启保留位点",
                 "type": "object"
               },
               "storagePolicy": {
@@ -748,7 +843,7 @@
                 "description_zh": "存储策略（memory 类型）",
                 "properties": {
                   "allowedActions": {
-                    "description_en": "The allowed storage actions. By default, all actions are allowed. Valid values: ADD, UPDATE, MERGE, and DELETE",
+                    "description_en": "The allowed storage actions. The default is all: ADD, UPDATE, MERGE, and DELETE",
                     "description_zh": "允许的存储动作，默认全部：ADD / UPDATE / MERGE / DELETE",
                     "example": "[\"ADD\",\"UPDATE\",\"MERGE\",\"DELETE\"]",
                     "itemName": "allowedActions",
@@ -766,7 +861,7 @@
                     "type": "array"
                   },
                   "dedupe": {
-                    "description_en": "Indicates whether deduplication is enabled in event mode. Default value: true",
+                    "description_en": "Specifies whether to deduplicate in event mode. The default is true",
                     "description_zh": "event 模式是否去重，默认 true",
                     "example": "true",
                     "title_en": "event 模式是否去重，默认 true",
@@ -774,7 +869,7 @@
                     "type": "boolean"
                   },
                   "humanEditProtection": {
-                    "description_en": "Indicates whether human edit protection is enabled. Default value: true. When enabled, automatic extraction does not overwrite manually modified memories",
+                    "description_en": "The human edit protection. The default is true. When enabled, automatic extraction does not overwrite manually modified memories",
                     "description_zh": "人工编辑保护，默认 true；开启后自动抽取不覆盖人工修改过的记忆",
                     "example": "true",
                     "title_en": "人工编辑保护，默认 true；开启后自动抽取不覆盖人工修改过的记忆",
@@ -782,7 +877,7 @@
                     "type": "boolean"
                   },
                   "mergeKey": {
-                    "description_en": "The merge key for upsert operations. Valid values: factKey, semantic, and both. Default value: semantic",
+                    "description_en": "The upsert merge key. Valid values: factKey, semantic, and both. The default is semantic",
                     "description_zh": "upsert 合并键：factKey / semantic / both，默认 semantic",
                     "example": "semantic",
                     "title_en": "upsert 合并键：factKey / semantic / both，默认 semantic",
@@ -790,7 +885,7 @@
                     "type": "string"
                   },
                   "mode": {
-                    "description_en": "The storage mode. Valid values: event (append events) and upsert (merge updates). Default value: upsert",
+                    "description_en": "The storage mode. Valid values: event for event appending, and upsert for merge updating. The default is upsert",
                     "description_zh": "存储模式：event（事件追加）/ upsert（合并更新），默认 upsert",
                     "example": "upsert",
                     "title_en": "存储模式：event（事件追加）/ upsert（合并更新），默认 upsert",
@@ -798,7 +893,7 @@
                     "type": "string"
                   },
                   "similarityThreshold": {
-                    "description_en": "The similarity threshold for semantic merging. Valid values: 0 to 1. Default value: 0.4",
+                    "description_en": "The semantic merge similarity threshold. Valid values: 0 to 1. The default is 0.4",
                     "description_zh": "语义合并相似度阈值，取值 0-1，默认 0.4",
                     "example": "0.4",
                     "format": "double",
@@ -807,7 +902,7 @@
                     "type": "number"
                   },
                   "ttlDays": {
-                    "description_en": "The number of days after which memories expire. A value of 0 indicates that memories do not expire",
+                    "description_en": "The memory expiration days. A value of 0 indicates no expiration",
                     "description_zh": "记忆过期天数，0 表示不过期",
                     "example": "0",
                     "format": "int32",
@@ -821,7 +916,7 @@
                 "type": "object"
               },
               "strategyVersion": {
-                "description_en": "The version number of the currently effective strategy for the memory type",
+                "description_en": "The current effective strategy version number for the memory type",
                 "description_zh": "当前生效的策略版本号（memory 类型）",
                 "example": "1",
                 "format": "int32",
@@ -835,7 +930,7 @@
             "type": "object"
           },
           "contextStoreName": {
-            "description_en": "The name of the context store",
+            "description_en": "The context store name",
             "description_zh": "上下文库名称",
             "example": "my-context-store",
             "title_en": "上下文库名称",
@@ -843,7 +938,7 @@
             "type": "string"
           },
           "contextType": {
-            "description_en": "The type of the context store, such as experience (experience store) or memory (memory store)",
+            "description_en": "The context store type, such as experience for experience store and memory for memory store",
             "description_zh": "上下文库类型，例如 experience（经验库）、memory（记忆库）等",
             "example": "experience",
             "title_en": "上下文库类型，例如 experience（经验库）、memory（记忆库）等",
@@ -853,7 +948,7 @@
           "createTime": {
             "backendParamType": "java.util.Date",
             "dateFormat": "yyyy-MM-dd'T'HH:mm:ss'Z'",
-            "description_en": "The time when the context store was created, in ISO 8601 UTC format",
+            "description_en": "The context store creation time in ISO 8601 UTC format",
             "description_zh": "上下文库创建时间，ISO 8601 UTC 格式",
             "example": "2026-01-01T00:00:00Z",
             "format": "iso8601_normal",
@@ -862,7 +957,7 @@
             "type": "string"
           },
           "description": {
-            "description_en": "The description of the context store",
+            "description_en": "The context store description",
             "description_zh": "上下文库描述",
             "example": "我的上下文库",
             "title_en": "上下文库描述",
@@ -878,7 +973,7 @@
             "type": "string"
           },
           "requestId": {
-            "description_en": "The request ID, which is used to locate the request when troubleshooting",
+            "description_en": "The request ID used to locate the request during troubleshooting",
             "description_zh": "请求 Id，用于排查问题时定位本次请求",
             "example": "9ACFB10A-1B2C-3D4E-5F6G-7H8I9J0K1L2M",
             "title_en": "请求 Id，用于排查问题时定位本次请求",
@@ -886,7 +981,7 @@
             "type": "string"
           },
           "status": {
-            "description_en": "The status of the context store. Valid values: ACTIVE, INITIALIZING, and FAILED",
+            "description_en": "The context store status. Valid values: ACTIVE, INITIALIZING, and FAILED",
             "description_zh": "上下文库状态，枚举值，例如 ACTIVE / INITIALIZING / FAILED",
             "example": "ACTIVE",
             "title_en": "上下文库状态，枚举值，例如 ACTIVE / INITIALIZING / FAILED",
@@ -896,7 +991,7 @@
           "updateTime": {
             "backendParamType": "java.util.Date",
             "dateFormat": "yyyy-MM-dd'T'HH:mm:ss'Z'",
-            "description_en": "The time when the context store was last updated, in ISO 8601 UTC format",
+            "description_en": "The last update time of the context store in ISO 8601 UTC format",
             "description_zh": "上下文库最近一次更新时间，ISO 8601 UTC 格式",
             "example": "2026-01-02T00:00:00Z",
             "format": "iso8601_normal",
