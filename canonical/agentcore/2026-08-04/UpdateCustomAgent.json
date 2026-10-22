@@ -5,7 +5,7 @@
   "deprecated": false,
   "description_en": "Updates the configuration of a specified custom agent in a workspace and executes the update asynchronously. Omitted top-level fields retain their original configurations. You can call the GetCustomAgent operation to query the update result",
   "description_zh": "更新指定工作空间中的自定义智能体配置，并异步执行更新。省略的顶层字段保留原配置，可通过 GetCustomAgent 查询更新结果",
-  "kebab_example": "",
+  "kebab_example": "aliyun agentcore update-custom-agent --workspace-id ws-a1b2c3d4e5f6 --agent-id agent-550e8400e29b41d4a716446655440000 --region cn-hangzhou",
   "method": "PATCH|PUT",
   "multi_version": false,
   "name": "UpdateCustomAgent",
@@ -37,7 +37,7 @@
     },
     {
       "example": "agent-550e8400e29b41d4a716446655440000",
-      "help_en": "The unique identifier of the custom agent. You can obtain this ID from the response of the CreateCustomAgent or ListCustomAgents operation",
+      "help_en": "The unique identifier of the custom agent. You can obtain this identifier from the response of the CreateCustomAgent or ListCustomAgents operation",
       "help_zh": "自定义智能体的唯一标识，可从 CreateCustomAgent 或 ListCustomAgents 的响应中获取",
       "location": "path",
       "name": "agent_id",
@@ -55,7 +55,7 @@
             "fields": [
               {
                 "example": "/mnt/agenticfs/data",
-                "help_en": "The subdirectory under /mnt/agenticfs/ in the container. This field is required for each mount item and is validated by the backend. Mount targets cannot be duplicated or overlap in a parent-child relationship",
+                "help_en": "The subdirectory under /mnt/agenticfs/ in the container. This field is required for each mount item. Mount targets must not be duplicated or form parent-child overrides",
                 "help_zh": "容器内 /mnt/agenticfs/ 下的子目录，每个挂载项必填。挂载目标不得重复或形成父子覆盖",
                 "name": "mount_path",
                 "options": [
@@ -67,7 +67,7 @@
               },
               {
                 "example": "workspace/data",
-                "help_en": "The existing non-empty relative directory under the access point. This field is required for each mount item and is validated by the backend. Root directories, absolute paths, and parent directory traversals are not allowed",
+                "help_en": "The existing non-empty relative directory under the access point. This field is required for each mount item. Root directories, absolute paths, and parent directory traversals are not allowed",
                 "help_zh": "AccessPoint 下已存在的非空相对目录，每个挂载项必填。不允许根目录、绝对路径或上级目录跳转",
                 "name": "path",
                 "options": [
@@ -79,7 +79,7 @@
               },
               {
                 "example": "false",
-                "help_en": "Specifies whether the mount is read-only. A value of true indicates read-only, and false indicates read/write. If omitted, the default value is false",
+                "help_en": "Specifies whether the mount is read-only. A value of true indicates read-only, and a value of false indicates read and write. If this field is omitted, the default value is false",
                 "help_zh": "是否只读挂载。true 表示只读，false 表示可读写；省略时默认为 false",
                 "name": "read_only",
                 "options": [
@@ -91,7 +91,7 @@
               },
               {
                 "example": "ap-0123456789abcdef0.0123456789-vlm36.cn-hangzhou.nas.aliyuncs.com",
-                "help_en": "The domain name of the access point. This field is required for each mount item and is validated by the backend. Use the DomainName value from the response of the NAS ListAccessPoints operation. Do not include the protocol, port, or path",
+                "help_en": "The domain name of the access point. This field is required for each mount item. Use the DomainName value from the response of the NAS ListAccessPoints operation. Do not include the protocol, port, or path",
                 "help_zh": "AccessPoint 域名，每个挂载项必填。取 NAS ListAccessPoints 响应中的 DomainName，不含协议、端口或路径",
                 "name": "server",
                 "options": [
@@ -104,7 +104,7 @@
             ],
             "type": "object"
           },
-          "help_en": "The list of additional AgenticFS mounts. The total number of AgenticFS and OSS mounts cannot exceed 10. If you omit this field or pass an empty array [] during creation, no additional mounts are configured. During an update, omitting this field retains the original value, and passing an empty array [] clears the list. You cannot pass null",
+          "help_en": "The list of additional AgenticFS mounts. The total number of AgenticFS mounts and ossMounts cannot exceed 10. During creation, omitting this field or passing an empty array [] indicates no additional mounts. During an update, omitting this field retains the original value, and passing an empty array [] clears the list. You cannot pass null",
           "help_zh": "AgenticFS 额外挂载列表，与 ossMounts 合计最多 10 项。创建时省略或传 [] 表示无额外挂载；更新时省略保留原值，传 [] 清空。不能传 null",
           "name": "agentic_fs_mounts",
           "options": [
@@ -119,9 +119,9 @@
             {
               "fields": [
                 {
-                  "example": "python app.py",
-                  "help_en": "The startup entry point for the code package. Code package deployment is currently not supported. Omit this field",
-                  "help_zh": "代码包启动入口。当前暂不支持代码包部署，请省略",
+                  "example": "python main.py",
+                  "help_en": "The startup command for the code package. This field is required in code package mode. The working directory is the extracted code root directory /code, such as python main.py. Quotes and escapes are supported. Environment variables, pipes, and logical operations are not automatically expanded. For complex commands, use scripts within the package",
+                  "help_zh": "代码包启动命令，代码包模式必填。工作目录为解压后的代码根目录 /code，例如 python main.py。支持引号和转义，不自动展开环境变量、管道或逻辑运算；复杂命令请使用包内脚本",
                   "name": "entrypoint",
                   "options": [
                     "--entrypoint"
@@ -131,9 +131,9 @@
                   "type": "string"
                 },
                 {
-                  "example": "python",
-                  "help_en": "The language runtime identifier for the code package. Code package deployment is currently not supported. Omit this field",
-                  "help_zh": "代码包的语言运行时标识。当前暂不支持代码包部署，请省略",
+                  "example": "python3.12",
+                  "help_en": "The code runtime environment identifier, such as python3.12. When creating or switching environments, use the identifier returned by the ListAgentCodeRuntimes operation. The identifier is validated by the current version catalog and is not a fixed enumeration",
+                  "help_zh": "代码运行环境标识，例如 python3.12。创建或切换环境时使用 ListAgentCodeRuntimes 返回的标识，由当前版本目录校验，不是固定枚举",
                   "name": "language_runtime",
                   "options": [
                     "--language-runtime"
@@ -143,9 +143,9 @@
                   "type": "string"
                 },
                 {
-                  "example": "oss://my-agent-bucket/packages/agent.zip",
-                  "help_en": "The source URI of the code package. Code package deployment is currently not supported. Omit this field",
-                  "help_zh": "代码包来源 URI。当前暂不支持代码包部署，请省略",
+                  "example": "oss://my-agent-bucket/packages/main.zip",
+                  "help_en": "The source address of the code package. This field supports oss:// addresses or HTTPS object addresses of standard OSS public domain names, including OSS signed URLs. Arbitrary external sites, custom domain names, and additional authentication request headers are not supported. After a local upload, use the sourceUri returned by the GetAgentCodePackageUploadUrl operation. The address is revalidated and transferred during creation or updates. After the transfer is saved, the platform returns a fixed oss:// address. This fixed address can be reused for regular updates",
+                  "help_zh": "代码包来源地址。支持 oss:// 地址或标准 OSS 公网域名的 HTTPS 对象地址（含 OSS 签名链接）；不支持任意外部站点、自定义域名或额外认证请求头。本地上传后使用 GetAgentCodePackageUploadUrl 返回的 sourceUri。创建或更新时重新校验并转存，保存后返回平台固定 oss:// 地址；普通更新可复用该固定地址",
                   "name": "source_uri",
                   "options": [
                     "--source-uri"
@@ -155,8 +155,8 @@
                   "type": "string"
                 }
               ],
-              "help_en": "The code package deployment configuration. This is currently not supported. Omit this field and use artifact.container instead",
-              "help_zh": "代码包部署配置，当前暂不支持，请省略并使用 artifact.container",
+              "help_en": "The code package deployment configuration. This field is mutually exclusive with the container field. Code packages use the ZIP or TAR.GZ format. Dependencies must be packaged by the user. The platform does not install dependencies or perform online builds",
+              "help_zh": "代码包部署配置，与 container 互斥。代码包使用 ZIP 或 TAR.GZ 格式，依赖由用户打包，平台不安装依赖或在线构建",
               "name": "code",
               "options": [
                 "--code"
@@ -169,7 +169,7 @@
               "fields": [
                 {
                   "example": "python app.py",
-                  "help_en": "The optional executable program and startup parameters. If specified, this must be a non-empty string. When updating the artifact, omitting this field uses the default startup method of the image. To retain the original custom startup command, provide this field together",
+                  "help_en": "The optional executable program and startup parameters. If specified, this field must be a non-empty string. When updating the artifact, omitting this field uses the default startup method of the image. To retain the original custom startup command, provide this field together",
                   "help_zh": "可选的可执行程序及启动参数，指定时必须为非空字符串。更新 artifact 时，省略该字段使用镜像默认启动方式；需要保留原自定义启动命令时请一并提供",
                   "name": "entrypoint",
                   "options": [
@@ -255,7 +255,7 @@
             },
             {
               "example": "8080",
-              "help_en": "The TCP port that the agent service listens on. Valid values: 1 to 65535",
+              "help_en": "The TCP port listened by the agent service. Valid values: 1 to 65535",
               "help_zh": "智能体服务监听的 TCP 端口，取值为 1～65535",
               "name": "port",
               "options": [
@@ -266,8 +266,8 @@
               "type": "int"
             }
           ],
-          "help_en": "The deployment artifact configuration. Currently, only ACR container images are supported. Specify the container field and the service listening port field. Omit the code field. During an update, you must specify all required fields for port and container",
-          "help_zh": "部署制品配置。当前仅支持 ACR 容器镜像，请填写 container 和服务监听端口 port，省略 code。更新时须提供 port 和 container 的全部必需字段",
+          "help_en": "The deployment artifact configuration. You must specify the service listening port in the port field and choose either the code or container deployment method. During an update, you must provide the required fields for the selected method",
+          "help_zh": "部署制品配置。须填写服务监听端口 port，并在 code 与 container 中选择一种部署方式。更新时须同时提供所选方式的必需字段",
           "name": "artifact",
           "options": [
             "--artifact"
@@ -278,7 +278,7 @@
         },
         {
           "example": "提供对话服务的自定义智能体",
-          "help_en": "The description of the agent purpose. The maximum length is 1,024 characters after leading and trailing whitespaces are removed. If omitted, the original value is retained. Pass null to clear the description",
+          "help_en": "The description of the agent purpose. The maximum length is 1,024 characters after leading and trailing whitespaces are removed. Omitting this field retains the original value. Pass null to clear the description",
           "help_zh": "智能体的用途说明，去除首尾空白后最多 1024 个字符。省略保留原值，传 null 清除描述",
           "name": "description",
           "options": [
@@ -295,7 +295,7 @@
                 "fields": [
                   {
                     "example": "LOG_LEVEL",
-                    "help_en": "The name of the environment variable. This field cannot be empty and must be unique within the current environment variable list",
+                    "help_en": "The name of the environment variable. This field cannot be empty and must be unique in the current environment variable list",
                     "help_zh": "环境变量名称，不能为空，且在本次环境变量列表中不得重复",
                     "name": "name",
                     "options": [
@@ -307,7 +307,7 @@
                   },
                   {
                     "example": "info",
-                    "help_en": "The value of the environment variable. This must be a string. Empty strings are allowed",
+                    "help_en": "The value of the environment variable. This field must be a string. Empty strings are allowed",
                     "help_zh": "环境变量值，必须为字符串，允许空字符串",
                     "name": "value",
                     "options": [
@@ -357,7 +357,7 @@
             },
             {
               "example": "10",
-              "help_en": "The interval between two health checks, in seconds. This must be a positive integer. If omitted, the default value is 10",
+              "help_en": "The interval between two health checks, in seconds. This field must be a positive integer. If this field is omitted, the default value is 10",
               "help_zh": "两次健康检查的间隔，单位为秒，必须为正整数，省略时默认为 10",
               "name": "interval_seconds",
               "options": [
@@ -369,7 +369,7 @@
             },
             {
               "example": "/healthz",
-              "help_en": "The HTTP health check path. This must start with a forward slash (/). If omitted, the default value is /healthz",
+              "help_en": "The HTTP health check path. This field must start with a forward slash (/). If this field is omitted, the default value is /healthz",
               "help_zh": "HTTP 健康检查路径，必须以 / 开头，省略时默认为 /healthz",
               "name": "path",
               "options": [
@@ -393,7 +393,7 @@
             },
             {
               "example": "2",
-              "help_en": "The timeout period for a single health check, in seconds. This must be a positive integer and less than intervalSeconds. If omitted, the default value is 2",
+              "help_en": "The timeout period for a single health check, in seconds. This field must be a positive integer and less than intervalSeconds. If this field is omitted, the default value is 2",
               "help_zh": "单次健康检查的超时秒数，必须为正整数且小于 intervalSeconds，省略时默认为 2",
               "name": "timeout_seconds",
               "options": [
@@ -405,7 +405,7 @@
             },
             {
               "example": "3",
-              "help_en": "The number of consecutive health check failures required to mark the agent as unhealthy. This must be a positive integer. If omitted, the default value is 3",
+              "help_en": "The number of consecutive health check failures before the agent is considered unhealthy. This field must be a positive integer. If this field is omitted, the default value is 3",
               "help_zh": "连续健康检查失败达到该次数后判定不健康，必须为正整数，省略时默认为 3",
               "name": "unhealthy_threshold",
               "options": [
@@ -432,7 +432,7 @@
               "fields": [
                 {
                   "example": "agent-runtime",
-                  "help_en": "The name of the Simple Log Service logstore that receives agent logs",
+                  "help_en": "The name of the SLS logstore that receives agent logs",
                   "help_zh": "接收智能体日志的 SLS Logstore 名称",
                   "name": "logstore",
                   "options": [
@@ -444,7 +444,7 @@
                 },
                 {
                   "example": "my-agent-logs",
-                  "help_en": "The name of the Simple Log Service project that receives agent logs",
+                  "help_en": "The name of the SLS project that receives agent logs",
                   "help_zh": "接收智能体日志的 SLS Project 名称",
                   "name": "project",
                   "options": [
@@ -455,7 +455,7 @@
                   "type": "string"
                 }
               ],
-              "help_en": "The Simple Log Service log delivery destination. When updating this object, you must provide both project and logstore, and neither can be empty",
+              "help_en": "The SLS log delivery destination. When updating this object, you must provide both the project and logstore fields, and they cannot be empty",
               "help_zh": "SLS 日志投递目标。更新该对象时，project 和 logstore 须同时提供且不能为空",
               "name": "sls",
               "options": [
@@ -466,7 +466,7 @@
               "type": "object"
             }
           ],
-          "help_en": "The log delivery configuration for the agent. You can specify the Simple Log Service project and logstore. After a successful creation or update, verify whether logs are delivered properly",
+          "help_en": "The log delivery configuration for the agent. You can specify the Simple Log Service (SLS) project and logstore. After a successful creation or update, verify whether logs are delivered properly",
           "help_zh": "智能体日志投递配置，可指定日志服务 SLS 的 Project 和 Logstore。创建或更新成功后，请确认日志是否正常投递",
           "name": "logging",
           "options": [
@@ -478,7 +478,7 @@
         },
         {
           "example": "my-custom-agent",
-          "help_en": "The name of the custom agent. The length is 1 to 128 characters after leading and trailing whitespaces are removed. The name must be unique within the same workspace. If omitted, the original value is retained. You cannot pass null or a blank name",
+          "help_en": "The name of the custom agent. The length is 1 to 128 characters after leading and trailing whitespaces are removed. The name must be unique within the same workspace. Omitting this field retains the original value. You cannot pass null or a blank name",
           "help_zh": "自定义智能体名称，去除首尾空白后长度为 1～128 个字符，同一工作空间内不可重名。省略保留原值，不能传 null 或空白名称",
           "name": "name",
           "options": [
@@ -493,7 +493,7 @@
             {
               "fields": [
                 {
-                  "help_en": "Specifies whether to allow the agent to access the Internet. A Boolean value is required when configuring accessInternet. For this to take effect, the workspace must also allow Internet access",
+                  "help_en": "Specifies whether to allow the agent to access the Internet. When configuring accessInternet, you must provide a Boolean value. For this configuration to take effect, the workspace must also allow Internet access",
                   "help_zh": "是否允许智能体访问互联网。配置 accessInternet 时必须提供布尔值；实际生效还需工作空间允许互联网访问",
                   "name": "enabled",
                   "options": [
@@ -504,7 +504,7 @@
                   "type": "bool"
                 }
               ],
-              "help_en": "The Internet access configuration. If this access item is omitted, Internet access is not restricted on the agent side. However, the workspace must still allow Internet access",
+              "help_en": "The Internet access configuration. When this access item is omitted, the agent does not restrict Internet access. However, the workspace must still allow Internet access",
               "help_zh": "互联网访问配置。省略该访问项时，智能体侧不限制互联网访问；仍需工作空间允许互联网访问",
               "name": "access_internet",
               "options": [
@@ -517,7 +517,7 @@
             {
               "fields": [
                 {
-                  "help_en": "Specifies whether to allow the agent to access the user VPC configured for the workspace. A Boolean value is required when configuring accessVpc. For this to take effect, the workspace must also allow VPC access",
+                  "help_en": "Specifies whether to allow the agent to access the user VPC configured in the workspace. When configuring accessVpc, you must provide a Boolean value. For this configuration to take effect, the workspace must also allow VPC access",
                   "help_zh": "是否允许智能体访问工作空间配置的用户 VPC。配置 accessVpc 时必须提供布尔值；实际生效还需工作空间允许 VPC 访问",
                   "name": "enabled",
                   "options": [
@@ -528,7 +528,7 @@
                   "type": "bool"
                 }
               ],
-              "help_en": "The user VPC access configuration. If this access item is omitted, VPC access is not restricted on the agent side. However, the workspace must still be configured to allow access to the user VPC",
+              "help_en": "The user VPC access configuration. When this access item is omitted, the agent does not restrict VPC access. However, the workspace must still be configured to allow access to the user VPC",
               "help_zh": "用户 VPC 访问配置。省略该访问项时，智能体侧不限制 VPC 访问；仍需工作空间配置并允许访问用户 VPC",
               "name": "access_vpc",
               "options": [
@@ -539,7 +539,7 @@
               "type": "object"
             }
           ],
-          "help_en": "The network access configuration for the agent. When providing this object, omitted access items are treated as allowed. The actual accessible scope is still restricted by the workspace network configuration. To retain the original restrictions during an update, specify both accessInternet and accessVpc",
+          "help_en": "The network access configuration for the agent. When providing this object, omitted access items are treated as allowed. The actual accessible range is still restricted by the workspace network configuration. To retain the original restrictions during an update, specify both accessInternet and accessVpc",
           "help_zh": "智能体的网络访问配置。提供该对象时，省略的访问项按允许处理；实际可访问范围仍受工作空间网络配置限制。更新时若需保留原限制，请同时填写 accessInternet 和 accessVpc",
           "name": "network",
           "options": [
@@ -550,11 +550,35 @@
           "type": "object"
         },
         {
+          "fields": [
+            {
+              "help_en": "Specifies whether to enable agent observability",
+              "help_zh": "启用 Agent 观测",
+              "name": "enabled",
+              "options": [
+                "--enabled"
+              ],
+              "raw_name": "enabled",
+              "required": false,
+              "type": "bool"
+            }
+          ],
+          "help_en": "The high-code agent observability configuration",
+          "help_zh": "高代码 Agent 观测配置",
+          "name": "observability",
+          "options": [
+            "--observability"
+          ],
+          "raw_name": "observability",
+          "required": false,
+          "type": "object"
+        },
+        {
           "element": {
             "fields": [
               {
                 "example": "my-agent-data",
-                "help_en": "The name of the OSS bucket. This field is required for each mount item. The length is 3 to 63 characters. It can contain only lowercase letters, digits, and hyphens, and cannot start or end with a hyphen",
+                "help_en": "The name of the OSS bucket. This parameter is required for each mount item. The name must be 3 to 63 characters in length and can contain only lowercase letters, digits, and hyphens. It cannot start or end with a hyphen",
                 "help_zh": "OSS Bucket 名称，每个挂载项必填。长度为 3～63 个字符，仅包含小写字母、数字和短横线，不能以短横线开头或结尾",
                 "name": "bucket_name",
                 "options": [
@@ -566,7 +590,7 @@
               },
               {
                 "example": "/mnt/oss/train",
-                "help_en": "The subdirectory under /mnt/oss/ in the container. This field is required for each mount item. Mount targets cannot be duplicated or overlap in a parent-child relationship",
+                "help_en": "The subdirectory under /mnt/oss/ in the container. This parameter is required for each mount item. Mount targets must not be duplicated or form parent-child overlaps",
                 "help_zh": "容器内 /mnt/oss/ 下的子目录，每个挂载项必填。挂载目标不得重复或形成父子覆盖",
                 "name": "mount_path",
                 "options": [
@@ -578,7 +602,7 @@
               },
               {
                 "example": "datasets/train",
-                "help_en": "The non-empty object directory prefix in the bucket, such as datasets/train. Leading and trailing forward slashes (/) are removed. Root directories are not supported. Do not use parent directory traversals",
+                "help_en": "The non-empty object directory prefix in the bucket, such as datasets/train. Leading and trailing slashes are removed. The root directory is not supported. Do not use parent directory navigation",
                 "help_zh": "Bucket 内非空的对象目录前缀，例如 datasets/train。首尾的 / 会被去除；不支持根目录，请勿使用上级目录跳转",
                 "name": "path",
                 "options": [
@@ -589,7 +613,7 @@
                 "type": "string"
               },
               {
-                "help_en": "Specifies whether the mount is read-only. A value of true indicates read-only, and false indicates read/write. If omitted, the default value is false",
+                "help_en": "Specifies whether the mount is read-only. A value of true indicates read-only, and a value of false indicates read and write. If this field is omitted, the default value is false",
                 "help_zh": "是否只读挂载。true 表示只读，false 表示可读写；省略时默认为 false",
                 "name": "read_only",
                 "options": [
@@ -602,7 +626,7 @@
             ],
             "type": "object"
           },
-          "help_en": "The list of OSS mounts. The total number of OSS and AgenticFS mounts cannot exceed 10. For each item, you must specify bucketName, path, and mountPath. Mount targets cannot be duplicated or overlap with each other. This list is replaced as a whole during an update. Pass an empty array [] to clear the list",
+          "help_en": "The OSS mount list. A maximum of 10 items in total with agenticFsMounts. Each item must include bucketName, path, and mountPath. Mount targets must not be duplicated or overlap. The entire list is replaced during an update. Pass an empty array to clear the list",
           "help_zh": "OSS 挂载列表，与 agenticFsMounts 合计最多 10 项。每项须填写 bucketName、path 和 mountPath；挂载目标不得重复或相互覆盖。更新时整体替换该列表，传 [] 清空",
           "name": "oss_mounts",
           "options": [
@@ -634,7 +658,7 @@
                   "fields": [
                     {
                       "example": "AG-UI 对话接口",
-                      "help_en": "The description of the current API path",
+                      "help_en": "The usage description of the current API path",
                       "help_zh": "当前接口路径的用途说明",
                       "name": "description",
                       "options": [
@@ -646,7 +670,7 @@
                     },
                     {
                       "example": "/agui",
-                      "help_en": "The non-empty API path corresponding to the current protocol",
+                      "help_en": "The non-empty API path for the current protocol",
                       "help_zh": "当前协议对应的非空接口路径",
                       "name": "name",
                       "options": [
@@ -659,7 +683,7 @@
                   ],
                   "type": "object"
                 },
-                "help_en": "The list of API paths corresponding to the current protocol",
+                "help_en": "The list of API paths for the current protocol",
                 "help_zh": "当前协议对应的接口路径列表",
                 "name": "paths",
                 "options": [
@@ -689,7 +713,7 @@
             ],
             "type": "object"
           },
-          "help_en": "The list of invocation protocols supported by the agent. Each item includes the protocol type, and optional paths and request headers. The entire list is replaced during an update",
+          "help_en": "The list of invocation protocols supported by the agent. Each item includes the protocol type and optional paths and request headers. The entire list is replaced during an update",
           "help_zh": "智能体支持的调用协议列表，每项包含协议类型以及可选的路径和请求头。更新时整体替换该列表",
           "name": "protocol",
           "options": [
@@ -701,7 +725,7 @@
         },
         {
           "example": "acs:ram::1234567890123456:role/agentcore-runtime-role",
-          "help_en": "The ARN of the RAM role used by the agent to access user cloud resources. The role must have permissions to access the cloud resources",
+          "help_en": "The ARN of the RAM role used when the agent accesses user cloud resources. The role must have permissions to access the cloud resources",
           "help_zh": "智能体访问用户云资源时使用的 RAM 角色 ARN。角色需具备所访问云资源的权限",
           "name": "role_arn",
           "options": [
@@ -746,7 +770,7 @@
             {
               "fields": [
                 {
-                  "help_en": "Specifies whether to enable elastic scaling. A value of true indicates that elastic scaling is enabled. A value of false indicates that elastic scaling is disabled. If this field is omitted when runtime is provided, the default value is false",
+                  "help_en": "Specifies whether to enable elastic scaling. Valid values:\ntrue: Enabled.\nfalse: Disabled.\nDefault value: false. This default value applies when runtime is provided and this field is omitted",
                   "help_zh": "是否启用弹性扩缩容。true 表示开启，false 表示关闭。提供 runtime 时，省略本字段默认为 false",
                   "name": "enabled",
                   "options": [
@@ -758,7 +782,7 @@
                 },
                 {
                   "example": "100",
-                  "help_en": "The maximum number of concurrent sessions for a single runtime instance. Valid values: 1 to 100. If this field is omitted when runtime is provided, the default value 100 is used",
+                  "help_en": "The maximum number of concurrent sessions for a single runtime instance. Valid values: 1 to 100. When runtime is provided, omitting this field uses the default value of 100",
                   "help_zh": "单个运行实例的最大并发会话数，取值为 1～100。提供 runtime 时，省略本字段使用默认值 100",
                   "name": "max_concurrent_sessions_per_sandbox",
                   "options": [
@@ -770,7 +794,7 @@
                 },
                 {
                   "example": "10",
-                  "help_en": "The maximum number of runtime instances. Valid values: 1 to 100. The value cannot be less than minSandboxCount. If this field is omitted when runtime is provided, the default value 10 is used",
+                  "help_en": "The maximum number of runtime instances. Valid values: 1 to 100. The value cannot be less than minSandboxCount. When runtime is provided, omitting this field uses the default value of 10",
                   "help_zh": "最大运行实例数，取值为 1～100，且不能小于 minSandboxCount。提供 runtime 时，省略本字段使用默认值 10",
                   "name": "max_sandbox_count",
                   "options": [
@@ -782,7 +806,7 @@
                 },
                 {
                   "example": "1",
-                  "help_en": "The minimum number of runtime instances. Valid values: 1 to 100. The value cannot be greater than maxSandboxCount. If this field is omitted when runtime is provided, the default value 1 is used",
+                  "help_en": "The minimum number of runtime instances. Valid values: 1 to 100. The value cannot be greater than maxSandboxCount. When runtime is provided, omitting this field uses the default value of 1",
                   "help_zh": "最小运行实例数，取值为 1～100，且不能大于 maxSandboxCount。提供 runtime 时，省略本字段使用默认值 1",
                   "name": "min_sandbox_count",
                   "options": [
@@ -794,7 +818,7 @@
                 },
                 {
                   "example": "600",
-                  "help_en": "The session idle timeout in seconds. Valid values: 60 to 86400. If this field is omitted when runtime is provided, the default value 600 is used",
+                  "help_en": "The session idle timeout in seconds. Valid values: 60 to 86400. When runtime is provided, omitting this field uses the default value of 600",
                   "help_zh": "会话空闲上限，单位为秒，取值为 60～86400。提供 runtime 时，省略本字段使用默认值 600",
                   "name": "session_ttl_seconds",
                   "options": [
@@ -805,7 +829,7 @@
                   "type": "int"
                 }
               ],
-              "help_en": "The optional elastic policy. When runtime is provided, if hpa or its fields are omitted, the default values are used: enabled is false, the minimum number of instances is 1, the maximum number of instances is 10, the maximum number of concurrent sessions per instance is 100, and the session idle timeout is 600 seconds. To retain the original policy during an update, you must provide the complete hpa configuration",
+              "help_en": "The optional elastic policy. When runtime is provided, omitting hpa or its fields uses the default values: enabled is false, the minimum number of instances is 1, the maximum number of instances is 10, the maximum number of concurrent sessions per instance is 100, and the session idle timeout is 600 seconds. To retain the original policy during an update, provide the complete hpa configuration",
               "help_zh": "可选的弹性策略。提供 runtime 时，省略 hpa 或其字段使用默认值：enabled 为 false，最小实例数为 1、最大实例数为 10、单实例最大并发会话数为 100、会话空闲上限为 600 秒。更新时若需保留原策略，请一并提供完整的 hpa 配置",
               "name": "hpa",
               "options": [
@@ -819,7 +843,7 @@
               "fields": [
                 {
                   "example": "X-Session-Id",
-                  "help_en": "The name of the HTTP request header used by the session policy. This field is required when type is ISOLATED_HEADER_FIELD and must be a valid HTTP request header name. Omit this field for other policies",
+                  "help_en": "The name of the HTTP request header used by the session policy. This parameter is required when type is set to ISOLATED_HEADER_FIELD and must be a valid HTTP request header name. Omit this parameter for other policies",
                   "help_zh": "会话策略使用的 HTTP 请求头名称。type 为 ISOLATED_HEADER_FIELD 时必填，须为合法的 HTTP 请求头名称；其他策略请省略",
                   "name": "header_name",
                   "options": [
@@ -837,7 +861,7 @@
                     "ISOLATED_HEADER_FIELD"
                   ],
                   "example": "AFFINITY",
-                  "help_en": "The session policy type. Valid values:\nAFFINITY: Session affinity.\nISOLATED_HEADER_FIELD: Associates sessions by using the request header specified by headerName.\nISOLATED_COOKIE: Cookie-based session option. This value is not recommended.\nDISABLED: Compatibility option. The response returns AFFINITY",
+                  "help_en": "The session policy type. Valid values:\nAFFINITY: Session affinity.\nISOLATED_HEADER_FIELD: Associates sessions by using the request header specified by headerName.\nISOLATED_COOKIE: Cookie-based session policy. This value is not recommended.\nDISABLED: Compatibility option. The response returns AFFINITY",
                   "help_zh": "会话策略类型。AFFINITY：会话亲和；ISOLATED_HEADER_FIELD：使用 headerName 指定请求头关联会话。ISOLATED_COOKIE 暂不建议使用。DISABLED 为兼容选项，响应返回 AFFINITY",
                   "name": "type",
                   "options": [
@@ -848,7 +872,7 @@
                   "type": "string"
                 }
               ],
-              "help_en": "The session policy configuration, which is used to set the session association method for requests",
+              "help_en": "The session policy configuration used to set the session association method for requests",
               "help_zh": "会话策略配置，用于设置请求的会话关联方式",
               "name": "session_policy",
               "options": [
@@ -859,7 +883,7 @@
               "type": "object"
             }
           ],
-          "help_en": "The runtime configuration. When this object is provided, both compute and sessionPolicy must be present. To retain the original elastic policy, you must also provide the complete hpa configuration. Omitting the top-level runtime field retains the original configuration",
+          "help_en": "The runtime configuration. When this object is provided, compute and sessionPolicy must be present at the same time. To retain the original elastic policy, provide the complete hpa configuration. Omitting the top-level runtime field retains the original configuration",
           "help_zh": "运行配置。提供该对象时，compute 和 sessionPolicy 必须同时存在；若需保留原弹性策略，请一并提供完整的 hpa 配置。省略 runtime 顶层字段保留原配置",
           "name": "runtime",
           "options": [
@@ -868,9 +892,21 @@
           "raw_name": "runtime",
           "required": false,
           "type": "object"
+        },
+        {
+          "example": "true",
+          "help_en": "If this parameter is not passed during an update, the original value is retained. Explicitly set this parameter to true or false. The system does not automatically supplement false. The new contract rejects null and invalid types. Existing compatibility endpoints are processed according to migration agreements",
+          "help_zh": "更新未传保留原值；显式 true/false 设置，不自动补 false。新契约拒绝 null 和非法类型；既有兼容入口按迁移约定处理",
+          "name": "use_image_cache",
+          "options": [
+            "--use-image-cache"
+          ],
+          "raw_name": "useImageCache",
+          "required": false,
+          "type": "bool"
         }
       ],
-      "help_en": "The update configuration for the custom agent. Provide at least one top-level field. Omitted top-level fields retain their original values. When providing a configuration object, you must specify its required subfields and include any optional configurations that you want to retain. Arrays are replaced as a whole",
+      "help_en": "The update configuration for the custom agent. Provide at least one top-level field. Omitted top-level fields retain their original values. When providing a configuration object, specify its required subfields and include any optional configurations that you want to retain. Arrays are replaced as a whole",
       "help_zh": "自定义智能体更新配置，至少提供一个顶层字段。省略的顶层字段保留原值；提供配置对象时须填写其必需子字段，并一并提供需要保留的可选配置。数组整体替换",
       "location": "formData",
       "name": "body",
@@ -884,7 +920,7 @@
     },
     {
       "example": "custom-agent-request-20261010-001",
-      "help_en": "Idempotency is not currently guaranteed. Do not rely on this parameter to prevent duplicate requests",
+      "help_en": "Idempotence is not currently guaranteed. Do not rely on this parameter to prevent duplicate requests",
       "help_zh": "当前不提供幂等保证，请勿依赖该参数防止重复请求",
       "location": "query",
       "name": "client_token",
@@ -905,9 +941,10 @@
         "properties": {
           "code": {
             "backendName": "code",
-            "description_en": "The request result code. The value is SUCCESS when the request is successful",
+            "description_en": "The request result code. The value is SUCCESS if the request is successful",
             "description_zh": "请求结果码。成功时为 SUCCESS",
             "example": "SUCCESS",
+            "required": true,
             "type": "string"
           },
           "data": {
@@ -917,9 +954,10 @@
             "properties": {
               "agentId": {
                 "backendName": "agentId",
-                "description_en": "The unique identifier of the custom agent. You can obtain this ID from the response of the CreateCustomAgent or ListCustomAgents operation",
+                "description_en": "The unique identifier of the custom agent. You can obtain this identifier from the response of the CreateCustomAgent or ListCustomAgents operation",
                 "description_zh": "自定义智能体的唯一标识，可从 CreateCustomAgent 或 ListCustomAgents 的响应中获取",
                 "example": "agent-550e8400e29b41d4a716446655440000",
+                "required": true,
                 "type": "string"
               },
               "agenticFsMounts": {
@@ -951,7 +989,7 @@
                     },
                     "readOnly": {
                       "backendName": "readOnly",
-                      "description_en": "Specifies whether the mount is read-only. A value of true indicates a read-only mount, and a value of false indicates a read-write mount",
+                      "description_en": "Specifies whether the mount is read-only. A value of true indicates a read-only mount. A value of false indicates a read-write mount",
                       "description_zh": "是否只读挂载。true 表示只读，false 表示可读写",
                       "example": "false",
                       "title_en": "是否只读挂载，省略默认 false；不是 RAM 角色只读策略",
@@ -982,34 +1020,42 @@
                 "properties": {
                   "code": {
                     "backendName": "code",
-                    "description_en": "The code package configuration field. Code package deployment is not supported",
-                    "description_zh": "代码包配置字段。当前暂不支持代码包部署",
+                    "description_en": "The code package deployment configuration. This field is mutually exclusive with the container field. Code packages use the ZIP or TAR.GZ format. Dependencies must be packaged by the user. The platform does not install dependencies or perform online builds",
+                    "description_zh": "代码包部署配置，与 container 互斥。代码包使用 ZIP 或 TAR.GZ 格式，依赖由用户打包，平台不安装依赖或在线构建",
                     "properties": {
                       "entrypoint": {
                         "backendName": "entrypoint",
-                        "description_en": "The startup entry point of the code package. Code package deployment is not supported",
-                        "description_zh": "代码包启动入口。当前暂不支持代码包部署",
-                        "example": "python app.py",
+                        "description_en": "The startup command for the code package. This field is required in code package mode. The working directory is the extracted code root directory /code, such as python main.py. Quotes and escapes are supported. Environment variables, pipes, and logical operations are not automatically expanded. For complex commands, use scripts within the package",
+                        "description_zh": "代码包启动命令，代码包模式必填。工作目录为解压后的代码根目录 /code，例如 python main.py。支持引号和转义，不自动展开环境变量、管道或逻辑运算；复杂命令请使用包内脚本",
+                        "example": "python main.py",
                         "required": true,
+                        "title_en": "代码包启动命令",
+                        "title_zh": "代码包启动命令",
                         "type": "string"
                       },
                       "languageRuntime": {
                         "backendName": "languageRuntime",
-                        "description_en": "The language runtime identifier of the code package. Code package deployment is not supported",
-                        "description_zh": "代码包的语言运行时标识。当前暂不支持代码包部署",
-                        "example": "python",
+                        "description_en": "The identifier of the code runtime environment in the currently saved configuration. The runtime image uses the saved snapshot. Adding a new version to the directory does not automatically change the existing configuration",
+                        "description_zh": "当前已保存配置的代码运行环境标识。运行镜像使用已保存的快照，目录增加新版本不会自动改变现有配置",
+                        "example": "python3.12",
                         "required": true,
+                        "title_en": "代码运行环境",
+                        "title_zh": "代码运行环境",
                         "type": "string"
                       },
                       "sourceUri": {
                         "backendName": "sourceUri",
-                        "description_en": "The source URI of the code package. Code package deployment is not supported",
-                        "description_zh": "代码包来源 URI。当前暂不支持代码包部署",
-                        "example": "oss://my-agent-bucket/packages/agent.zip",
+                        "description_en": "The oss:// address of the platform-fixed code package referenced by the currently saved configuration. This address does not include the signature parameters of the source HTTPS link. You can use this address to reuse existing code packages. To download the content, call GetAgentCodePackageDownloadUrl",
+                        "description_zh": "当前已保存配置引用的平台固定代码包 oss:// 地址，不包含源 HTTPS 链接的签名参数。可用于复用已有代码包；下载内容请调用 GetAgentCodePackageDownloadUrl",
+                        "example": "oss://agentcore-platform-example/code-packages/workspaces/ws-a1b2c3d4e5f6/550e8400-e29b-41d4-a716-446655440000/package.zip",
                         "required": true,
+                        "title_en": "代码包来源地址",
+                        "title_zh": "代码包来源地址",
                         "type": "string"
                       }
                     },
+                    "title_en": "代码部署配置。",
+                    "title_zh": "代码部署配置。",
                     "type": "object"
                   },
                   "container": {
@@ -1030,6 +1076,8 @@
                         "description_zh": "镜像仓库所属的 ACR 实例 ID",
                         "example": "cri-a1b2c3d4e5f6",
                         "required": true,
+                        "title_en": "ACR 企业版实例 ID。",
+                        "title_zh": "ACR 企业版实例 ID。",
                         "type": "string"
                       },
                       "namespace": {
@@ -1038,6 +1086,8 @@
                         "description_zh": "ACR 镜像仓库所属的命名空间",
                         "example": "my-agent",
                         "required": true,
+                        "title_en": "ACR 命名空间。",
+                        "title_zh": "ACR 命名空间。",
                         "type": "string"
                       },
                       "repo": {
@@ -1046,6 +1096,8 @@
                         "description_zh": "ACR 命名空间中的镜像仓库名称",
                         "example": "chat-agent",
                         "required": true,
+                        "title_en": "ACR 镜像仓库名称。",
+                        "title_zh": "ACR 镜像仓库名称。",
                         "type": "string"
                       },
                       "tag": {
@@ -1054,51 +1106,119 @@
                         "description_zh": "最新提交的镜像标签",
                         "example": "v1.0.0",
                         "required": true,
+                        "title_en": "镜像标签。",
+                        "title_zh": "镜像标签。",
                         "type": "string"
                       },
                       "type": {
                         "backendName": "type",
-                        "description_en": "The image source type. A value of acr indicates Alibaba Cloud Container Registry",
+                        "description_en": "The source type of the image. A value of acr indicates Alibaba Cloud Container Registry",
                         "description_zh": "镜像来源类型，acr 表示阿里云容器镜像服务 ACR",
                         "enum": [
                           "acr"
                         ],
                         "example": "acr",
                         "required": true,
+                        "title_en": "容器镜像来源类型。",
+                        "title_zh": "容器镜像来源类型。",
                         "type": "string"
                       }
                     },
+                    "title_en": "容器镜像部署配置。",
+                    "title_zh": "容器镜像部署配置。",
                     "type": "object"
                   },
                   "port": {
                     "backendName": "port",
-                    "description_en": "The TCP port listened to by the agent service",
+                    "description_en": "The TCP port listened on by the agent service",
                     "description_zh": "智能体服务监听的 TCP 端口",
                     "example": "8080",
                     "format": "int32",
                     "required": true,
+                    "title_en": "智能体服务监听端口。",
+                    "title_zh": "智能体服务监听端口。",
                     "type": "integer"
                   }
                 },
                 "type": "object"
               },
+              "codePackageInfo": {
+                "backendName": "codePackageInfo",
+                "description_en": "The currently saved code package information",
+                "description_zh": "当前已保存代码包信息",
+                "properties": {
+                  "crc64": {
+                    "backendName": "crc64",
+                    "description_en": "The CRC64 value of the code package object",
+                    "description_zh": "代码包对象 CRC64",
+                    "example": "456",
+                    "title_en": "代码包对象 CRC64",
+                    "title_zh": "代码包对象 CRC64",
+                    "type": "string"
+                  },
+                  "etag": {
+                    "backendName": "etag",
+                    "description_en": "The ETag of the code package object",
+                    "description_zh": "代码包对象 ETag",
+                    "example": "fixed-etag",
+                    "title_en": "代码包对象 ETag",
+                    "title_zh": "代码包对象 ETag",
+                    "type": "string"
+                  },
+                  "fileName": {
+                    "backendName": "fileName",
+                    "description_en": "The original file name of the code package",
+                    "description_zh": "原始代码包文件名",
+                    "example": "main.zip",
+                    "title_en": "原始代码包文件名",
+                    "title_zh": "原始代码包文件名",
+                    "type": "string"
+                  },
+                  "fileSize": {
+                    "backendName": "fileSize",
+                    "description_en": "The compressed size of the code package",
+                    "description_zh": "代码包压缩大小",
+                    "example": "123",
+                    "format": "int64",
+                    "title_en": "代码包压缩大小",
+                    "title_zh": "代码包压缩大小",
+                    "type": "integer"
+                  },
+                  "format": {
+                    "backendName": "format",
+                    "description_en": "The format of the code package",
+                    "description_zh": "代码包格式",
+                    "enum": [
+                      "zip",
+                      "tar.gz"
+                    ],
+                    "example": "zip",
+                    "title_en": "代码包格式",
+                    "title_zh": "代码包格式",
+                    "type": "string"
+                  }
+                },
+                "title_en": "当前已保存代码包信息",
+                "title_zh": "当前已保存代码包信息",
+                "type": "object"
+              },
               "createMode": {
                 "backendName": "createMode",
-                "description_en": "The creation method of the agent. The value is CUSTOM for custom agents",
+                "description_en": "The creation method of the agent. A value of CUSTOM is returned for custom agents",
                 "description_zh": "智能体创建方式。自定义智能体返回 CUSTOM",
                 "example": "CUSTOM",
                 "type": "string"
               },
               "createdAt": {
                 "backendName": "createdAt",
-                "description_en": "The creation time of the agent. The time is in ISO 8601 format. The trailing Z indicates the UTC time zone. Fractional seconds may be included",
+                "description_en": "The time when the agent was created. The time is in ISO 8601 format. A trailing Z indicates the UTC time zone. Fractional seconds may be included",
                 "description_zh": "智能体创建时间，采用 ISO 8601 格式，末尾 Z 表示 UTC 时区，可包含小数秒",
                 "example": "2026-10-10T06:00:00Z",
                 "type": "string"
               },
               "deployType": {
                 "backendName": "deployType",
-                "description_en": "The deployment method of the agent. Custom agents are deployed and managed by the platform, and the value is MANAGED",
+                "description_en": "The deployment method of the agent. Custom agents are deployed and managed by the platform. A value of MANAGED is returned",
                 "description_zh": "智能体部署方式。自定义智能体由平台部署和管理，返回 MANAGED",
                 "example": "MANAGED",
                 "type": "string"
@@ -1109,6 +1229,18 @@
                 "description_zh": "智能体的用途说明",
                 "example": "提供对话服务的自定义智能体",
                 "type": "string"
+              },
+              "effectiveSpecVersion": {
+                "backendName": "effectiveSpecVersion",
+                "description_en": "The effective configuration version",
+                "description_zh": "已生效配置版本",
+                "example": "1",
+                "format": "int64",
+                "nullable": true,
+                "required": true,
+                "title_en": "已生效配置版本",
+                "title_zh": "已生效配置版本",
+                "type": "integer"
               },
               "environment": {
                 "backendName": "environment",
@@ -1150,7 +1282,7 @@
               },
               "healthCheck": {
                 "backendName": "healthCheck",
-                "description_en": "The HTTP health check configuration of the agent. This field is empty if no health check is configured",
+                "description_en": "The HTTP health check configuration of the agent. This parameter is empty if no health check is configured",
                 "description_zh": "智能体的 HTTP 健康检查配置。未配置时为空",
                 "properties": {
                   "healthyThreshold": {
@@ -1171,7 +1303,7 @@
                   },
                   "path": {
                     "backendName": "path",
-                    "description_en": "The Health Check Path for HTTP health checks",
+                    "description_en": "The HTTP Health Check Path",
                     "description_zh": "HTTP 健康检查路径",
                     "example": "/healthz",
                     "type": "string"
@@ -1203,6 +1335,65 @@
                 },
                 "type": "object"
               },
+              "imageCacheId": {
+                "backendName": "imageCacheId",
+                "description_en": "The ID of the currently associated image cache",
+                "description_zh": "当前关联镜像缓存 ID",
+                "example": "img-example",
+                "nullable": true,
+                "required": true,
+                "title_en": "当前关联镜像缓存 ID",
+                "title_zh": "当前关联镜像缓存 ID",
+                "type": "string"
+              },
+              "imageCachePreparation": {
+                "backendName": "imageCachePreparation",
+                "description_en": "The cache preparation acceptance summary for this request",
+                "description_zh": "本次缓存准备受理摘要",
+                "properties": {
+                  "imageId": {
+                    "backendName": "imageId",
+                    "description_en": "The ID of the associated cache for this request",
+                    "description_zh": "本次关联缓存 ID",
+                    "example": "img-example",
+                    "required": true,
+                    "title_en": "本次关联缓存 ID",
+                    "title_zh": "本次关联缓存 ID",
+                    "type": "string"
+                  },
+                  "statusAtAcceptance": {
+                    "backendName": "statusAtAcceptance",
+                    "description_en": "The cache status at the time of acceptance",
+                    "description_zh": "受理时缓存状态",
+                    "enum": [
+                      "PENDING",
+                      "READY",
+                      "FAILED"
+                    ],
+                    "example": "PENDING",
+                    "required": true,
+                    "title_en": "受理时缓存状态",
+                    "title_zh": "受理时缓存状态",
+                    "type": "string"
+                  },
+                  "submissionStatus": {
+                    "backendName": "submissionStatus",
+                    "description_en": "The acceptance status of the cache preparation",
+                    "description_zh": "缓存准备受理状态",
+                    "enum": [
+                      "ACCEPTED"
+                    ],
+                    "example": "ACCEPTED",
+                    "required": true,
+                    "title_en": "缓存准备受理状态",
+                    "title_zh": "缓存准备受理状态",
+                    "type": "string"
+                  }
+                },
+                "title_en": "本次缓存准备受理摘要",
+                "title_zh": "本次缓存准备受理摘要",
+                "type": "object"
+              },
               "latestExecutionError": {
                 "backendName": "latestExecutionError",
                 "description_en": "The waiting or execution error of the latest configuration version. This field is returned only when the version is waiting for a retry or fails to execute",
@@ -1210,26 +1401,29 @@
                 "properties": {
                   "code": {
                     "backendName": "code",
-                    "description_en": "The reason code for the waiting or execution failure of the latest configuration. This code is used to determine the subsequent handling method",
+                    "description_en": "The reason code for the waiting or execution failure of the latest configuration. This code is used to determine the subsequent processing method",
                     "description_zh": "最新配置的等待或执行失败原因码，用于判断后续处理方式",
                     "example": "AgentExecutionFailed",
+                    "required": true,
                     "title_en": "稳定原因码；等待 ACR 配置为 ACRDependencyNotReady，具体失败保留可公开的稳定原因码",
                     "title_zh": "稳定原因码；等待 ACR 配置为 ACRDependencyNotReady，具体失败保留可公开的稳定原因码",
                     "type": "string"
                   },
                   "message": {
                     "backendName": "message",
-                    "description_en": "The description of the reason why the latest configuration is waiting or failed to execute. Refer to code and retryable to determine what to do next",
+                    "description_en": "The description of the reason why the latest configuration is waiting or failed to execute. Combine this with the code and retryable fields to determine what to do next",
                     "description_zh": "最新配置等待或执行失败的原因说明。请结合 code 和 retryable 判断后续操作",
                     "example": "Agent 执行失败，请检查配置后重新提交。",
+                    "required": true,
                     "title_en": "用户可读的等待或失败说明",
                     "title_zh": "用户可读的等待或失败说明",
                     "type": "string"
                   },
                   "retryable": {
                     "backendName": "retryable",
-                    "description_en": "Specifies whether automatic retry is performed. If the value is true, you can query again later. If the value is false, check and fix the configuration based on the reason, and then resubmit the request",
+                    "description_en": "Specifies whether automatic retry is enabled. If the value is true, you can query again later. If the value is false, check and fix the configuration based on the reason, and then resubmit",
                     "description_zh": "是否会自动重试。true 时可稍后再次查询；false 时请根据原因检查并修复配置后重新提交",
+                    "required": true,
                     "title_en": "是否正在由后端自动重试；false 时根据原因修复后重新提交 Agent",
                     "title_zh": "是否正在由后端自动重试；false 时根据原因修复后重新提交 Agent",
                     "type": "boolean"
@@ -1241,15 +1435,16 @@
               },
               "latestSpecVersion": {
                 "backendName": "latestSpecVersion",
-                "description_en": "The latest configuration version number. Updates with the same configuration may retain the original version number. This field does not indicate that the configuration has taken effect",
+                "description_en": "The current latest configuration version number. Updates to the same configuration may retain the original version number. This field does not indicate that the configuration has taken effect",
                 "description_zh": "当前最新配置版本号。相同配置的更新可能保留原版本号；本字段不代表该配置已经生效",
                 "example": "1",
                 "format": "int64",
+                "required": true,
                 "type": "integer"
               },
               "latestVersionStatus": {
                 "backendName": "latestVersionStatus",
-                "description_en": "The execution status corresponding to latestSpecVersion. Valid values:\npending: Waiting for execution.\nprocessing: Executing.\nwaiting_retry: Waiting for a retry.\nsucceeded: Executed successfully.\nfailed: Execution failed.\nsuperseded: Superseded by a subsequent version",
+                "description_en": "The execution status corresponding to latestSpecVersion. Valid values:\npending: waiting for execution\nprocessing: executing\nwaiting_retry: waiting for retry\nsucceeded: executed successfully\nfailed: execution failed\nsuperseded: superseded by a subsequent version",
                 "description_zh": "latestSpecVersion 对应的执行状态。pending：等待执行；processing：执行中；waiting_retry：等待重试；succeeded：执行成功；failed：执行失败；superseded：已被后续版本替代",
                 "enum": [
                   "pending",
@@ -1260,6 +1455,9 @@
                   "superseded"
                 ],
                 "example": "succeeded",
+                "nullable": true,
+                "title_en": "最新配置处理状态",
+                "title_zh": "最新配置处理状态",
                 "type": "string"
               },
               "logging": {
@@ -1274,14 +1472,14 @@
                     "properties": {
                       "logstore": {
                         "backendName": "logstore",
-                        "description_en": "The name of the Simple Log Service logstore that receives agent logs",
+                        "description_en": "The name of the SLS logstore that receives agent logs",
                         "description_zh": "接收智能体日志的 SLS Logstore 名称",
                         "example": "agent-runtime",
                         "type": "string"
                       },
                       "project": {
                         "backendName": "project",
-                        "description_en": "The name of the Simple Log Service project that receives agent logs",
+                        "description_en": "The name of the SLS project that receives agent logs",
                         "description_zh": "接收智能体日志的 SLS Project 名称",
                         "example": "my-agent-logs",
                         "type": "string"
@@ -1294,9 +1492,10 @@
               },
               "name": {
                 "backendName": "name",
-                "description_en": "The name of the custom agent",
+                "description_en": "The custom agent name",
                 "description_zh": "自定义智能体名称",
                 "example": "my-custom-agent",
+                "required": true,
                 "type": "string"
               },
               "network": {
@@ -1306,7 +1505,7 @@
                 "properties": {
                   "accessInternet": {
                     "backendName": "accessInternet",
-                    "description_en": "The Internet access configuration of the agent. If this field is not configured, Internet access is allowed on the agent side, but it is still limited by the workspace",
+                    "description_en": "The Internet access configuration of the agent. If this field is not configured, Internet access is allowed on the agent side but is still limited by the workspace",
                     "description_zh": "智能体的互联网访问配置。未配置该项时，智能体侧允许访问，仍受工作空间限制",
                     "properties": {
                       "enabled": {
@@ -1320,7 +1519,7 @@
                   },
                   "accessVpc": {
                     "backendName": "accessVpc",
-                    "description_en": "The user VPC access configuration of the agent. If this field is not configured, user VPC access is allowed on the agent side, but it is still limited by the workspace",
+                    "description_en": "The user VPC access configuration of the agent. If this field is not configured, user VPC access is allowed on the agent side but is still limited by the workspace",
                     "description_zh": "智能体的用户 VPC 访问配置。未配置该项时，智能体侧允许访问，仍受工作空间限制",
                     "properties": {
                       "enabled": {
@@ -1335,13 +1534,31 @@
                 },
                 "type": "object"
               },
+              "observability": {
+                "backendName": "observability",
+                "description_en": "The high-code agent observability configuration",
+                "description_zh": "高代码 Agent 观测配置",
+                "properties": {
+                  "enabled": {
+                    "backendName": "enabled",
+                    "description_en": "Specifies whether to enable agent observability",
+                    "description_zh": "启用 Agent 观测",
+                    "title_en": "启用 Agent 观测",
+                    "title_zh": "启用 Agent 观测",
+                    "type": "boolean"
+                  }
+                },
+                "title_en": "高代码 Agent 观测配置",
+                "title_zh": "高代码 Agent 观测配置",
+                "type": "object"
+              },
               "ossMounts": {
                 "backendName": "ossMounts",
                 "description_en": "The latest submitted list of OSS directory mounts",
                 "description_zh": "最新提交的 OSS 目录挂载列表",
                 "itemName": "ossMounts",
                 "items": {
-                  "description_en": "An OSS directory mount configuration item",
+                  "description_en": "The configuration item for an OSS directory mount",
                   "description_zh": "一个 OSS 目录挂载配置项",
                   "properties": {
                     "bucketName": {
@@ -1355,7 +1572,7 @@
                     },
                     "mountPath": {
                       "backendName": "mountPath",
-                      "description_en": "The OSS mount directory in the container, located under /mnt/oss/",
+                      "description_en": "The OSS mount directory in the container, which is located under /mnt/oss/",
                       "description_zh": "容器内的 OSS 挂载目录，位于 /mnt/oss/ 下",
                       "example": "/mnt/oss/train",
                       "title_en": "容器内 /mnt/oss/ 下的子目录；每个挂载项必填",
@@ -1373,7 +1590,7 @@
                     },
                     "readOnly": {
                       "backendName": "readOnly",
-                      "description_en": "Specifies whether the mount is read-only. A value of true indicates a read-only mount, and a value of false indicates a read-write mount",
+                      "description_en": "Specifies whether the mount is read-only. A value of true indicates a read-only mount. A value of false indicates a read-write mount",
                       "description_zh": "是否只读挂载。true 表示只读，false 表示可读写",
                       "title_en": "是否只读；默认 false",
                       "title_zh": "是否只读；默认 false",
@@ -1393,7 +1610,7 @@
                 "description_zh": "智能体的调用协议配置列表",
                 "itemName": "protocol",
                 "items": {
-                  "description_en": "The configuration of an invocation protocol, including its paths and request headers",
+                  "description_en": "An invocation protocol and its path and request header configurations",
                   "description_zh": "一种调用协议及其路径、请求头配置",
                   "properties": {
                     "headers": {
@@ -1404,29 +1621,29 @@
                         "type": "string"
                       },
                       "backendName": "headers",
-                      "description_en": "The request header configurations for the current protocol. The key is the header name and the value is a string",
+                      "description_en": "The request header configuration for the current protocol. The key is the name and the value is a string",
                       "description_zh": "当前协议的请求头配置，键为名称，值为字符串",
                       "type": "object"
                     },
                     "paths": {
                       "backendName": "paths",
-                      "description_en": "The list of API paths corresponding to the current protocol",
+                      "description_en": "The list of API paths for the current protocol",
                       "description_zh": "当前协议对应的接口路径列表",
                       "itemName": "paths",
                       "items": {
-                        "description_en": "An API path and its purpose",
+                        "description_en": "An API path and its usage description",
                         "description_zh": "一个接口路径及其用途说明",
                         "properties": {
                           "description": {
                             "backendName": "description",
-                            "description_en": "The description of the current API path",
+                            "description_en": "The usage description of the current API path",
                             "description_zh": "当前接口路径的用途说明",
                             "example": "AG-UI 对话接口",
                             "type": "string"
                           },
                           "name": {
                             "backendName": "name",
-                            "description_en": "The API path corresponding to the current protocol",
+                            "description_en": "The interface path corresponding to the current protocol",
                             "description_zh": "当前协议对应的接口路径",
                             "example": "/agui",
                             "required": true,
@@ -1464,14 +1681,14 @@
               },
               "roleArn": {
                 "backendName": "roleArn",
-                "description_en": "The ARN of the RAM role used by the agent to access user cloud resources",
+                "description_en": "The ARN of the RAM role used when the agent accesses user cloud resources",
                 "description_zh": "智能体访问用户云资源时使用的 RAM 角色 ARN",
                 "example": "acs:ram::1234567890123456:role/agentcore-runtime-role",
                 "type": "string"
               },
               "runtime": {
                 "backendName": "runtime",
-                "description_en": "The latest committed runtime configurations, including compute specifications, session policy, and elastic policy",
+                "description_en": "The latest committed runtime configuration, including compute specifications, session policy, and elastic policy",
                 "description_zh": "最新提交的运行配置，包括计算规格、会话策略和弹性策略",
                 "properties": {
                   "compute": {
@@ -1498,7 +1715,7 @@
                   },
                   "hpa": {
                     "backendName": "hpa",
-                    "description_en": "The elastic policy configurations for the agent",
+                    "description_en": "The elastic policy configuration of the agent",
                     "description_zh": "智能体的弹性策略配置",
                     "properties": {
                       "enabled": {
@@ -1542,7 +1759,7 @@
                       },
                       "sessionTtlSeconds": {
                         "backendName": "sessionTtlSeconds",
-                        "description_en": "The maximum idle time configured for a session, in seconds",
+                        "description_en": "The maximum idle time for a session, in seconds",
                         "description_zh": "配置的会话空闲上限，单位为秒",
                         "example": "600",
                         "format": "int32",
@@ -1557,19 +1774,19 @@
                   },
                   "sessionPolicy": {
                     "backendName": "sessionPolicy",
-                    "description_en": "The session policy configurations for the agent",
+                    "description_en": "The session policy configuration of the agent",
                     "description_zh": "智能体的会话策略配置",
                     "properties": {
                       "headerName": {
                         "backendName": "headerName",
-                        "description_en": "The name of the HTTP request header used by the session policy. This parameter applies to ISOLATED_HEADER_FIELD",
+                        "description_en": "The name of the HTTP request header used by the session policy. This applies to ISOLATED_HEADER_FIELD",
                         "description_zh": "会话策略使用的 HTTP 请求头名称，适用于 ISOLATED_HEADER_FIELD",
                         "example": "X-Session-Id",
                         "type": "string"
                       },
                       "type": {
                         "backendName": "type",
-                        "description_en": "The type of the session policy. Valid values:\nAFFINITY: Session affinity.\nISOLATED_HEADER_FIELD: Uses the request header specified by headerName to associate sessions.\nISOLATED_COOKIE: Not recommended.\nNote: The compatible value DISABLED in a request is returned as AFFINITY",
+                        "description_en": "The session policy type. Valid values: AFFINITY: Session affinity. ISOLATED_HEADER_FIELD: Uses the request header specified by headerName to associate sessions. ISOLATED_COOKIE is not recommended. The compatible value DISABLED in requests is returned as AFFINITY",
                         "description_zh": "会话策略类型。AFFINITY：会话亲和；ISOLATED_HEADER_FIELD：使用 headerName 指定请求头关联会话。ISOLATED_COOKIE 暂不建议使用。请求中的兼容值 DISABLED 返回为 AFFINITY",
                         "enum": [
                           "DISABLED",
@@ -1590,14 +1807,14 @@
               },
               "sandboxPhaseCounts": {
                 "additionalProperties": {
-                  "description_en": "The number of instances in the corresponding running instance phase",
+                  "description_en": "The number of instances in the corresponding sandbox phase",
                   "description_zh": "对应运行实例阶段的实例数量",
                   "example": "1",
                   "format": "int64",
                   "type": "integer"
                 },
                 "backendName": "sandboxPhaseCounts",
-                "description_en": "The instance counts grouped by running instance phase. Keys include PENDING (creating or initializing), RUNNING (running), HIBERNATING (hibernating), HIBERNATED (hibernated), RESUMING (resuming), TERMINATING (terminating), and FAILED (failed). Only phases that actually occur are returned. Missing keys are treated as 0",
+                "description_en": "The instance counts grouped by sandbox phase. Keys include PENDING (creating or initializing), RUNNING (running), HIBERNATING (hibernating), HIBERNATED (hibernated), RESUMING (resuming), TERMINATING (terminating), and FAILED (failed). Only phases that actually occur are returned. Missing keys are treated as 0",
                 "description_zh": "按运行实例阶段统计数量。键包括 PENDING（创建或初始化中）、RUNNING（运行中）、HIBERNATING（休眠中）、HIBERNATED（已休眠）、RESUMING（恢复中）、TERMINATING（终止中）和 FAILED（失败）。仅返回实际出现的阶段，缺少的键按 0 理解",
                 "title_en": "按 Sandbox Phase 统计自定义智能体的实例数量。当前 Key：PENDING（创建或初始化中）、RUNNING（运行中）、HIBERNATING（休眠中）、HIBERNATED（已休眠）、RESUMING（恢复中）、TERMINATING（销毁中）、FAILED（运行时失败）。仅返回实际出现的 Phase，缺失 Key 按 0 处理。该字段为动态映射，后续可能新增 Key，前端可用 FAILED > 0 判断是否存在异常实例。",
                 "title_zh": "按 Sandbox Phase 统计自定义智能体的实例数量。当前 Key：PENDING（创建或初始化中）、RUNNING（运行中）、HIBERNATING（休眠中）、HIBERNATED（已休眠）、RESUMING（恢复中）、TERMINATING（销毁中）、FAILED（运行时失败）。仅返回实际出现的 Phase，缺失 Key 按 0 处理。该字段为动态映射，后续可能新增 Key，前端可用 FAILED > 0 判断是否存在异常实例。",
@@ -1605,7 +1822,7 @@
               },
               "status": {
                 "backendName": "status",
-                "description_en": "The overall status of the agent. Valid values:\nCreating: The agent is being created.\nRunning: The agent is running.\nFailed: The agent failed.\nUpdating: The agent is being updated.\nDeleting: The agent is being deleted.\nDeleted: The agent is deleted.\nTo query the execution progress of the latest configuration, check latestVersionStatus",
+                "description_en": "The overall status of the agent. Valid values: Creating: The agent is being created. Running: The agent is running. Failed: The agent failed. Updating: The agent is being updated. Deleting: The agent is being deleted. Deleted: The agent is deleted. To check the execution progress of the latest configuration, query latestVersionStatus",
                 "description_zh": "智能体整体状态。Creating：创建中；Running：运行中；Failed：失败；Updating：更新中；Deleting：删除中；Deleted：已删除。最新配置执行进度请查询 latestVersionStatus",
                 "enum": [
                   "Creating",
@@ -1616,6 +1833,7 @@
                   "Deleted"
                 ],
                 "example": "Running",
+                "required": true,
                 "type": "string"
               },
               "updatedAt": {
@@ -1625,14 +1843,26 @@
                 "example": "2026-10-10T06:05:00Z",
                 "type": "string"
               },
+              "useImageCache": {
+                "backendName": "useImageCache",
+                "description_en": "Specifies whether the image cache is enabled",
+                "description_zh": "镜像缓存开关",
+                "example": "true",
+                "required": true,
+                "title_en": "镜像缓存开关",
+                "title_zh": "镜像缓存开关",
+                "type": "boolean"
+              },
               "workspaceId": {
                 "backendName": "workspaceId",
                 "description_en": "The ID of the workspace to which the custom agent belongs",
                 "description_zh": "自定义智能体所属的工作空间 ID",
                 "example": "ws-a1b2c3d4e5f6",
+                "required": true,
                 "type": "string"
               }
             },
+            "required": true,
             "type": "object"
           },
           "httpStatusCode": {
@@ -1641,31 +1871,36 @@
             "description_zh": "本次请求的 HTTP 状态码。成功时为 200",
             "example": "200",
             "format": "int32",
+            "required": true,
             "type": "integer"
           },
           "message": {
             "backendName": "message",
-            "description_en": "The processing result message of the request. The value is success if the request succeeds",
+            "description_en": "The message that describes the processing result of the request. The value is success if the request is successful",
             "description_zh": "本次请求的处理结果说明。成功时为 success",
             "example": "success",
+            "required": true,
             "type": "string"
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The unique identifier of the request. You can use this ID to locate and troubleshoot issues",
+            "description_en": "The unique identifier of the request, which is used to locate and troubleshoot issues",
             "description_zh": "本次请求的唯一标识，用于定位和排查问题",
             "example": "550E8400-E29B-41D4-A716-446655440000",
+            "required": true,
             "type": "string"
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request is successful. A value of true indicates that the request is successful. Note that a successful creation, update, or deletion does not mean that the background operation is complete",
+            "description_en": "Indicates whether the request was successful. A value of true indicates success. A successful creation, update, or deletion does not mean that the background operation is complete",
             "description_zh": "请求是否处理成功。true 表示处理成功；创建、更新或删除成功不代表后台操作已经完成",
+            "required": true,
             "type": "boolean"
           }
         },
         "type": "object"
       }
     }
-  }
+  },
+  "timeout_ms": 62000
 }

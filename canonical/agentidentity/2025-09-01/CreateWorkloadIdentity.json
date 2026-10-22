@@ -132,7 +132,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether an associated RAM role is automatically created. When Settings is true, the system performs automatic creation of a RAM role with the same name as the workload identity",
+      "help_en": "Specifies whether the automatic creation of an associated RAM role is enabled. When the Settings value is true, the system performs automatic creation of a RAM role with the same name as the workload identity",
       "help_zh": "是否自动创建关联的 RAM 角色。设置为 true 时系统会自动创建一个与工作负载身份同名的 RAM 角色",
       "location": "formData",
       "name": "create_ram_role",
@@ -158,6 +158,19 @@
       "raw_name": "AllowedConsentCallbackURLs",
       "required": false,
       "type": "array"
+    },
+    {
+      "example": "[{\"identityProviderName\":\"corp-idp\",\"identityProviderAuthorizer\":{\"inboundAuthorizationEnabled\":true,\"customJWTAuthorizer\":{\"allowedAudience\":[\"finance-api\",\"finance-console\"],\"allowedSubjects\":[\"alice\",\"auditor\"]}}},{\"identityProviderName\":\"partner-idp\",\"identityProviderAuthorizer\":{\"inboundAuthorizationEnabled\":false,\"customJWTAuthorizer\":{\"allowedSubjects\":[\"partner-user-7\"]}}},{\"identityProviderName\":\"ops-idp\"}]",
+      "help_en": "The list of configured identity providers and their corresponding inbound access validation rules, provided as a JSON string",
+      "help_zh": "配置的身份提供商列表与对应的入站访问校验规则，以JSON字符串形式提供",
+      "location": "formData",
+      "name": "identity_providers",
+      "options": [
+        "--identity-providers"
+      ],
+      "raw_name": "IdentityProviders",
+      "required": false,
+      "type": "string"
     }
   ],
   "pathPattern": "",
@@ -186,7 +199,7 @@
                 "description_zh": "工作负载身份的 Consent 授权回跳 URL 白名单,用于约束离线委托(OfflineAccess)授权流程中允许的回跳地址",
                 "itemName": "AllowedConsentCallbackURLs",
                 "items": {
-                  "description_en": "An allowed consent authorization callback URL for the workload identity",
+                  "description_en": "The allowed consent authorization callback URL for the workload identity",
                   "description_zh": "工作负载身份的 Consent 授权允许回跳的 URL",
                   "example": "https://example.com/callback",
                   "type": "string"
@@ -199,7 +212,7 @@
                 "description_zh": "允许的 OAuth2 返回 URL 列表",
                 "itemName": "AllowedResourceOAuth2ReturnURL",
                 "items": {
-                  "description_en": "An allowed OAuth2 return URL",
+                  "description_en": "The allowed OAuth2 return URL",
                   "description_zh": "允许的 OAuth2 返回 URL",
                   "example": "https://127.0.0.1:8080/oauth/callback",
                   "type": "string"
@@ -230,6 +243,76 @@
                 "example": "identity-provider-okta",
                 "type": "string",
                 "visibility": "Public"
+              },
+              "IdentityProviders": {
+                "backendName": "identityProviders",
+                "description_en": "The list of configured identity providers",
+                "description_zh": "配置的身份提供商列表",
+                "itemName": "IdentityProviders",
+                "items": {
+                  "description_en": "The identity provider information",
+                  "description_zh": "身份提供商信息",
+                  "properties": {
+                    "IdentityProviderAuthorizer": {
+                      "backendName": "identityProviderAuthorizer",
+                      "description_en": "The inbound access validation rules for the identity provider",
+                      "description_zh": "身份提供商入站访问校验规则",
+                      "properties": {
+                        "CustomJWTAuthorizer": {
+                          "backendName": "customJWTAuthorizer",
+                          "description_en": "The custom inbound access validation rules",
+                          "description_zh": "自定义入站访问校验规则",
+                          "properties": {
+                            "AllowedAudience": {
+                              "backendName": "allowedAudience",
+                              "description_en": "The list of allowed audiences. An issued token is allowed if its aud claim contains any of the specified audiences",
+                              "description_zh": "允许的受众列表，签发的 Token 任一包含其中的 aud，即表示允许",
+                              "itemName": "AllowedAudience",
+                              "items": {
+                                "description_en": "The list of allowed audiences. An issued token is allowed if its aud claim contains any of the specified audiences",
+                                "description_zh": "允许的受众列表，签发的 Token 任一包含其中的 aud，即表示允许",
+                                "example": "allowed_audience",
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "AllowedSubjects": {
+                              "backendName": "allowedSubjects",
+                              "description_en": "The list of allowed subjects",
+                              "description_zh": "允许的主体列表",
+                              "itemName": "AllowedSubjects",
+                              "items": {
+                                "description_en": "The list of allowed subjects",
+                                "description_zh": "允许的主体列表",
+                                "example": "allowed_subjects",
+                                "type": "string"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "IdentityProviderName": {
+                      "backendName": "identityProviderName",
+                      "description_en": "The name of the identity provider",
+                      "description_zh": "身份提供商名称",
+                      "example": "idp-up-name",
+                      "type": "string"
+                    },
+                    "InboundAuthorizationEnabled": {
+                      "backendName": "inboundAuthorizationEnabled",
+                      "description_en": "Indicates whether inbound access rule validation is enabled",
+                      "description_zh": "入站访问规则校验开关",
+                      "example": "true",
+                      "type": "boolean"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
               },
               "RoleArn": {
                 "backendName": "roleArn",

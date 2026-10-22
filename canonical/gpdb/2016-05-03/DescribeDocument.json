@@ -3,7 +3,7 @@
   "cmd_full_name": "gpdb describe-document",
   "cmd_name": "describe-document",
   "deprecated": false,
-  "description_en": "Queries the information about a document",
+  "description_en": "Retrieves the details of a document",
   "description_zh": "查看文档详细信息",
   "kebab_example": "aliyun gpdb describe-document --db-instance-id gp-xxxxxxxxx --namespace-password testpassword --collection document --biz-region-id cn-hangzhou --file-name music.txt --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "gp-xxxxxxxxx",
-      "help_en": "The cluster ID.\n\nYou can call the https://help.aliyun.com/document_detail/86911.html operation to query the information about all AnalyticDB for PostgreSQL instances within a region, including instance IDs",
+      "help_en": "The instance ID.\n\nYou can call the https://help.aliyun.com/document_detail/86911.html operation to query the details of all AnalyticDB for PostgreSQL instances in the specified region, including instance IDs",
       "help_zh": "实例ID。\n\n您可以调用https://help.aliyun.com/document_detail/86911.html接口查看目标地域下所有的AnalyticDB PostgreSQL实例的详情，包括实例ID",
       "location": "query",
       "name": "db_instance_id",
@@ -35,7 +35,7 @@
     },
     {
       "example": "mynamespace",
-      "help_en": "The name of the namespace. Default value: public.\n\nYou can call the https://help.aliyun.com/document_detail/2401495.html operation to create a namespace and call the https://help.aliyun.com/document_detail/2401502.html operation to query a list of namespaces",
+      "help_en": "The namespace. Default value: public.\n\nYou can call the https://help.aliyun.com/document_detail/2401495.html operation to create a namespace and the https://help.aliyun.com/document_detail/2401502.html operation to view the namespace list",
       "help_zh": "命名空间，默认为public。\n\n您可以通过https://help.aliyun.com/document_detail/2401495.html接口创建，通过https://help.aliyun.com/document_detail/2401502.html接口查看列表",
       "location": "query",
       "name": "namespace",
@@ -48,7 +48,7 @@
     },
     {
       "example": "testpassword",
-      "help_en": "The password of the namespace.\n\nThe value of this parameter is specified when you call the https://help.aliyun.com/document_detail/2401495.html operation",
+      "help_en": "The password for the namespace.\n\nThis value is specified when you call the https://help.aliyun.com/document_detail/2401495.html operation",
       "help_zh": "命名空间对应的密码。\n\n本值为https://help.aliyun.com/document_detail/2401495.html接口指定",
       "location": "query",
       "name": "namespace_password",
@@ -61,7 +61,7 @@
     },
     {
       "example": "document",
-      "help_en": "The name of the document collection.\n\nYou can call the https://help.aliyun.com/document_detail/2618448.html operation to create a document collection. and call the https://help.aliyun.com/document_detail/2618452.html operation to query a list of document collections",
+      "help_en": "The name of the document collection.\n\nThe document collection is created by calling the https://help.aliyun.com/document_detail/2618448.html operation. You can call the https://help.aliyun.com/document_detail/2618452.html operation to view the created document collections",
       "help_zh": "文档库名称。\n\n由https://help.aliyun.com/document_detail/2618448.html接口创建。您可以调用https://help.aliyun.com/document_detail/2618452.html接口查看已经创建的文档库",
       "location": "query",
       "name": "collection",
@@ -87,7 +87,7 @@
     },
     {
       "example": "music.txt",
-      "help_en": "The name of the document.\n\nYou can call the https://help.aliyun.com/document_detail/2618453.html operation to query a list of documents",
+      "help_en": "The document name.\n\nYou can call the https://help.aliyun.com/document_detail/2618453.html operation to view the document list",
       "help_zh": "文档名。\n\n可以通过https://help.aliyun.com/document_detail/2618453.html接口查看文档列表",
       "location": "query",
       "name": "file_name",
@@ -108,17 +108,18 @@
         "properties": {
           "ChunkFileUrl": {
             "backendName": "chunkFileUrl",
-            "description_en": "The URL of the file after chunking. The validity period of the URL is 2 hours. The file is in the JSONL format. Each line is in the `{\"page_content\":\"*****\", \"metadata\": {\"**\":\"***\",\"**\":\"***\"}` format",
+            "description_en": "The URL of the chunked file. The URL is valid for 2 hours. The file is in JSONL format, and each line is in the following format: {\"page_content\":\"*****\", \"metadata\": {\"\":\"*\",\"\":\"*\"}",
             "description_zh": "切分后的文件链接，有效期为2h。文件格式为JSONL，每一行的格式为`{\"page_content\":\"*****\", \"metadata\": {\"**\":\"***\",\"**\":\"***\"}`",
             "example": "http://oss.xxx/music_chunk.jsonl",
             "type": "string"
           },
           "DocsCount": {
             "backendName": "docsCount",
-            "description_en": "The number of chunks into which the document is splitted",
+            "description_en": "The number of chunks generated from the document",
             "description_zh": "文档被切分的数量",
             "example": "100",
             "format": "int32",
+            "mappingResourcePropertyName": "$.DocsCount",
             "type": "integer"
           },
           "DocumentLoader": {
@@ -126,83 +127,89 @@
             "description_en": "The name of the document loader",
             "description_zh": "文档加载器名称",
             "example": "RapidOCRPDFLoader",
+            "mappingResourcePropertyName": "$.DocumentLoader",
             "type": "string"
           },
           "DocumentLoaderResultFileUrl": {
             "backendName": "documentLoaderResultFileUrl",
-            "description_en": "The markdown output file that is generated by the ADBPGLoader. The validity period is 2 hours",
+            "description_en": "The URL of the Markdown result file parsed by ADBPGLoader. The URL is valid for 2 hours",
             "description_zh": "ADBPGLoader文档解析的markdown结果文件，有效期为2h",
             "example": "http://oss.xxx/adbpg_loader_result.md",
             "type": "string"
           },
           "FileExt": {
             "backendName": "fileExt",
-            "description_en": "The extension of the document",
+            "description_en": "The file name extension",
             "description_zh": "文件扩展名",
             "example": "txt",
+            "mappingResourcePropertyName": "$.FileExt",
             "type": "string"
           },
           "FileMd5": {
             "backendName": "fileMd5",
-            "description_en": "The MD5 hash of the document",
+            "description_en": "The MD5 hash of the file",
             "description_zh": "文件MD5值",
             "example": "b8078c9591413550f8963e37e24abcea",
+            "mappingResourcePropertyName": "$.FileMd",
             "type": "string"
           },
           "FileMtime": {
             "backendName": "fileMtime",
-            "description_en": "The time when the document was last modified",
+            "description_en": "The last modified time of the document",
             "description_zh": "文档最新修改时间",
             "example": "2023-11-01 10:01:01.123456",
+            "mappingResourcePropertyName": "$.FileMtime",
             "type": "string"
           },
           "FileName": {
             "backendName": "fileName",
-            "description_en": "The name of the document",
+            "description_en": "The file name",
             "description_zh": "文件名",
             "example": "music.txt",
             "type": "string"
           },
           "FileSize": {
             "backendName": "fileSize",
-            "description_en": "The size of the document. Unit: bytes",
+            "description_en": "The file size in bytes",
             "description_zh": "文件大小，单位为字节",
             "example": "10000",
             "format": "int64",
+            "mappingResourcePropertyName": "$.FileSize",
             "type": "integer"
           },
           "FileUrl": {
             "backendName": "fileUrl",
-            "description_en": "The download URL of the document. The validity period of the URL is 2 hours",
+            "description_en": "The download URL of the document. The URL is valid for 2 hours",
             "description_zh": "文档的下载地址，有效期为2h",
             "example": "http://oss.xxx/music.txt",
             "type": "string"
           },
           "FileVersion": {
             "backendName": "fileVersion",
-            "description_en": "The version of the document. This value increments by 1 each time the same document is uploaded",
+            "description_en": "The document version. This value is incremented by 1 each time the same document is updated and uploaded",
             "description_zh": "文档版本。每次更新上传同一文档时，此值会+1",
             "example": "1",
             "format": "int32",
+            "mappingResourcePropertyName": "$.FileVersion",
             "type": "integer"
           },
           "Message": {
             "backendName": "message",
-            "description_en": "The returned message",
+            "description_en": "The detailed information returned by the API operation",
             "description_zh": "接口返回详细信息",
             "example": "success",
             "type": "string"
           },
           "PlainChunkFileUrl": {
             "backendName": "plainChunkFileUrl",
-            "description_en": "The URL of the TEXT that does not contain metadata after chunking. Each line is a chunk. The validity period of the URL is 2 hours",
+            "description_en": "The download URL of the plain text chunks without metadata. Each line represents a chunk. The URL is valid for 2 hours",
             "description_zh": "被切分后的纯文本(不带Metadata)下载地址，每行是一个chunk，有效期为2h",
             "example": "http://oss.xxx/music_plain_chunk.txt",
             "type": "string"
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The unique ID of the request",
+            "description_en": "The request ID",
             "description_zh": "请求ID",
             "example": "ABB39CC3-4488-4857-905D-2E4A051D0521",
             "type": "string"
@@ -212,20 +219,22 @@
             "description_en": "The source of the document",
             "description_zh": "文档来源",
             "example": "OSS\n",
+            "mappingResourcePropertyName": "$.Source",
             "type": "string"
           },
           "Status": {
             "backendName": "status",
-            "description_en": "The status of the operation. Valid values:\n\nsuccess\nfail",
+            "description_en": "The execution status of the API operation. Valid values:\nsuccess: Execution succeeded.\nfail: Execution failed",
             "description_zh": "API执行状态，取值如下：\nsuccess：执行成功。\nfail：执行失败",
             "example": "success",
             "type": "string"
           },
           "TextSplitter": {
             "backendName": "textSplitter",
-            "description_en": "The name of the document splitter",
+            "description_en": "The name of the text splitter",
             "description_zh": "文档切分器名称",
             "example": "ChineseRecursiveTextSplitter",
+            "mappingResourcePropertyName": "$.TextSplitter",
             "type": "string"
           }
         },

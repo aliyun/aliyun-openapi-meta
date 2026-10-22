@@ -3,7 +3,7 @@
   "cmd_full_name": "ndr describe-private-assets",
   "cmd_name": "describe-private-assets",
   "deprecated": false,
-  "description_en": "Queries private network assets and their accessed states, network locations, and filtering rules in a specified VPC by using paging",
+  "description_en": "Queries the private network assets in a specified VPC by page, including their accessed state, network locations, and filter rules",
   "description_zh": "分页查询指定 VPC 下的私网资产及其接入状态、网络位置和过滤规则",
   "kebab_example": "aliyun ndr describe-private-assets --vpc-instance-id vpc-bp1example --vsw-instance-id-list vsw-bp1example --traction-status 1 --instance-id-list i-bp1example --instance-name example-instance --page 1 --page-size 10 --region-no cn-hangzhou --member-uid 1234567890123456 --private-ip-address 10.0.0.10 --region cn-hangzhou",
   "method": "GET|POST",
@@ -37,7 +37,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The list of vSwitch instance IDs. If this parameter is not specified, assets are not filtered by vSwitch",
+      "help_en": "The vSwitch instance IDs. If you do not specify this parameter, the query is not filtered by vSwitch",
       "help_zh": "交换机实例 ID 列表。不传时不按交换机筛选",
       "location": "query",
       "name": "vsw_instance_id_list",
@@ -53,7 +53,7 @@
       "element": {
         "type": "int"
       },
-      "help_en": "The accessed state of the private network asset. Valid values:\n0: Not accessed.\n1: Some elastic network interfaces (ENIs) are accessed.\n2: All ENIs are accessed",
+      "help_en": "The accessed state of the private network asset. A value of 0 indicates that the asset is not accessed. A value of 1 indicates that some elastic network interfaces (ENIs) are accessed. A value of 2 indicates that all elastic network interfaces (ENIs) are accessed",
       "help_zh": "私网资产接入状态。0 表示未接入，1 表示部分弹性网卡已接入，2 表示全部弹性网卡已接入",
       "location": "query",
       "name": "traction_status",
@@ -69,7 +69,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The list of instance IDs",
+      "help_en": "The instance IDs",
       "help_zh": "实例 ID 列表",
       "location": "query",
       "name": "instance_id_list",
@@ -96,7 +96,7 @@
     },
     {
       "example": "1",
-      "help_en": "The page number. The value starts from 1",
+      "help_en": "The page number. Pages start from 1",
       "help_zh": "页码，起始值为 1",
       "location": "query",
       "name": "page",
@@ -109,7 +109,7 @@
     },
     {
       "example": "10",
-      "help_en": "The number of entries per page",
+      "help_en": "The number of entries to return on each page",
       "help_zh": "每页返回的记录数",
       "location": "query",
       "maximum": "100",
@@ -137,7 +137,7 @@
     },
     {
       "example": "1234567890123456",
-      "help_en": "The UID of the member account. If this parameter is not specified, the current account is used",
+      "help_en": "The UID of the member account. If you do not specify this parameter, the current account is used",
       "help_zh": "成员账号 UID。不传时使用当前账号",
       "location": "query",
       "name": "member_uid",
@@ -160,6 +160,19 @@
       "raw_name": "PrivateIpAddress",
       "required": false,
       "type": "string"
+    },
+    {
+      "example": "ecs",
+      "help_en": "Filters assets by asset type. Valid values: ecs, eci, and acs. If you do not specify this parameter or specify an empty string, all asset types are queried",
+      "help_zh": "按资产类型筛选，支持 ecs、eci、acs；不传或传空字符串时查询全部类型",
+      "location": "query",
+      "name": "cloud_type",
+      "options": [
+        "--cloud-type"
+      ],
+      "raw_name": "CloudType",
+      "required": false,
+      "type": "string"
     }
   ],
   "pathPattern": "/",
@@ -180,11 +193,11 @@
             "properties": {
               "List": {
                 "backendName": "list",
-                "description_en": "The list of entries that match the specified filter conditions",
+                "description_en": "The list of records that meet the filter conditions",
                 "description_zh": "符合条件的记录列表",
                 "itemName": "privateAsset",
                 "items": {
-                  "description_en": "The entry",
+                  "description_en": "The record",
                   "description_zh": "一条记录",
                   "properties": {
                     "CloudType": {
@@ -210,14 +223,21 @@
                     },
                     "InstanceSpec": {
                       "backendName": "instanceSpec",
-                      "description_en": "The instance type",
+                      "description_en": "The instance specifications",
                       "description_zh": "实例规格",
                       "example": "ecs.g7.large",
                       "type": "string"
                     },
+                    "InstanceStatus": {
+                      "backendName": "instanceStatus",
+                      "description_en": "The running status of the ECS instance. Valid values: Running, Stopped, Stopping, and Starting. This parameter is not returned for non-ECS instances or when the status is not synchronized. You cannot enable private network collection for ECS instances in the Stopped or Stopping state, but you can stop existing collection tasks",
+                      "description_zh": "ECS 实例运行状态。Running 表示运行中，Stopped 表示已停止，Stopping 表示停止中，Starting 表示启动中。非 ECS 或状态尚未同步时不返回。Stopped、Stopping 的 ECS 不允许新增私网采集，已有采集仍可停止",
+                      "example": "Stopped",
+                      "type": "string"
+                    },
                     "PrivateTractionFilterRuleId": {
                       "backendName": "privateTractionFilterRuleId",
-                      "description_en": "The ID of the filtering rule that is currently used by the private network asset",
+                      "description_en": "The ID of the filter rule currently used by the private network asset",
                       "description_zh": "私网资产当前使用的过滤规则 ID",
                       "example": "tmf-bp1example",
                       "type": "string"
@@ -231,7 +251,7 @@
                     },
                     "SpecMaxBandwidth": {
                       "backendName": "specMaxBandwidth",
-                      "description_en": "The maximum bandwidth of the instance type. Unit: Mbit/s",
+                      "description_en": "The maximum bandwidth corresponding to the instance specifications, in Mbit/s",
                       "description_zh": "实例规格对应的最大带宽，单位为 Mbps",
                       "example": "1024",
                       "format": "int32",
@@ -239,7 +259,7 @@
                     },
                     "TractionStatus": {
                       "backendName": "tractionStatus",
-                      "description_en": "The accessed state of the private network asset. Valid values:\n0: Not accessed.\n1: Some elastic network interfaces (ENIs) are accessed.\n2: All ENIs are accessed",
+                      "description_en": "The accessed state of the private network asset. A value of 0 indicates that the asset is not accessed. A value of 1 indicates that some elastic network interfaces (ENIs) are accessed. A value of 2 indicates that all elastic network interfaces (ENIs) are accessed",
                       "description_zh": "私网资产接入状态。0 表示未接入，1 表示部分弹性网卡已接入，2 表示全部弹性网卡已接入",
                       "example": "1",
                       "format": "int32",
@@ -254,7 +274,7 @@
                     },
                     "VswInstanceId": {
                       "backendName": "vswInstanceId",
-                      "description_en": "The vSwitch instance ID. This parameter is required when you use an existing vSwitch",
+                      "description_en": "The vSwitch instance ID. This parameter is required when an existing vSwitch is used",
                       "description_zh": "交换机实例 ID。使用已有交换机时必填",
                       "example": "vsw-bp1example",
                       "type": "string"
@@ -273,7 +293,7 @@
               },
               "Page": {
                 "backendName": "page",
-                "description_en": "The page number. The value starts from 1",
+                "description_en": "The page number. Pages start from 1",
                 "description_zh": "页码，起始值为 1",
                 "example": "1",
                 "format": "int32",
@@ -281,7 +301,7 @@
               },
               "PageSize": {
                 "backendName": "pageSize",
-                "description_en": "The number of entries per page",
+                "description_en": "The number of entries to return on each page",
                 "description_zh": "每页返回的记录数",
                 "example": "10",
                 "format": "int32",
@@ -289,7 +309,7 @@
               },
               "TotalCount": {
                 "backendName": "totalCount",
-                "description_en": "The total number of entries that match the specified filter conditions",
+                "description_en": "The total number of records that meet the filter conditions",
                 "description_zh": "符合条件的记录总数",
                 "example": "10",
                 "format": "int32",

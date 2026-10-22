@@ -3,7 +3,7 @@
   "cmd_full_name": "sae exec-job",
   "cmd_name": "exec-job",
   "deprecated": false,
-  "description_en": "Call ExecJob to run a job",
+  "description_en": "Executes a job",
   "description_zh": "调用ExecJob接口执行任务",
   "kebab_example": "aliyun sae exec-job --app-id ee1a7a07-abcb-4652-a1d3-2d57f4150000 --region cn-hangzhou",
   "method": "GET",
@@ -21,7 +21,7 @@
   "parameters": [
     {
       "example": "ee1a7a07-abcb-4652-a1d3-2d57f415****",
-      "help_en": "The job template ID",
+      "help_en": "The ID of the job template",
       "help_zh": "任务模板ID",
       "location": "query",
       "name": "app_id",
@@ -34,7 +34,7 @@
     },
     {
       "example": "custom",
-      "help_en": "A customizable event ID that ensures idempotency. The system creates only one job for requests that have the same event ID",
+      "help_en": "The event ID. This parameter is user-defined and used for idempotence. Only one job is created for the same event ID",
       "help_zh": "事件ID，用户自定义。用作幂等使用，相同事件ID仅创建一个任务",
       "location": "query",
       "name": "event_id",
@@ -47,7 +47,7 @@
     },
     {
       "example": "echo",
-      "help_en": "The startup command, which must be an executable that exists in the container. Example:\n\n```\ncommand:\n      - echo\n      - abc\n      - >\n      - file0\n```\n\nBased on this example, `Command` is `echo` and `CommandArgs` is `[\"abc\", \">\", \"file0\"]`",
+      "help_en": "The image startup command. The command must be an executable object that exists in the container. Example:\n\n```\ncommand:\n      - echo\n      - abc\n      - >\n      - file0\n```\nBased on the preceding example, Command=\"echo\" and CommandArgs=[\"abc\", \">\", \"file0\"]",
       "help_zh": "镜像启动命令。该命令必须为容器内存在的可执行的对象。示例如下：\n\n```\ncommand:\n      - echo\n      - abc\n      - >\n      - file0\n```\n根据上述示例，则`Command=\"echo\", CommandArgs=[\"abc\", \">\", \"file0\"]`",
       "location": "query",
       "name": "command",
@@ -60,7 +60,7 @@
     },
     {
       "example": "[\"a\",\"b\"]",
-      "help_en": "The arguments for the Command parameter. The value must be a string that represents a JSON array. Format:\n\n`[\"a\",\"b\"]`\n\nIn the preceding example for the `Command` parameter, `CommandArgs` is `[\"abc\", \">\", \"file0\"]`. The JSON array `[\"abc\", \">\", \"file0\"]` must be converted to a string. This parameter is optional",
+      "help_en": "The arguments for the image startup command, which are required by the Command parameter. Format:\n\n`[\"a\",\"b\"]`\n\nIn the preceding example, CommandArgs=[\"abc\", \">\", \"file0\"]. The `[\"abc\", \">\", \"file0\"]` part must be converted to a string in JSON array format. If this parameter is not required, you do not need to specify it",
       "help_zh": "镜像启动命令参数。上述启动命令Command所需参数。格式如下：\n\n`[\"a\",\"b\"]`\n\n在上述示例中，`CommandArgs=[\"abc\", \">\", \"file0\"]`，其中`[\"abc\", \">\", \"file0\"]`需要转成String类型，里面的格式为JSON数组。如果无此参数，则无需填写",
       "location": "query",
       "name": "command_args",
@@ -73,7 +73,7 @@
     },
     {
       "example": "[{\"name\":\"envtmp\",\"value\":\"0\"}]",
-      "help_en": "The container environment variables. You can specify custom environment variables or reference an existing ConfigMap. For more information about creating a ConfigMap, see https://help.aliyun.com/document_detail/176914.html.\n\nCustom configuration\n\nname: The name of the environment variable.\n\nvalue: The value of the environment variable.\n\nReference a ConfigMap\n\nname: The name of the environment variable. You can reference a single key or all keys. To reference all keys, use the `sae-sys-configmap-all-<ConfigMap name>` format. Example: `sae-sys-configmap-all-test1`.\n\nvalueFrom: The source of the environment variable. Set the value to `configMapRef`.\n\nconfigMapId: The ID of the ConfigMap.\n\nkey: The key that you want to reference. If you want to reference all key-value pairs, do not specify this parameter",
+      "help_en": "The environment variables of the container. You can customize environment variables or reference configuration items. To reference a configuration item, you must first create a ConfigMap instance. For more information, see https://help.aliyun.com/document_detail/176914.html. Valid values:\nCustom configuration\n    - name: The name of the environment variable.\n    - value: The value of the environment variable.\nReference a configuration item\n    - name: The name of the environment variable. You can reference a single key or all keys. To reference all keys, enter `sae-sys-configmap-all-<configuration item name>`, such as `sae-sys-configmap-all-test1`.\n    - valueFrom: The reference of the environment variable. Set the value to `configMapRef`.\n    - configMapId: The ID of the configuration item.\n    - key: The key. If you reference all key-value pairs, do not specify this field",
       "help_zh": "容器环境变量参数。支持自定义或引用配置项。如需引用配置项，请先创建ConfigMap实例。更多信息，请参见https://help.aliyun.com/document_detail/176914.html。取值说明如下：\n自定义配置\n    - name：环境变量名称。\n    - value：环境变量值。\n引用配置项\n    - name：环境变量名称。支持引用单个或全部键，如果引用全部键，需输入`sae-sys-configmap-all-<配置项名称>`，例如`sae-sys-configmap-all-test1`。\n    - valueFrom：环境变量引用。取值为`configMapRef`。\n    - configMapId：配置项ID。\n    - key：键。如果引用全部健值，则不设置该字段",
       "location": "query",
       "name": "envs",
@@ -86,7 +86,7 @@
     },
     {
       "example": "-Xms4G -Xmx4G",
-      "help_en": "Options for starting a job deployed from a JAR package. The default startup command is:\n`$JAVA_HOME/bin/java $JarStartOptions -jar $CATALINA_OPTS \"$package_path\" $JarStartArg`",
+      "help_en": "The startup options for the JAR package job. The default startup command for the job is:\n`$JAVA_HOME/bin/java $JarStartOptions -jar $CATALINA_OPTS \"$package_path\" $JarStartArg`",
       "help_zh": "JAR包启动任务选项。任务默认启动命令：\n`$JAVA_HOME/bin/java $JarStartOptions -jar $CATALINA_OPTS \"$package_path\" $JarStartArg`",
       "location": "query",
       "name": "jar_start_options",
@@ -99,7 +99,7 @@
     },
     {
       "example": "custom-args",
-      "help_en": "Arguments for starting a job deployed from a JAR package. The default startup command is:\n`$JAVA_HOME/bin/java $JarStartOptions -jar $CATALINA_OPTS \"$package_path\" $JarStartArgs`",
+      "help_en": "The startup arguments for the JAR package job. The default startup command for the job is:\n`$JAVA_HOME/bin/java $JarStartOptions -jar $CATALINA_OPTS \"$package_path\" $JarStartArgs`",
       "help_zh": "JAR包启动任务参数。任务默认启动命令：\n`$JAVA_HOME/bin/java $JarStartOptions -jar $CATALINA_OPTS \"$package_path\" $JarStartArgs`",
       "location": "query",
       "name": "jar_start_args",
@@ -112,7 +112,7 @@
     },
     {
       "example": "CATALINA_OPTS=\\\"$CATALINA_OPTS $Options\\\" catalina.sh run",
-      "help_en": "The startup command for a job deployed from a WAR package. Configuration is the same as for an image-based deployment. For more information, see https://help.aliyun.com/document_detail/96677.html",
+      "help_en": "The startup command for the WAR package deployment job. The procedure is the same as configuring the startup command for image deployment. For more information, see https://help.aliyun.com/document_detail/96677.html",
       "help_zh": "设置WAR包部署任务的启动命令，操作步骤与镜像部署的启动命令配置操作相同。更多信息，请参见https://help.aliyun.com/document_detail/96677.html",
       "location": "query",
       "name": "war_start_options",
@@ -125,7 +125,7 @@
     },
     {
       "example": "2023-09-14T14:25:02Z",
-      "help_en": "The time to trigger the job, specified in the `yyyy-MM-dd'T'HH:mm:ss'Z'` format",
+      "help_en": "The trigger time of the job. Format: `yyyy-MM-dd'T'HH:mm:ss'Z'`",
       "help_zh": "任务触发时间，格式为`yyyy-MM-dd'T'HH:mm:ss'Z'`",
       "location": "query",
       "name": "time",
@@ -138,7 +138,7 @@
     },
     {
       "example": "3",
-      "help_en": "The number of concurrent instances",
+      "help_en": "The number of concurrent instances for the job",
       "help_zh": "任务并发实例数",
       "location": "query",
       "name": "replicas",
@@ -156,21 +156,21 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The returned data",
+        "description_en": "The response data",
         "description_zh": "返回数据",
         "properties": {
           "Code": {
-            "description_en": "The HTTP status code or a POP error code.\n\n2xx: Success.\n\n3xx: Redirection.\n\n4xx: Request error.\n\n5xx: Server error",
+            "description_en": "The API status code or POP error code. Valid values:\n\n2xx: Success.\n3xx: Redirection.\n4xx: Request error.\n5xx: Server error",
             "description_zh": "接口状态或POP错误码。取值说明如下：\n\n2xx：成功。\n3xx：重定向。\n4xx：请求错误。\n5xx：服务器错误",
             "example": "200",
             "type": "string"
           },
           "Data": {
-            "description_en": "The returned data",
+            "description_en": "The response data",
             "description_zh": "返回数据",
             "properties": {
               "Code": {
-                "description_en": "The HTTP status code or a POP error code.\n\n2xx: Success.\n\n3xx: Redirection.\n\n4xx: Request error.\n\n5xx: Server error",
+                "description_en": "The API status code or POP error code. Valid values:\n\n2xx: Success.\n3xx: Redirection.\n4xx: Request error.\n5xx: Server error",
                 "description_zh": "接口状态或POP错误码。取值说明如下：\n\n2xx：成功。\n3xx：重定向。\n4xx：请求错误。\n5xx：服务器错误",
                 "example": "200",
                 "type": "string"
@@ -182,13 +182,13 @@
                 "type": "string"
               },
               "Msg": {
-                "description_en": "The returned message.\n\nIf the request is successful, success is returned.\n\nIf the request fails, an error code is returned",
+                "description_en": "The additional information. Valid values:\n\nIf the request is successful, success is returned.\nIf the request is abnormal, a specific error code is returned",
                 "description_zh": "附加信息。取值说明如下：\n\n请求正常，返回success。\n请求异常，返回具体异常错误码",
                 "example": "success",
                 "type": "string"
               },
               "Success": {
-                "description_en": "Whether the job was successfully executed.\n\ntrue: The execution was successful.\n\nfalse: The execution failed",
+                "description_en": "Indicates whether the job is executed successfully. Valid values:\n\ntrue: The job is executed successfully.\nfalse: The job fails to be executed",
                 "description_zh": "执行任务是否成功。取值说明如下：\n\ntrue：执行成功。\nfalse：执行失败",
                 "example": "true",
                 "type": "string"
@@ -197,12 +197,13 @@
             "type": "object"
           },
           "ErrorCode": {
-            "description_en": "The error code.\n\nThis parameter is omitted for successful requests.\n\nThis parameter is included for failed requests. For more information, see the Error codes section of this topic",
+            "description_en": "The error code. Valid values:\n\nIf the request is successful, the ErrorCode parameter is not returned.\nIf the request fails, the ErrorCode parameter is returned. For more information, see the Error codes section in this topic",
             "description_zh": "错误码。取值说明如下：\n\n请求成功：不返回ErrorCode字段。\n请求失败：返回ErrorCode字段。具体信息，请参见本文的错误码列表",
+            "example": "InvalidApplication.NotFound",
             "type": "string"
           },
           "Message": {
-            "description_en": "The returned message.\n\nIf the request is successful, success is returned.\n\nIf the request fails, an error code is returned",
+            "description_en": "The additional information. Valid values:\n\nIf the request is successful, success is returned.\nIf the request is abnormal, a specific error code is returned",
             "description_zh": "附加信息。取值说明如下：\n\n请求正常，返回success。\n请求异常，返回具体异常错误码",
             "example": "success",
             "type": "string"
@@ -214,13 +215,13 @@
             "type": "string"
           },
           "Success": {
-            "description_en": "Indicates whether the request was successful.\n\ntrue: The request was successful.\n\nfalse: The request failed",
+            "description_en": "Indicates whether the job is executed successfully. Valid values:\n\ntrue: The job is executed successfully.\nfalse: The job fails to be executed",
             "description_zh": "执行任务是否成功。取值说明如下：\n\ntrue：执行成功。\nfalse：执行失败",
             "example": "true",
             "type": "boolean"
           },
           "TraceId": {
-            "description_en": "The trace ID for retrieving detailed information about the call",
+            "description_en": "The trace ID, which is used to precisely query invocation information",
             "description_zh": "调用链ID，用于精确查询调用信息",
             "example": "0b87b7e716575071334387401e****",
             "type": "string"

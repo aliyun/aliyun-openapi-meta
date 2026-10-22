@@ -3,7 +3,7 @@
   "cmd_full_name": "agentcore get-custom-agent",
   "cmd_name": "get-custom-agent",
   "deprecated": false,
-  "description_en": "Queries the details of a custom agent in a specified workspace, including the deployment configuration, the execute status of the latest configuration version, and the running instance status statistics",
+  "description_en": "Queries the details of a custom agent in a specified workspace, including deployment configurations, the execute status of the latest configuration version, and the running instance status statistics",
   "description_zh": "查询指定工作空间中的自定义智能体详情，包括部署配置、最新配置版本的执行状态和运行实例状态统计",
   "kebab_example": "aliyun agentcore get-custom-agent --workspace-id ws-a1b2c3d4e5f6 --agent-id agent-550e8400e29b41d4a716446655440000 --region cn-hangzhou",
   "method": "GET",
@@ -35,7 +35,7 @@
     },
     {
       "example": "agent-550e8400e29b41d4a716446655440000",
-      "help_en": "The unique identifier of the custom agent. You can obtain this value from the response of CreateCustomAgent or ListCustomAgents",
+      "help_en": "The unique identifier of the custom agent, which can be obtained from the response of CreateCustomAgent or ListCustomAgents",
       "help_zh": "自定义智能体的唯一标识，可从 CreateCustomAgent 或 ListCustomAgents 的响应中获取",
       "location": "path",
       "name": "agent_id",
@@ -56,21 +56,23 @@
         "properties": {
           "code": {
             "backendName": "code",
-            "description_en": "The request result code. The value is SUCCESS when the request is successful",
+            "description_en": "The request result code. The value is SUCCESS if the request is successful",
             "description_zh": "请求结果码。成功时为 SUCCESS",
             "example": "SUCCESS",
+            "required": true,
             "type": "string"
           },
           "data": {
             "backendName": "data",
-            "description_en": "The latest submitted configuration and status of the custom agent. To determine whether the configuration has taken effect, check the latestVersionStatus field",
+            "description_en": "The latest submitted configuration and status of the custom agent. To determine whether the configuration has taken effect, check the latestVersionStatus parameter",
             "description_zh": "自定义智能体的最新提交配置及状态，配置是否已生效请结合 latestVersionStatus 判断",
             "properties": {
               "agentId": {
                 "backendName": "agentId",
-                "description_en": "The unique identifier of the custom agent. You can obtain this value from the response of CreateCustomAgent or ListCustomAgents",
+                "description_en": "The unique identifier of the custom agent, which can be obtained from the response of CreateCustomAgent or ListCustomAgents",
                 "description_zh": "自定义智能体的唯一标识，可从 CreateCustomAgent 或 ListCustomAgents 的响应中获取",
                 "example": "agent-550e8400e29b41d4a716446655440000",
+                "required": true,
                 "type": "string"
               },
               "agenticFsMounts": {
@@ -102,7 +104,7 @@
                     },
                     "readOnly": {
                       "backendName": "readOnly",
-                      "description_en": "Specifies whether the mount is read-only. A value of true indicates a read-only mount, and a value of false indicates a read-write mount",
+                      "description_en": "Specifies whether the mount is read-only. A value of true indicates read-only, and false indicates read and write",
                       "description_zh": "是否只读挂载。true 表示只读，false 表示可读写",
                       "example": "false",
                       "title_en": "是否只读挂载，省略默认 false；不是 RAM 角色只读策略",
@@ -128,39 +130,47 @@
               },
               "artifact": {
                 "backendName": "artifact",
-                "description_en": "The latest submitted deployment artifact configuration, including the service listening port and ACR container image. To determine whether the configuration has taken effect, check the latestVersionStatus field",
+                "description_en": "The latest submitted deployment artifact configuration, including the service listening port and ACR container image. To determine whether the configuration has taken effect, check the latestVersionStatus parameter",
                 "description_zh": "最新提交的部署制品配置，包含服务监听端口和 ACR 容器镜像。是否已生效请结合 latestVersionStatus 判断",
                 "properties": {
                   "code": {
                     "backendName": "code",
-                    "description_en": "The code package configuration field. Code package deployment is not supported",
-                    "description_zh": "代码包配置字段。当前暂不支持代码包部署",
+                    "description_en": "The code package deployment configuration. This parameter is mutually exclusive with container. The code package must be in ZIP or TAR.GZ format. Dependencies must be packaged by the user. The platform does not install dependencies or perform online builds",
+                    "description_zh": "代码包部署配置，与 container 互斥。代码包使用 ZIP 或 TAR.GZ 格式，依赖由用户打包，平台不安装依赖或在线构建",
                     "properties": {
                       "entrypoint": {
                         "backendName": "entrypoint",
-                        "description_en": "The startup entry point of the code package. Code package deployment is not supported",
-                        "description_zh": "代码包启动入口。当前暂不支持代码包部署",
-                        "example": "python app.py",
+                        "description_en": "The startup command for the code package. This parameter is required in code package mode. The working directory is the extracted code root directory /code, such as python main.py. Quotes and escapes are supported. Environment variables, pipes, and logical operations are not automatically expanded. For complex commands, use a script within the package",
+                        "description_zh": "代码包启动命令，代码包模式必填。工作目录为解压后的代码根目录 /code，例如 python main.py。支持引号和转义，不自动展开环境变量、管道或逻辑运算；复杂命令请使用包内脚本",
+                        "example": "python main.py",
                         "required": true,
+                        "title_en": "代码包启动命令",
+                        "title_zh": "代码包启动命令",
                         "type": "string"
                       },
                       "languageRuntime": {
                         "backendName": "languageRuntime",
-                        "description_en": "The language runtime identifier of the code package. Code package deployment is not supported",
-                        "description_zh": "代码包的语言运行时标识。当前暂不支持代码包部署",
-                        "example": "python",
+                        "description_en": "The identifier of the currently saved code runtime environment configuration. The runtime image uses the saved snapshot. Adding a new version to the directory does not automatically change the existing configuration",
+                        "description_zh": "当前已保存配置的代码运行环境标识。运行镜像使用已保存的快照，目录增加新版本不会自动改变现有配置",
+                        "example": "python3.12",
                         "required": true,
+                        "title_en": "代码运行环境",
+                        "title_zh": "代码运行环境",
                         "type": "string"
                       },
                       "sourceUri": {
                         "backendName": "sourceUri",
-                        "description_en": "The source URI of the code package. Code package deployment is not supported",
-                        "description_zh": "代码包来源 URI。当前暂不支持代码包部署",
-                        "example": "oss://my-agent-bucket/packages/agent.zip",
+                        "description_en": "The fixed oss:// address of the platform code package referenced by the currently saved configuration. This address does not include the signature parameters of the source HTTPS link. You can use this address to reuse an existing code package. To download the content, call GetAgentCodePackageDownloadUrl",
+                        "description_zh": "当前已保存配置引用的平台固定代码包 oss:// 地址，不包含源 HTTPS 链接的签名参数。可用于复用已有代码包；下载内容请调用 GetAgentCodePackageDownloadUrl",
+                        "example": "oss://agentcore-platform-example/code-packages/workspaces/ws-a1b2c3d4e5f6/550e8400-e29b-41d4-a716-446655440000/package.zip",
                         "required": true,
+                        "title_en": "代码包来源地址",
+                        "title_zh": "代码包来源地址",
                         "type": "string"
                       }
                     },
+                    "title_en": "代码部署配置。",
+                    "title_zh": "代码部署配置。",
                     "type": "object"
                   },
                   "container": {
@@ -181,6 +191,8 @@
                         "description_zh": "镜像仓库所属的 ACR 实例 ID",
                         "example": "cri-a1b2c3d4e5f6",
                         "required": true,
+                        "title_en": "ACR 企业版实例 ID。",
+                        "title_zh": "ACR 企业版实例 ID。",
                         "type": "string"
                       },
                       "namespace": {
@@ -189,6 +201,8 @@
                         "description_zh": "ACR 镜像仓库所属的命名空间",
                         "example": "my-agent",
                         "required": true,
+                        "title_en": "ACR 命名空间。",
+                        "title_zh": "ACR 命名空间。",
                         "type": "string"
                       },
                       "repo": {
@@ -197,6 +211,8 @@
                         "description_zh": "ACR 命名空间中的镜像仓库名称",
                         "example": "chat-agent",
                         "required": true,
+                        "title_en": "ACR 镜像仓库名称。",
+                        "title_zh": "ACR 镜像仓库名称。",
                         "type": "string"
                       },
                       "tag": {
@@ -205,61 +221,141 @@
                         "description_zh": "最新提交的镜像标签",
                         "example": "v1.0.0",
                         "required": true,
+                        "title_en": "镜像标签。",
+                        "title_zh": "镜像标签。",
                         "type": "string"
                       },
                       "type": {
                         "backendName": "type",
-                        "description_en": "The image source type. A value of acr indicates Alibaba Cloud Container Registry",
+                        "description_en": "The image source type. acr indicates Alibaba Cloud Container Registry",
                         "description_zh": "镜像来源类型，acr 表示阿里云容器镜像服务 ACR",
                         "enum": [
                           "acr"
                         ],
                         "example": "acr",
                         "required": true,
+                        "title_en": "容器镜像来源类型。",
+                        "title_zh": "容器镜像来源类型。",
                         "type": "string"
                       }
                     },
+                    "title_en": "容器镜像部署配置。",
+                    "title_zh": "容器镜像部署配置。",
                     "type": "object"
                   },
                   "port": {
                     "backendName": "port",
-                    "description_en": "The TCP port listened on by the agent service",
+                    "description_en": "The TCP port on which the agent service listens",
                     "description_zh": "智能体服务监听的 TCP 端口",
                     "example": "8080",
                     "format": "int32",
                     "required": true,
+                    "title_en": "智能体服务监听端口。",
+                    "title_zh": "智能体服务监听端口。",
                     "type": "integer"
                   }
                 },
                 "type": "object"
               },
+              "codePackageInfo": {
+                "backendName": "codePackageInfo",
+                "description_en": "The currently saved code package information",
+                "description_zh": "当前已保存代码包信息",
+                "properties": {
+                  "crc64": {
+                    "backendName": "crc64",
+                    "description_en": "The CRC64 value of the code package object",
+                    "description_zh": "代码包对象 CRC64",
+                    "example": "456",
+                    "title_en": "代码包对象 CRC64",
+                    "title_zh": "代码包对象 CRC64",
+                    "type": "string"
+                  },
+                  "etag": {
+                    "backendName": "etag",
+                    "description_en": "The ETag of the code package object",
+                    "description_zh": "代码包对象 ETag",
+                    "example": "fixed-etag",
+                    "title_en": "代码包对象 ETag",
+                    "title_zh": "代码包对象 ETag",
+                    "type": "string"
+                  },
+                  "fileName": {
+                    "backendName": "fileName",
+                    "description_en": "The original file name of the code package",
+                    "description_zh": "原始代码包文件名",
+                    "example": "main.zip",
+                    "title_en": "原始代码包文件名",
+                    "title_zh": "原始代码包文件名",
+                    "type": "string"
+                  },
+                  "fileSize": {
+                    "backendName": "fileSize",
+                    "description_en": "The compressed size of the code package",
+                    "description_zh": "代码包压缩大小",
+                    "example": "123",
+                    "format": "int64",
+                    "title_en": "代码包压缩大小",
+                    "title_zh": "代码包压缩大小",
+                    "type": "integer"
+                  },
+                  "format": {
+                    "backendName": "format",
+                    "description_en": "The format of the code package",
+                    "description_zh": "代码包格式",
+                    "enum": [
+                      "zip",
+                      "tar.gz"
+                    ],
+                    "example": "zip",
+                    "title_en": "代码包格式",
+                    "title_zh": "代码包格式",
+                    "type": "string"
+                  }
+                },
+                "title_en": "当前已保存代码包信息",
+                "title_zh": "当前已保存代码包信息",
+                "type": "object"
+              },
               "createMode": {
                 "backendName": "createMode",
-                "description_en": "The creation method of the agent. The value is CUSTOM for custom agents",
+                "description_en": "The creation method of the agent. CUSTOM is returned for custom agents",
                 "description_zh": "智能体创建方式。自定义智能体返回 CUSTOM",
                 "example": "CUSTOM",
                 "type": "string"
               },
               "createdAt": {
                 "backendName": "createdAt",
-                "description_en": "The creation time of the agent. The time is in ISO 8601 format. The trailing Z indicates the UTC time zone. Fractional seconds may be included",
+                "description_en": "The time when the agent was created. The time is in ISO 8601 format. The trailing Z indicates the UTC time zone. Fractional seconds may be included",
                 "description_zh": "智能体创建时间，采用 ISO 8601 格式，末尾 Z 表示 UTC 时区，可包含小数秒",
                 "example": "2026-10-10T06:00:00Z",
                 "type": "string"
               },
               "deployType": {
                 "backendName": "deployType",
-                "description_en": "The deployment method of the agent. Custom agents are deployed and managed by the platform, and the value is MANAGED",
+                "description_en": "The deployment method of the agent. MANAGED is returned for custom agents because they are deployed and managed by the platform",
                 "description_zh": "智能体部署方式。自定义智能体由平台部署和管理，返回 MANAGED",
                 "example": "MANAGED",
                 "type": "string"
               },
               "description": {
                 "backendName": "description",
-                "description_en": "The description of the agent",
+                "description_en": "The description of the agent's purpose",
                 "description_zh": "智能体的用途说明",
                 "example": "提供对话服务的自定义智能体",
                 "type": "string"
+              },
+              "effectiveSpecVersion": {
+                "backendName": "effectiveSpecVersion",
+                "description_en": "The effective configuration version",
+                "description_zh": "已生效配置版本",
+                "example": "1",
+                "format": "int64",
+                "nullable": true,
+                "required": true,
+                "title_en": "已生效配置版本",
+                "title_zh": "已生效配置版本",
+                "type": "integer"
               },
               "environment": {
                 "backendName": "environment",
@@ -301,7 +397,7 @@
               },
               "healthCheck": {
                 "backendName": "healthCheck",
-                "description_en": "The HTTP health check configuration of the agent. This field is empty if not configured",
+                "description_en": "The HTTP health check configuration for the agent. This parameter is empty if not configured",
                 "description_zh": "智能体的 HTTP 健康检查配置。未配置时为空",
                 "properties": {
                   "healthyThreshold": {
@@ -314,7 +410,7 @@
                   },
                   "intervalSeconds": {
                     "backendName": "intervalSeconds",
-                    "description_en": "The interval between two consecutive health checks, in seconds",
+                    "description_en": "The interval between two health checks, in seconds",
                     "description_zh": "两次健康检查的间隔，单位为秒",
                     "example": "10",
                     "format": "int32",
@@ -345,7 +441,7 @@
                   },
                   "unhealthyThreshold": {
                     "backendName": "unhealthyThreshold",
-                    "description_en": "The number of consecutive health check failures required to mark the agent as unhealthy",
+                    "description_en": "The number of consecutive health check failures after which the instance is considered unhealthy",
                     "description_zh": "连续健康检查失败达到该次数后判定不健康",
                     "example": "3",
                     "format": "int32",
@@ -354,33 +450,47 @@
                 },
                 "type": "object"
               },
+              "imageCacheId": {
+                "backendName": "imageCacheId",
+                "description_en": "The ID of the currently associated image cache",
+                "description_zh": "当前关联镜像缓存 ID",
+                "example": "img-example",
+                "nullable": true,
+                "required": true,
+                "title_en": "当前关联镜像缓存 ID",
+                "title_zh": "当前关联镜像缓存 ID",
+                "type": "string"
+              },
               "latestExecutionError": {
                 "backendName": "latestExecutionError",
-                "description_en": "The waiting or execution error of the latest configuration version. This field is returned only when the version is waiting for a retry or fails to execute",
+                "description_en": "The wait or execution error of the latest configuration version. This parameter is returned only when the version is waiting for a retry or fails to execute",
                 "description_zh": "最新配置版本的等待或执行错误，仅在该版本等待重试或执行失败时返回",
                 "properties": {
                   "code": {
                     "backendName": "code",
-                    "description_en": "The cause code for the waiting or execution failure of the latest configuration. This code is used to determine the subsequent handling method",
+                    "description_en": "The reason code for the wait or execution failure of the latest configuration. This code is used to determine the subsequent processing method",
                     "description_zh": "最新配置的等待或执行失败原因码，用于判断后续处理方式",
                     "example": "AgentExecutionFailed",
+                    "required": true,
                     "title_en": "稳定原因码；等待 ACR 配置为 ACRDependencyNotReady，具体失败保留可公开的稳定原因码",
                     "title_zh": "稳定原因码；等待 ACR 配置为 ACRDependencyNotReady，具体失败保留可公开的稳定原因码",
                     "type": "string"
                   },
                   "message": {
                     "backendName": "message",
-                    "description_en": "The reason why the latest configuration is pending or failed to execute. Determine what to do next based on the code and retryable fields",
+                    "description_en": "The description of the reason why the latest configuration is waiting or failed to execute. Refer to the code and retryable parameters to determine what to do next",
                     "description_zh": "最新配置等待或执行失败的原因说明。请结合 code 和 retryable 判断后续操作",
                     "example": "Agent 执行失败，请检查配置后重新提交。",
+                    "required": true,
                     "title_en": "用户可读的等待或失败说明",
                     "title_zh": "用户可读的等待或失败说明",
                     "type": "string"
                   },
                   "retryable": {
                     "backendName": "retryable",
-                    "description_en": "Specifies whether automatic retries are performed. If the value is true, you can query again later. If the value is false, check and fix the configuration based on the cause, and then resubmit",
+                    "description_en": "Indicates whether the system automatically retries the operation. If the value is true, you can query the status later. If the value is false, check and fix the configuration based on the error cause, and then resubmit the request",
                     "description_zh": "是否会自动重试。true 时可稍后再次查询；false 时请根据原因检查并修复配置后重新提交",
+                    "required": true,
                     "title_en": "是否正在由后端自动重试；false 时根据原因修复后重新提交 Agent",
                     "title_zh": "是否正在由后端自动重试；false 时根据原因修复后重新提交 Agent",
                     "type": "boolean"
@@ -392,15 +502,16 @@
               },
               "latestSpecVersion": {
                 "backendName": "latestSpecVersion",
-                "description_en": "The current latest configuration version number. Updates with the same configuration may retain the original version number. This field does not indicate that the configuration has taken effect",
+                "description_en": "The latest configuration version number. Updates with the same configuration may retain the original version number. This field does not indicate that the configuration has taken effect",
                 "description_zh": "当前最新配置版本号。相同配置的更新可能保留原版本号；本字段不代表该配置已经生效",
                 "example": "1",
                 "format": "int64",
+                "required": true,
                 "type": "integer"
               },
               "latestVersionStatus": {
                 "backendName": "latestVersionStatus",
-                "description_en": "The execution status corresponding to latestSpecVersion. Valid values:\npending: Waiting for execution.\nprocessing: Executing.\nwaiting_retry: Waiting for a retry.\nsucceeded: Executed successfully.\nfailed: Execution failed.\nsuperseded: Superseded by a subsequent version",
+                "description_en": "The execution status corresponding to the latestSpecVersion. Valid values: pending (waiting for execution), processing (executing), waiting_retry (waiting for retry), succeeded (execution succeeded), failed (execution failed), and superseded (superseded by a later version)",
                 "description_zh": "latestSpecVersion 对应的执行状态。pending：等待执行；processing：执行中；waiting_retry：等待重试；succeeded：执行成功；failed：执行失败；superseded：已被后续版本替代",
                 "enum": [
                   "pending",
@@ -411,6 +522,9 @@
                   "superseded"
                 ],
                 "example": "succeeded",
+                "nullable": true,
+                "title_en": "最新配置处理状态",
+                "title_zh": "最新配置处理状态",
                 "type": "string"
               },
               "logging": {
@@ -445,24 +559,25 @@
               },
               "name": {
                 "backendName": "name",
-                "description_en": "The name of the custom agent",
+                "description_en": "The custom agent name",
                 "description_zh": "自定义智能体名称",
                 "example": "my-custom-agent",
+                "required": true,
                 "type": "string"
               },
               "network": {
                 "backendName": "network",
-                "description_en": "The network access configuration of the agent. The actual access scope is also restricted by the workspace network configuration",
+                "description_en": "The network access configuration of the agent. The actual access scope is also limited by the workspace network configuration",
                 "description_zh": "智能体的网络访问配置，实际访问范围还受工作空间网络配置限制",
                 "properties": {
                   "accessInternet": {
                     "backendName": "accessInternet",
-                    "description_en": "The Internet access configuration of the agent. If this field is not configured, Internet access is allowed on the agent side but is still restricted by the workspace",
+                    "description_en": "The Internet access configuration of the agent. If this parameter is not configured, Internet access is allowed on the agent side but is still limited by the workspace configuration",
                     "description_zh": "智能体的互联网访问配置。未配置该项时，智能体侧允许访问，仍受工作空间限制",
                     "properties": {
                       "enabled": {
                         "backendName": "enabled",
-                        "description_en": "Specifies whether Internet access is allowed on the agent side. The actual access is still restricted by the workspace",
+                        "description_en": "Specifies whether Internet access is allowed on the agent side. The actual access is still limited by the workspace configuration",
                         "description_zh": "智能体侧是否允许访问互联网，实际访问仍受工作空间限制",
                         "type": "boolean"
                       }
@@ -471,12 +586,12 @@
                   },
                   "accessVpc": {
                     "backendName": "accessVpc",
-                    "description_en": "The user VPC access configuration of the agent. If this field is not configured, user VPC access is allowed on the agent side but is still restricted by the workspace",
+                    "description_en": "The user VPC access configuration of the agent. If this parameter is not configured, user VPC access is allowed on the agent side but is still limited by the workspace configuration",
                     "description_zh": "智能体的用户 VPC 访问配置。未配置该项时，智能体侧允许访问，仍受工作空间限制",
                     "properties": {
                       "enabled": {
                         "backendName": "enabled",
-                        "description_en": "Specifies whether access to the user VPC configured for the workspace is allowed on the agent side. The actual access is still restricted by the workspace",
+                        "description_en": "Specifies whether access to the user VPC configured for the workspace is allowed on the agent side. The actual access is still limited by the workspace configuration",
                         "description_zh": "智能体侧是否允许访问工作空间配置的用户 VPC，实际访问仍受工作空间限制",
                         "type": "boolean"
                       }
@@ -484,6 +599,24 @@
                     "type": "object"
                   }
                 },
+                "type": "object"
+              },
+              "observability": {
+                "backendName": "observability",
+                "description_en": "The observability configuration for high-code agents",
+                "description_zh": "高代码 Agent 观测配置",
+                "properties": {
+                  "enabled": {
+                    "backendName": "enabled",
+                    "description_en": "Specifies whether to enable agent observability",
+                    "description_zh": "启用 Agent 观测",
+                    "title_en": "启用 Agent 观测",
+                    "title_zh": "启用 Agent 观测",
+                    "type": "boolean"
+                  }
+                },
+                "title_en": "高代码 Agent 观测配置",
+                "title_zh": "高代码 Agent 观测配置",
                 "type": "object"
               },
               "ossMounts": {
@@ -524,7 +657,7 @@
                     },
                     "readOnly": {
                       "backendName": "readOnly",
-                      "description_en": "Specifies whether the mount is read-only. A value of true indicates a read-only mount, and a value of false indicates a read-write mount",
+                      "description_en": "Specifies whether the mount is read-only. A value of true indicates read-only, and false indicates read and write",
                       "description_zh": "是否只读挂载。true 表示只读，false 表示可读写",
                       "title_en": "是否只读；默认 false",
                       "title_zh": "是否只读；默认 false",
@@ -555,7 +688,7 @@
                         "type": "string"
                       },
                       "backendName": "headers",
-                      "description_en": "The request header configurations for the current protocol, where the key is the name and the value is a string",
+                      "description_en": "The request header configuration for the current protocol. The key is the header name and the value is a string",
                       "description_zh": "当前协议的请求头配置，键为名称，值为字符串",
                       "type": "object"
                     },
@@ -590,7 +723,7 @@
                     },
                     "type": {
                       "backendName": "type",
-                      "description_en": "The invocation protocol type. Valid values:\nagui: AG-UI protocol.\nopenai-chat-completion: OpenAI Chat Completions compatible protocol.\ncustom: Custom protocol",
+                      "description_en": "The invocation protocol type. Valid values: agui (AG-UI protocol), openai-chat-completion (OpenAI Chat Completions compatible protocol), and custom (custom protocol)",
                       "description_zh": "调用协议类型。agui：AG-UI 协议；openai-chat-completion：OpenAI Chat Completions 兼容协议；custom：自定义协议",
                       "enum": [
                         "agui",
@@ -632,7 +765,7 @@
                     "properties": {
                       "computeClass": {
                         "backendName": "computeClass",
-                        "description_en": "The compute specification. Valid values:\nINTERACTIVE: 1 vCPU and 2 GiB of memory.\nSTANDARD: 2 vCPUs and 4 GiB of memory.\nHEAVY: 4 vCPUs and 8 GiB of memory",
+                        "description_en": "The compute specification. Valid values: INTERACTIVE (1 vCPU and 2 GiB of memory), STANDARD (2 vCPUs and 4 GiB of memory), and HEAVY (4 vCPUs and 8 GiB of memory)",
                         "description_zh": "计算规格。INTERACTIVE：1 vCPU、2 GiB 内存；STANDARD：2 vCPU、4 GiB 内存；HEAVY：4 vCPU、8 GiB 内存",
                         "enum": [
                           "INTERACTIVE",
@@ -654,7 +787,7 @@
                     "properties": {
                       "enabled": {
                         "backendName": "enabled",
-                        "description_en": "Specifies whether to enable elastic scaling. Valid values:\ntrue: Enabled.\nfalse: Disabled",
+                        "description_en": "Specifies whether to enable elastic scaling. A value of true indicates that elastic scaling is enabled. A value of false indicates that elastic scaling is disabled",
                         "description_zh": "是否启用弹性扩缩容。true 表示开启，false 表示关闭",
                         "required": true,
                         "title_en": "是否开启弹性",
@@ -693,7 +826,7 @@
                       },
                       "sessionTtlSeconds": {
                         "backendName": "sessionTtlSeconds",
-                        "description_en": "The configured session idle timeout limit, in seconds",
+                        "description_en": "The configured session idle timeout limit in seconds",
                         "description_zh": "配置的会话空闲上限，单位为秒",
                         "example": "600",
                         "format": "int32",
@@ -713,14 +846,14 @@
                     "properties": {
                       "headerName": {
                         "backendName": "headerName",
-                        "description_en": "The name of the HTTP request header used by the session policy, applicable to ISOLATED_HEADER_FIELD",
+                        "description_en": "The name of the HTTP request header used by the session policy. This parameter is applicable when the type is ISOLATED_HEADER_FIELD",
                         "description_zh": "会话策略使用的 HTTP 请求头名称，适用于 ISOLATED_HEADER_FIELD",
                         "example": "X-Session-Id",
                         "type": "string"
                       },
                       "type": {
                         "backendName": "type",
-                        "description_en": "The session policy type. Valid values:\nAFFINITY: Session affinity.\nISOLATED_HEADER_FIELD: Uses the request header specified by headerName to associate sessions.\nISOLATED_COOKIE: Cookie-based session isolation. Not recommended.\nNote: The compatible value DISABLED in a request is returned as AFFINITY",
+                        "description_en": "The session policy type. Valid values: AFFINITY (session affinity), ISOLATED_HEADER_FIELD (uses the request header specified by headerName to associate sessions), and ISOLATED_COOKIE (not recommended). The compatible value DISABLED in requests is returned as AFFINITY",
                         "description_zh": "会话策略类型。AFFINITY：会话亲和；ISOLATED_HEADER_FIELD：使用 headerName 指定请求头关联会话。ISOLATED_COOKIE 暂不建议使用。请求中的兼容值 DISABLED 返回为 AFFINITY",
                         "enum": [
                           "DISABLED",
@@ -741,14 +874,14 @@
               },
               "sandboxPhaseCounts": {
                 "additionalProperties": {
-                  "description_en": "The number of instances in the corresponding runtime instance phase",
+                  "description_en": "The number of instances corresponding to the runtime instance phase",
                   "description_zh": "对应运行实例阶段的实例数量",
                   "example": "1",
                   "format": "int64",
                   "type": "integer"
                 },
                 "backendName": "sandboxPhaseCounts",
-                "description_en": "The counts by runtime instance phase. Keys include PENDING (creating or initializing), RUNNING (running), HIBERNATING (hibernating), HIBERNATED (hibernated), RESUMING (resuming), TERMINATING (terminating), and FAILED (failed). Only phases that actually occur are returned. Missing keys are treated as 0",
+                "description_en": "The instance count statistics by runtime instance phase. Keys include PENDING (creating or initializing), RUNNING (running), HIBERNATING (hibernating), HIBERNATED (hibernated), RESUMING (resuming), TERMINATING (terminating), and FAILED (failed). Only phases that actually occur are returned. Missing keys are treated as 0",
                 "description_zh": "按运行实例阶段统计数量。键包括 PENDING（创建或初始化中）、RUNNING（运行中）、HIBERNATING（休眠中）、HIBERNATED（已休眠）、RESUMING（恢复中）、TERMINATING（终止中）和 FAILED（失败）。仅返回实际出现的阶段，缺少的键按 0 理解",
                 "title_en": "按 Sandbox Phase 统计自定义智能体的实例数量。当前 Key：PENDING（创建或初始化中）、RUNNING（运行中）、HIBERNATING（休眠中）、HIBERNATED（已休眠）、RESUMING（恢复中）、TERMINATING（销毁中）、FAILED（运行时失败）。仅返回实际出现的 Phase，缺失 Key 按 0 处理。该字段为动态映射，后续可能新增 Key，前端可用 FAILED > 0 判断是否存在异常实例。",
                 "title_zh": "按 Sandbox Phase 统计自定义智能体的实例数量。当前 Key：PENDING（创建或初始化中）、RUNNING（运行中）、HIBERNATING（休眠中）、HIBERNATED（已休眠）、RESUMING（恢复中）、TERMINATING（销毁中）、FAILED（运行时失败）。仅返回实际出现的 Phase，缺失 Key 按 0 处理。该字段为动态映射，后续可能新增 Key，前端可用 FAILED > 0 判断是否存在异常实例。",
@@ -756,7 +889,7 @@
               },
               "status": {
                 "backendName": "status",
-                "description_en": "The overall status of the agent. Valid values:\nCreating: The agent is being created.\nRunning: The agent is running.\nFailed: The agent failed.\nUpdating: The agent is being updated.\nDeleting: The agent is being deleted.\nDeleted: The agent is deleted.\nTo check the execution progress of the latest configuration, query latestVersionStatus",
+                "description_en": "The overall status of the agent. Valid values: Creating: The agent is being created. Running: The agent is running. Failed: The agent failed. Updating: The agent is being updated. Deleting: The agent is being deleted. Deleted: The agent is deleted. To view the execution progress of the latest configuration, query latestVersionStatus",
                 "description_zh": "智能体整体状态。Creating：创建中；Running：运行中；Failed：失败；Updating：更新中；Deleting：删除中；Deleted：已删除。最新配置执行进度请查询 latestVersionStatus",
                 "enum": [
                   "Creating",
@@ -767,23 +900,36 @@
                   "Deleted"
                 ],
                 "example": "Running",
+                "required": true,
                 "type": "string"
               },
               "updatedAt": {
                 "backendName": "updatedAt",
-                "description_en": "The time when the agent was last updated. The time is in ISO 8601 format. A trailing Z indicates the UTC time zone. Fractional seconds may be included",
+                "description_en": "The time when the agent was last updated. The time follows the ISO 8601 standard. A trailing Z indicates the UTC time zone. Fractional seconds are supported",
                 "description_zh": "智能体最近更新时间，采用 ISO 8601 格式，末尾 Z 表示 UTC 时区，可包含小数秒",
                 "example": "2026-10-10T06:05:00Z",
                 "type": "string"
+              },
+              "useImageCache": {
+                "backendName": "useImageCache",
+                "description_en": "Specifies whether the image cache is enabled",
+                "description_zh": "镜像缓存开关",
+                "example": "true",
+                "required": true,
+                "title_en": "镜像缓存开关",
+                "title_zh": "镜像缓存开关",
+                "type": "boolean"
               },
               "workspaceId": {
                 "backendName": "workspaceId",
                 "description_en": "The ID of the workspace to which the custom agent belongs",
                 "description_zh": "自定义智能体所属的工作空间 ID",
                 "example": "ws-a1b2c3d4e5f6",
+                "required": true,
                 "type": "string"
               }
             },
+            "required": true,
             "type": "object"
           },
           "httpStatusCode": {
@@ -792,13 +938,15 @@
             "description_zh": "本次请求的 HTTP 状态码。成功时为 200",
             "example": "200",
             "format": "int32",
+            "required": true,
             "type": "integer"
           },
           "message": {
             "backendName": "message",
-            "description_en": "The result message of the request. The value is success when the request is successful",
+            "description_en": "The result message of the request. The value is success if the request is successful",
             "description_zh": "本次请求的处理结果说明。成功时为 success",
             "example": "success",
+            "required": true,
             "type": "string"
           },
           "requestId": {
@@ -806,12 +954,14 @@
             "description_en": "The unique identifier of the request, which is used to locate and troubleshoot issues",
             "description_zh": "本次请求的唯一标识，用于定位和排查问题",
             "example": "550E8400-E29B-41D4-A716-446655440000",
+            "required": true,
             "type": "string"
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was processed successfully. A value of true indicates success. Note that a successful creation, update, or deletion response does not mean that the background operation is complete",
+            "description_en": "Specifies whether the request was successful. A value of true indicates success. A successful creation, update, or deletion does not mean that the background operation is complete",
             "description_zh": "请求是否处理成功。true 表示处理成功；创建、更新或删除成功不代表后台操作已经完成",
+            "required": true,
             "type": "boolean"
           }
         },

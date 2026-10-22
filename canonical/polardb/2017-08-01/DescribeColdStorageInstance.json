@@ -3,7 +3,7 @@
   "cmd_full_name": "polardb describe-cold-storage-instance",
   "cmd_name": "describe-cold-storage-instance",
   "deprecated": false,
-  "description_en": "Queries cold storage instances",
+  "description_en": "Queries cold storage instance information",
   "description_zh": "查询冷存储实例信息",
   "kebab_example": "aliyun polardb describe-cold-storage-instance --db-cluster-id pc-wz9062015ly7526jc --next-token c2FpXzIwMjIwNjI5X2Jhay9zYWlfc3VtbWVyX3RyZWFzdXJlX3Bvb2xfbG9nLkNTVg== --table-name account_log --db-name test_db --engine-type 2 --biz-region-id cn-hangzhou --max-results 50 --expire-time 1 --page-number 1 --page-size 1 --object-type TABLE --region cn-hangzhou",
   "method": "GET|POST",
@@ -23,7 +23,7 @@
     {
       "doc_required": true,
       "example": "pc-wz9062015ly7526jc",
-      "help_en": "The ID of the PolarDB cluster",
+      "help_en": "The PolarDB cluster ID",
       "help_zh": "PolarDB集群ID",
       "location": "query",
       "name": "db_cluster_id",
@@ -36,7 +36,7 @@
     },
     {
       "example": "c2FpXzIwMjIwNjI5X2Jhay9zYWlfc3VtbWVyX3RyZWFzdXJlX3Bvb2xfbG9nLkNTVg==",
-      "help_en": "A token to retrieve the next page of results. Set this parameter to the \\`NextToken\\` value from a previous call. You do not need to specify this parameter for the first call",
+      "help_en": "The query token. Set the value to the NextToken value returned from the previous API call. If there are no more queries, do not specify this parameter",
       "help_zh": "查询凭证（token），取值为上一次api调用返回的nexttoken参数值。如果没有下一个查询，请不传",
       "location": "query",
       "name": "next_token",
@@ -75,7 +75,7 @@
     },
     {
       "example": "2",
-      "help_en": "The type of the supported engine. The return value is the sum of the values of the supported engine types.\n\n1: Search engine\n\n2: LindormTSDB\n\n4: LindormTable\n\n8: File engine\n\nFor example, if \\`EngineType\\` is 15 (8 + 4 + 2 + 1), the instance supports the search engine, LindormTSDB, LindormTable, and file engine. If \\`EngineType\\` is 6 (4 + 2), the instance supports LindormTSDB and LindormTable",
+      "help_en": "The supported engine types. The return value is the sum of the following engine type values:\n\n1: search engine\n2: time series engine\n4: wide table engine\n8: file engine\n\nFor example, if the EngineType value is 15, 15 = 8 + 4 + 2 + 1, which indicates that the instance supports the search engine, time series engine, wide table engine, and file engine. If the EngineType value is 6, 6 = 4 + 2, which indicates that the instance supports the time series engine and wide table engine",
       "help_zh": "支持引擎的类型，返回值是由下列引擎类型的值做加法运算后得到的。\n\n1: 搜索引擎\n2: 时序引擎\n4: 宽表引擎\n8: 文件引擎\n\n例如：EngineType值为15，15=8+4+2+1，表示该实例支持搜索引擎、时序引擎、宽表引擎和文件引擎。EngineType值为6，6=4+2，表示该实例支持时序引擎和宽表引擎",
       "location": "query",
       "name": "engine_type",
@@ -88,7 +88,7 @@
     },
     {
       "example": "cn-hangzhou",
-      "help_en": "The region ID.\n\nFor more information, see https://help.aliyun.com/document_detail/98041.html.\n\nIf you do not specify this parameter, the operation queries scheduled tasks in all regions within your account",
+      "help_en": "The region ID.\nYou can call the https://help.aliyun.com/document_detail/98041.html operation to query the region information of all clusters under the target account.\nIf this parameter is left empty, scheduled tasks in all regions under the current account are queried by default",
       "help_zh": "地域ID。\n您可以调用https://help.aliyun.com/document_detail/98041.html接口查看目标账号下所有的集群的地域信息。\n若该参数留空，默认查询当前账号下所有地域内的计划任务",
       "location": "query",
       "name": "region_id",
@@ -101,7 +101,7 @@
     },
     {
       "example": "50",
-      "help_en": "If you do not specify the MaxResults parameter, the query is not paged. The value of the MaxResults parameter in the response indicates the total number of entries.\n\nIf you specify the MaxResults parameter, the query is paged. MaxResults specifies the number of entries to return on each page. Valid values: 1 to 100. The value of the MaxResults parameter in the response indicates the number of entries on the current page. The recommended value is 20",
+      "help_en": "If you do not specify the MaxResults parameter, batch query is not required. The value of the MaxResults parameter returned after the API call indicates the total number of list entries.\nIf you specify the MaxResults parameter, batch query is required. The value of MaxResults indicates the number of entries displayed per batch. Valid values: 1 to 100. The value of the MaxResults parameter returned after the API call indicates the number of list entries in the current query batch. Set the MaxResults parameter to 20",
       "help_zh": "如果您不指定MaxResults参数的值，则表示您不需要分批次查询。调用接口后返回参数MaxResults的值表示列表条目总数。\n如果您指定MaxResults参数的值，则表示您需要分批次查询，MaxResults的值表示分批次查询时每次显示的条目数。取值范围：1~100。调用接口后返回参数MaxResults的值表示当前查询批次下列表条目的数量。建议指定MaxResults参数的值为20",
       "location": "query",
       "name": "max_results",
@@ -114,7 +114,7 @@
     },
     {
       "example": "2020-11-14T16:00:00Z",
-      "help_en": "The expiration time of the cluster. Note: This parameter is returned only for subscription clusters. An empty value is returned for pay-as-you-go clusters",
+      "help_en": "The expiration time of the cluster. Note: A specific value is returned only for clusters whose billing method is Prepaid (subscription). For Postpaid (pay-as-you-go) clusters, a null value is returned",
       "help_zh": "集群到期时间。说明 仅付费方式为Prepaid（包年包月）的集群会返回具体参数值，Postpaid（按量付费）集群则返回空值",
       "location": "query",
       "name": "expire_time",
@@ -153,7 +153,7 @@
     },
     {
       "example": "TABLE",
-      "help_en": "The object type. Valid values: \\`TABLE\\`, \\`PARTITION\\_TABLE\\`, and \\`LOB\\`",
+      "help_en": "The object type. Valid values: TABLE, PARTITION_TABLE, and LOB",
       "help_zh": "对象类型：TABLE、PARTITION_TABLE、LOB",
       "location": "query",
       "name": "object_type",
@@ -174,7 +174,7 @@
         "properties": {
           "MaxResults": {
             "backendName": "data.maxResult",
-            "description_en": "The maximum number of entries returned. Default value: 10",
+            "description_en": "The maximum number of data entries to read in this request. Default value: 10",
             "description_zh": "本次读取的最大数据量，默认值为10",
             "example": "1000",
             "format": "int32",
@@ -183,7 +183,7 @@
           },
           "NextToken": {
             "backendName": "data.nextToken",
-            "description_en": "The token to retrieve the next page of results. If this parameter is not returned, all results have been returned",
+            "description_en": "The query token. Set the value to the NextToken value returned from the previous API call. If there are no more queries, do not specify this parameter",
             "description_zh": "查询凭证（token），取值为上一次api调用返回的nexttoken参数值。如果没有下一个查询，请不传",
             "example": "c2FpXzIwMjIwNjI5X2Jhay9zYWlfc3VtbWVyX3RyZWFzdXJlX3Bvb2xfbG9nLkNTVg==",
             "type": "string",
@@ -201,7 +201,7 @@
           },
           "OssClusterEnabled": {
             "backendName": "data.ossClusterEnabled",
-            "description_en": "Indicates whether the OSS bucket is enabled.\n\ntrue: enabled\n\nfalse: disabled",
+            "description_en": "Specifies whether OSS storage space is enabled. Valid values:\n\ntrue: enabled\nfalse: disabled",
             "description_zh": "是否开启oss存储空间：\n\ntrue：开启\nfalse：关闭",
             "example": "true",
             "type": "string",
@@ -209,17 +209,17 @@
           },
           "OssClusterInfoList": {
             "backendName": "data.ossClusterInfoList",
-            "description_en": "The list of OSS addresses for the cold storage instances",
+            "description_en": "The list of OSS addresses for the cold storage instance",
             "description_zh": "冷存储实例的oss地址列表",
             "itemName": "OssClusterInfoList",
             "items": {
-              "description_en": "The OSS address of a cold storage instance",
+              "description_en": "The OSS address of the cold storage instance",
               "description_zh": "冷存储实例的oss地址",
               "properties": {
                 "CreatedTime": {
                   "backendName": "createdTime",
-                  "description_en": "The time when the cluster was created",
-                  "description_zh": "集群创建时间",
+                  "description_en": "The creation time of the cluster. The time follows the ISO 8601 standard in the YYYY-MM-DDTHH:mm:ssZ format. The time is displayed in UTC",
+                  "description_zh": "集群创建时间。 格式为 YYYY-MM-DDTHH:mm:ssZ（UTC 时间）",
                   "example": "2023-05-10T17:01:16Z",
                   "type": "string",
                   "valueMapping": {
@@ -229,7 +229,7 @@
                 },
                 "OssClusterId": {
                   "backendName": "ossClusterId",
-                  "description_en": "The ID of the cold storage instance",
+                  "description_en": "The cold storage instance ID",
                   "description_zh": "冷存实例ID",
                   "example": "pc-*****************",
                   "type": "string",
@@ -240,7 +240,7 @@
                 },
                 "Region": {
                   "backendName": "region",
-                  "description_en": "The ID of the region where the task is located",
+                  "description_en": "The region ID of the region where the task resides",
                   "description_zh": "任务所在地域的地域ID",
                   "example": "cn-hangzhou",
                   "type": "string",
@@ -269,7 +269,7 @@
           },
           "PageNumber": {
             "backendName": "data.pageNumber",
-            "description_en": "The page number",
+            "description_en": "The current page number",
             "description_zh": "当前页码",
             "example": "1",
             "format": "int32",
@@ -280,7 +280,7 @@
           },
           "PageRecordCount": {
             "backendName": "data.pageRecordCount",
-            "description_en": "The number of entries on the current page",
+            "description_en": "The number of records on the current page",
             "description_zh": "本页记录数",
             "example": "1",
             "format": "int32",
@@ -309,7 +309,7 @@
           },
           "SupportOssCluster": {
             "backendName": "data.supportOssCluster",
-            "description_en": "Indicates whether the cluster supports cold storage. If the cluster does not support cold storage, the switch is not displayed on the console",
+            "description_en": "Specifies whether the current cluster supports enabling cold storage. For clusters that do not support this feature, the switch is not displayed on the page",
             "description_zh": "当前集群是否支持开启冷存，不支持的集群，页面不会展示开关",
             "example": "true",
             "type": "string",
@@ -321,7 +321,7 @@
             "description_zh": "冷存储实例列表",
             "itemName": "Tables",
             "items": {
-              "description_en": "A cold storage instance",
+              "description_en": "The list of cold storage instances",
               "description_zh": "冷存储实例列表",
               "properties": {
                 "ChildObjects": {
@@ -330,7 +330,7 @@
                   "description_zh": "子对象列表",
                   "itemName": "ChildObjects",
                   "items": {
-                    "description_en": "A child object",
+                    "description_en": "The child object",
                     "description_zh": "子对象",
                     "properties": {
                       "ObjectName": {
@@ -356,7 +356,7 @@
                       },
                       "Status": {
                         "backendName": "status",
-                        "description_en": "The status of the task. Valid values:\n\nScheduled: The task is waiting to be executed.\n\nRunning: The task is in progress.\n\nSucceed: The task is successful.\n\nCancelling: The task is being stopped.\n\nCanceled: The task is stopped.\n\nWaiting: The task is waiting for a preset time.\n\nTo query multiple statuses, separate them with commas (,). If you do not specify this parameter, all statuses are queried",
+                        "description_en": "The task status. Valid values:\nScheduled: waiting for execution\nRunning: running\nSucceed: succeeded\nCancelling: cancelling\nCanceled: canceled\nWaiting: waiting for the preset time\n\nTo query multiple statuses, separate them with commas (,). The default value is empty, which indicates that all statuses are selected",
                         "description_zh": "任务状态，取值范围如下：\nScheduled：等待执行\nRunning：执行中\nSucceed：执行成功\nCancelling：正在终止\nCanceled：已终止\nWaiting：等待预设时间\n\n如需查询多个状态则用英文逗号分隔，默认为空，表示全选",
                         "example": "Running",
                         "type": "string"
@@ -369,7 +369,7 @@
                 },
                 "DB": {
                   "backendName": "db",
-                  "description_en": "The database name",
+                  "description_en": "The name of the database",
                   "description_zh": "数据库名",
                   "example": "test_db",
                   "type": "string",
@@ -380,7 +380,7 @@
                 },
                 "DBName": {
                   "backendName": "dbName",
-                  "description_en": "The database name",
+                  "description_en": "The name of the database",
                   "description_zh": "数据库名称",
                   "example": "test_db",
                   "type": "string",
@@ -391,14 +391,14 @@
                 },
                 "FieldName": {
                   "backendName": "fieldName",
-                  "description_en": "The name of the large object (LOB) field",
+                  "description_en": "The name of the LOB field",
                   "description_zh": "LOB字段名",
                   "example": "user",
                   "type": "string"
                 },
                 "OssClusterId": {
                   "backendName": "ossClusterId",
-                  "description_en": "The ID of the OSS-based cluster",
+                  "description_en": "The OSS cluster ID",
                   "description_zh": "oss集群id",
                   "example": "pc-*****************",
                   "type": "string",
@@ -431,7 +431,7 @@
                 },
                 "Status": {
                   "backendName": "status",
-                  "description_en": "The status of the task",
+                  "description_en": "The task status",
                   "description_zh": "任务状态",
                   "example": "Running",
                   "type": "string",
@@ -442,7 +442,7 @@
                 },
                 "Table": {
                   "backendName": "table",
-                  "description_en": "The table name",
+                  "description_en": "The name of the table",
                   "description_zh": "表名称",
                   "example": "user",
                   "type": "string",
@@ -453,7 +453,7 @@
                 },
                 "TableName": {
                   "backendName": "tableName",
-                  "description_en": "The table name",
+                  "description_en": "The name of the table",
                   "description_zh": "表名称",
                   "example": "test_table",
                   "type": "string",
@@ -471,7 +471,7 @@
           },
           "TotalRecord": {
             "backendName": "data.totalRecord",
-            "description_en": "The total number of entries",
+            "description_en": "The total number of records",
             "description_zh": "总记录数",
             "example": "1",
             "format": "int32",
@@ -484,5 +484,6 @@
         "type": "object"
       }
     }
-  }
+  },
+  "timeout_ms": 32000
 }

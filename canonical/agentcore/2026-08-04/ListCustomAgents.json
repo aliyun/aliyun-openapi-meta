@@ -3,7 +3,7 @@
   "cmd_full_name": "agentcore list-custom-agents",
   "cmd_name": "list-custom-agents",
   "deprecated": false,
-  "description_en": "Queries the summaries of custom agents in a specified workspace by using paging. For the complete configuration and the execution results of the latest version, call GetCustomAgent",
+  "description_en": "Performs a paged query for paging through the custom agent summary in a specified workspace. For the complete configuration and the latest execute results, call GetCustomAgent",
   "description_zh": "分页查询指定工作空间中的自定义智能体摘要。完整配置及最新版本的执行结果请通过 GetCustomAgent 查询",
   "kebab_example": "",
   "method": "GET",
@@ -35,7 +35,7 @@
     },
     {
       "example": "20",
-      "help_en": "The maximum number of entries to return per page. Valid values: 1 to 100. If this parameter is omitted or set to 0, the default value 20 is used",
+      "help_en": "The maximum number of entries to return on each page. Valid values: 1 to 100. If this parameter is omitted or set to 0, the default value 20 is used",
       "help_zh": "每页最大返回数量，取值为 1～100；省略或传入 0 时使用默认值 20",
       "location": "query",
       "name": "max_results",
@@ -48,7 +48,7 @@
     },
     {
       "example": "djE6YWdlbnRjb3JlLmFnZW50Lmxpc3QuY3VzdG9tOjIw",
-      "help_en": "The opaque token used to query the next page. Omit this parameter in the first request. In subsequent requests, pass the nextToken value returned in the previous response as is, and keep the same workspace. Do not construct this token",
+      "help_en": "The opaque token for querying the next page. Omit this parameter in the first request. For subsequent requests, use the nextToken returned in the previous response as is and keep the same workspace. Do not construct the token",
       "help_zh": "查询下一页的不透明令牌。首次请求省略，后续原样使用上一次响应的 nextToken，并保持相同工作空间。请勿自行构造",
       "location": "query",
       "name": "next_token",
@@ -69,14 +69,14 @@
         "properties": {
           "code": {
             "backendName": "code",
-            "description_en": "The result code of the request. The value is SUCCESS if the request is successful",
+            "description_en": "The request result code. The value is SUCCESS when the request is successful",
             "description_zh": "请求结果码。成功时为 SUCCESS",
             "example": "SUCCESS",
             "type": "string"
           },
           "httpStatusCode": {
             "backendName": "httpStatusCode",
-            "description_en": "The HTTP status code of the request. The value is 200 if the request is successful",
+            "description_en": "The HTTP status code of the current request. The value is 200 when the request is successful",
             "description_zh": "本次请求的 HTTP 状态码。成功时为 200",
             "example": "200",
             "format": "int32",
@@ -84,16 +84,207 @@
           },
           "items": {
             "backendName": "items",
-            "description_en": "The list of custom agent summaries on the current page. To obtain the complete configuration and the execution results of the latest version, call GetCustomAgent",
+            "description_en": "The list of custom agent summaries on the current page. To query the complete configuration and the execution result of the latest version, call the GetCustomAgent operation",
             "description_zh": "当前页的自定义智能体摘要列表。完整配置和最新版本执行结果请调用 GetCustomAgent 查询",
             "items": {
               "properties": {
                 "agentId": {
                   "backendName": "agentId",
-                  "description_en": "The unique identifier of the custom agent. You can obtain this value from the response of CreateCustomAgent or ListCustomAgents",
+                  "description_en": "The unique identifier of the custom agent. You can obtain this ID from the response of the CreateCustomAgent or ListCustomAgents operation",
                   "description_zh": "自定义智能体的唯一标识，可从 CreateCustomAgent 或 ListCustomAgents 的响应中获取",
                   "example": "agent-550e8400e29b41d4a716446655440000",
                   "type": "string"
+                },
+                "artifact": {
+                  "backendName": "artifact",
+                  "description_en": "The agent artifact",
+                  "description_zh": "智能体制品",
+                  "properties": {
+                    "code": {
+                      "backendName": "code",
+                      "description_en": "The code package deployment configuration. This parameter is mutually exclusive with container. The code package uses the ZIP or TAR.GZ format. Dependencies are packaged by the user. The platform does not install dependencies or perform online builds",
+                      "description_zh": "代码包部署配置，与 container 互斥。代码包使用 ZIP 或 TAR.GZ 格式，依赖由用户打包，平台不安装依赖或在线构建",
+                      "properties": {
+                        "entrypoint": {
+                          "backendName": "entrypoint",
+                          "description_en": "The startup command for the code package. This parameter is required in code package mode. The working directory is the root directory of the extracted code, which is /code. Example: python main.py. Quotes and escape characters are supported. Environment variables, pipes, and logical operations are not automatically expanded. For complex commands, use a script within the package",
+                          "description_zh": "代码包启动命令，代码包模式必填。工作目录为解压后的代码根目录 /code，例如 python main.py。支持引号和转义，不自动展开环境变量、管道或逻辑运算；复杂命令请使用包内脚本",
+                          "example": "python main.py",
+                          "required": true,
+                          "title_en": "代码包启动命令",
+                          "title_zh": "代码包启动命令",
+                          "type": "string"
+                        },
+                        "languageRuntime": {
+                          "backendName": "languageRuntime",
+                          "description_en": "The identifier of the code runtime environment in the currently saved configuration. The runtime image uses a saved snapshot. Adding a new version to the directory does not automatically change the existing configuration",
+                          "description_zh": "当前已保存配置的代码运行环境标识。运行镜像使用已保存的快照，目录增加新版本不会自动改变现有配置",
+                          "example": "python3.12",
+                          "required": true,
+                          "title_en": "代码运行环境",
+                          "title_zh": "代码运行环境",
+                          "type": "string"
+                        },
+                        "sourceUri": {
+                          "backendName": "sourceUri",
+                          "description_en": "The fixed oss:// address of the platform code package referenced by the currently saved configuration. This address does not include the signature parameters of the source HTTPS link. You can use this address to reuse an existing code package. To download the content, call the GetAgentCodePackageDownloadUrl operation",
+                          "description_zh": "当前已保存配置引用的平台固定代码包 oss:// 地址，不包含源 HTTPS 链接的签名参数。可用于复用已有代码包；下载内容请调用 GetAgentCodePackageDownloadUrl",
+                          "example": "oss://agentcore-platform-example/code-packages/workspaces/ws-a1b2c3d4e5f6/550e8400-e29b-41d4-a716-446655440000/package.zip",
+                          "required": true,
+                          "title_en": "代码包来源地址",
+                          "title_zh": "代码包来源地址",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "代码部署配置。",
+                      "title_zh": "代码部署配置。",
+                      "type": "object"
+                    },
+                    "container": {
+                      "backendName": "container",
+                      "description_en": "The container image deployment configuration",
+                      "description_zh": "容器镜像部署配置",
+                      "properties": {
+                        "entrypoint": {
+                          "backendName": "entrypoint",
+                          "description_en": "The custom container startup command and parameters. If this parameter is not configured, the default startup method of the image is used",
+                          "description_zh": "自定义的容器启动命令及参数；未配置时使用镜像默认启动方式",
+                          "example": "python main.py",
+                          "type": "string"
+                        },
+                        "instanceId": {
+                          "backendName": "instanceId",
+                          "description_en": "The ID of the Container Registry Enterprise instance",
+                          "description_zh": "ACR 企业版实例 ID",
+                          "example": "cri-example",
+                          "required": true,
+                          "title_en": "ACR 企业版实例 ID。",
+                          "title_zh": "ACR 企业版实例 ID。",
+                          "type": "string"
+                        },
+                        "namespace": {
+                          "backendName": "namespace",
+                          "description_en": "The namespace of the Container Registry instance",
+                          "description_zh": "ACR 命名空间",
+                          "example": "team",
+                          "required": true,
+                          "title_en": "ACR 命名空间。",
+                          "title_zh": "ACR 命名空间。",
+                          "type": "string"
+                        },
+                        "repo": {
+                          "backendName": "repo",
+                          "description_en": "The name of the Container Registry image repository",
+                          "description_zh": "ACR 镜像仓库名称",
+                          "example": "app",
+                          "required": true,
+                          "title_en": "ACR 镜像仓库名称。",
+                          "title_zh": "ACR 镜像仓库名称。",
+                          "type": "string"
+                        },
+                        "tag": {
+                          "backendName": "tag",
+                          "description_en": "The tag of the image",
+                          "description_zh": "镜像标签",
+                          "example": "v1",
+                          "required": true,
+                          "title_en": "镜像标签。",
+                          "title_zh": "镜像标签。",
+                          "type": "string"
+                        },
+                        "type": {
+                          "backendName": "type",
+                          "description_en": "The source type of the container image",
+                          "description_zh": "容器镜像来源类型",
+                          "enum": [
+                            "acr"
+                          ],
+                          "example": "acr",
+                          "required": true,
+                          "title_en": "容器镜像来源类型。",
+                          "title_zh": "容器镜像来源类型。",
+                          "type": "string"
+                        }
+                      },
+                      "title_en": "容器镜像部署配置。",
+                      "title_zh": "容器镜像部署配置。",
+                      "type": "object"
+                    },
+                    "port": {
+                      "backendName": "port",
+                      "description_en": "The listening port of the agent service",
+                      "description_zh": "智能体服务监听端口",
+                      "example": "8080",
+                      "format": "int32",
+                      "required": true,
+                      "title_en": "智能体服务监听端口。",
+                      "title_zh": "智能体服务监听端口。",
+                      "type": "integer"
+                    }
+                  },
+                  "title_en": "智能体制品",
+                  "title_zh": "智能体制品",
+                  "type": "object"
+                },
+                "codePackageInfo": {
+                  "backendName": "codePackageInfo",
+                  "description_en": "The currently saved code package information",
+                  "description_zh": "当前已保存代码包信息",
+                  "properties": {
+                    "crc64": {
+                      "backendName": "crc64",
+                      "description_en": "The CRC64 value of the code package object",
+                      "description_zh": "代码包对象 CRC64",
+                      "example": "456",
+                      "title_en": "代码包对象 CRC64",
+                      "title_zh": "代码包对象 CRC64",
+                      "type": "string"
+                    },
+                    "etag": {
+                      "backendName": "etag",
+                      "description_en": "The ETag of the code package object",
+                      "description_zh": "代码包对象 ETag",
+                      "example": "fixed-etag",
+                      "title_en": "代码包对象 ETag",
+                      "title_zh": "代码包对象 ETag",
+                      "type": "string"
+                    },
+                    "fileName": {
+                      "backendName": "fileName",
+                      "description_en": "The original file name of the code package",
+                      "description_zh": "原始代码包文件名",
+                      "example": "main.zip",
+                      "title_en": "原始代码包文件名",
+                      "title_zh": "原始代码包文件名",
+                      "type": "string"
+                    },
+                    "fileSize": {
+                      "backendName": "fileSize",
+                      "description_en": "The compressed size of the code package",
+                      "description_zh": "代码包压缩大小",
+                      "example": "123",
+                      "format": "int64",
+                      "title_en": "代码包压缩大小",
+                      "title_zh": "代码包压缩大小",
+                      "type": "integer"
+                    },
+                    "format": {
+                      "backendName": "format",
+                      "description_en": "The format of the code package",
+                      "description_zh": "代码包格式",
+                      "enum": [
+                        "zip",
+                        "tar.gz"
+                      ],
+                      "example": "zip",
+                      "title_en": "代码包格式",
+                      "title_zh": "代码包格式",
+                      "type": "string"
+                    }
+                  },
+                  "title_en": "当前已保存代码包信息",
+                  "title_zh": "当前已保存代码包信息",
+                  "type": "object"
                 },
                 "createMode": {
                   "backendName": "createMode",
@@ -118,7 +309,7 @@
                 },
                 "description": {
                   "backendName": "description",
-                  "description_en": "The description of the agent",
+                  "description_en": "The description of the agent's purpose",
                   "description_zh": "智能体的用途说明",
                   "example": "提供对话服务的自定义智能体",
                   "type": "string"
@@ -157,7 +348,7 @@
                           "type": "string"
                         },
                         "backendName": "headers",
-                        "description_en": "The request header configuration of the current protocol. The key is the header name and the value is a string",
+                        "description_en": "The request header configuration for the current protocol. The key is the header name and the value is a string",
                         "description_zh": "当前协议的请求头配置，键为名称，值为字符串",
                         "title_en": "协议请求头",
                         "title_zh": "协议请求头",
@@ -169,12 +360,12 @@
                         "description_zh": "当前协议对应的接口路径列表",
                         "itemName": "paths",
                         "items": {
-                          "description_en": "An API path and its description",
+                          "description_en": "An API path and its purpose description",
                           "description_zh": "一个接口路径及其用途说明",
                           "properties": {
                             "description": {
                               "backendName": "description",
-                              "description_en": "The description of the current API path",
+                              "description_en": "The purpose description of the current API path",
                               "description_zh": "当前接口路径的用途说明",
                               "example": "AG-UI 对话接口",
                               "title_en": "路径描述",
@@ -200,7 +391,7 @@
                       },
                       "type": {
                         "backendName": "type",
-                        "description_en": "The invocation protocol type. Valid values:\nagui: AG-UI protocol.\nopenai-chat-completion: OpenAI Chat Completions compatible protocol.\ncustom: Custom protocol",
+                        "description_en": "The invoke Protocol Type. Valid values: agui (AG-UI protocol), openai-chat-completion (OpenAI Chat Completions compatible protocol), and custom (custom protocol)",
                         "description_zh": "调用协议类型。agui：AG-UI 协议；openai-chat-completion：OpenAI Chat Completions 兼容协议；custom：自定义协议",
                         "enum": [
                           "agui",
@@ -229,7 +420,7 @@
                 },
                 "status": {
                   "backendName": "status",
-                  "description_en": "The overall status of the agent. Valid values:\nCreating: The agent is being created.\nRunning: The agent is running.\nFailed: The agent failed.\nUpdating: The agent is being updated.\nDeleting: The agent is being deleted.\nDeleted: The agent is deleted.\nTo check the execution progress of the latest configuration, call GetCustomAgent",
+                  "description_en": "The overall status of the agent. Valid values: Creating, Running, Failed, Updating, Deleting, and Deleted. To query the execution progress of the latest configuration, call the GetCustomAgent operation",
                   "description_zh": "智能体整体状态。Creating：创建中；Running：运行中；Failed：失败；Updating：更新中；Deleting：删除中；Deleted：已删除。最新配置执行进度请调用 GetCustomAgent 查询",
                   "enum": [
                     "Creating",
@@ -263,7 +454,7 @@
           },
           "maxResults": {
             "backendName": "maxResults",
-            "description_en": "The maximum number of entries returned per page for this query",
+            "description_en": "The maximum number of results returned per page for the current query",
             "description_zh": "本次查询使用的每页最大返回数量",
             "example": "20",
             "format": "int32",
@@ -271,28 +462,28 @@
           },
           "message": {
             "backendName": "message",
-            "description_en": "The description of the processing result for this request. The value is success if the request is successful",
+            "description_en": "The message that describes the processing result of the request. The value is success if the request succeeds",
             "description_zh": "本次请求的处理结果说明。成功时为 success",
             "example": "success",
             "type": "string"
           },
           "nextToken": {
             "backendName": "nextToken",
-            "description_en": "The opaque token used to query the next page. If this value is empty, no more pages are available. Pass this value as is in subsequent requests",
+            "description_en": "The opaque token used to query the next page. An empty value indicates that no more pages exist. Pass this token as is in subsequent requests",
             "description_zh": "查询下一页使用的不透明令牌。为空时表示没有下一页。请原样传入后续请求",
             "example": "djE6YWdlbnRjb3JlLmFnZW50Lmxpc3QuY3VzdG9tOjIw",
             "type": "string"
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The unique identifier of the request. You can use this ID to locate and troubleshoot issues",
+            "description_en": "The unique identifier of the request, used to locate and troubleshoot issues",
             "description_zh": "本次请求的唯一标识，用于定位和排查问题",
             "example": "550E8400-E29B-41D4-A716-446655440000",
             "type": "string"
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was processed successfully. A value of true indicates that the request was processed successfully. A successful creation, update, or deletion does not indicate that the background operation is complete",
+            "description_en": "Indicates whether the request was processed successfully. A value of true indicates success. A successful creation, update, or deletion does not mean that the background operation is complete",
             "description_zh": "请求是否处理成功。true 表示处理成功；创建、更新或删除成功不代表后台操作已经完成",
             "type": "boolean"
           },

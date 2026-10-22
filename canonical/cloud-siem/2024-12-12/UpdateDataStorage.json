@@ -2,9 +2,9 @@
   "cmd_full_name": "cloud-siem update-data-storage",
   "cmd_name": "update-data-storage",
   "deprecated": false,
-  "description_en": "Modifies the log storage region in Log Management",
+  "description_en": "Modifies the log storage region in log management",
   "description_zh": "修改日志管理中的日志存储地域",
-  "kebab_example": "aliyun cloud-siem update-data-storage --biz-region-id cn-hangzhou --data-storage-region-id cn-shanghai --api-version 2024-12-12 --region cn-hangzhou",
+  "kebab_example": "aliyun cloud-siem update-data-storage --biz-region-id cn-hangzhou --lang zh --data-storage-region-id cn-shanghai --delivery-status enable --role-for 1130916744880000 --api-version 2024-12-12 --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": true,
   "name": "UpdateDataStorage",
@@ -23,7 +23,7 @@
   "parameters": [
     {
       "example": "cn-hangzhou",
-      "help_en": "The region where the threat analysis data management center is located. Specify the management center region based on the region of your assets. Valid values:\ncn-hangzhou: The assets are located in the Chinese mainland.\nap-southeast-1: The assets are located outside China",
+      "help_en": "The region of the data management center for threat analysis. Select the region of the management center based on the region where your assets are located. Valid values:\ncn-hangzhou: Assets are located in the Chinese mainland.\nap-southeast-1: Assets are located outside the Chinese mainland",
       "help_zh": "威胁分析的数据管理中心所在地。您需要根据资产所在地域，选择管理中心所在地。取值：\ncn-hangzhou：资产属于中国内地。\nap-southeast-1：资产属于海外地域",
       "location": "formData",
       "name": "region_id",
@@ -36,7 +36,7 @@
     },
     {
       "example": "zh",
-      "help_en": "The language of the response. Valid values:\nzh (default): Chinese.\nen: English.\nThis parameter is required. If you do not specify this parameter, the API returns a 400 error: \"The specified Lang can not be empty.\" Set this parameter to zh or en",
+      "help_en": "The language of the response message. Valid values:\nzh (default): Chinese.\nen: English.\nNote: This parameter is actually required. If it is not specified, the API returns a 400 error: 'The specified Lang can not be empty.' Specify zh or en",
       "help_zh": "返回消息的语言类型。取值：\nzh（默认）：中文。\nen：英文。\n注意：此参数实际为必填项，未传入时API返回400错误「The specified Lang can not be empty.」，请指定zh或en",
       "location": "formData",
       "name": "lang",
@@ -57,12 +57,12 @@
         "--data-storage-region-id"
       ],
       "raw_name": "DataStorageRegionId",
-      "required": true,
+      "required": false,
       "type": "string"
     },
     {
       "example": "enable",
-      "help_en": "The global log delivery switch in Log Management. This setting is not yet available. Valid values:\nenable: Enables all log delivery.\ndisable: Disables all log delivery",
+      "help_en": "The global delivery switch for log management. This switch is not available for configuration. Valid values:\nenable: Enables all delivery.\ndisable: Disables all delivery",
       "help_zh": "日志管理全局投递开关，暂未放开设置。取值：\nenable：开通全部投递。\ndisable：关闭全部投递",
       "location": "formData",
       "max_length": "1000",
@@ -76,7 +76,7 @@
     },
     {
       "example": "113091674488****",
-      "help_en": "The ID of the member to which the administrator switches the view",
+      "help_en": "The ID of the member whose perspective the administrator switches to",
       "help_zh": "管理员切换成其他成员视角的用户ID",
       "location": "formData",
       "name": "role_for",
@@ -86,6 +86,45 @@
       "raw_name": "RoleFor",
       "required": false,
       "type": "int"
+    },
+    {
+      "example": "true",
+      "help_en": "The global switch for multi-account centralized delivery. A value of true indicates that centralized delivery from members to the current account is enabled. A value of false indicates that centralized delivery from members to the current account is disabled. When disabled, the account selection and automatic inclusion settings are retained, and the original log type switches for the current account are independently retained. When this parameter is specified, you must also specify ConfigurationVersion and TargetProject, and omit DataStorageRegionId and DeliveryStatus. If this parameter is omitted, the storage region modification process is used. Enabling this switch for the first time initializes the account scope for log types and the automatic inclusion settings",
+      "help_zh": "多账号集中投递总开关。true 表示开启，false 表示关闭成员向当前账号的集中投递；关闭保留账号选择及自动纳入设置，本账号原日志类型开关独立保留。传入时必须同时传 ConfigurationVersion 和 TargetProject，并省略 DataStorageRegionId、DeliveryStatus。省略本字段时沿用存储地域变更流程。首次开启会初始化日志类型账号范围及自动纳入设置",
+      "location": "formData",
+      "name": "multi_account_delivery_enabled",
+      "options": [
+        "--multi-account-delivery-enabled"
+      ],
+      "raw_name": "MultiAccountDeliveryEnabled",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "example": "1",
+      "help_en": "The version of the delivery settings on which this modification is based. Call GetDataStorage first and pass the original value of Data.DeliverySettings.ConfigurationVersion. Example 1 only demonstrates the format and cannot be used as a fixed version. This parameter is required when modifying the global switch, account selection, automatic inclusion settings, or specified member delivery. If the version is missing or has changed, the OperationDenied.CentralizedDeliveryConfigChanged error is returned. In this case, re-query the data and then submit the request",
+      "help_zh": "本次修改所依据的投递设置版本。先调用 GetDataStorage，取 Data.DeliverySettings.ConfigurationVersion 原值传入；示例 1 仅展示格式，不能作为固定版本使用。修改总开关、账号选择、自动纳入设置或指定成员投递时必传。版本缺失或已变化时返回 OperationDenied.CentralizedDeliveryConfigChanged，应重新查询后再提交",
+      "location": "formData",
+      "name": "configuration_version",
+      "options": [
+        "--configuration-version"
+      ],
+      "raw_name": "ConfigurationVersion",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "aliyun-cloudsiem-data-1234567890123456-cn-shanghai",
+      "help_en": "The name of the current Simple Log Service project for log delivery. First invoke GetDataStorage and pass the original value of Data.DeliverySettings.TargetProject. This parameter is used to verify the target of this modification, not to specify a new project. This parameter is required when modifying the global switch, account selection, automatic inclusion settings, or specified member delivery. If this parameter is missing or differs from the current target, the OperationDenied.CentralizedDeliveryConfigChanged error is returned. Replace the account UID and region in the example with the query results",
+      "help_zh": "当前日志投递目标 SLS Project 的名称。先调用 GetDataStorage，取 Data.DeliverySettings.TargetProject 原值传入；用于校验本次修改的目标，不用于指定新的 Project。修改总开关、账号选择、自动纳入设置或指定成员投递时必传；缺失或与当前目标不同会返回 OperationDenied.CentralizedDeliveryConfigChanged。示例中的账号 UID 和地域需替换为查询结果",
+      "location": "formData",
+      "name": "target_project",
+      "options": [
+        "--target-project"
+      ],
+      "raw_name": "TargetProject",
+      "required": false,
+      "type": "string"
     }
   ],
   "pathPattern": "",
@@ -98,7 +137,7 @@
         "description_zh": "返回体",
         "properties": {
           "RequestId": {
-            "description_en": "The request ID",
+            "description_en": "The ID of the request",
             "description_zh": "请求消息ID",
             "example": "EA7FC160-8D86-5ABE-A08A-7962FDC1****",
             "type": "string"

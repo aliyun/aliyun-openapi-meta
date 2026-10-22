@@ -3,7 +3,7 @@
   "cmd_full_name": "agentcore update-workspace",
   "cmd_name": "update-workspace",
   "deprecated": false,
-  "description_en": "Updates the name or network configuration of a workspace. Only workspaces in the Initialized status can be updated. The Status, TenantId, and RegionId fields are maintained by the server and cannot be modified through this operation",
+  "description_en": "Updates the name or network configuration of a workspace. Only workspaces in the Initialized state can be updated. Status, TenantId, and RegionId are maintained by the server and cannot be modified through this API operation",
   "description_zh": "更新工作空间名称或网络配置。只有状态为 Initialized 的工作空间允许更新。Status、TenantId 和 RegionId 由服务端维护，不允许通过本接口修改",
   "kebab_example": "aliyun agentcore update-workspace --workspace-id ws-123456 --region cn-hangzhou",
   "method": "PATCH|PUT",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "ws-123456",
-      "help_en": "The workspace ID",
+      "help_en": "The ID of the workspace",
       "help_zh": "工作空间 ID",
       "location": "path",
       "name": "workspace_id",
@@ -39,7 +39,7 @@
       "fields": [
         {
           "example": "production-agents-v2",
-          "help_en": "The updated workspace name",
+          "help_en": "The updated name of the workspace",
           "help_zh": "更新后的工作空间名称",
           "name": "name",
           "options": [
@@ -52,10 +52,34 @@
         {
           "fields": [
             {
+              "example": "true",
+              "help_en": "Specifies whether to allow public egress access from the platform. If this parameter is not specified, the original value is retained. Disabling this feature asynchronously cascades to disable the public network switch for agents. Re-enabling this feature does not automatically restore the agent switch. This parameter only controls whether the latest versions of managed and custom agents use the public egress of the platform. It does not control fixed historical versions, model or MCP proxy egress, or the public egress of the user VPC",
+              "help_zh": "未传时保留原值。关闭将异步级联关闭 Agent 公网开关；重新开启不自动恢复 Agent 开关。仅控制托管及自定义 Agent 最新版本使用平台公网出口；不控制固定历史版本、模型/MCP 代理出口和用户 VPC 自身公网出口",
+              "name": "public_egress_enabled",
+              "options": [
+                "--public-egress-enabled"
+              ],
+              "raw_name": "publicEgressEnabled",
+              "required": false,
+              "type": "bool"
+            },
+            {
+              "example": "true",
+              "help_en": "Specifies whether to allow public ingress access. If this parameter is not specified, the original value is retained. This parameter can be modified together with PublicEgressEnabled and takes effect asynchronously through a unified task. After this feature is disabled, the public ingress for all agent endpoints in the workspace is closed. After this feature is re-enabled, the original public ingress is restored. INNER_DIRECT and user VPC ingress are not affected. Collaboration and Element Web ingress are not controlled by this parameter",
+              "help_zh": "未传时保留原值。可与 PublicEgressEnabled 同次修改，通过统一任务异步生效。关闭后工作空间内所有 Agent Endpoint 的公网入口关闭，重新开启后恢复原公网入口；INNER_DIRECT 和用户 VPC 入口不受影响，协作及 Element Web 入口不在控制范围内",
+              "name": "public_ingress_enabled",
+              "options": [
+                "--public-ingress-enabled"
+              ],
+              "raw_name": "publicIngressEnabled",
+              "required": false,
+              "type": "bool"
+            },
+            {
               "fields": [
                 {
                   "example": "true",
-                  "help_en": "Specifies whether to enable VPC networking",
+                  "help_en": "Specifies whether to enable the VPC network",
                   "help_zh": "是否开启 VPC 网络",
                   "name": "enabled",
                   "options": [
@@ -69,7 +93,7 @@
                   "element": {
                     "type": "string"
                   },
-                  "help_en": "The list of vSwitch IDs. When VPC networking is enabled, at least one vSwitch must be specified, and all vSwitches must belong to the VPC specified by VpcId",
+                  "help_en": "The list of vSwitch IDs. When the VPC network is enabled, the list must contain at least one vSwitch, and all vSwitches must belong to the VPC specified by VpcId",
                   "help_zh": "交换机 ID 列表，开启 VPC 网络时至少包含一个交换机，且所有交换机必须属于 VpcId 指定的 VPC",
                   "name": "vswitchids",
                   "options": [
@@ -81,7 +105,7 @@
                 },
                 {
                   "example": "vpc-bp1234567890",
-                  "help_en": "The VPC ID of the user",
+                  "help_en": "The ID of the user VPC",
                   "help_zh": "用户专有网络 ID",
                   "name": "vpc_id",
                   "options": [
@@ -99,7 +123,7 @@
                 "--vpc"
               ],
               "raw_name": "vpc",
-              "required": true,
+              "required": false,
               "type": "object"
             }
           ],
@@ -128,7 +152,7 @@
     },
     {
       "example": "workspace-update-20260805-001",
-      "help_en": "The client idempotency token",
+      "help_en": "The client token used to ensure idempotence",
       "help_zh": "客户端幂等标识",
       "location": "query",
       "name": "client_token",
@@ -167,7 +191,7 @@
             "properties": {
               "authorizationStatus": {
                 "backendName": "authorizationStatus",
-                "description_en": "The OSS storage authorization status",
+                "description_en": "The authorization status of OSS storage",
                 "description_zh": "OSS 存储授权状态",
                 "enum": [
                   "NOT_REQUIRED",
@@ -190,7 +214,7 @@
               },
               "name": {
                 "backendName": "name",
-                "description_en": "The workspace name",
+                "description_en": "The name of the workspace",
                 "description_zh": "工作空间名称",
                 "example": "production-agents-v2",
                 "title_en": "工作空间名称",
@@ -202,6 +226,24 @@
                 "description_en": "The network configuration of the workspace",
                 "description_zh": "工作空间网络配置",
                 "properties": {
+                  "publicEgressEnabled": {
+                    "backendName": "publicEgressEnabled",
+                    "description_en": "Returns the target configuration value. Updating indicates that the change is still in progress, and UpdateFailed indicates that the current change failed. This parameter only controls whether the latest versions of managed and custom agents use the public egress of the platform. It does not control fixed historical versions, model or MCP proxy egress, or the public egress of the user VPC",
+                    "description_zh": "返回配置目标值；Updating 表示变更仍在执行，UpdateFailed 表示本轮变更失败。仅控制托管及自定义 Agent 最新版本使用平台公网出口；不控制固定历史版本、模型/MCP 代理出口和用户 VPC 自身公网出口",
+                    "example": "true",
+                    "title_en": "是否允许平台公网出访问",
+                    "title_zh": "是否允许平台公网出访问",
+                    "type": "boolean"
+                  },
+                  "publicIngressEnabled": {
+                    "backendName": "publicIngressEnabled",
+                    "description_en": "Returns the target configuration value. Updating indicates that the change is in progress, and UpdateFailed indicates that the change failed. After this feature is disabled, the public ingress for all agent endpoints in the workspace is closed. After this feature is re-enabled, the original public ingress is restored. INNER_DIRECT and user VPC ingress are not affected. Collaboration and Element Web ingress are not controlled by this parameter",
+                    "description_zh": "返回配置目标值；Updating 表示变更中，UpdateFailed 表示变更失败。关闭后工作空间内所有 Agent Endpoint 的公网入口关闭，重新开启后恢复原公网入口；INNER_DIRECT 和用户 VPC 入口不受影响，协作及 Element Web 入口不在控制范围内",
+                    "example": "true",
+                    "title_en": "是否允许公网入访问",
+                    "title_zh": "是否允许公网入访问",
+                    "type": "boolean"
+                  },
                   "vpc": {
                     "backendName": "vpc",
                     "description_en": "The VPC network configuration of the user",
@@ -209,7 +251,7 @@
                     "properties": {
                       "enabled": {
                         "backendName": "enabled",
-                        "description_en": "Specifies whether to enable VPC networking",
+                        "description_en": "Specifies whether to enable the VPC network",
                         "description_zh": "是否开启 VPC 网络",
                         "example": "true",
                         "title_en": "是否开启 VPC 网络",
@@ -222,7 +264,7 @@
                         "description_zh": "交换机 ID 列表",
                         "itemName": "vSwitchIds",
                         "items": {
-                          "description_en": "The vSwitch ID",
+                          "description_en": "The ID of the vSwitch",
                           "description_zh": "交换机 ID",
                           "example": "vsw-bp1234567890",
                           "type": "string"
@@ -233,7 +275,7 @@
                       },
                       "vpcId": {
                         "backendName": "vpcId",
-                        "description_en": "The VPC ID of the user",
+                        "description_en": "The ID of the user VPC",
                         "description_zh": "用户专有网络 ID",
                         "example": "vpc-bp1234567890",
                         "title_en": "用户专有网络 ID",
@@ -252,7 +294,7 @@
               },
               "regionId": {
                 "backendName": "regionId",
-                "description_en": "The region ID of the workspace",
+                "description_en": "The ID of the region where the workspace resides",
                 "description_zh": "工作空间所在的地域 ID",
                 "example": "cn-hangzhou",
                 "title_en": "工作空间所在的地域 ID",
@@ -261,7 +303,7 @@
               },
               "status": {
                 "backendName": "status",
-                "description_en": "The workspace status. Valid values: Initializing, Initialized, Deleting, and Deleted",
+                "description_en": "The status of the workspace. Valid values: Initializing, Initialized, Deleting, and Deleted",
                 "description_zh": "工作空间状态。可选值：Initializing、Initialized、Deleting、Deleted",
                 "enum": [
                   "Initializing",
@@ -290,7 +332,7 @@
               },
               "tenantId": {
                 "backendName": "tenantId",
-                "description_en": "The tenant ID to which the workspace belongs",
+                "description_en": "The ID of the tenant to which the workspace belongs",
                 "description_zh": "所属租户 ID",
                 "example": "tenant-123456",
                 "title_en": "所属租户 ID",
@@ -299,7 +341,7 @@
               },
               "workspaceId": {
                 "backendName": "workspaceId",
-                "description_en": "The workspace ID",
+                "description_en": "The ID of the workspace",
                 "description_zh": "工作空间 ID",
                 "example": "ws-123456",
                 "title_en": "工作空间 ID",
@@ -332,7 +374,7 @@
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The request ID",
+            "description_en": "The ID of the request",
             "description_zh": "请求 ID",
             "example": "request-123456",
             "title_en": "请求 ID",
@@ -341,7 +383,7 @@
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful",
+            "description_en": "Indicates whether the request is successful",
             "description_zh": "请求是否成功",
             "example": "true",
             "title_en": "请求是否成功",

@@ -662,7 +662,7 @@
       "fields": [
         {
           "example": "3h",
-          "help_en": "The maintenance duration. Valid values: [1,24]. Unit: hours.\n\nDefault value: 3h",
+          "help_en": "The maintenance duration. Valid values: 1 to 24. Unit: hours.\n\nDefault value: 3h",
           "help_zh": "维护时长。取值范围[1,24]，单位为小时。\n\n默认值：3h",
           "name": "duration",
           "options": [
@@ -674,7 +674,7 @@
         },
         {
           "example": "false",
-          "help_en": "Specifies whether to enable the maintenance window. Valid values:\n`true`: Enables the maintenance window.\n`false`: Disables the maintenance window.\n\nDefault value: `false`",
+          "help_en": "Specifies whether to enable the maintenance window. Valid values:\n`true`: Enables the maintenance window.\n`false`: Does not enable the maintenance window.\n\nDefault value: `false`",
           "help_zh": "是否开启维护窗口。取值：\n`true`：开启维护窗口。\n`false`：不开启维护窗口。\n\n默认值：`false`",
           "name": "enable",
           "options": [
@@ -689,7 +689,7 @@
             "fields": [
               {
                 "example": "封网期间禁止一切变更",
-                "help_en": "The description of the exclusion. The description can be up to 128 characters in length and does not support emoji or other 4-byte characters",
+                "help_en": "The description of the exclusion. The description can be up to 128 characters in length and does not support 4-byte characters such as emojis",
                 "help_zh": "排除项描述。最长128个字符，不支持emoji等4字节字符",
                 "name": "description",
                 "options": [
@@ -701,7 +701,7 @@
               },
               {
                 "example": "2026-11-15T00:00:00+08:00",
-                "help_en": "The end time when the exclusion takes effect. The value must be in RFC 3339 format and must be later than start_time and the current time. Maximum duration per exclusion: 30 days for NoOperations, NoUpgrades, and NoCVEPatch, and 180 days for NoMinorUpgrades",
+                "help_en": "The end time of the exclusion. The time must be in the RFC 3339 standard format, later than the start_time, and later than the current time. Maximum duration for a single exclusion: 30 days for NoOperations, NoUpgrades, and NoCVEPatch, and 180 days for NoMinorUpgrades",
                 "help_zh": "排除项生效结束时间。RFC3339标准格式，必须晚于start_time且晚于当前时间。单条时长上限:NoOperations、NoUpgrades和NoCVEPatch为30天，NoMinorUpgrades为180天",
                 "name": "end_time",
                 "options": [
@@ -712,8 +712,20 @@
                 "type": "string"
               },
               {
+                "example": "exclusion-holiday",
+                "help_en": "The name of the exclusion. The name must be 1 to 63 characters in length and can contain digits, underscores (_), and hyphens (-). It must start with an uppercase or lowercase letter, a Chinese character, or a digit. The name must be unique within the same maintenance window. If you do not specify this parameter, a default name in the format of exclusion-{random string} is generated",
+                "help_zh": "排除项名称。长度为1~63个字符，可包含数字、下划线（_）或中划线（-），需以英文大小写字母、中文或数字开头；同一维护窗口内不能重复。不填写时默认生成 exclusion-{随机串}",
+                "name": "name",
+                "options": [
+                  "--name"
+                ],
+                "raw_name": "name",
+                "required": false,
+                "type": "string"
+              },
+              {
                 "example": "NoOperations",
-                "help_en": "The scope of the exclusion, which specifies the proactive O&M types that are prohibited during the time range. Values are case-sensitive. Valid values:\nNoOperations: Prohibits all proactive O&M operations, including cluster upgrades, component upgrades, CVE fixes, and OS image updates.\nNoUpgrades: Prohibits cluster upgrades and component upgrades. CVE fixes and ECS scheduled event responses are still allowed.\nNoMinorUpgrades: Prohibits only cluster minor version upgrades. Patch upgrades, component upgrades, and CVE fixes are still allowed.\nNoCVEPatch: Prohibits automatic CVE fixes",
+                "help_en": "The scope of the exclusion, which specifies the proactive O&M types that are prohibited during this time period. Valid values (case-sensitive):\nNoOperations: Prohibits all proactive O&M operations, including cluster upgrades, component upgrades, CVE patching, and OS image updates.\nNoUpgrades: Prohibits cluster upgrades and component upgrades, but still allows CVE patching and responses to scheduled ECS events.\nNoMinorUpgrades: Prohibits only minor version upgrades for clusters, but still allows patch upgrades, component upgrades, and CVE patching.\nNoCVEPatch: Prohibits automatic CVE patching",
                 "help_zh": "排除项作用域，即在该时间段内禁止执行的主动运维类型。取值区分大小写:\nNoOperations:禁止所有主动运维，包括集群升级、组件升级、CVE修复和OS镜像更新;\nNoUpgrades:禁止集群升级和组件升级，仍允许CVE修复和ECS计划内事件响应;\nNoMinorUpgrades:仅禁止集群minor版本升级，仍允许patch升级、组件升级和CVE修复;\nNoCVEPatch:禁止CVE自动修复",
                 "name": "scope",
                 "options": [
@@ -725,7 +737,7 @@
               },
               {
                 "example": "2026-11-01T00:00:00+08:00",
-                "help_en": "The start time when the exclusion takes effect. The value must be in RFC 3339 format. The time zone offset must be consistent with that of end_time and maintenance_time",
+                "help_en": "The start time of the exclusion. The time must be in the RFC 3339 standard format and use the same time zone offset as the end_time and maintenance_time",
                 "help_zh": "排除项生效起始时间。RFC3339标准格式，需与end_time以及maintenance_time的时区偏移量保持一致",
                 "name": "start_time",
                 "options": [
@@ -738,7 +750,7 @@
             ],
             "type": "object"
           },
-          "help_en": "The list of maintenance window exclusions. A maximum of 10 exclusions are supported. Exclusions take priority over the maintenance window: even if the current time falls within a maintenance window, operations are not performed as long as an active exclusion covers the O&M type. When multiple exclusions are active at the same time, the union of all exclusions is applied. The total number of NoOperations and NoUpgrades exclusions cannot exceed 3. Currently, only one-time time ranges are supported. Recurring configurations are not supported",
+          "help_en": "The list of exclusions for the maintenance window. A maximum of 10 exclusions are supported. Exclusions take precedence over the maintenance window. If an active exclusion covers an O&M type, the O&M operation is not performed even if the current time is within the maintenance window. If multiple exclusions are active at the same time, the union of the exclusions is applied. The total number of NoOperations and NoUpgrades exclusions cannot exceed 3. Only one-time periods are supported. Periodic configurations are not supported",
           "help_zh": "维护窗口排除项列表，最多10项。排除项优先级高于维护窗口：即使当前处于维护窗口内，只要有生效的排除项覆盖该运维类型，则不执行。同一时刻多个排除项生效时取并集，其中NoOperations与NoUpgrades合计不超过3项。当前仅支持一次性时间段，不支持周期性配置",
           "name": "exclusions",
           "options": [
@@ -750,7 +762,7 @@
         },
         {
           "example": "2020-10-15T12:31:00.000+08:00",
-          "help_en": "The start time of the maintenance window. The value must be in RFC 3339 format",
+          "help_en": "The start time of the maintenance window. The time must be in the RFC 3339 standard format",
           "help_zh": "维护起始时间。RFC3339标准格式",
           "name": "maintenance_time",
           "options": [
@@ -762,7 +774,7 @@
         },
         {
           "example": "FREQ=WEEKLY;INTERVAL=4;BYDAY=MO,TU",
-          "help_en": "The recurrence rule of the maintenance window defined by using the RFC 5545 Recurrence Rule syntax. Currently, only FREQ=WEEKLY is supported. Specifying COUNT or UNTIL is not supported",
+          "help_en": "The recurrence rule for the maintenance window, defined by using the RFC 5545 Recurrence Rule syntax. Only FREQ=WEEKLY is supported. COUNT and UNTIL are not supported",
           "help_zh": "使用RFC5545 Recurrence Rule语法定义的维护窗口循环规则，目前仅支持FREQ=WEEKLY，且不支持指定COUNT或UNTIL",
           "name": "recurrence",
           "options": [
@@ -774,7 +786,7 @@
         },
         {
           "example": "Monday,Thursday",
-          "help_en": "The maintenance cycle. Separate multiple values with commas (,). Valid values: {Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday}\n\nDefault value: `Thursday`",
+          "help_en": "The weekly maintenance period. Separate multiple values with commas (,). Valid values: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, and Sunday.\n\nDefault value: `Thursday`",
           "help_zh": "维护周期，多个值用英文半角逗号（,）分隔。取值：{Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday}\n\n默认值：`Thursday`",
           "name": "weekly_period",
           "options": [

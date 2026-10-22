@@ -5,19 +5,19 @@
   "components": {
     "schemas": {
       "LiveManifestConfig": {
-        "description_en": "The live manifest configuration",
+        "description_en": "The live streaming playlist configuration",
         "description_zh": "直播清单配置",
         "properties": {
           "AdMarkers": {
             "backendName": "adMarkers",
-            "description_en": "The ad markers supported in the playlist. Valid values:\nNONE: removes ad markers.\nDATE_RANGE: uses the EXT-X-DATERANGE tag defined in the HLS specification. This value is available when the endpoint protocol is HLS/HLS_CMAF.\nXML: uses the XML ad markers defined in the DASH specification. This value is available when the endpoint protocol is DASH",
+            "description_en": "The ad markers supported in the playlist. Valid values:\nNONE: removes ad markers.\nDATE_RANGE: uses the EXT-X-DATERANGE marker in the HLS specification. Available when the endpoint protocol is HLS or HLS_CMAF.\nXML: uses XML ad markers in the DASH specification. Available when the endpoint protocol is DASH",
             "description_zh": "播放清单中支持的广告标记。\nNONE：去除广告标记\nDATE_RANGE：使用HLS规范中的EXT-X-DATERANGE标记，端点协议为HLS/HLS_CMAF时可用\nXML：使用DASH规范中的XML广告标记，端点协议为DASH可用",
             "example": "NONE",
             "type": "string"
           },
           "DateTimeInterval": {
             "backendName": "dateTimeInterval",
-            "description_en": "The interval (in seconds) for inserting the EXT-X-PROGRAM-DATE-TIME time tag. By default, the tag is not inserted. Valid values: 1 to 3600. This parameter applies to the HLS/HLS_CMAF protocol",
+            "description_en": "The interval at which the EXT-X-PROGRAM-DATE-TIME time tag is inserted, in seconds. By default, no tag is inserted. Valid values: 1 to 3600. Applicable to the HLS and HLS_CMAF protocols",
             "description_zh": "插入时间标签EXT-X-PROGRAM-DATE-TIME的间隔（秒）。默认不插入标签。取值范围：1～3600。适用HLS/HLS_CMAF协议",
             "example": "5",
             "format": "int32",
@@ -25,7 +25,7 @@
           },
           "ManifestDuration": {
             "backendName": "manifestDuration",
-            "description_en": "The maximum time-shift duration during live streaming. Unit: seconds. Valid values: 1 to 3600. Default value: 60. This parameter applies to DASH",
+            "description_en": "The maximum time-shift duration during live streaming, in seconds. Valid values: 1 to 3600. Default value: 60. Applicable to DASH",
             "description_zh": "直播过程中最大回看时长。单位：秒。取值范围：1～3600，默认60。适用DASH",
             "example": "60",
             "format": "int32",
@@ -33,7 +33,7 @@
           },
           "MaxVideoBitrate": {
             "backendName": "maxVideoBitrate",
-            "description_en": "The maximum input bitrate threshold (unit: bit/s). A video track must have a bitrate less than or equal to this threshold to be played from this endpoint. Valid values: integers greater than 0. By default, this parameter is empty and no maximum bitrate limit is set",
+            "description_en": "The maximum input bitrate threshold, in bit/s. The video track must have a bitrate less than or equal to this threshold to be played from this endpoint. Valid values: integers greater than 0. Default value: empty, which indicates that no maximum bitrate is set",
             "description_zh": "输入最大比特率阈值（单位：比特/秒），视频轨道必须小于等于此阈值才能从此端点播放。取值范围：大于0的整数。默认为空不限制最大比特率",
             "example": "8000000",
             "format": "int32",
@@ -41,7 +41,7 @@
           },
           "MinBufferTime": {
             "backendName": "minBufferTime",
-            "description_en": "The minimum buffer time. Unit: seconds. Valid values: 1 to 30. Default value: 2 segment durations. This parameter applies only to DASH.\n\nAn excessively small minimum buffer time may cause playback stuttering. Set this parameter to a value no less than 2 segment durations",
+            "description_en": "The minimum buffer time, in seconds. Valid values: 1 to 30. Default value: the duration of two segments. Applicable only to DASH. Note: A small minimum buffer time may cause stuttering during playback. Set this value to no less than the duration of two segments",
             "description_zh": "最小缓冲时间，单位：秒。取值范围：1～30。默认2个切片时长。仅适用DASH。\n\n注意：最小缓冲时间过小可能导致播放卡顿，建议不小于2个切片时长",
             "example": "8",
             "format": "int32",
@@ -49,7 +49,7 @@
           },
           "MinUpdatePeriod": {
             "backendName": "minUpdatePeriod",
-            "description_en": "The minimum update interval. Unit: seconds. Valid values: 1 to 3600. Default value: 2 segment durations. This parameter applies to DASH.\n\nSet this parameter to a value less than the minimum buffer time. An excessively large value may cause DASH playback stuttering",
+            "description_en": "The minimum update interval, in seconds. Valid values: 1 to 3600. Default value: the duration of two segments. Applicable to DASH. Note: Set this parameter to a value less than the minimum buffer time. A large value may cause stuttering during DASH playback",
             "description_zh": "最小更新间隔。单位：秒。取值范围：1～3600。默认2个切片时长。适用DASH。\n\n注意：建议设置为小于最小缓冲时间，过大会导致DASH播放卡顿",
             "example": "8",
             "format": "int32",
@@ -57,7 +57,7 @@
           },
           "MinVideoBitrate": {
             "backendName": "minVideoBitrate",
-            "description_en": "The minimum input bitrate threshold (unit: bit/s). A video track must have a bitrate greater than or equal to this threshold to be played from this endpoint. Valid values: integers greater than 0. By default, this parameter is empty and no minimum bitrate is set",
+            "description_en": "The minimum input bitrate threshold, in bit/s. The video track must have a bitrate greater than or equal to this threshold to be played from this endpoint. Valid values: integers greater than 0. Default value: empty, which indicates that no minimum bitrate is set",
             "description_zh": "输入最小比特率阈值（单位：比特/秒），视频轨道必须大于或者等于此阈值才能从此端点播放。取值范围：大于0的整数。默认为空不设置最小比特率",
             "example": "1000000",
             "format": "int32",
@@ -65,12 +65,15 @@
           },
           "PartHoldBackMs": {
             "backendName": "partHoldBackMs",
+            "description_en": "The part segment cache duration, in milliseconds. The minimum value is twice the PartDurationMs, and the maximum value is three times the SegmentDuration. Applicable only to LL_HLS_CMAF",
+            "description_zh": "Part切片缓存时长，单位：毫秒。最小为2倍PartDurationMs，最大为3倍SegmentDuration。仅适用于LL_HLS_CMAF",
+            "example": "1100",
             "format": "int32",
             "type": "integer"
           },
           "PresentationDelay": {
             "backendName": "presentationDelay",
-            "description_en": "The suggested presentation delay. Unit: seconds. Valid values: 1 to 60. Default value: 3 segment durations",
+            "description_en": "The recommended playback start delay, in seconds. Valid values: 1 to 60. Default value: the duration of three segments",
             "description_zh": "建议启播延迟，单位：秒。取值范围：1～60。默认3个切片时长",
             "example": "12",
             "format": "int32",
@@ -78,7 +81,7 @@
           },
           "SegmentCount": {
             "backendName": "segmentCount",
-            "description_en": "The number of segments. This parameter applies to the HLS/HLS_CMAF protocol. By default, the channel configuration is used. Valid values: 2 to 100",
+            "description_en": "The number of segments. Applicable to the HLS and HLS_CMAF protocols. By default, the configuration of the channel is used. Valid values: 2 to 100",
             "description_zh": "切片个数，适用HLS/HLS_CMAF协议，默认使用channel的配置，取值范围：2～100",
             "example": "3",
             "format": "int32",
@@ -86,14 +89,14 @@
           },
           "SegmentTemplateFormat": {
             "backendName": "segmentTemplateFormat",
-            "description_en": "The segment template. Currently, only NUMBER_TIMELINE (default) is supported. This parameter applies to DASH",
+            "description_en": "The segment template. Currently, only NUMBER_TIMELINE is supported. Default value: NUMBER_TIMELINE. Applicable to DASH",
             "description_zh": "切片模版，暂只支持NUMBER_TIMELINE（默认）。适用DASH",
             "example": "NUMBER_TIMELINE",
             "type": "string"
           },
           "StreamOrder": {
             "backendName": "streamOrder",
-            "description_en": "The stream sorting rule. Valid values:\nORIGINAL: retains the original order of the input sub-manifest.\nVIDEO_BITRATE_ASCENDING: sorts by video stream bitrate in ascending order.\nVIDEO_BITRATE_DESCENDING: sorts by video stream bitrate in descending order",
+            "description_en": "The stream sorting rule. Valid values:\nORIGINAL: keeps the sorting of the input sub-playlists.\nVIDEO_BITRATE_ASCENDING: sorts video streams in ascending order of bitrate.\nVIDEO_BITRATE_DESCENDING: sorts video streams in descending order of bitrate",
             "description_zh": "流排序规则，支持值：\nORIGINAL：保持输入的子清单排序；\nVIDEO_BITRATE_ASCENDING：按视频流码率递增；\nVIDEO_BITRATE_DESCENDING：按视频流码率递减",
             "example": "ORIGINAL",
             "type": "string"
@@ -102,17 +105,17 @@
         "type": "object"
       },
       "LivePackagingConfig": {
-        "description_en": "The live packaging configuration",
+        "description_en": "The live streaming packaging configuration",
         "description_zh": "直播封装配置",
         "properties": {
           "DrmConfig": {
             "backendName": "drmConfig",
-            "description_en": "The DRM encryption provider configuration. If encryption is not required, leave all fields empty",
+            "description_en": "The DRM encryption provider configuration. If encryption is not used, leave all fields empty",
             "description_zh": "DRM加密提供商配置，如不加密，所有字段留空",
             "properties": {
               "ContentId": {
                 "backendName": "contentId",
-                "description_en": "The content ID in the DRM system. Format: [A-Za-z0-9_-]+. Maximum length: 256 characters. Ensure that the content ID is unique. Otherwise, DRM playback may fail",
+                "description_en": "The content ID in the DRM system. Format: [A-Za-z0-9_-]+. Maximum length: 256 characters. You must ensure the uniqueness of the content ID. Otherwise, DRM playback may fail",
                 "description_zh": "DRM系统中的内容ID，格式：[A-Za-z0-9_-]+，长度最多256。客户需确保内容ID的唯一性，否则DRM播放可能失败",
                 "example": "live-axb1-9dd2fa123",
                 "type": "string"
@@ -127,7 +130,7 @@
               },
               "IV": {
                 "backendName": "iv",
-                "description_en": "An optional 128-bit (16-byte) hexadecimal value represented by a 32-character string. This value is used together with the key to encrypt data blocks. If you do not specify this value, MediaPackage creates a constant initialization vector (IV). Default value: empty. If specified, the value is passed through to the provider as a constant initialization vector",
+                "description_en": "The optional 128-bit (16-byte) hexadecimal value represented by a 32-character string, used with the key for encrypted data blocks. If you do not specify this value, MediaPackage creates a constant initialization vector (IV). Default value: empty. If specified, the value is passed through to the provider as a constant initialization vector",
                 "description_zh": "一个可选的128位（16字节）十六进制值，由32个字符的字符串表示，与密钥一起用于加密数据块。如果您不指定该值，则MediaPackage将创建一个常量初始化向量（IV）。默认值：空，如果填写，则透传到供应商Constant initialization vector",
                 "example": "00000000000000000000000000000000",
                 "title": "一个可选的128位（16字节）十六进制值，由32个字符的字符串表示，与密钥一起用于加密数据块。如果您不指定该值，则MediaPackage将创建一个常量初始化向量（IV）。默认值：空，如果填写，则透传到供应商Constant initialization vector。",
@@ -135,7 +138,7 @@
               },
               "RotatePeriod": {
                 "backendName": "rotatePeriod",
-                "description_en": "The DRM key rotation interval. Unit: seconds. Default value: 0, which indicates that key rotation is disabled",
+                "description_en": "The DRM key rotation interval in seconds. Default value: 0, which indicates that keys are not rotated",
                 "description_zh": "DRM密钥轮转间隔，单位：秒。默认为0，密钥不轮换",
                 "example": "0",
                 "format": "int32",
@@ -144,7 +147,7 @@
               },
               "SystemIds": {
                 "backendName": "systemIds",
-                "description_en": "The DRM system IDs, determined by the protocol type.\nDASH: supports Google Widevine and Microsoft PlayReady.\nHLS: not supported.\nHLS_CMAF: supports Apple FairPlay, Google Widevine, and Microsoft PlayReady.\n\nThree DRM systems are supported: Apple FairPlay, Google Widevine, and Microsoft PlayReady. The corresponding system IDs are:\nApple FairPlay:\n94ce86fb-07ff-4f43-adb8-93d2fa968ca2\nGoogle Widevine:\nedef8ba9-79d6-4ace-a3c8-27dcd51d21ed\nMicrosoft PlayReady:\n9a04f079-9840-4286-ab92-e65be0885f95",
+                "description_en": "The DRM system IDs, which are determined by the protocol type used.\nDASH: supports Google Widevine and Microsoft PlayReady\nHLS: not supported\nHLS_CMAF: supports Apple FairPlay, Google Widevine, and Microsoft PlayReady\n\nThe following three DRM systems are supported, with their corresponding system IDs:\nApple FairPlay:\n94ce86fb-07ff-4f43-adb8-93d2fa968ca2\nGoogle Widevine:\nedef8ba9-79d6-4ace-a3c8-27dcd51d21ed\nMicrosoft PlayReady:\n9a04f079-9840-4286-ab92-e65be0885f95",
                 "description_zh": "DRM系统ID，由使用的协议类型决定。\nDASH -- 支持Google Widevine、Microsoft PlayReady\nHLS -- 暂不支持\nHLS_CMAF -- 支持Apple FairPlay、Google Widevine、Microsoft PlayReady\n\n支持Apple FairPlay、Google Widevine、Microsoft PlayReady 三个DRM系统，对应系统ID分别为 ：\nApple FairPlay：\n94ce86fb-07ff-4f43-adb8-93d2fa968ca2\nGoogle Widevine：\nedef8ba9-79d6-4ace-a3c8-27dcd51d21ed\nMicrosoft PlayReady：\n9a04f079-9840-4286-ab92-e65be0885f95",
                 "items": {
                   "description_en": "The DRM system ID",
@@ -169,23 +172,26 @@
           },
           "LiveManifestConfigs": {
             "backendName": "liveManifestConfigs",
-            "description_en": "The live manifest configurations. A maximum of one configuration is supported",
+            "description_en": "The live streaming manifest configuration. Up to one configuration is supported",
             "description_zh": "直播清单配置，目前最多支持一个",
             "items": {
               "$ref": "#/components/schemas/LiveManifestConfig",
-              "description_en": "The live manifest configuration",
+              "description_en": "The live streaming manifest configuration",
               "description_zh": "直播清单配置"
             },
             "type": "array"
           },
           "PartDurationMs": {
             "backendName": "partDurationMs",
+            "description_en": "The duration of an LL-HLS part or an LL-DASH chunk in milliseconds. The value must be no less than 200 and no greater than the segment duration in milliseconds",
+            "description_zh": "LL-HLS Part切片，或LL-DASH Chunk时长，单位：毫秒。不小于200，不大于切片时长（换算成毫秒)",
+            "example": "350",
             "format": "int32",
             "type": "integer"
           },
           "SegmentDuration": {
             "backendName": "segmentDuration",
-            "description_en": "The duration of each segment, in seconds. Default value: the channel segment duration. The actual segment duration is the nearest multiple of the source segment duration that is greater than or equal to the configured value. Valid values: 1 to 30",
+            "description_en": "The duration of each segment in seconds. Default value: the segment duration of the channel. The actual segment duration is the nearest multiple of the source segment duration that is greater than or equal to the configured value. Valid values: 1 to 30",
             "description_zh": "每个切片的时长（以秒为单位），默认为频道切片时长。实际切片时长为最接近源片段时长的倍数，大于等于配置值。取值范围【1，30】",
             "example": "6",
             "format": "int32",
@@ -194,7 +200,7 @@
           },
           "UseAudioRenditionGroups": {
             "backendName": "useAudioRenditionGroups",
-            "description_en": "Specifies whether to separate audio tracks in TS segments",
+            "description_en": "Specifies whether to separate audio tracks for TS segments",
             "description_zh": "TS切片是否分离音频轨",
             "example": "true",
             "title": "TS切片是否分离音频轨",

@@ -3,7 +3,7 @@
   "cmd_full_name": "websitebuild check-user-resource-measure",
   "cmd_name": "check-user-resource-measure",
   "deprecated": false,
-  "description_en": "Checks user resource metering",
+  "description_en": "Validates user resource metering",
   "description_zh": "校验用户资源计量",
   "kebab_example": "aliyun websitebuild check-user-resource-measure --resource-code InspirationTokens --resource-value 1 --order-component-params '{\"siteversion\":\"test\"}' --belong-id 123456 --belong-id-type USER --esp-biz-id p20202933455 --biz-type 1 --region cn-hangzhou",
   "method": "POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "InspirationTokens",
-      "help_en": "The resource identifier",
+      "help_en": "The resource code",
       "help_zh": "资源标识",
       "location": "query",
       "name": "resource_code",
@@ -35,7 +35,7 @@
     },
     {
       "example": "1",
-      "help_en": "The resource value. This parameter is empty by default and is required only for feature-type resources. Valid values:\n0: Not supported.\n1: Supported",
+      "help_en": "The resource value. Default is empty. Required only for feature resources. A value of 0 indicates not supported, and 1 indicates supported",
       "help_zh": "资源值，默认为空，只有是功能类资源才需要，0不支持，1支持",
       "location": "query",
       "name": "resource_value",
@@ -47,8 +47,21 @@
       "type": "int"
     },
     {
+      "example": "21",
+      "help_en": "The optional compatible total for APP_WORKSPACE. Valid values: 0 to 100000. If provided, it takes precedence over ResourceValue and does not repeatedly add the used quota. For new calls, only ResourceValue is required. This field is not used for APP/USER",
+      "help_zh": "APP_WORKSPACE 可选兼容总量，范围 0..100000；提供时优先于 ResourceValue，不重复叠加已用量。新调用只需 ResourceValue；APP/USER 不使用此字段",
+      "location": "query",
+      "name": "desired_total",
+      "options": [
+        "--desired-total"
+      ],
+      "raw_name": "DesiredTotal",
+      "required": false,
+      "type": "int"
+    },
+    {
       "example": "{\"siteversion\":\"test\"}",
-      "help_en": "The order module information. If this parameter is empty, espBizId and bizType cannot be empty",
+      "help_en": "The order component information. If this field is empty, EspBizId and BizType cannot be empty",
       "help_zh": "订单模块信息（为空时，espBizId和bizType不能为空）",
       "location": "query",
       "name": "order_component_params",
@@ -61,7 +74,7 @@
     },
     {
       "example": "123456",
-      "help_en": "The owner ID, which can be a website ID or an Alibaba Cloud account ID",
+      "help_en": "The belong ID, such as the website ID or Alibaba Cloud user ID",
       "help_zh": "归属ID（网站ID或阿里云用户ID）",
       "location": "query",
       "name": "belong_id",
@@ -74,7 +87,7 @@
     },
     {
       "example": "USER",
-      "help_en": "The type of the owner ID. Valid values:\nsiteId\nuid",
+      "help_en": "The belong ID type, such as siteId or uid",
       "help_zh": "归属ID类型（siteId，uid）",
       "location": "query",
       "name": "belong_id_type",
@@ -123,21 +136,21 @@
         "properties": {
           "AccessDeniedDetail": {
             "backendName": "accessDeniedDetail",
-            "description_en": "The detailed reason why access is denied",
+            "description_en": "The detailed reason for access denial",
             "description_zh": "访问被拒绝的详细原因",
             "example": "{}",
             "type": "string"
           },
           "AllowRetry": {
             "backendName": "allowRetry",
-            "description_en": "Indicates whether a retry is allowed. Valid values:\nfalse: A retry is not allowed.\ntrue: A retry is allowed",
+            "description_en": "Specifies whether retries are allowed. Valid values:\nfalse: Retries are not allowed.\ntrue: Retries are allowed",
             "description_zh": "是否允许重试。取值：\nfalse：不允许重试。\ntrue：允许重试",
             "example": "False",
             "type": "boolean"
           },
           "AppName": {
             "backendName": "appName",
-            "description_en": "The application name. The application with this name is queried",
+            "description_en": "The name of the application",
             "description_zh": "应用名称，查询此名称的应用",
             "example": "spring-cloud-b",
             "type": "string"
@@ -151,18 +164,18 @@
           },
           "DynamicMessage": {
             "backendName": "dynamicMessage",
-            "description_en": "The dynamic error message, which is used to replace the `%s` placeholder in the ErrMessage response element.\nIf ErrMessage returns The Value of Input Parameter %s is not valid and DynamicMessage returns DtsJobId, the request parameter DtsJobId is invalid",
+            "description_en": "The dynamic error message, which is used to replace `%s` in the ErrMessage response parameter.\nIf ErrMessage returns The Value of Input Parameter %s is not valid and DynamicMessage returns DtsJobId, it indicates that the DtsJobId request parameter is invalid",
             "description_zh": "动态错误信息，用于替换返回参数ErrMessage错误信息中的`%s`。\n如果ErrMessage返回The Value of Input Parameter %s is not valid，且DynamicMessage返回DtsJobId，则代表所传入的请求参数DtsJobId不合法",
             "example": "SYSTEM_ERROR",
             "type": "string"
           },
           "ErrorArgs": {
             "backendName": "errorArgs",
-            "description_en": "The error parameters",
+            "description_en": "The returned error arguments",
             "description_zh": "返回错误参数",
             "itemName": "ErrorArg",
             "items": {
-              "description_en": "The error parameters",
+              "description_en": "The returned error arguments",
               "description_zh": "返回错误参数",
               "example": "SYSTEM.ERROR",
               "type": "any"
@@ -171,12 +184,22 @@
           },
           "Module": {
             "backendName": "module",
-            "description_en": "The response object",
+            "description_en": "The returned object",
             "description_zh": "返回对象",
             "properties": {
+              "DesiredTotal": {
+                "backendName": "desiredTotal",
+                "description_en": "Returned only for APP_WORKSPACE: the target total for this check, which is the used quota in the saved configuration plus ResourceValue. If the compatible DesiredTotal is provided, this total is used directly. The used quota for questions is the sum of common and word-of-mouth questions in the saved configuration. The used quota for competitors is the number of competitors. This field is empty for APP and USER checks",
+                "description_zh": "仅 APP_WORKSPACE 返回：本次检查的目标总量，为已保存配置已用量加 ResourceValue；提供兼容 DesiredTotal 时直接使用该总量。问题已用量为保存配置中普通及口碑问题条数之和，竞品为竞品条数；APP、USER 检查时为空",
+                "example": "21",
+                "format": "int64",
+                "title_en": "仅 APP_WORKSPACE 返回：本次检查的目标总量，为已保存配置已用量加 ResourceValue；提供兼容 DesiredTotal 时直接使用该总量。问题已用量为保存配置中普通及口碑问题条数之和，竞品为竞品条数；APP、USER 检查时为空。",
+                "title_zh": "仅 APP_WORKSPACE 返回：本次检查的目标总量，为已保存配置已用量加 ResourceValue；提供兼容 DesiredTotal 时直接使用该总量。问题已用量为保存配置中普通及口碑问题条数之和，竞品为竞品条数；APP、USER 检查时为空。",
+                "type": "integer"
+              },
               "ErrorCode": {
                 "backendName": "errorCode",
-                "description_en": "The error code when the check fails. This value is null when the check passes",
+                "description_en": "The error code when the check fails. This field is null when the check passes",
                 "description_zh": "失败时的错误码，通过时为null",
                 "example": "Success",
                 "title_en": "失败时的错误码，通过时为null",
@@ -185,12 +208,22 @@
               },
               "ErrorMessage": {
                 "backendName": "errorMessage",
-                "description_en": "The error message when the check fails. This value is null when the check passes",
+                "description_en": "The error message when the check fails. This field is null when the check passes",
                 "description_zh": "失败时的错误信息，通过时为null",
                 "example": "stream push failed",
                 "title_en": "失败时的错误信息，通过时为null",
                 "title_zh": "失败时的错误信息，通过时为null",
                 "type": "string"
+              },
+              "Limit": {
+                "backendName": "limit",
+                "description_en": "Returned only for APP_WORKSPACE quantity dry runs: the maximum number of questions or competitors allowed by the current commodity edition, not the remaining quota. This field is empty for APP and USER checks or when the edition benefits cannot be determined",
+                "description_zh": "仅 APP_WORKSPACE 数量预检返回：当前商品版本允许的问题或竞品数量上限，不是剩余额度。APP、USER 检查或无法确定版本权益时为空",
+                "example": "20",
+                "format": "int64",
+                "title_en": "仅 APP_WORKSPACE 数量预检返回：当前商品版本允许的问题或竞品数量上限，不是剩余额度。APP、USER 检查或无法确定版本权益时为空。",
+                "title_zh": "仅 APP_WORKSPACE 数量预检返回：当前商品版本允许的问题或竞品数量上限，不是剩余额度。APP、USER 检查或无法确定版本权益时为空。",
+                "type": "integer"
               },
               "Passed": {
                 "backendName": "passed",
@@ -203,12 +236,21 @@
               },
               "ResourceCode": {
                 "backendName": "resourceCode",
-                "description_en": "The resource identifier",
+                "description_en": "The resource code",
                 "description_zh": "资源标识",
                 "example": "TransitRouterVpcAttachment",
-                "title_en": "资源标识",
-                "title_zh": "资源标识",
+                "title_en": "资源标识；APP_WORKSPACE 支持 WorkspaceGeoQuestions（问题）和 WorkspaceGeoCompetitors（竞品）",
+                "title_zh": "资源标识；APP_WORKSPACE 支持 WorkspaceGeoQuestions（问题）和 WorkspaceGeoCompetitors（竞品）",
                 "type": "string"
+              },
+              "UpgradeAvailable": {
+                "backendName": "upgradeAvailable",
+                "description_en": "Indicates whether a purchasable higher edition exists that can accommodate the DesiredTotal. This field is true only when the current edition capacity is insufficient and a higher edition meets the requirements. Otherwise, it is false. This field may be empty for APP and USER checks. This field does not indicate that an upgrade has been performed or an upgrade order has been created",
+                "description_zh": "是否存在足以容纳 DesiredTotal 的可购买更高版本。仅当前版本容量不足且更高版本满足要求时为 true；其他情况为 false，APP、USER 检查时可能为空。此字段不表示已升级或已创建升级订单",
+                "example": "true",
+                "title_en": "是否存在足以容纳 DesiredTotal 的可购买更高版本。仅当前版本容量不足且更高版本满足要求时为 true；其他情况为 false，APP、USER 检查时可能为空。此字段不表示已升级或已创建升级订单。",
+                "title_zh": "是否存在足以容纳 DesiredTotal 的可购买更高版本。仅当前版本容量不足且更高版本满足要求时为 true；其他情况为 false，APP、USER 检查时可能为空。此字段不表示已升级或已创建升级订单。",
+                "type": "boolean"
               }
             },
             "type": "object"
@@ -222,21 +264,21 @@
           },
           "RootErrorCode": {
             "backendName": "rootErrorCode",
-            "description_en": "The error code",
+            "description_en": "The root error code",
             "description_zh": "错误码",
             "example": "SYSTEM.ERROR",
             "type": "string"
           },
           "RootErrorMsg": {
             "backendName": "rootErrorMsg",
-            "description_en": "The exception message",
+            "description_en": "The root error message",
             "description_zh": "异常消息",
             "example": "系统异常",
             "type": "string"
           },
           "Synchro": {
             "backendName": "synchro",
-            "description_en": "A reserved parameter",
+            "description_en": "The backup parameter",
             "description_zh": "备用参数",
             "example": "True",
             "type": "boolean"
@@ -247,5 +289,6 @@
         "type": "object"
       }
     }
-  }
+  },
+  "timeout_ms": 32000
 }

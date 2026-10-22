@@ -3,7 +3,7 @@
   "cmd_full_name": "nis get-transit-router-flow-topn",
   "cmd_name": "get-transit-router-flow-topn",
   "deprecated": true,
-  "description_en": "Queries the rankings of inter-region traffic data in the form of 1-tuple, 2-tuple, or 5-tuple. Inter-region traffic data can be ranked by metrics such as traffic volumes and the number of packets",
+  "description_en": "Retrieves the top N cross-region traffic details ranked by metrics such as bytes or packets, supporting 1-tuple, 2-tuple, and 5-tuple granularities",
   "description_zh": "调用GetTransitRouterFlowTopN接口，获取跨域流量详情数据排名，覆盖一元组、二元组、五元组粒度，支持按流量、包数等指标排序",
   "kebab_example": "aliyun nis get-transit-router-flow-topn --begin-time 1684373600099 --end-time 1638239093000 --direction in --group-by 1Tuple --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "1684373600099",
-      "help_en": "The beginning of the time range to query. This value is a UNIX timestamp representing the number of milliseconds that have elapsed since January 1, 1970, 00:00:00 UTC. The maximum time range that you can query is 24 hours",
+      "help_en": "The start time of the query, in milliseconds (UNIX timestamp). The maximum query time span is 24 hours",
       "help_zh": "查询起始时间的毫秒时间戳。最大支持查24小时跨度的数据",
       "location": "query",
       "name": "begin_time",
@@ -35,7 +35,7 @@
     },
     {
       "example": "1638239093000",
-      "help_en": "The end of the time range to query. This value is a UNIX timestamp representing the number of milliseconds that have elapsed since January 1, 1970, 00:00:00 UTC. The maximum time range that you can query is 24 hours",
+      "help_en": "The end time of the query, in milliseconds (UNIX timestamp). The maximum query time span is 24 hours",
       "help_zh": "查询结束时间的毫秒时间戳。最大支持查24小时跨度的数据",
       "location": "query",
       "name": "end_time",
@@ -48,7 +48,7 @@
     },
     {
       "example": "20",
-      "help_en": "Specifies the maximum number of data entries to display. Default value: 10. Maximum value: 100",
+      "help_en": "The maximum number of entries to return. Default value: 10. Maximum value: 100",
       "help_zh": "取最大多少条数据。默认值：10。最大值：100",
       "location": "query",
       "maximum": "100",
@@ -67,7 +67,7 @@
         "out"
       ],
       "example": "in",
-      "help_en": "The direction of the inter-region traffic in the local regions or for the local IP addresses. Valid values:\n\nin: inbound traffic\nout: outbound traffic",
+      "help_en": "The traffic direction relative to the current region or IP address. Valid values:\nin: inbound traffic.\nout: outbound traffic",
       "help_zh": "对于当前地域或IP的流量方向。取值：\nin：入流量。\nout：出流量",
       "location": "query",
       "name": "direction",
@@ -89,7 +89,7 @@
         "Protocol"
       ],
       "example": "1Tuple",
-      "help_en": "The dimension for ranking inter-region traffic data. The value of this parameter is case-sensitive. Valid values:\n\n1Tuple: queries the rankings of inter-region traffic data for the local regions, Cloud Enterprise Network (CEN) instances, and IP addresses.\n2Tuple: queries the rankings of inter-region traffic data for the local and remote regions, and the local and remote IP addresses.\n5Tuple: queries the rankings of inter-region traffic data for the local and remote IP addresses, local and remote ports, and protocols.\nCen: queries the rankings of inter-region traffic data for CEN instances.\nRegionPair: queries the rankings of inter-region traffic data for the local and remote regions.\nPort: queries the rankings of inter-region traffic data for the local and remote ports.\nProtocol: queries the rankings of inter-region traffic data for the protocols",
+      "help_en": "The dimension for ranking cross-region traffic. This parameter is case-sensitive. Valid values:\n1Tuple: Ranks cross-region traffic by the current region, Cloud Enterprise Network (CEN) instance, or IP address.\n2Tuple: Ranks cross-region traffic by region pairs or IP address pairs.\n5Tuple: Ranks cross-region traffic by IP address pairs, port pairs, and protocol.\nCen: Ranks cross-region traffic by CEN instance.\nRegionPair: Ranks cross-region traffic by region pairs.\nPort: Ranks cross-region traffic by port.\nProtocol: Ranks cross-region traffic by protocol",
       "help_zh": "指定跨域流量排名的维度，大小写敏感，请注意区分大小写。取值：\n1Tuple：查询跨域流量中当前地域、云企业网CEN（Cloud Enterprise Network）、IP维度的排名。\n2Tuple：查询跨域流量中两端地域、两端IP维度的排名。\n5Tuple：查询跨域流量中两端IP、两端端口和协议维度的排名。\nCen：查询跨域流量中云企业网CEN实例维度的排名。\nRegionPair：查询跨域流量中两端地域维度的排名。\nPort：查询跨域流量中端口维度的排名。\nProtocol：查询跨域流量中协议维度的排名",
       "location": "query",
       "name": "group_by",
@@ -102,7 +102,7 @@
     },
     {
       "example": "cn-shanghai",
-      "help_en": "The local region where the local IP address resides",
+      "help_en": "The local region, which is the region where ThisIp resides",
       "help_zh": "当前地域，即ThisIp所在地域",
       "location": "query",
       "name": "this_region",
@@ -141,7 +141,7 @@
     },
     {
       "example": "ap-southeast-1",
-      "help_en": "The remote region",
+      "help_en": "The peer region",
       "help_zh": "对端地域",
       "location": "query",
       "name": "other_region",
@@ -154,7 +154,7 @@
     },
     {
       "example": "122.112.XX.XX",
-      "help_en": "The remote IP address",
+      "help_en": "The peer IP address",
       "help_zh": "对端IP地址",
       "location": "query",
       "name": "other_ip",
@@ -167,7 +167,7 @@
     },
     {
       "example": "10869",
-      "help_en": "The remote port",
+      "help_en": "The peer port",
       "help_zh": "对端端口",
       "location": "query",
       "name": "other_port",
@@ -180,7 +180,7 @@
     },
     {
       "example": "6",
-      "help_en": "The protocol number.\n\nAll protocols are supported. This parameter is required only if you set GroupBy to 5Tuple or Protocol",
+      "help_en": "The protocol number.\n\nAll protocols are supported. This parameter is required only when GroupBy is set to 5Tuple or Protocol",
       "help_zh": "协议号。\n\n支持全部协议，仅GroupBy配置为5Tuple或Protocol时，才需要配置该参数",
       "location": "query",
       "name": "protocol",
@@ -197,7 +197,7 @@
         "Packets"
       ],
       "example": "Bytes",
-      "help_en": "The metric for ranking inter-region traffic data. Default value: Bytes. This value specifies that inter-region traffic data is ranked by traffic volume",
+      "help_en": "The metric by which to sort the data. Default value: Bytes, which sorts data by traffic volume",
       "help_zh": "数据排序的指标。默认值：Bytes，表示按流量排序",
       "location": "query",
       "name": "order_by",
@@ -214,7 +214,7 @@
         "asc"
       ],
       "example": "desc",
-      "help_en": "The order for ranking inter-region traffic data. Valid values:\n\ndesc: descending order\nasc: ascending order",
+      "help_en": "The sort order for traffic data. Valid values:\ndesc: Descending.\nasc: Ascending",
       "help_zh": "流量数据的排序方式。\ndesc：降序。\nasc：升序",
       "location": "query",
       "name": "sort",
@@ -240,7 +240,7 @@
     },
     {
       "example": "cenbwp-ia8kw1zjv4hyal****",
-      "help_en": "The ID of the CEN bandwidth plan",
+      "help_en": "The CEN bandwidth package ID",
       "help_zh": "CEN带宽包ID",
       "location": "query",
       "name": "bandwith_package_id",
@@ -255,7 +255,7 @@
       "element": {
         "type": "int"
       },
-      "help_en": "The IDs of the member accounts",
+      "help_en": "The list of member account IDs",
       "help_zh": "成员账号ID列表",
       "location": "query",
       "name": "account_ids",
@@ -269,7 +269,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to enable the multi-account management feature. Default value: false. This value specifies that the multi-account management feature is disabled.\n\nBy default, the multi-account management feature is not available. If you want to use this feature, contact your account manager to apply for permissions",
+      "help_en": "Specifies whether to enable the multi-account management feature. Default value: false, which indicates that the feature is disabled. \nThe multi-account management feature is not available by default. To use this feature, contact your account manager to apply for permissions",
       "help_zh": "是否使用多账号管理功能。默认值：false。表示不使用。 \n多账号管理功能默认不开放，如需使用，请联系商务经理申请使用权限",
       "location": "query",
       "name": "use_multi_account",
@@ -287,7 +287,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response parameters",
+        "description_en": "RpcResponse<TrFlowlogTopNResponse>",
         "description_zh": "RpcResponse<TrFlowlogTopNResponse>",
         "properties": {
           "RequestId": {
@@ -299,10 +299,11 @@
           },
           "TransitRouterFlowTopN": {
             "backendName": "data.trFlowlogTopN",
-            "description_en": "The ranking result of inter-region traffic data",
+            "description_en": "The list of cross-region traffic details ranked by the specified metric",
             "description_zh": "跨域流量详情排名列表",
             "itemName": "TrFlowlogTopN",
             "items": {
+              "description_en": "The cross-region traffic details",
               "description_zh": "跨域流量详情",
               "properties": {
                 "AccountId": {
@@ -316,7 +317,7 @@
                 },
                 "BandwithPackageId": {
                   "backendName": "bwpId",
-                  "description_en": "The ID of the CEN bandwidth plan",
+                  "description_en": "The CEN bandwidth package ID",
                   "description_zh": "CEN带宽包ID",
                   "example": "cenbwp-ia8kw1zjv4hyal****",
                   "title_en": "带宽包",
@@ -325,7 +326,7 @@
                 },
                 "Bytes": {
                   "backendName": "bytes",
-                  "description_en": "The total volume of traffic in the specified time range",
+                  "description_en": "The total traffic volume within the specified time period",
                   "description_zh": "指定时间段内的流量总和",
                   "example": "188",
                   "format": "double",
@@ -342,7 +343,7 @@
                 },
                 "EndTime": {
                   "backendName": "endTime",
-                  "description_en": "The end of the time range that you queried. The time follows the ISO 8601 standard in the yyyy-MM-ddTHH:mm:ssZ format. The time is displayed in UTC",
+                  "description_en": "The end time",
                   "description_zh": "结束时间",
                   "example": "2023-01-31T06:40:00Z",
                   "title_en": "结束时间",
@@ -351,7 +352,7 @@
                 },
                 "OtherIp": {
                   "backendName": "otherIp",
-                  "description_en": "The remote IP address",
+                  "description_en": "The peer IP address",
                   "description_zh": "对端IP地址",
                   "example": "47.216.XX.XX",
                   "title_en": "目的IP地址",
@@ -360,7 +361,7 @@
                 },
                 "OtherPort": {
                   "backendName": "otherPort",
-                  "description_en": "The remote port",
+                  "description_en": "The peer port number",
                   "description_zh": "对端端口号",
                   "example": "53470",
                   "title_en": "目的端口号",
@@ -369,7 +370,7 @@
                 },
                 "OtherRegion": {
                   "backendName": "otherRegion",
-                  "description_en": "The remote region where the remote IP address resides",
+                  "description_en": "The destination region, which is the region where OtherIp resides",
                   "description_zh": "目的地域，即OtherIp所在地域",
                   "example": "ap-southeast-1",
                   "title_en": "目的regionId",
@@ -378,7 +379,7 @@
                 },
                 "Packets": {
                   "backendName": "packets",
-                  "description_en": "The total number of packets in the specified time range",
+                  "description_en": "The total number of packets within the specified time period",
                   "description_zh": "指定时间段内的包数总和",
                   "example": "88",
                   "format": "double",
@@ -395,7 +396,7 @@
                 },
                 "StartTime": {
                   "backendName": "startTime",
-                  "description_en": "The beginning of the time range that you queried. The time follows the ISO 8601 standard in the yyyy-MM-ddTHH:mm:ssZ format. The time is displayed in UTC",
+                  "description_en": "The start time",
                   "description_zh": "开始时间",
                   "example": "2023-01-31T05:40:00Z",
                   "title_en": "开始时间",
@@ -413,7 +414,7 @@
                 },
                 "ThisPort": {
                   "backendName": "thisPort",
-                  "description_en": "The local port",
+                  "description_en": "The local port number",
                   "description_zh": "本端端口号",
                   "example": "80",
                   "title_en": "源端口号",
@@ -422,7 +423,7 @@
                 },
                 "ThisRegion": {
                   "backendName": "thisRegion",
-                  "description_en": "The local region where the local IP address resides",
+                  "description_en": "The local region, which is the region where ThisIp resides",
                   "description_zh": "本端地域，即ThisIp所在地域",
                   "example": "cn-shanghai",
                   "title_en": "源regionId",
@@ -440,5 +441,6 @@
         "type": "object"
       }
     }
-  }
+  },
+  "timeout_ms": 32000
 }

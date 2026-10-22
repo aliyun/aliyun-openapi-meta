@@ -21,6 +21,7 @@
       "query": "query",
       "retrieval_option": "retrievalOption",
       "scope": "scope",
+      "strategy_ids": "strategyIds",
       "threshold": "threshold"
     },
     "content_type": "application/json",
@@ -64,7 +65,7 @@
     },
     {
       "example": "{\"userId\":\"alice\"}",
-      "help_en": "The structured filter conditions. The key is the field name, and the value is the expected matching value",
+      "help_en": "The structured filter conditions. The key is the field name, and the value is the expected match value",
       "help_zh": "结构化过滤条件，key 为字段名，value 为期望匹配的值",
       "location": "body",
       "name": "filter",
@@ -81,7 +82,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to structurally format the returned results",
+      "help_en": "Specifies whether to apply structured formatting to the returned results",
       "help_zh": "是否对返回结果做结构化格式化",
       "location": "body",
       "name": "formatted",
@@ -95,7 +96,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to include memories with sourceState=inactive. Default value: false",
+      "help_en": "Specifies whether to include memories whose sourceState is inactive. Default value: false",
       "help_zh": "是否包含 sourceState=inactive 的记忆，默认 false",
       "location": "body",
       "name": "include_inactive",
@@ -109,7 +110,7 @@
     },
     {
       "example": "10",
-      "help_en": "The maximum number of returned results, which corresponds to the Top-N similarity",
+      "help_en": "The maximum number of returned results, which corresponds to the top N results by similarity",
       "help_zh": "返回结果数量上限（相似度 Top-N）",
       "location": "body",
       "name": "limit",
@@ -213,8 +214,25 @@
       "type": "object"
     },
     {
+      "element": {
+        "type": "string"
+      },
+      "example": "[\"preferences\",\"profile\"]",
+      "help_en": "Filters results by extraction strategy ID. Multiple IDs in the list are evaluated with an OR condition. If this parameter is not specified, all strategies are recalled. An empty list returns a 400 error. If the format is valid but no matching IDs are found, an empty result is returned. IDs of historically removed strategies are supported",
+      "help_zh": "按提取策略 Id 过滤，列表内 OR；不传召回所有策略，空列表返回 400；格式合法但无匹配的 Id 返回空结果，支持历史已移除策略 Id",
+      "location": "body",
+      "name": "strategy_ids",
+      "options": [
+        "--strategy-ids"
+      ],
+      "param_style": "json",
+      "raw_name": "strategyIds",
+      "required": false,
+      "type": "array"
+    },
+    {
       "example": "0.5",
-      "help_en": "The similarity threshold. Results with a similarity score lower than this value are filtered out. Valid values: 0 to 1",
+      "help_en": "The similarity threshold. Results with a similarity score below this value are filtered out. Valid values: 0 to 1",
       "help_zh": "相似度阈值，低于该值的结果将被过滤，取值范围 0-1",
       "location": "body",
       "name": "threshold",
@@ -235,7 +253,7 @@
       "schema": {
         "properties": {
           "auditStatus": {
-            "description_en": "The audit write status. Valid values: ok and degraded",
+            "description_en": "The audit write status. Valid values: ok, degraded",
             "description_zh": "审计写入状态：ok / degraded",
             "example": "ok",
             "title_en": "审计写入状态：ok / degraded",
@@ -243,7 +261,7 @@
             "type": "string"
           },
           "recallEventId": {
-            "description_en": "The recall event ID. You can use this ID to call the GetContextStoreRecall operation to view audit details",
+            "description_en": "The recall event ID. You can use this ID to call GetContextStoreRecall to view audit details",
             "description_zh": "召回事件 Id，可用于 GetContextStoreRecall 查看审计明细",
             "example": "0190f1c2-7d3e-7a1b-9c4d-2e5f6a7b8c9d",
             "title_en": "召回事件 Id，可用于 GetContextStoreRecall 查看审计明细",
@@ -251,7 +269,7 @@
             "type": "string"
           },
           "requestId": {
-            "description_en": "The request ID, which can be used to locate the request during troubleshooting",
+            "description_en": "The request ID, which is used to locate the request during troubleshooting",
             "description_zh": "请求 Id，用于排查问题时定位本次请求",
             "example": "9ACFB10A-1B2C-3D4E-5F6G-7H8I9J0K1L2M",
             "title_en": "请求 Id，用于排查问题时定位本次请求",
@@ -264,21 +282,21 @@
             "itemName": "results",
             "items": {
               "additionalProperties": {
-                "description_en": "The values of the fields in the search results. The data type varies by field",
+                "description_en": "The values of the fields in the retrieval results. The data type varies based on the field",
                 "description_zh": "检索结果各字段的值，类型随字段而定",
                 "example": "用户偏好：简洁回答",
                 "title_en": "检索结果各字段的值，类型随字段而定",
                 "title_zh": "检索结果各字段的值，类型随字段而定",
                 "type": "any"
               },
-              "description_en": "A single retrieval result. The structure is aligned with the storage fields of the context store",
+              "description_en": "A single retrieval result. The structure aligns with the fields stored in the context store",
               "description_zh": "单条检索结果，结构与上下文库存储字段对齐",
               "title_en": "单条检索结果，结构与上下文库存储字段对齐",
               "title_zh": "单条检索结果，结构与上下文库存储字段对齐",
               "type": "object"
             },
-            "title_en": "检索结果列表，按相似度从高到低排序；每项含 contextId、context、metadata、score、rank、revision、strategyVersion",
-            "title_zh": "检索结果列表，按相似度从高到低排序；每项含 contextId、context、metadata、score、rank、revision、strategyVersion",
+            "title_en": "检索结果列表，按相似度从高到低排序；每项含 contextId、context、metadata、score、rank、revision、strategyVersion、strategyId",
+            "title_zh": "检索结果列表，按相似度从高到低排序；每项含 contextId、context、metadata、score、rank、revision、strategyVersion、strategyId",
             "type": "array"
           }
         },

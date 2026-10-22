@@ -42,26 +42,33 @@
         "type": "object"
       },
       "FilterRule": {
-        "description_en": "The filtering rule",
+        "description_en": "The filter rules",
         "description_zh": "过滤规则",
         "properties": {
           "FileTypeFilters": {
             "$ref": "#/components/schemas/FileTypeFilters",
-            "description_en": "The filter based on the file type",
+            "description_en": "The file type filters",
             "description_zh": "文件类型过滤器",
             "title": "文件类型过滤器。"
           },
           "KeyFilters": {
             "$ref": "#/components/schemas/KeyFilters",
-            "description_en": "The filter based on the file name",
+            "description_en": "The file name filters",
             "description_zh": "文件名过滤器",
             "title": "文件名过滤器。"
           },
           "LastModifiedFilters": {
             "$ref": "#/components/schemas/LastModifiedFilters",
-            "description_en": "The filter based on the file modification time",
+            "description_en": "The file modification time filters",
             "description_zh": "文件修改时间过滤器",
             "title": "文件修改时间过滤器。"
+          },
+          "PrefixFilters": {
+            "$ref": "#/components/schemas/PrefixFilters",
+            "backendName": "",
+            "description_en": "The object prefix filter rules. Only Includes is supported. This filter applies only to full migration tasks",
+            "description_zh": "对象前缀过滤规则，只支持 Includes；仅支持全量迁移任务",
+            "title": "对象前缀过滤规则，只支持 Includes；仅支持全量迁移任务。"
           }
         },
         "title": "过滤规则。",
@@ -71,6 +78,13 @@
         "description_en": "The details of the job",
         "description_zh": "任务详情",
         "properties": {
+          "AppendableToNormal": {
+            "description_en": "Specifies whether to migrate appendable files as normal or multipart files. The default value is false",
+            "description_zh": "是否把appendable文件迁成normal/multipart文件，默认false",
+            "example": "true",
+            "title": "是否把appendable文件迁成normal/multipart文件，默认false",
+            "type": "boolean"
+          },
           "Audit": {
             "$ref": "#/components/schemas/Audit",
             "description_en": "The audit method",
@@ -193,6 +207,13 @@
             "title": "标记。",
             "type": "string"
           },
+          "TargetStorageClass": {
+            "description_en": "Specifies the StorageClass of the destination file. The destination address must be an OSS address. Valid values: Standard, IA, Archive, ColdArchive, and DeepColdArchive",
+            "description_zh": "指定设置目的文件的storageClass，目的地址只能是oss。 合法值：Standard IA Archive ColdArchive DeepColdArchive",
+            "example": "Standard",
+            "title": "指定设置目的文件的storageClass，目的地址只能是oss。 合法值：Standard IA Archive ColdArchive DeepColdArchive。",
+            "type": "string"
+          },
           "TransferMode": {
             "description_en": "The file transfer mode",
             "description_zh": "文件传输方式",
@@ -206,6 +227,20 @@
             "example": "test_id",
             "title": "任务ID。",
             "type": "string"
+          },
+          "WithLastModifyTime": {
+            "description_en": "Specifies whether to retain the lastModifyTime property. The default value is true",
+            "description_zh": "是否保留lastModifyTime，默认true",
+            "example": "true",
+            "title": "是否保留lastModifyTime，默认true",
+            "type": "boolean"
+          },
+          "WithStorageClass": {
+            "description_en": "Specifies whether to migrate the StorageClass property. This is allowed only for migrations from OSS to OSS",
+            "description_zh": "是否迁移StorageClass属性，只允许oss->oss",
+            "example": "false",
+            "title": "是否迁移StorageClass属性，只允许oss->oss。",
+            "type": "boolean"
           }
         },
         "title": "任务详情。",
@@ -347,6 +382,43 @@
         "title": "任务列表详情。",
         "type": "object"
       },
+      "PrefixFilters": {
+        "description_en": "The object prefix filtering rules, which support only Includes and apply only to full data migration tasks",
+        "description_zh": "对象前缀过滤规则，只支持 Includes；仅支持全量迁移任务",
+        "properties": {
+          "Includes": {
+            "$ref": "#/components/schemas/PrefixFiltersIncludeItem",
+            "backendName": "",
+            "description_en": "The collection of object prefixes to migrate, where multiple prefixes are matched using OR logic",
+            "description_zh": "需要迁移的对象前缀集合，多个 Prefix 按 OR 关系匹配",
+            "title": "需要迁移的对象前缀集合，多个 Prefix 按 OR 关系匹配。"
+          }
+        },
+        "title": "对象前缀过滤规则，只支持 Includes；仅支持全量迁移任务。",
+        "type": "object"
+      },
+      "PrefixFiltersIncludeItem": {
+        "description_en": "The collection of object prefixes to migrate. Multiple prefixes are matched by using OR logic",
+        "description_zh": "需要迁移的对象前缀集合，多个 Prefix 按 OR 关系匹配",
+        "properties": {
+          "Prefix": {
+            "backendName": "",
+            "description_en": "The full object key prefix. A maximum of 10,000 prefixes are supported by default, and each prefix can be up to 1,024 bytes in length",
+            "description_zh": "完整对象 Key 前缀；默认最多 10000 条，单条最长 1024 字节",
+            "items": {
+              "description_en": "The full object key prefix. A maximum of 10,000 prefixes are supported by default, and each prefix can be up to 1,024 bytes in length",
+              "description_zh": "完整对象 Key 前缀；默认最多 10000 条，单条最长 1024 字节",
+              "example": "source-prefix/dir-a/",
+              "title": "完整对象 Key 前缀；默认最多 10000 条，单条最长 1024 字节。",
+              "type": "string"
+            },
+            "title": "完整对象 Key 前缀；默认最多 10000 条，单条最长 1024 字节。",
+            "type": "array"
+          }
+        },
+        "title": "需要迁移的对象前缀集合，多个 Prefix 按 OR 关系匹配。",
+        "type": "object"
+      },
       "ScheduleRule": {
         "description_en": "The scheduling rule",
         "description_zh": "调度规则",
@@ -402,7 +474,7 @@
     }
   },
   "deprecated": false,
-  "description_en": "Lists the migration tasks created by a user in the specific region",
+  "description_en": "Lists the migration tasks in the region",
   "description_zh": "列举用户在该区域下的迁移任务",
   "kebab_example": "aliyun hcs-mgw list-job --marker test_marker --count 1000 --parent-name test_parent_job_name --all true --region cn-hangzhou",
   "method": "GET",
@@ -421,7 +493,7 @@
   "parameters": [
     {
       "example": "test_marker",
-      "help_en": "The marker after which the migration tasks are listed.\\\nBy default, this parameter is left empty",
+      "help_en": "Specifies the marker after which migration tasks are listed.  \nDefault value: None",
       "help_zh": "设定从该marker之后列举迁移任务。  \n默认值：无",
       "location": "query",
       "name": "marker",
@@ -434,7 +506,7 @@
     },
     {
       "example": "1000",
-      "help_en": "Specifies the number of migration tasks to be returned.\\\nValid values: 0 - 1000 (excluding 0).\\\nDefault value: 1000",
+      "help_en": "Specifies the number of migration tasks to return.  \nValid values: 1 to 1000.  \nDefault value: 1000",
       "help_zh": "指定返回迁移任务的数量。  \n取值：大于0小于等于1000  \n默认值：1000",
       "location": "query",
       "name": "count",
@@ -447,7 +519,7 @@
     },
     {
       "example": "test_parent_job_name",
-      "help_en": "The name of the parent task. If this parameter is specified, all subtasks of the parent task are returned",
+      "help_en": "The name of the parent task. If you specify this parameter, all subtasks of the parent task are returned",
       "help_zh": "父任务名称。指定该参数时，会返回所有该父任务的子任务",
       "location": "query",
       "name": "parent_name",
@@ -460,7 +532,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to return subtasks.\\\nValid values: true and false",
+      "help_en": "Specifies whether to return subtasks.  \nValid values: true, false",
       "help_zh": "是否返回子任务。  \n取值：true，false",
       "location": "query",
       "name": "all",
@@ -478,13 +550,13 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response parameters",
+        "description_en": "The response body for listing migration tasks",
         "description_zh": "列举迁移任务响应体",
         "properties": {
           "ImportJobList": {
             "$ref": "#/components/schemas/ListJobResp",
             "backendName": "ImportJobList",
-            "description_en": "The queried migration tasks",
+            "description_en": "The details of the migration task list",
             "description_zh": "迁移任务列表详情"
           }
         },

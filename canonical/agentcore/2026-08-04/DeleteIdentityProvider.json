@@ -3,7 +3,7 @@
   "cmd_full_name": "agentcore delete-identity-provider",
   "cmd_name": "delete-identity-provider",
   "deprecated": false,
-  "description_en": "Unbinds the external identity provider from a specified workspace and cleans up users synchronized by that identity provider. The unbinding is an asynchronous operation. After the API returns, you can call GetIdentityProvider to query the status and track the progress",
+  "description_en": "Disconnects the external identity provider from a specified workspace and cleans up the users synchronized by the identity provider. The disconnection is an asynchronous operation. After the API returns a response, you can call GetIdentityProvider to query the status and track the progress",
   "description_zh": "解绑指定工作空间的外部身份提供商，并清理由该身份提供商同步产生的用户。解绑为异步操作，接口返回后可通过 GetIdentityProvider 查询 status 跟踪进展",
   "kebab_example": "aliyun agentcore delete-identity-provider --workspace-id ws-123456 --identity-provider-type DingTalk --region cn-hangzhou",
   "method": "DELETE",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "ws-123456",
-      "help_en": "The workspace ID",
+      "help_en": "The ID of the workspace",
       "help_zh": "工作空间 ID",
       "location": "path",
       "name": "workspace_id",
@@ -36,10 +36,11 @@
     {
       "enum": [
         "DingTalk",
-        "Feishu"
+        "Feishu",
+        "CustomSSO"
       ],
       "example": "DingTalk",
-      "help_en": "The type of the external identity provider to unbind. Valid values:\n\nDingTalk\nFeishu\n\nThe value must match the type that is currently bound",
+      "help_en": "The type of the external identity provider to be disconnected. Valid values: DingTalk and Feishu. The value must be the same as the type of the current binding",
       "help_zh": "待解绑的外部身份提供商类型。可选值：DingTalk、Feishu，取值必须与当前绑定的类型一致",
       "location": "path",
       "name": "identity_provider_type",
@@ -76,27 +77,177 @@
             "description_en": "The business status code",
             "description_zh": "业务状态码",
             "example": "SUCCESS",
+            "title_en": "业务结果代码",
+            "title_zh": "业务结果代码",
             "type": "string"
           },
           "data": {
             "backendName": "data",
-            "description_en": "The binding information of the external identity provider after the unbinding request is accepted",
+            "description_en": "The binding information of the external identity provider after the disconnection operation is accepted",
             "description_zh": "解绑操作受理后的外部身份提供商绑定信息",
             "properties": {
+              "configuration": {
+                "backendName": "configuration",
+                "description_en": "The actual SAML configuration is read back on demand only in GetIdentityProvider. SCIM queries and preparations return the actual receiving status and URL",
+                "description_zh": "SAML 实际配置只在 GetIdentityProvider 按需回读；SCIM 查询和准备返回实际接收状态及 URL",
+                "properties": {
+                  "bindingType": {
+                    "backendName": "bindingType",
+                    "description_en": "HTTP-Redirect or HTTP-POST. This parameter is required when you manually enter the configuration. The query returns the short name",
+                    "description_zh": "HTTP-Redirect 或 HTTP-POST；手填时必填，查询返回短名称",
+                    "example": "HTTP-Redirect",
+                    "title_en": "SAML 绑定类型",
+                    "title_zh": "SAML 绑定类型",
+                    "type": "string"
+                  },
+                  "entityId": {
+                    "backendName": "entityId",
+                    "description_en": "This parameter is required when you manually enter the configuration. It must be non-empty and cannot exceed 2,048 characters. Existing configurations do not support replacement. It is different from the Entity ID of the service provider queried by the system",
+                    "description_zh": "手填时必填，非空且不超过 2048 字符；已有配置不支持更换。与 SP 查询的我方 Entity ID 不同",
+                    "example": "https://idp.example.com/entity",
+                    "title_en": "IdP 实体标识",
+                    "title_zh": "IdP 实体标识",
+                    "type": "string"
+                  },
+                  "jitProvisionStatus": {
+                    "backendName": "jitProvisionStatus",
+                    "description_en": "The actual switch value, which is Enabled or Disabled",
+                    "description_zh": "实际开关值 Enabled 或 Disabled",
+                    "example": "Disabled",
+                    "title_en": "JIT 创建用户状态",
+                    "title_zh": "JIT 创建用户状态",
+                    "type": "string"
+                  },
+                  "jitUpdateStatus": {
+                    "backendName": "jitUpdateStatus",
+                    "description_en": "The actual switch value, which is Enabled or Disabled",
+                    "description_zh": "实际开关值 Enabled 或 Disabled",
+                    "example": "Disabled",
+                    "title_en": "JIT 更新用户状态",
+                    "title_zh": "JIT 更新用户状态",
+                    "type": "string"
+                  },
+                  "loginUrl": {
+                    "backendName": "loginUrl",
+                    "description_en": "This parameter is required when you manually enter the configuration. It must be an absolute HTTPS URL and cannot contain user credentials or fragments",
+                    "description_zh": "手填时必填，为绝对 HTTPS URL，不含用户凭据和片段",
+                    "example": "https://idp.example.com/sso",
+                    "title_en": "IdP 登录地址",
+                    "title_zh": "IdP 登录地址",
+                    "type": "string"
+                  },
+                  "ssoStatus": {
+                    "backendName": "ssoStatus",
+                    "description_en": "The actual switch value, which is Enabled or Disabled. It is not equivalent to the expected value of loginEnabled saved in AC",
+                    "description_zh": "实际开关值 Enabled 或 Disabled，不等同 AC 保存的 loginEnabled 期望值",
+                    "example": "Enabled",
+                    "title_en": "AgentIdentity 实际 SSO 登录状态",
+                    "title_zh": "AgentIdentity 实际 SSO 登录状态",
+                    "type": "string"
+                  }
+                },
+                "title_en": "上游实际配置",
+                "title_zh": "上游实际配置",
+                "type": "object"
+              },
               "identityProviderType": {
                 "backendName": "identityProviderType",
-                "description_en": "The type of the external identity provider. Valid values:\n\nDingTalk\nFeishu",
+                "description_en": "The type of the external identity provider. Valid values: DingTalk and Feishu",
                 "description_zh": "外部身份提供商类型。可选值：DingTalk、Feishu",
                 "enum": [
                   "DingTalk",
-                  "Feishu"
+                  "Feishu",
+                  "CustomSSO"
                 ],
                 "example": "DingTalk",
+                "title_en": "外部身份源类型",
+                "title_zh": "外部身份源类型",
                 "type": "string"
+              },
+              "protocol": {
+                "backendName": "protocol",
+                "description_en": "Only SAML is supported. This parameter may not be returned if no valid configuration is saved. OIDC placeholder initialization is not supported",
+                "description_zh": "当前仅支持 SAML；未保存有效配置时可不返回。不支持用 OIDC 占位初始化",
+                "example": "SAML",
+                "title_en": "登录协议",
+                "title_zh": "登录协议",
+                "type": "string"
+              },
+              "saml": {
+                "backendName": "saml",
+                "description_en": "The input supports either XML or complete manual entry. The query returns the standardized configuration and does not echo the original XML. This parameter can be omitted if it is not configured",
+                "description_zh": "输入支持 XML 与完整手填二选一。查询返回标准化配置，不回显原始 XML；未配置时可省略",
+                "properties": {
+                  "bindingType": {
+                    "backendName": "bindingType",
+                    "description_en": "HTTP-Redirect or HTTP-POST. This parameter is required when you manually enter the configuration. The query returns the short name",
+                    "description_zh": "HTTP-Redirect 或 HTTP-POST；手填时必填，查询返回短名称",
+                    "example": "HTTP-Redirect",
+                    "title_en": "SAML 绑定类型",
+                    "title_zh": "SAML 绑定类型",
+                    "type": "string"
+                  },
+                  "entityId": {
+                    "backendName": "entityId",
+                    "description_en": "This parameter is required when you manually enter the configuration. It must be non-empty and cannot exceed 2,048 characters. Existing configurations do not support replacement. It is different from the Entity ID of the service provider queried by the system",
+                    "description_zh": "手填时必填，非空且不超过 2048 字符；已有配置不支持更换。与 SP 查询的我方 Entity ID 不同",
+                    "example": "https://idp.example.com/entity",
+                    "title_en": "IdP 实体标识",
+                    "title_zh": "IdP 实体标识",
+                    "type": "string"
+                  },
+                  "jitProvisionEnabled": {
+                    "backendName": "jitProvisionEnabled",
+                    "description_en": "This parameter can be set independently. If it is omitted during an update, the existing value is retained. If it is omitted for the first time, the default value is false. A valid SAML configuration is required",
+                    "description_zh": "可独立设置；更新省略时保留已有值，首次省略默认 false；要求已有有效 SAML 配置",
+                    "example": "false",
+                    "title_en": "JIT 创建用户开关",
+                    "title_zh": "JIT 创建用户开关",
+                    "type": "boolean"
+                  },
+                  "jitUpdateEnabled": {
+                    "backendName": "jitUpdateEnabled",
+                    "description_en": "This parameter can be set independently. If it is omitted during an update, the existing value is retained. If it is omitted for the first time, the default value is false. A valid SAML configuration is required",
+                    "description_zh": "可独立设置；更新省略时保留已有值，首次省略默认 false；要求已有有效 SAML 配置",
+                    "example": "false",
+                    "title_en": "JIT 更新用户开关",
+                    "title_zh": "JIT 更新用户开关",
+                    "type": "boolean"
+                  },
+                  "loginUrl": {
+                    "backendName": "loginUrl",
+                    "description_en": "This parameter is required when you manually enter the configuration. It must be an absolute HTTPS URL and cannot contain user credentials or fragments",
+                    "description_zh": "手填时必填，为绝对 HTTPS URL，不含用户凭据和片段",
+                    "example": "https://idp.example.com/sso",
+                    "title_en": "IdP SSO 登录地址",
+                    "title_zh": "IdP SSO 登录地址",
+                    "type": "string"
+                  },
+                  "x509Certificates": {
+                    "backendName": "x509Certificates",
+                    "description_en": "This parameter is required when you manually enter the configuration. It must be a non-empty array and use PEM X.509 certificate text. The current validity period is verified. A maximum of 10 certificates are supported",
+                    "description_zh": "手填时必填非空数组，使用 PEM X.509 证书文本；校验当前有效期，最多十张",
+                    "example": "[\"-----BEGIN CERTIFICATE-----\\\\nMIICwDCCAaigAwIBAgIULlsHLfcADyBax5ZtFlj+YGzZVo0wDQYJKoZIhvcNAQEL\\\\nBQAwGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMB4XDTI2MDEwMTAwMDAwMFoX\\\\nDTM2MDEwMTAwMDAwMFowGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMIIBIjAN\\\\nBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAto0DN0W1CrPRzK9QZ9A1aApb4Lg8\\\\noGlp2c0PbN3LokXe/HzwxCMXx65IDnrenttxzTwp9BgUnUN/3LRzWaOL2UQ/vNYN\\\\nW9LFLkI1T64UPyI7eyi28YlALhb41xkYhEp7rz+MjqifBzVZeTDUxBYtbK2hAhbY\\\\nEL1+udwsXEx0KB7xuQ/rbI2OKeqAEAD1tfYg7T/SM2wrXNYhx+o1HtchM4/0I8Ok\\\\nkk27JQ4y3ofzC5sTySmFF1Y7XcpSd+5WSyazedhkAieo8AB01DkJV6nnKfH8sH0E\\\\nBsnH3FP8FhqCLrIeEkjX9B9OcIRLGjiZqx4u/ryW1QhMldnv+pFfNjWy/wIDAQAB\\\\nMA0GCSqGSIb3DQEBCwUAA4IBAQC1hSQG8AwtGOoX2gKBK4Hi5XBrBreij8WlLTUW\\\\nld0FINQ0Rg84f/27CjDthywj6wgxCesCuOVFhpxQa1UacsP/Gcai1aKABtLWImca\\\\nWECRYK5gDkwhTMFKM9mXA26hH1l4v/UR2iTpEK9H78egC4W7bs2LDTpPryuaNKTq\\\\nP2O0tMbNkAHB8yecz5LxHXnxadL9Egow25g2RClvpifWqDnuS9TSbKkIWLcPLjoc\\\\nJj2K9ILpBwhXiXi/BiSgyYTLiYvVvih9vX4s+hKGZNJc0j92YLiOHDF0XH1oxgdV\\\\njfTmRiedeb2VZJZElptD92z0AqFR7z2d5B+OqpPA2gjuMLV5\\\\n-----END CERTIFICATE-----\"]",
+                    "items": {
+                      "description_en": "A valid PEM X.509 signing certificate. The example is a public test certificate for idp.example.com. For actual integration, you must replace it with the certificate of the external IdP",
+                      "description_zh": "一张有效 PEM X.509 签名证书；示例为 idp.example.com 的公开测试证书，实际接入须替换为外部 IdP 的证书",
+                      "example": "-----BEGIN CERTIFICATE-----\\nMIICwDCCAaigAwIBAgIULlsHLfcADyBax5ZtFlj+YGzZVo0wDQYJKoZIhvcNAQEL\\nBQAwGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMB4XDTI2MDEwMTAwMDAwMFoX\\nDTM2MDEwMTAwMDAwMFowGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMIIBIjAN\\nBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAto0DN0W1CrPRzK9QZ9A1aApb4Lg8\\noGlp2c0PbN3LokXe/HzwxCMXx65IDnrenttxzTwp9BgUnUN/3LRzWaOL2UQ/vNYN\\nW9LFLkI1T64UPyI7eyi28YlALhb41xkYhEp7rz+MjqifBzVZeTDUxBYtbK2hAhbY\\nEL1+udwsXEx0KB7xuQ/rbI2OKeqAEAD1tfYg7T/SM2wrXNYhx+o1HtchM4/0I8Ok\\nkk27JQ4y3ofzC5sTySmFF1Y7XcpSd+5WSyazedhkAieo8AB01DkJV6nnKfH8sH0E\\nBsnH3FP8FhqCLrIeEkjX9B9OcIRLGjiZqx4u/ryW1QhMldnv+pFfNjWy/wIDAQAB\\nMA0GCSqGSIb3DQEBCwUAA4IBAQC1hSQG8AwtGOoX2gKBK4Hi5XBrBreij8WlLTUW\\nld0FINQ0Rg84f/27CjDthywj6wgxCesCuOVFhpxQa1UacsP/Gcai1aKABtLWImca\\nWECRYK5gDkwhTMFKM9mXA26hH1l4v/UR2iTpEK9H78egC4W7bs2LDTpPryuaNKTq\\nP2O0tMbNkAHB8yecz5LxHXnxadL9Egow25g2RClvpifWqDnuS9TSbKkIWLcPLjoc\\nJj2K9ILpBwhXiXi/BiSgyYTLiYvVvih9vX4s+hKGZNJc0j92YLiOHDF0XH1oxgdV\\njfTmRiedeb2VZJZElptD92z0AqFR7z2d5B+OqpPA2gjuMLV5\\n-----END CERTIFICATE-----",
+                      "title_en": "IdP 签名证书",
+                      "title_zh": "IdP 签名证书",
+                      "type": "string"
+                    },
+                    "title_en": "IdP 签名证书列表",
+                    "title_zh": "IdP 签名证书列表",
+                    "type": "array"
+                  }
+                },
+                "title_en": "SAML 登录配置",
+                "title_zh": "SAML 登录配置",
+                "type": "object"
               },
               "status": {
                 "backendName": "status",
-                "description_en": "The status. Valid values:\n\nCONFIGURED: The configuration has been accepted and is waiting for the user pool to be provisioned.\nSYNCING: Organization members are being synchronized.\nSYNCED: Organization member synchronization is complete.\nREADY: The binding is in effect.\nSYNC_FAILED: Organization member synchronization failed.\nUPDATING: The configuration is being updated.\nUPDATE_FAILED: The configuration update failed.\nDISCONNECTING: The identity provider is being unbound.\nDISCONNECT_FAILED: The unbinding failed",
+                "description_en": "The status. Valid values: CONFIGURED (the configuration is accepted and the system is waiting to activate the user pool), SYNCING (synchronizing organization members), SYNCED (organization member synchronization is complete), READY (the binding has taken effect), SYNC_FAILED (organization member synchronization failed), UPDATING (updating the configuration), UPDATE_FAILED (configuration update failed), DISCONNECTING (disconnecting), and DISCONNECT_FAILED (disconnection failed)",
                 "description_zh": "状态。CONFIGURED（配置已受理，等待开通用户池）、SYNCING（正在同步组织成员）、SYNCED（组织成员同步完成）、READY（绑定已生效）、SYNC_FAILED（组织成员同步失败）、UPDATING（正在更新配置）、UPDATE_FAILED（更新配置失败）、DISCONNECTING（正在解绑）、DISCONNECT_FAILED（解绑失败）",
                 "enum": [
                   "CONFIGURED",
@@ -110,16 +261,22 @@
                   "DISCONNECT_FAILED"
                 ],
                 "example": "READY",
+                "title_en": "身份源资源及登录配置状态",
+                "title_zh": "身份源资源及登录配置状态",
                 "type": "string"
               },
               "workspaceId": {
                 "backendName": "workspaceId",
-                "description_en": "The workspace ID",
+                "description_en": "The ID of the workspace",
                 "description_zh": "工作空间 ID",
                 "example": "ws-123456",
+                "title_en": "工作空间 ID",
+                "title_zh": "工作空间 ID",
                 "type": "string"
               }
             },
+            "title_en": "业务结果",
+            "title_zh": "业务结果",
             "type": "object"
           },
           "httpStatusCode": {
@@ -128,26 +285,34 @@
             "description_zh": "HTTP 状态码",
             "example": "200",
             "format": "int32",
+            "title_en": "HTTP 状态码",
+            "title_zh": "HTTP 状态码",
             "type": "integer"
           },
           "message": {
             "backendName": "message",
-            "description_en": "The response message. An error description is returned if the request failed",
+            "description_en": "The response message. If the request fails, an error description is returned",
             "description_zh": "响应消息。请求失败时返回错误描述",
             "example": "success",
+            "title_en": "结果消息",
+            "title_zh": "结果消息",
             "type": "string"
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The request ID",
+            "description_en": "The ID of the request",
             "description_zh": "请求 ID",
             "example": "request-123456",
+            "title_en": "请求 ID",
+            "title_zh": "请求 ID",
             "type": "string"
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful",
+            "description_en": "Indicates whether the request is successful",
             "description_zh": "请求是否成功",
+            "title_en": "本次请求是否成功",
+            "title_zh": "本次请求是否成功",
             "type": "boolean"
           }
         },

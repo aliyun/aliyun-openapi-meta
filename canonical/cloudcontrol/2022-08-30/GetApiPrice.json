@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun cloudcontrol POST /api/v1/price/quote --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"key\":\"example-string\"}' --version 2022-08-30 --force",
+  "camel_example": "aliyun cloudcontrol POST /api/v1/price/quote --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"popCode\":\"ecs\",\"apiName\":\"CreateDisk\",\"popVersion\":\"2014-05-26\",\"language\":\"zh\",\"parameters\":{\"ZoneId\":\"cn-hangzhou-i\",\"Size\":40,\"DiskCategory\":\"cloud_essd\",\"RegionId\":\"cn-hangzhou\"}}' --version 2022-08-30 --force",
   "cmd_full_name": "cloudcontrol get-api-price",
   "cmd_name": "get-api-price",
   "deprecated": false,
-  "description_en": "Queries pricing based on an OpenAPI triplet and input parameters",
+  "description_en": "Queries pricing based on the OpenAPI triplet and request parameters",
   "description_zh": "根据OpenAPI三元组与入参询价",
-  "kebab_example": "aliyun cloudcontrol get-api-price --region cn-hangzhou",
+  "kebab_example": "aliyun cloudcontrol get-api-price --biz-body '{\"popCode\":\"ecs\",\"apiName\":\"CreateDisk\",\"popVersion\":\"2014-05-26\",\"language\":\"zh\",\"parameters\":{\"ZoneId\":\"cn-hangzhou-i\",\"Size\":40,\"DiskCategory\":\"cloud_essd\",\"RegionId\":\"cn-hangzhou\"}}' --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "GetApiPrice",
@@ -24,8 +24,9 @@
   "parameters": [
     {
       "direct_body": true,
-      "help_en": "询价请求体：popCode（POP产品码，如Ecs）、popVersion（API版本，如2014-05-26）、apiName（OpenAPI名称，如RunInstances）、parameters（源OpenAPI入参JSON）",
-      "help_zh": "询价请求体：popCode（POP产品码，如Ecs）、popVersion（API版本，如2014-05-26）、apiName（OpenAPI名称，如RunInstances）、parameters（源OpenAPI入参JSON）",
+      "example": "{\"popCode\":\"ecs\",\"popVersion\":\"2014-05-26\",\"apiName\":\"CreateDisk\",\"parameters\":{\"RegionId\":\"cn-hangzhou\",\"ZoneId\":\"cn-hangzhou-i\",\"DiskCategory\":\"cloud_essd\",\"Size\":40},\"language\":\"zh\"}",
+      "help_en": "The pricing request body, including popCode, popVersion, apiName, and parameters. All calls return a unified pricing envelope. The language parameter specifies the server-side message language, such as en or zh. Target resource operations are not executed for cost-irrelevant or unsupported pricing queries",
+      "help_zh": "询价请求体：popCode、popVersion、apiName、parameters。所有调用均返回统一询价信封；language=en/zh 指定服务端消息语言。费用无关与不支持询价均不执行目标资源操作",
       "location": "body",
       "name": "body",
       "options": [
@@ -49,11 +50,35 @@
         "description_en": "Schema of Response",
         "description_zh": "Schema of Response",
         "properties": {
+          "code": {
+            "backendName": "quoteCode",
+            "description_en": "The pricing result code. Valid values: Success, PricingNotRequired, PricingNotSupported, or an upstream pricing failure code",
+            "description_zh": "询价结果码：Success、PricingNotRequired、PricingNotSupported，或上游询价失败码",
+            "example": "Success",
+            "title_en": "询价结果码：Success、PricingNotRequired、PricingNotSupported，或上游询价失败码",
+            "title_zh": "询价结果码：Success、PricingNotRequired、PricingNotSupported，或上游询价失败码",
+            "type": "string"
+          },
+          "message": {
+            "backendName": "quoteMessage",
+            "description_en": "The server-side pricing result description. The language is specified by the language parameter in the request body and defaults to Chinese",
+            "description_zh": "服务端询价结果说明，语言由请求体language指定，缺省中文",
+            "example": "询价成功。",
+            "title_en": "服务端询价结果说明，语言由请求体language指定，缺省中文",
+            "title_zh": "服务端询价结果说明，语言由请求体language指定，缺省中文",
+            "type": "string"
+          },
           "price": {
             "backendName": "module",
+            "description_en": "The pricing data. This field is omitted for PricingNotRequired and PricingNotSupported results that do not include pricing",
+            "description_zh": "报价数据；无报价的PricingNotRequired、PricingNotSupported结果省略此字段",
+            "nullToEmpty": false,
+            "nullable": true,
             "properties": {
               "billingUnit": {
                 "backendName": "billingUnit",
+                "description_en": "The common billing dimension for fixed fees, including totalAmount, originalAmount, and discountAmount. This is a canonical field, such as 'Hour' or '1 Month', derived from the pricingUnit declared in the mapping. It is empty if not declared. This field describes only the dimension for fixed fees. The pay-as-you-go billing method components each have their own unit (see usageCharges[].unit)",
+                "description_zh": "【固定费用】totalAmount / originalAmount / discountAmount 三者共同的计费量纲（canonical 字段，如 'Hour'、'1 Month'），来自 mapping 声明的 pricingUnit；未声明时为空。仅描述固定费用的量纲，按量计费部分各自带 unit（见 usageCharges[].unit）",
                 "title_en": "【固定费用】totalAmount / originalAmount / discountAmount 三者共同的计费量纲（canonical 字段，如 'Hour'、'1 Month'），来自 mapping 声明的 pricingUnit；未声明时为空。仅描述固定费用的量纲，按量计费部分各自带 unit（见 usageCharges[].unit）",
                 "title_zh": "【固定费用】totalAmount / originalAmount / discountAmount 三者共同的计费量纲（canonical 字段，如 'Hour'、'1 Month'），来自 mapping 声明的 pricingUnit；未声明时为空。仅描述固定费用的量纲，按量计费部分各自带 unit（见 usageCharges[].unit）",
                 "type": "string"
@@ -65,6 +90,8 @@
               },
               "chargeComposition": {
                 "backendName": "chargeComposition",
+                "description_en": "The billing composition. This is a canonical field. Valid values: recurring_only (all time-based fees), usage_only (all usage-based fees, where a totalAmount of 0 indicates no fixed fees rather than free of charge, and actual costs depend on the unit price and actual usage in usageCharges), or mixed (both, which should be displayed separately as 'X CNY/hour + Y CNY/GB'). This allows the caller to choose the display text without iterating through modules to determine the composition",
+                "description_zh": "计费形态（canonical 字段）：recurring_only（全部为时间周期费）/ usage_only（全部为用量计费，此时 totalAmount 为 0 表示无固定费用而非免费，实际花费取决于 usageCharges 中的单价与真实用量）/ mixed（两者兼有，应分开展示为「X 元/时 + Y 元/GB」）。供调用方选择展示话术，无需自行遍历模块判断",
                 "title_en": "计费形态（canonical 字段）：recurring_only（全部为时间周期费）/ usage_only（全部为用量计费，此时 totalAmount 为 0 表示无固定费用而非免费，实际花费取决于 usageCharges 中的单价与真实用量）/ mixed（两者兼有，应分开展示为「X 元/时 + Y 元/GB」）。供调用方选择展示话术，无需自行遍历模块判断",
                 "title_zh": "计费形态（canonical 字段）：recurring_only（全部为时间周期费）/ usage_only（全部为用量计费，此时 totalAmount 为 0 表示无固定费用而非免费，实际花费取决于 usageCharges 中的单价与真实用量）/ mixed（两者兼有，应分开展示为「X 元/时 + Y 元/GB」）。供调用方选择展示话术，无需自行遍历模块判断",
                 "type": "string"
@@ -74,6 +101,8 @@
                   "properties": {
                     "chargeComposition": {
                       "backendName": "chargeComposition",
+                      "description_en": "The billing composition. Valid values: recurring_only (all time-based fees), usage_only (all usage-based fees, where a totalAmount of 0 indicates no fixed fees rather than free of charge, and actual costs depend on the unit price and actual usage in usageCharges), or mixed (both, which should be displayed separately). This allows the caller to choose the display text without iterating through modules to determine the composition",
+                      "description_zh": "计费形态：recurring_only（全部为时间周期费）/ usage_only（全部为用量计费，此时 totalAmount 为 0 表示无固定费用而非免费，实际花费取决于 usageCharges 中的单价与真实用量）/ mixed（两者兼有，应分开展示）。供调用方选择展示话术，无需自行遍历模块判断",
                       "title_en": "计费形态：recurring_only（全部为时间周期费）/ usage_only（全部为用量计费，此时 totalAmount 为 0 表示无固定费用而非免费，实际花费取决于 usageCharges 中的单价与真实用量）/ mixed（两者兼有，应分开展示）。供调用方选择展示话术，无需自行遍历模块判断",
                       "title_zh": "计费形态：recurring_only（全部为时间周期费）/ usage_only（全部为用量计费，此时 totalAmount 为 0 表示无固定费用而非免费，实际花费取决于 usageCharges 中的单价与真实用量）/ mixed（两者兼有，应分开展示）。供调用方选择展示话术，无需自行遍历模块判断",
                       "type": "string"
@@ -99,6 +128,8 @@
                         "properties": {
                           "billingMode": {
                             "backendName": "billingMode",
+                            "description_en": "The billing dimension of this module, which is always explicitly output. Valid values: 'recurring' for time-based fees, which are included in moduleSum and totalAmount; 'usage' for usage-based fees, where costAfterDiscount is the usage unit price (CNY/usageUnit) and is not included in moduleSum, and the unit price is also provided in usageCharges",
+                            "description_zh": "本模块的计费维度，始终显式输出。'recurring'：时间周期费，计入 moduleSum/totalAmount；'usage'：costAfterDiscount 是用量单价（元/usageUnit），不计入 moduleSum，单价同时在 usageCharges 中给出",
                             "title_en": "本模块的计费维度，始终显式输出。'recurring'：时间周期费，计入 moduleSum/totalAmount；'usage'：costAfterDiscount 是用量单价（元/usageUnit），不计入 moduleSum，单价同时在 usageCharges 中给出",
                             "title_zh": "本模块的计费维度，始终显式输出。'recurring'：时间周期费，计入 moduleSum/totalAmount；'usage'：costAfterDiscount 是用量单价（元/usageUnit），不计入 moduleSum，单价同时在 usageCharges 中给出",
                             "type": "string"
@@ -110,6 +141,8 @@
                           },
                           "invoiceDiscount": {
                             "backendName": "invoiceDiscount",
+                            "description_en": "The discount amount for this module. The value is calculated as invoiceDiscount = originalCost - costAfterDiscount and is precisely provided by the upstream BSS. Manual subtraction in tax-inclusive scenarios may cause precision loss",
+                            "description_zh": "本模块的优惠金额（折扣额）；invoiceDiscount = originalCost - costAfterDiscount，由 BSS 上游精确给出（含税场景自己减容易丢精度）",
                             "format": "float",
                             "title_en": "本模块的优惠金额（折扣额）；invoiceDiscount = originalCost - costAfterDiscount，由 BSS 上游精确给出（含税场景自己减容易丢精度）",
                             "title_zh": "本模块的优惠金额（折扣额）；invoiceDiscount = originalCost - costAfterDiscount，由 BSS 上游精确给出（含税场景自己减容易丢精度）",
@@ -126,6 +159,8 @@
                           },
                           "quantityUsedForQuote": {
                             "backendName": "quantityUsedForQuote",
+                            "description_en": "The estimated usage used for pricing this module. This field has a value only when the caller passes a usage greater than 1 through PricingContext. In this case, costAfterDiscount is the total cost for this usage rather than the unit price. Refer to usageCharges[].pricePerUnit for the normalized unit price. This field is empty when no estimated usage is passed",
+                            "description_zh": "本模块询价时使用的估算用量。仅当调用方经 PricingContext 传入了大于 1 的用量时有值，此时 costAfterDiscount 是这么多用量的合计而非单价；归一后的单价见 usageCharges[].pricePerUnit。未传估算用量时为空",
                             "format": "float",
                             "title_en": "本模块询价时使用的估算用量。仅当调用方经 PricingContext 传入了大于 1 的用量时有值，此时 costAfterDiscount 是这么多用量的合计而非单价；归一后的单价见 usageCharges[].pricePerUnit。未传估算用量时为空",
                             "title_zh": "本模块询价时使用的估算用量。仅当调用方经 PricingContext 传入了大于 1 的用量时有值，此时 costAfterDiscount 是这么多用量的合计而非单价；归一后的单价见 usageCharges[].pricePerUnit。未传估算用量时为空",
@@ -133,6 +168,8 @@
                           },
                           "unitPrice": {
                             "backendName": "unitPrice",
+                            "description_en": "The unit price of this module per billing unit, such as CNY/hour, CNY/month, or CNY/unit. This is used to explain the composition of costAfterDiscount in multi-quantity or multi-period scenarios",
+                            "description_zh": "本模块的单价（按计费单位，如 元/小时、元/月、元/份）；用于在多数量/多周期场景下解释 costAfterDiscount 的构成",
                             "format": "float",
                             "title_en": "本模块的单价（按计费单位，如 元/小时、元/月、元/份）；用于在多数量/多周期场景下解释 costAfterDiscount 的构成",
                             "title_zh": "本模块的单价（按计费单位，如 元/小时、元/月、元/份）；用于在多数量/多周期场景下解释 costAfterDiscount 的构成",
@@ -140,6 +177,8 @@
                           },
                           "usageUnit": {
                             "backendName": "usageUnit",
+                            "description_en": "The usage unit, such as GB or CU. This field has a value when billingMode is 'usage' and indicates the dimension of costAfterDiscount",
+                            "description_zh": "用量单位（如 GB、CU），billingMode='usage' 时有值，标注 costAfterDiscount 的量纲",
                             "title_en": "用量单位（如 GB、CU），billingMode='usage' 时有值，标注 costAfterDiscount 的量纲",
                             "title_zh": "用量单位（如 GB、CU），billingMode='usage' 时有值，标注 costAfterDiscount 的量纲",
                             "type": "string"
@@ -151,6 +190,8 @@
                     },
                     "originalPrice": {
                       "backendName": "originalPrice",
+                      "description_en": "The total original price before discounts for this pricing inquiry. When originalPrice differs from tradePrice or moduleSum, it indicates that a discount was applied, such as a first-purchase discount or a promotional campaign",
+                      "description_zh": "本次询价折扣前的原价合计；当 originalPrice 与 tradePrice/moduleSum 不一致时，说明应用了优惠（如新购首单折扣、促销活动）",
                       "format": "float",
                       "title_en": "本次询价折扣前的原价合计；当 originalPrice 与 tradePrice/moduleSum 不一致时，说明应用了优惠（如新购首单折扣、促销活动）",
                       "title_zh": "本次询价折扣前的原价合计；当 originalPrice 与 tradePrice/moduleSum 不一致时，说明应用了优惠（如新购首单折扣、促销活动）",
@@ -158,12 +199,16 @@
                     },
                     "pricingUnit": {
                       "backendName": "pricingUnit",
+                      "description_en": "The billing cycle unit, such as 'Hour', '1 Month', '12 Month', or 'GB·Month', which indicates the time dimension of moduleSum. This field is not returned in the BSS response and must be explicitly declared by the mapping maintainer in pricingTarget.pricingUnit. It is optional for subscription scenarios because the CLI infers it from Period and PeriodUnit. However, it is required for pay-as-you-go scenarios in the mapping; otherwise, the amount has no dimension",
+                      "description_zh": "计费周期单位（如 'Hour'、'1 Month'、'12 Month'、'GB·Month'），标注 moduleSum 的时间维度。BSS 响应不返回此字段，由 mapping 维护方在 pricingTarget.pricingUnit 显式声明。Subscription 场景可不配（CLI 端会从 Period+PeriodUnit 反推），PayAsYouGo 场景需 mapping 配，否则金额无量纲",
                       "title_en": "计费周期单位（如 'Hour'、'1 Month'、'12 Month'、'GB·Month'），标注 moduleSum 的时间维度。BSS 响应不返回此字段，由 mapping 维护方在 pricingTarget.pricingUnit 显式声明。Subscription 场景可不配（CLI 端会从 Period+PeriodUnit 反推），PayAsYouGo 场景需 mapping 配，否则金额无量纲",
                       "title_zh": "计费周期单位（如 'Hour'、'1 Month'、'12 Month'、'GB·Month'），标注 moduleSum 的时间维度。BSS 响应不返回此字段，由 mapping 维护方在 pricingTarget.pricingUnit 显式声明。Subscription 场景可不配（CLI 端会从 Period+PeriodUnit 反推），PayAsYouGo 场景需 mapping 配，否则金额无量纲",
                       "type": "string"
                     },
                     "quantity": {
                       "backendName": "quantity",
+                      "description_en": "The pricing quantity from OpenAPI input parameters, such as Amount in ECS RunInstances. The moduleSum is the unit price per instance, and effectiveModuleSum = moduleSum × quantity is the total price. The caller should present the actual total price for N instances to the user based on this value to avoid mistaking the unit price for the total price",
+                      "description_zh": "询价数量（来自 OpenAPI 入参，如 ECS RunInstances 的 Amount）。moduleSum 是单台单价，effectiveModuleSum = moduleSum × quantity 是总价；调用方应据此向用户呈现 N 台的真实总额，避免把单价误认为总价",
                       "format": "float",
                       "title_en": "询价数量（来自 OpenAPI 入参，如 ECS RunInstances 的 Amount）。moduleSum 是单台单价，effectiveModuleSum = moduleSum × quantity 是总价；调用方应据此向用户呈现 N 台的真实总额，避免把单价误认为总价",
                       "title_zh": "询价数量（来自 OpenAPI 入参，如 ECS RunInstances 的 Amount）。moduleSum 是单台单价，effectiveModuleSum = moduleSum × quantity 是总价；调用方应据此向用户呈现 N 台的真实总额，避免把单价误认为总价",
@@ -176,11 +221,15 @@
                     },
                     "usageCharges": {
                       "backendName": "usageCharges",
+                      "description_en": "The list of unit prices for pay-as-you-go, usage-based modules, such as CNY/GB or CNY/CU. The amounts for these modules are not included in moduleSum or effectiveModuleSum. This field is empty when there are no usage-based modules",
+                      "description_zh": "【按量费用】用量型模块的单价列表（元/GB、元/CU 等），这些模块的金额不计入 moduleSum/effectiveModuleSum；无用量型模块时为空",
                       "itemName": "usageCharge",
                       "items": {
                         "properties": {
                           "assumedQuantity": {
                             "backendName": "assumedQuantity",
+                            "description_en": "The estimated usage passed by the caller through PricingContext. This field has a value only when it is greater than 1. In this case, this entry also provides the assumedQuantityCost calculated based on this assumed usage",
+                            "description_zh": "调用方经 PricingContext 传入的估算用量，仅当大于 1 时有值，此时本条同时给出按该假设用量计算的费用 assumedQuantityCost",
                             "format": "float",
                             "title_en": "调用方经 PricingContext 传入的估算用量，仅当大于 1 时有值，此时本条同时给出按该假设用量计算的费用 assumedQuantityCost",
                             "title_zh": "调用方经 PricingContext 传入的估算用量，仅当大于 1 时有值，此时本条同时给出按该假设用量计算的费用 assumedQuantityCost",
@@ -188,6 +237,8 @@
                           },
                           "assumedQuantityCost": {
                             "backendName": "assumedQuantityCost",
+                            "description_en": "The module cost calculated based on assumedQuantity, which equals pricePerUnit × assumedQuantity. This cost is not included in totalAmount because it is based on the assumed usage reported by the caller and is not a cost necessarily incurred by this call",
+                            "description_zh": "按 assumedQuantity 计算的本模块费用 = pricePerUnit × assumedQuantity。不计入 totalAmount：它建立在调用方自报的假设用量上，不是本次调用必然产生的费用",
                             "format": "float",
                             "title_en": "按 assumedQuantity 计算的本模块费用 = pricePerUnit × assumedQuantity。不计入 totalAmount：它建立在调用方自报的假设用量上，不是本次调用必然产生的费用",
                             "title_zh": "按 assumedQuantity 计算的本模块费用 = pricePerUnit × assumedQuantity。不计入 totalAmount：它建立在调用方自报的假设用量上，不是本次调用必然产生的费用",
@@ -195,12 +246,16 @@
                           },
                           "moduleCode": {
                             "backendName": "moduleCode",
+                            "description_en": "The billing module code, such as TrafficOut or NatCu. This corresponds to the moduleCode in modules",
+                            "description_zh": "计费模块编码（如 TrafficOut、NatCu），与 modules 中的 moduleCode 对应",
                             "title_en": "计费模块编码（如 TrafficOut、NatCu），与 modules 中的 moduleCode 对应",
                             "title_zh": "计费模块编码（如 TrafficOut、NatCu），与 modules 中的 moduleCode 对应",
                             "type": "string"
                           },
                           "originalPricePerUnit": {
                             "backendName": "originalPricePerUnit",
+                            "description_en": "The original unit price before discounts, in CNY/unit, which is also normalized. This field is empty when not provided by the upstream. The difference between this value and pricePerUnit is the unit price discount for this module",
+                            "description_zh": "折扣前的原单价（元/unit，同样已归一），上游未提供时为空；与 pricePerUnit 的差即本模块的单价优惠",
                             "format": "float",
                             "title_en": "折扣前的原单价（元/unit，同样已归一），上游未提供时为空；与 pricePerUnit 的差即本模块的单价优惠",
                             "title_zh": "折扣前的原单价（元/unit，同样已归一），上游未提供时为空；与 pricePerUnit 的差即本模块的单价优惠",
@@ -208,6 +263,8 @@
                           },
                           "pricePerUnit": {
                             "backendName": "pricePerUnit",
+                            "description_en": "The discounted unit price, in CNY/unit. The actual cost equals pricePerUnit × actual usage. Because the usage is unknown during pricing, it is not included in totalAmount. If the caller passed an estimated usage, the total returned by the upstream is normalized back to the unit price based on that usage",
+                            "description_zh": "折后单价（元/unit）。实际费用 = pricePerUnit × 实际用量，用量在询价时未知，故不并入 totalAmount。调用方传了估算用量时，此处已按该用量把上游返回的合计归一回单价",
                             "format": "float",
                             "title_en": "折后单价（元/unit）。实际费用 = pricePerUnit × 实际用量，用量在询价时未知，故不并入 totalAmount。调用方传了估算用量时，此处已按该用量把上游返回的合计归一回单价",
                             "title_zh": "折后单价（元/unit）。实际费用 = pricePerUnit × 实际用量，用量在询价时未知，故不并入 totalAmount。调用方传了估算用量时，此处已按该用量把上游返回的合计归一回单价",
@@ -215,6 +272,8 @@
                           },
                           "unit": {
                             "backendName": "unit",
+                            "description_en": "The usage unit, such as GB, CU, or 10,000 requests. This comes from the module-level billing.unit annotation in the mapping. The dimension of pricePerUnit is CNY/unit",
+                            "description_zh": "用量单位（如 GB、CU、万次），来自 mapping 模块级 billing.unit 标注；pricePerUnit 的量纲即 元/unit",
                             "title_en": "用量单位（如 GB、CU、万次），来自 mapping 模块级 billing.unit 标注；pricePerUnit 的量纲即 元/unit",
                             "title_zh": "用量单位（如 GB、CU、万次），来自 mapping 模块级 billing.unit 标注；pricePerUnit 的量纲即 元/unit",
                             "type": "string"
@@ -230,6 +289,8 @@
                   "type": "object"
                 },
                 "backendName": "components",
+                "description_en": "The details of each pricing call in composite or delta mode. The key is the priceCall ID, such as prepaid, postpaid, or a custom ID. This field is empty in single mode. The calculatedAmount is the aggregated result of each component based on the priceCalculation expression. The components field exposes the line items so that the caller can view the composition, such as instance fees versus storage fees",
+                "description_zh": "composite/delta 模式下每次询价调用的明细，key 为 priceCall id（如 prepaid、postpaid 或自定义 id）。single 模式为空；calculatedAmount 是各 component 按 priceCalculation 表达式汇总后的结果，components 暴露分项以便调用方查看构成（如实例费 vs 存储费）",
                 "title_en": "composite/delta 模式下每次询价调用的明细，key 为 priceCall id（如 prepaid、postpaid 或自定义 id）。single 模式为空；calculatedAmount 是各 component 按 priceCalculation 表达式汇总后的结果，components 暴露分项以便调用方查看构成（如实例费 vs 存储费）",
                 "title_zh": "composite/delta 模式下每次询价调用的明细，key 为 priceCall id（如 prepaid、postpaid 或自定义 id）。single 模式为空；calculatedAmount 是各 component 按 priceCalculation 表达式汇总后的结果，components 暴露分项以便调用方查看构成（如实例费 vs 存储费）",
                 "type": "object"
@@ -240,6 +301,8 @@
               },
               "discountAmount": {
                 "backendName": "discountAmount",
+                "description_en": "The total discount amount for fixed fees. This is a canonical field calculated as originalAmount - totalAmount. It includes only discounts for fixed fees and excludes the pay-as-you-go billing method. The value is 0 when there is no discount and empty when the original price is missing",
+                "description_zh": "【固定费用】优惠总额（canonical 字段）= originalAmount - totalAmount。只含固定费用部分的优惠，不含按量计费部分；无优惠时为 0，原价缺失时为空",
                 "format": "float",
                 "title_en": "【固定费用】优惠总额（canonical 字段）= originalAmount - totalAmount。只含固定费用部分的优惠，不含按量计费部分；无优惠时为 0，原价缺失时为空",
                 "title_zh": "【固定费用】优惠总额（canonical 字段）= originalAmount - totalAmount。只含固定费用部分的优惠，不含按量计费部分；无优惠时为 0，原价缺失时为空",
@@ -247,18 +310,24 @@
               },
               "errorCode": {
                 "backendName": "errorCode",
+                "description_en": "The error code when upstream pricing fails, such as InvalidParameter or COMMODITY.INVALID_COMPONENT. This field is empty when success is true",
+                "description_zh": "上游询价失败时的错误码（如 InvalidParameter / COMMODITY.INVALID_COMPONENT），success=true 时为空",
                 "title_en": "上游询价失败时的错误码（如 InvalidParameter / COMMODITY.INVALID_COMPONENT），success=true 时为空",
                 "title_zh": "上游询价失败时的错误码（如 InvalidParameter / COMMODITY.INVALID_COMPONENT），success=true 时为空",
                 "type": "string"
               },
               "errorMessage": {
                 "backendName": "errorMessage",
+                "description_en": "The error description when upstream pricing fails. This facilitates self-troubleshooting of specific parameter issues by the caller. This field is empty when success is true",
+                "description_zh": "上游询价失败时的错误描述，便于调用方自排查具体参数问题，success=true 时为空",
                 "title_en": "上游询价失败时的错误描述，便于调用方自排查具体参数问题，success=true 时为空",
                 "title_zh": "上游询价失败时的错误描述，便于调用方自排查具体参数问题，success=true 时为空",
                 "type": "string"
               },
               "originalAmount": {
                 "backendName": "originalAmount",
+                "description_en": "The total original price before discounts for fixed fees. This is a canonical field with the same scope as totalAmount. It includes only fixed fees and excludes the pay-as-you-go billing method. Refer to usageCharges[].originalPricePerUnit for the pre-discount unit price of the pay-as-you-go billing method. The difference between this value and totalAmount is the total discount for this inquiry. This field is empty when the upstream does not provide original price information",
+                "description_zh": "【固定费用】折扣前的原价合计（canonical 字段）。与 totalAmount 同口径，只含固定费用，不含按量计费部分（按量的折前单价见 usageCharges[].originalPricePerUnit）。与 totalAmount 的差即本次优惠总额；上游未提供原价信息时为空",
                 "format": "float",
                 "title_en": "【固定费用】折扣前的原价合计（canonical 字段）。与 totalAmount 同口径，只含固定费用，不含按量计费部分（按量的折前单价见 usageCharges[].originalPricePerUnit）。与 totalAmount 的差即本次优惠总额；上游未提供原价信息时为空",
                 "title_zh": "【固定费用】折扣前的原价合计（canonical 字段）。与 totalAmount 同口径，只含固定费用，不含按量计费部分（按量的折前单价见 usageCharges[].originalPricePerUnit）。与 totalAmount 的差即本次优惠总额；上游未提供原价信息时为空",
@@ -269,6 +338,8 @@
                 "properties": {
                   "chargeComposition": {
                     "backendName": "chargeComposition",
+                    "description_en": "The billing composition. Valid values: recurring_only (all time-based fees), usage_only (all usage-based fees, where a totalAmount of 0 indicates no fixed fees rather than free of charge, and actual costs depend on the unit price and actual usage in usageCharges), or mixed (both, which should be displayed separately). This allows the caller to choose the display text without iterating through modules to determine the composition",
+                    "description_zh": "计费形态：recurring_only（全部为时间周期费）/ usage_only（全部为用量计费，此时 totalAmount 为 0 表示无固定费用而非免费，实际花费取决于 usageCharges 中的单价与真实用量）/ mixed（两者兼有，应分开展示）。供调用方选择展示话术，无需自行遍历模块判断",
                     "title_en": "计费形态：recurring_only（全部为时间周期费）/ usage_only（全部为用量计费，此时 totalAmount 为 0 表示无固定费用而非免费，实际花费取决于 usageCharges 中的单价与真实用量）/ mixed（两者兼有，应分开展示）。供调用方选择展示话术，无需自行遍历模块判断",
                     "title_zh": "计费形态：recurring_only（全部为时间周期费）/ usage_only（全部为用量计费，此时 totalAmount 为 0 表示无固定费用而非免费，实际花费取决于 usageCharges 中的单价与真实用量）/ mixed（两者兼有，应分开展示）。供调用方选择展示话术，无需自行遍历模块判断",
                     "type": "string"
@@ -294,6 +365,8 @@
                       "properties": {
                         "billingMode": {
                           "backendName": "billingMode",
+                          "description_en": "The billing dimension of this module, which is always explicitly output. Valid values: 'recurring' for time-based fees, which are included in moduleSum and totalAmount; 'usage' for usage-based fees, where costAfterDiscount is the usage unit price (CNY/usageUnit) and is not included in moduleSum, and the unit price is also provided in usageCharges",
+                          "description_zh": "本模块的计费维度，始终显式输出。'recurring'：时间周期费，计入 moduleSum/totalAmount；'usage'：costAfterDiscount 是用量单价（元/usageUnit），不计入 moduleSum，单价同时在 usageCharges 中给出",
                           "title_en": "本模块的计费维度，始终显式输出。'recurring'：时间周期费，计入 moduleSum/totalAmount；'usage'：costAfterDiscount 是用量单价（元/usageUnit），不计入 moduleSum，单价同时在 usageCharges 中给出",
                           "title_zh": "本模块的计费维度，始终显式输出。'recurring'：时间周期费，计入 moduleSum/totalAmount；'usage'：costAfterDiscount 是用量单价（元/usageUnit），不计入 moduleSum，单价同时在 usageCharges 中给出",
                           "type": "string"
@@ -305,6 +378,8 @@
                         },
                         "invoiceDiscount": {
                           "backendName": "invoiceDiscount",
+                          "description_en": "The discount amount for this module. The value is calculated as invoiceDiscount = originalCost - costAfterDiscount and is precisely provided by the upstream BSS. Manual subtraction in tax-inclusive scenarios may cause precision loss",
+                          "description_zh": "本模块的优惠金额（折扣额）；invoiceDiscount = originalCost - costAfterDiscount，由 BSS 上游精确给出（含税场景自己减容易丢精度）",
                           "format": "float",
                           "title_en": "本模块的优惠金额（折扣额）；invoiceDiscount = originalCost - costAfterDiscount，由 BSS 上游精确给出（含税场景自己减容易丢精度）",
                           "title_zh": "本模块的优惠金额（折扣额）；invoiceDiscount = originalCost - costAfterDiscount，由 BSS 上游精确给出（含税场景自己减容易丢精度）",
@@ -321,6 +396,8 @@
                         },
                         "quantityUsedForQuote": {
                           "backendName": "quantityUsedForQuote",
+                          "description_en": "The estimated usage used for pricing this module. This field has a value only when the caller passes a usage greater than 1 through PricingContext. In this case, costAfterDiscount is the total cost for this usage rather than the unit price. Refer to usageCharges[].pricePerUnit for the normalized unit price. This field is empty when no estimated usage is passed",
+                          "description_zh": "本模块询价时使用的估算用量。仅当调用方经 PricingContext 传入了大于 1 的用量时有值，此时 costAfterDiscount 是这么多用量的合计而非单价；归一后的单价见 usageCharges[].pricePerUnit。未传估算用量时为空",
                           "format": "float",
                           "title_en": "本模块询价时使用的估算用量。仅当调用方经 PricingContext 传入了大于 1 的用量时有值，此时 costAfterDiscount 是这么多用量的合计而非单价；归一后的单价见 usageCharges[].pricePerUnit。未传估算用量时为空",
                           "title_zh": "本模块询价时使用的估算用量。仅当调用方经 PricingContext 传入了大于 1 的用量时有值，此时 costAfterDiscount 是这么多用量的合计而非单价；归一后的单价见 usageCharges[].pricePerUnit。未传估算用量时为空",
@@ -328,6 +405,8 @@
                         },
                         "unitPrice": {
                           "backendName": "unitPrice",
+                          "description_en": "The unit price of this module per billing unit, such as CNY/hour, CNY/month, or CNY/unit. This is used to explain the composition of costAfterDiscount in multi-quantity or multi-period scenarios",
+                          "description_zh": "本模块的单价（按计费单位，如 元/小时、元/月、元/份）；用于在多数量/多周期场景下解释 costAfterDiscount 的构成",
                           "format": "float",
                           "title_en": "本模块的单价（按计费单位，如 元/小时、元/月、元/份）；用于在多数量/多周期场景下解释 costAfterDiscount 的构成",
                           "title_zh": "本模块的单价（按计费单位，如 元/小时、元/月、元/份）；用于在多数量/多周期场景下解释 costAfterDiscount 的构成",
@@ -335,6 +414,8 @@
                         },
                         "usageUnit": {
                           "backendName": "usageUnit",
+                          "description_en": "The usage unit, such as GB or CU. This field has a value when billingMode is 'usage' and indicates the dimension of costAfterDiscount",
+                          "description_zh": "用量单位（如 GB、CU），billingMode='usage' 时有值，标注 costAfterDiscount 的量纲",
                           "title_en": "用量单位（如 GB、CU），billingMode='usage' 时有值，标注 costAfterDiscount 的量纲",
                           "title_zh": "用量单位（如 GB、CU），billingMode='usage' 时有值，标注 costAfterDiscount 的量纲",
                           "type": "string"
@@ -346,6 +427,8 @@
                   },
                   "originalPrice": {
                     "backendName": "originalPrice",
+                    "description_en": "The total original price before discounts for this pricing inquiry. When originalPrice differs from tradePrice or moduleSum, it indicates that a discount was applied, such as a first-purchase discount or a promotional campaign",
+                    "description_zh": "本次询价折扣前的原价合计；当 originalPrice 与 tradePrice/moduleSum 不一致时，说明应用了优惠（如新购首单折扣、促销活动）",
                     "format": "float",
                     "title_en": "本次询价折扣前的原价合计；当 originalPrice 与 tradePrice/moduleSum 不一致时，说明应用了优惠（如新购首单折扣、促销活动）",
                     "title_zh": "本次询价折扣前的原价合计；当 originalPrice 与 tradePrice/moduleSum 不一致时，说明应用了优惠（如新购首单折扣、促销活动）",
@@ -353,12 +436,16 @@
                   },
                   "pricingUnit": {
                     "backendName": "pricingUnit",
+                    "description_en": "The billing cycle unit, such as 'Hour', '1 Month', '12 Month', or 'GB·Month', which indicates the time dimension of moduleSum. This field is not returned in the BSS response and must be explicitly declared by the mapping maintainer in pricingTarget.pricingUnit. It is optional for subscription scenarios because the CLI infers it from Period and PeriodUnit. However, it is required for pay-as-you-go scenarios in the mapping; otherwise, the amount has no dimension",
+                    "description_zh": "计费周期单位（如 'Hour'、'1 Month'、'12 Month'、'GB·Month'），标注 moduleSum 的时间维度。BSS 响应不返回此字段，由 mapping 维护方在 pricingTarget.pricingUnit 显式声明。Subscription 场景可不配（CLI 端会从 Period+PeriodUnit 反推），PayAsYouGo 场景需 mapping 配，否则金额无量纲",
                     "title_en": "计费周期单位（如 'Hour'、'1 Month'、'12 Month'、'GB·Month'），标注 moduleSum 的时间维度。BSS 响应不返回此字段，由 mapping 维护方在 pricingTarget.pricingUnit 显式声明。Subscription 场景可不配（CLI 端会从 Period+PeriodUnit 反推），PayAsYouGo 场景需 mapping 配，否则金额无量纲",
                     "title_zh": "计费周期单位（如 'Hour'、'1 Month'、'12 Month'、'GB·Month'），标注 moduleSum 的时间维度。BSS 响应不返回此字段，由 mapping 维护方在 pricingTarget.pricingUnit 显式声明。Subscription 场景可不配（CLI 端会从 Period+PeriodUnit 反推），PayAsYouGo 场景需 mapping 配，否则金额无量纲",
                     "type": "string"
                   },
                   "quantity": {
                     "backendName": "quantity",
+                    "description_en": "The pricing quantity from OpenAPI input parameters, such as Amount in ECS RunInstances. The moduleSum is the unit price per instance, and effectiveModuleSum = moduleSum × quantity is the total price. The caller should present the actual total price for N instances to the user based on this value to avoid mistaking the unit price for the total price",
+                    "description_zh": "询价数量（来自 OpenAPI 入参，如 ECS RunInstances 的 Amount）。moduleSum 是单台单价，effectiveModuleSum = moduleSum × quantity 是总价；调用方应据此向用户呈现 N 台的真实总额，避免把单价误认为总价",
                     "format": "float",
                     "title_en": "询价数量（来自 OpenAPI 入参，如 ECS RunInstances 的 Amount）。moduleSum 是单台单价，effectiveModuleSum = moduleSum × quantity 是总价；调用方应据此向用户呈现 N 台的真实总额，避免把单价误认为总价",
                     "title_zh": "询价数量（来自 OpenAPI 入参，如 ECS RunInstances 的 Amount）。moduleSum 是单台单价，effectiveModuleSum = moduleSum × quantity 是总价；调用方应据此向用户呈现 N 台的真实总额，避免把单价误认为总价",
@@ -371,11 +458,15 @@
                   },
                   "usageCharges": {
                     "backendName": "usageCharges",
+                    "description_en": "The list of unit prices for pay-as-you-go, usage-based modules, such as CNY/GB or CNY/CU. The amounts for these modules are not included in moduleSum or effectiveModuleSum. This field is empty when there are no usage-based modules",
+                    "description_zh": "【按量费用】用量型模块的单价列表（元/GB、元/CU 等），这些模块的金额不计入 moduleSum/effectiveModuleSum；无用量型模块时为空",
                     "itemName": "usageCharge",
                     "items": {
                       "properties": {
                         "assumedQuantity": {
                           "backendName": "assumedQuantity",
+                          "description_en": "The estimated usage passed by the caller through PricingContext. This field has a value only when it is greater than 1. In this case, this entry also provides the assumedQuantityCost calculated based on this assumed usage",
+                          "description_zh": "调用方经 PricingContext 传入的估算用量，仅当大于 1 时有值，此时本条同时给出按该假设用量计算的费用 assumedQuantityCost",
                           "format": "float",
                           "title_en": "调用方经 PricingContext 传入的估算用量，仅当大于 1 时有值，此时本条同时给出按该假设用量计算的费用 assumedQuantityCost",
                           "title_zh": "调用方经 PricingContext 传入的估算用量，仅当大于 1 时有值，此时本条同时给出按该假设用量计算的费用 assumedQuantityCost",
@@ -383,6 +474,8 @@
                         },
                         "assumedQuantityCost": {
                           "backendName": "assumedQuantityCost",
+                          "description_en": "The module cost calculated based on assumedQuantity, which equals pricePerUnit × assumedQuantity. This cost is not included in totalAmount because it is based on the assumed usage reported by the caller and is not a cost necessarily incurred by this call",
+                          "description_zh": "按 assumedQuantity 计算的本模块费用 = pricePerUnit × assumedQuantity。不计入 totalAmount：它建立在调用方自报的假设用量上，不是本次调用必然产生的费用",
                           "format": "float",
                           "title_en": "按 assumedQuantity 计算的本模块费用 = pricePerUnit × assumedQuantity。不计入 totalAmount：它建立在调用方自报的假设用量上，不是本次调用必然产生的费用",
                           "title_zh": "按 assumedQuantity 计算的本模块费用 = pricePerUnit × assumedQuantity。不计入 totalAmount：它建立在调用方自报的假设用量上，不是本次调用必然产生的费用",
@@ -390,12 +483,16 @@
                         },
                         "moduleCode": {
                           "backendName": "moduleCode",
+                          "description_en": "The billing module code, such as TrafficOut or NatCu. This corresponds to the moduleCode in modules",
+                          "description_zh": "计费模块编码（如 TrafficOut、NatCu），与 modules 中的 moduleCode 对应",
                           "title_en": "计费模块编码（如 TrafficOut、NatCu），与 modules 中的 moduleCode 对应",
                           "title_zh": "计费模块编码（如 TrafficOut、NatCu），与 modules 中的 moduleCode 对应",
                           "type": "string"
                         },
                         "originalPricePerUnit": {
                           "backendName": "originalPricePerUnit",
+                          "description_en": "The original unit price before discounts, in CNY/unit, which is also normalized. This field is empty when not provided by the upstream. The difference between this value and pricePerUnit is the unit price discount for this module",
+                          "description_zh": "折扣前的原单价（元/unit，同样已归一），上游未提供时为空；与 pricePerUnit 的差即本模块的单价优惠",
                           "format": "float",
                           "title_en": "折扣前的原单价（元/unit，同样已归一），上游未提供时为空；与 pricePerUnit 的差即本模块的单价优惠",
                           "title_zh": "折扣前的原单价（元/unit，同样已归一），上游未提供时为空；与 pricePerUnit 的差即本模块的单价优惠",
@@ -403,6 +500,8 @@
                         },
                         "pricePerUnit": {
                           "backendName": "pricePerUnit",
+                          "description_en": "The discounted unit price, in CNY/unit. The actual cost equals pricePerUnit × actual usage. Because the usage is unknown during pricing, it is not included in totalAmount. If the caller passed an estimated usage, the total returned by the upstream is normalized back to the unit price based on that usage",
+                          "description_zh": "折后单价（元/unit）。实际费用 = pricePerUnit × 实际用量，用量在询价时未知，故不并入 totalAmount。调用方传了估算用量时，此处已按该用量把上游返回的合计归一回单价",
                           "format": "float",
                           "title_en": "折后单价（元/unit）。实际费用 = pricePerUnit × 实际用量，用量在询价时未知，故不并入 totalAmount。调用方传了估算用量时，此处已按该用量把上游返回的合计归一回单价",
                           "title_zh": "折后单价（元/unit）。实际费用 = pricePerUnit × 实际用量，用量在询价时未知，故不并入 totalAmount。调用方传了估算用量时，此处已按该用量把上游返回的合计归一回单价",
@@ -410,6 +509,8 @@
                         },
                         "unit": {
                           "backendName": "unit",
+                          "description_en": "The usage unit, such as GB, CU, or 10,000 requests. This comes from the module-level billing.unit annotation in the mapping. The dimension of pricePerUnit is CNY/unit",
+                          "description_zh": "用量单位（如 GB、CU、万次），来自 mapping 模块级 billing.unit 标注；pricePerUnit 的量纲即 元/unit",
                           "title_en": "用量单位（如 GB、CU、万次），来自 mapping 模块级 billing.unit 标注；pricePerUnit 的量纲即 元/unit",
                           "title_zh": "用量单位（如 GB、CU、万次），来自 mapping 模块级 billing.unit 标注；pricePerUnit 的量纲即 元/unit",
                           "type": "string"
@@ -434,6 +535,8 @@
               },
               "totalAmount": {
                 "backendName": "totalAmount",
+                "description_en": "The periodic payable amount for fixed fees in this pricing inquiry (canonical field). For the unit of measurement, see billingUnit. This field includes only fixed fees. Usage-based charges (such as traffic in CNY/GB or CUs in CNY/CU) have different units of measurement and cannot be added to this field. For the unit prices of usage-based charges, see usageCharges. To check whether both types of charges exist, see chargeComposition. In single mode, this value is derived from priceSummary.effectiveModuleSum (falling back to tradePrice if missing). In composite or delta mode, this value is derived from calculatedAmount. This field always has a value when success is true",
+                "description_zh": "【固定费用】本次询价的周期性应付金额（canonical 字段），量纲见 billingUnit。只含固定费用——按实际用量计费的部分（流量元/GB、CU 元/CU 等）量纲不同、不可与本字段相加，单价见 usageCharges；两者是否存在见 chargeComposition。single 模式取 priceSummary.effectiveModuleSum（缺失时退 tradePrice），composite/delta 模式取 calculatedAmount；success=true 时始终有值",
                 "format": "float",
                 "title_en": "【固定费用】本次询价的周期性应付金额（canonical 字段），量纲见 billingUnit。只含固定费用——按实际用量计费的部分（流量元/GB、CU 元/CU 等）量纲不同、不可与本字段相加，单价见 usageCharges；两者是否存在见 chargeComposition。single 模式取 priceSummary.effectiveModuleSum（缺失时退 tradePrice），composite/delta 模式取 calculatedAmount；success=true 时始终有值",
                 "title_zh": "【固定费用】本次询价的周期性应付金额（canonical 字段），量纲见 billingUnit。只含固定费用——按实际用量计费的部分（流量元/GB、CU 元/CU 等）量纲不同、不可与本字段相加，单价见 usageCharges；两者是否存在见 chargeComposition。single 模式取 priceSummary.effectiveModuleSum（缺失时退 tradePrice），composite/delta 模式取 calculatedAmount；success=true 时始终有值",
@@ -441,17 +544,23 @@
               },
               "upstreamRequestId": {
                 "backendName": "upstreamRequestId",
+                "description_en": "The request ID of the upstream pricing API (such as the RequestId of BSS GetSubscriptionPrice). This field is populated regardless of whether the request succeeds or fails, and is used for audit reconciliation and upstream log tracing",
+                "description_zh": "上游询价 API 的 requestId（如 BSS GetSubscriptionPrice 的 RequestId），无论成功失败都填充，用于审计对账与上游日志追溯",
                 "title_en": "上游询价 API 的 requestId（如 BSS GetSubscriptionPrice 的 RequestId），无论成功失败都填充，用于审计对账与上游日志追溯",
                 "title_zh": "上游询价 API 的 requestId（如 BSS GetSubscriptionPrice 的 RequestId），无论成功失败都填充，用于审计对账与上游日志追溯",
                 "type": "string"
               },
               "usageCharges": {
                 "backendName": "usageCharges",
+                "description_en": "The list of unit prices for usage-based billing modules (canonical field). Modules billed by actual usage, such as traffic and NAT CUs, have different units of measurement (such as CNY/GB or CNY/CU) from billingUnit and are not included in totalAmount. This field provides the unit price for each item. In single mode, the values are derived from priceSummary. In composite or delta mode, the values are concatenated from each component in the order of priceCall. This field is empty when the mapping contains no usage-based modules",
+                "description_zh": "【按量费用】用量型计费模块的单价列表（canonical 字段）。流量、NAT CU 等按实际用量计费的模块量纲与 billingUnit 不同（元/GB、元/CU），不并入 totalAmount，在此逐项给出单价；single 模式取 priceSummary 的，composite/delta 模式按 priceCall 顺序拼接各 component 的。mapping 无用量型模块时为空",
                 "itemName": "usageCharge",
                 "items": {
                   "properties": {
                     "assumedQuantity": {
                       "backendName": "assumedQuantity",
+                      "description_en": "The estimated usage passed by the caller through PricingContext. This field has a value only when it is greater than 1. In this case, this entry also provides the assumedQuantityCost calculated based on this assumed usage",
+                      "description_zh": "调用方经 PricingContext 传入的估算用量，仅当大于 1 时有值，此时本条同时给出按该假设用量计算的费用 assumedQuantityCost",
                       "format": "float",
                       "title_en": "调用方经 PricingContext 传入的估算用量，仅当大于 1 时有值，此时本条同时给出按该假设用量计算的费用 assumedQuantityCost",
                       "title_zh": "调用方经 PricingContext 传入的估算用量，仅当大于 1 时有值，此时本条同时给出按该假设用量计算的费用 assumedQuantityCost",
@@ -459,6 +568,8 @@
                     },
                     "assumedQuantityCost": {
                       "backendName": "assumedQuantityCost",
+                      "description_en": "The module cost calculated based on assumedQuantity, which equals pricePerUnit × assumedQuantity. This cost is not included in totalAmount because it is based on the assumed usage reported by the caller and is not a cost necessarily incurred by this call",
+                      "description_zh": "按 assumedQuantity 计算的本模块费用 = pricePerUnit × assumedQuantity。不计入 totalAmount：它建立在调用方自报的假设用量上，不是本次调用必然产生的费用",
                       "format": "float",
                       "title_en": "按 assumedQuantity 计算的本模块费用 = pricePerUnit × assumedQuantity。不计入 totalAmount：它建立在调用方自报的假设用量上，不是本次调用必然产生的费用",
                       "title_zh": "按 assumedQuantity 计算的本模块费用 = pricePerUnit × assumedQuantity。不计入 totalAmount：它建立在调用方自报的假设用量上，不是本次调用必然产生的费用",
@@ -466,12 +577,16 @@
                     },
                     "moduleCode": {
                       "backendName": "moduleCode",
+                      "description_en": "The billing module code, such as TrafficOut or NatCu. This corresponds to the moduleCode in modules",
+                      "description_zh": "计费模块编码（如 TrafficOut、NatCu），与 modules 中的 moduleCode 对应",
                       "title_en": "计费模块编码（如 TrafficOut、NatCu），与 modules 中的 moduleCode 对应",
                       "title_zh": "计费模块编码（如 TrafficOut、NatCu），与 modules 中的 moduleCode 对应",
                       "type": "string"
                     },
                     "originalPricePerUnit": {
                       "backendName": "originalPricePerUnit",
+                      "description_en": "The original unit price before discounts, in CNY/unit, which is also normalized. This field is empty when not provided by the upstream. The difference between this value and pricePerUnit is the unit price discount for this module",
+                      "description_zh": "折扣前的原单价（元/unit，同样已归一），上游未提供时为空；与 pricePerUnit 的差即本模块的单价优惠",
                       "format": "float",
                       "title_en": "折扣前的原单价（元/unit，同样已归一），上游未提供时为空；与 pricePerUnit 的差即本模块的单价优惠",
                       "title_zh": "折扣前的原单价（元/unit，同样已归一），上游未提供时为空；与 pricePerUnit 的差即本模块的单价优惠",
@@ -479,6 +594,8 @@
                     },
                     "pricePerUnit": {
                       "backendName": "pricePerUnit",
+                      "description_en": "The discounted unit price, in CNY/unit. The actual cost equals pricePerUnit × actual usage. Because the usage is unknown during pricing, it is not included in totalAmount. If the caller passed an estimated usage, the total returned by the upstream is normalized back to the unit price based on that usage",
+                      "description_zh": "折后单价（元/unit）。实际费用 = pricePerUnit × 实际用量，用量在询价时未知，故不并入 totalAmount。调用方传了估算用量时，此处已按该用量把上游返回的合计归一回单价",
                       "format": "float",
                       "title_en": "折后单价（元/unit）。实际费用 = pricePerUnit × 实际用量，用量在询价时未知，故不并入 totalAmount。调用方传了估算用量时，此处已按该用量把上游返回的合计归一回单价",
                       "title_zh": "折后单价（元/unit）。实际费用 = pricePerUnit × 实际用量，用量在询价时未知，故不并入 totalAmount。调用方传了估算用量时，此处已按该用量把上游返回的合计归一回单价",
@@ -486,6 +603,8 @@
                     },
                     "unit": {
                       "backendName": "unit",
+                      "description_en": "The usage unit, such as GB, CU, or 10,000 requests. This comes from the module-level billing.unit annotation in the mapping. The dimension of pricePerUnit is CNY/unit",
+                      "description_zh": "用量单位（如 GB、CU、万次），来自 mapping 模块级 billing.unit 标注；pricePerUnit 的量纲即 元/unit",
                       "title_en": "用量单位（如 GB、CU、万次），来自 mapping 模块级 billing.unit 标注；pricePerUnit 的量纲即 元/unit",
                       "title_zh": "用量单位（如 GB、CU、万次），来自 mapping 模块级 billing.unit 标注；pricePerUnit 的量纲即 元/unit",
                       "type": "string"
@@ -498,6 +617,8 @@
                 "type": "array"
               }
             },
+            "title_en": "报价数据；无报价的PricingNotRequired、PricingNotSupported结果省略此字段",
+            "title_zh": "报价数据；无报价的PricingNotRequired、PricingNotSupported结果省略此字段",
             "type": "object"
           },
           "requestId": {
@@ -507,6 +628,14 @@
             "title_en": "Id of the request",
             "title_zh": "Id of the request",
             "type": "string"
+          },
+          "success": {
+            "backendName": "quoteSuccess",
+            "description_en": "Indicates whether a valid pricing result is obtained. The value is true for normal pricing and when no pricing inquiry is required, and false when pricing is not supported or the pricing inquiry fails",
+            "description_zh": "是否取得有效费用结论。正常报价和无需询价为true，不支持或报价失败为false",
+            "title_en": "是否取得有效费用结论。正常报价和无需询价为true，不支持或报价失败为false",
+            "title_zh": "是否取得有效费用结论。正常报价和无需询价为true，不支持或报价失败为false",
+            "type": "boolean"
           }
         },
         "title_en": "Schema of Response",
@@ -514,5 +643,6 @@
         "type": "object"
       }
     }
-  }
+  },
+  "timeout_ms": 22000
 }
