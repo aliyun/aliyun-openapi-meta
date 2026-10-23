@@ -5,22 +5,24 @@
   "components": {
     "schemas": {
       "UploadFormInfo": {
-        "description_en": "The required information for a form upload",
+        "description_en": "The form upload information",
         "description_zh": "表单上传信息",
         "properties": {
           "endpoint": {
-            "description_en": "The request endpoint for the upload",
+            "description_en": "The data storage address",
             "description_zh": "数据存储地址",
+            "example": "https://mockbucketname.oss-cn-shanghai.aliyuncs.com",
             "title": "数据存储地址",
             "type": "string"
           },
           "form_data": {
             "additionalProperties": {
-              "description_en": "The key-value pairs for the form fields. The value for each key must be a string",
-              "description_zh": "",
+              "description_en": "The value of a single form field used when submitting a form upload request",
+              "description_zh": "提交表单上传请求时使用的单个表单字段值",
+              "example": "OSS4-HMAC-SHA256",
               "type": "string"
             },
-            "description_en": "The form fields for the upload",
+            "description_en": "The form upload information",
             "description_zh": "表单上传信息",
             "title": "表单上传信息",
             "type": "object"
@@ -143,7 +145,7 @@
     }
   },
   "deprecated": false,
-  "description_en": "Retrieves the upload address",
+  "description_en": "Retrieves the upload URL",
   "description_zh": "获取上传地址",
   "kebab_example": "aliyun pds get-upload-url --region cn-hangzhou",
   "method": "POST",
@@ -200,8 +202,9 @@
       "element": {
         "fields": [
           {
-            "help_en": "The content_md5",
-            "help_zh": "The content_md5",
+            "example": "ogmMMboFFYMqacXaZXg9Xw==",
+            "help_en": "The MD5 hash value of the part. Specify this field when MD5 verification is required during part upload",
+            "help_zh": "分片的 MD5 值；需要在上传分片时校验 MD5 时填写",
             "name": "content_md5",
             "options": [
               "--content-md5"
@@ -211,8 +214,9 @@
             "type": "string"
           },
           {
-            "help_en": "The content_type",
-            "help_zh": "The content_type",
+            "example": "application/json",
+            "help_en": "The Content-Type header set by the client when uploading the part through a PUT request. If this value is inconsistent with the actual Content-Type, a signature error may occur. If not specified, the client does not need to set it",
+            "help_zh": "客户端通过 PUT 上传分片时设置的 Content-Type；若与此处取值不一致，可能导致签名错误。未指定时客户端可不设置",
             "name": "content_type",
             "options": [
               "--content-type"
@@ -227,7 +231,7 @@
                 "element": {
                   "type": "int"
                 },
-                "help_en": "The five 32-bit state variables of the SHA1 context for all data preceding this part. This parameter applies only to parallel uploads",
+                "help_en": "The first to fifth 32-bit variables of the SHA-1 contextual information for all data before this part. This field is valid only in the concurrent multipart upload pattern",
                 "help_zh": "该分片前所有数据的SHA1上下文的第1-5个32位变量，该字段只在多分片并发上传的模式下有效",
                 "name": "h",
                 "options": [
@@ -239,7 +243,7 @@
               },
               {
                 "example": "10240",
-                "help_en": "The total size in bytes of all preceding parts. The value must be a multiple of 64. This parameter applies only to parallel uploads",
+                "help_en": "The total length up to the previous data block, in bytes. The value must be a multiple of 64. This field is valid only in concurrent multipart upload mode",
                 "help_zh": "到上一个数据块为止的总长度，单位为字节，需要为64的倍数，该字段只在多分片并发上传的模式下有效",
                 "name": "part_offset",
                 "options": [
@@ -250,7 +254,7 @@
                 "type": "int"
               }
             ],
-            "help_en": "The SHA1 context for all data preceding this part. This parameter applies only to parallel uploads",
+            "help_en": "The SHA-1 context of all data before this part. This field is valid only in concurrent multipart upload mode",
             "help_zh": "该分片前所有数据的SHA1上下文，该字段只在多分片并发上传的模式下有效",
             "name": "parallel_sha1_ctx",
             "options": [
@@ -266,8 +270,8 @@
                 "element": {
                   "type": "int"
                 },
-                "help_en": "The h",
-                "help_zh": "The h",
+                "help_en": "The eight 32-bit state variables in the SHA-256 checksum context of the previous data block",
+                "help_zh": "上一个数据块 SHA-256 校验上下文中的 8 个 32 位状态变量",
                 "name": "h",
                 "options": [
                   "--h"
@@ -277,8 +281,9 @@
                 "type": "array"
               },
               {
-                "help_en": "The part_offset",
-                "help_zh": "The part_offset",
+                "example": "10240",
+                "help_en": "The total length up to the previous data block, in bytes. The value must be a multiple of 64",
+                "help_zh": "到上一个数据块为止的总长度，单位为字节，必须为 64 的倍数",
                 "name": "part_offset",
                 "options": [
                   "--part-offset"
@@ -288,8 +293,8 @@
                 "type": "int"
               }
             ],
-            "help_en": "The parallel_sha256_ctx",
-            "help_zh": "The parallel_sha256_ctx",
+            "help_en": "The SHA-256 checksum context of the previous data block, used for concurrent multipart upload",
+            "help_zh": "上一个数据块的 SHA-256 校验上下文，用于并发分片上传",
             "name": "parallel_sha_256_ctx",
             "options": [
               "--parallel-sha-256-ctx"
@@ -313,7 +318,7 @@
         ],
         "type": "object"
       },
-      "help_en": "A list of file parts",
+      "help_en": "The part information list",
       "help_zh": "分片信息列表",
       "location": "body",
       "name": "part_info_list",
@@ -360,7 +365,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response object",
+        "description_en": "Schema of Response",
         "description_zh": "Schema of Response",
         "properties": {
           "create_at": {
@@ -373,7 +378,7 @@
             "description_en": "The domain ID",
             "description_zh": "域id",
             "example": "bj1",
-            "title_en": "Id of the request",
+            "title_en": "",
             "title_zh": "Id of the request",
             "type": "string"
           },
@@ -390,11 +395,11 @@
             "type": "string"
           },
           "part_info_list": {
-            "description_en": "The list of upload parts",
+            "description_en": "The part information list",
             "description_zh": "分段信息列表",
             "items": {
               "$ref": "#/components/schemas/UploadPartInfo",
-              "description_en": "Information about a single part",
+              "description_en": "The part information",
               "description_zh": "分段信息"
             },
             "type": "array"
@@ -406,7 +411,7 @@
             "type": "string"
           }
         },
-        "title_en": "Schema of Response",
+        "title_en": "",
         "title_zh": "Schema of Response",
         "type": "object"
       }
@@ -417,7 +422,7 @@
   ],
   "v1_body_parameters": [
     {
-      "help_en": "The request body",
+      "help_en": "The request body parameters",
       "help_zh": "请求体参数",
       "name": "body",
       "param_style": "json",
@@ -428,7 +433,7 @@
   ],
   "v1_parameters": [
     {
-      "help_en": "The request body",
+      "help_en": "The request body parameters",
       "help_zh": "请求体参数",
       "name": "body",
       "param_style": "json",
