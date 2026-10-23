@@ -1,11 +1,11 @@
 {
-  "camel_example": "",
+  "camel_example": "aliyun agentcore GET /workspaces/ws-0123456789abcdef01234/identity-providers/DingTalk/departments --region cn-hangzhou --header \"Content-Type=application/json\" --version 2026-08-04 --force",
   "cmd_full_name": "agentcore list-identity-provider-departments",
   "cmd_name": "list-identity-provider-departments",
   "deprecated": false,
   "description_en": "Queries the departments of an identity provider by page",
   "description_zh": "分页查询身份源部门",
-  "kebab_example": "",
+  "kebab_example": "aliyun agentcore list-identity-provider-departments --workspace-id ws-0123456789abcdef01234 --identity-provider-type DingTalk --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
   "name": "ListIdentityProviderDepartments",
@@ -36,10 +36,11 @@
     {
       "enum": [
         "DingTalk",
-        "Feishu"
+        "Feishu",
+        "CustomSSO"
       ],
       "example": "DingTalk",
-      "help_en": "The type of the identity provider. A value of DingTalk indicates DingTalk, and a value of Feishu indicates Feishu",
+      "help_en": "The type of the identity provider. DingTalk indicates DingTalk, and Feishu indicates Lark",
       "help_zh": "身份源类型。DingTalk 表示钉钉，Feishu 表示飞书",
       "location": "path",
       "name": "identity_provider_type",
@@ -52,7 +53,7 @@
     },
     {
       "example": "10001",
-      "help_en": "The ID of the parent department. Specifies the department whose direct child departments you want to query. If this parameter is not specified or is left empty, the root hierarchy is queried without recursively returning all descendants. When expanding a node in the list, specify the ID of the node instead of its parentId",
+      "help_en": "Queries the direct child departments of the specified department. If this parameter is not specified or is empty, the root hierarchy is queried, and all descendants are not recursively returned. When expanding a node in the list, pass the ID of the node, not its parentId",
       "help_zh": "查询该部门的直接子部门；不传或为空时查询根层级，不递归返回所有后代。展开列表中的某个节点时，传该节点的 id，不是它的 parentId",
       "location": "query",
       "name": "parent_department_id",
@@ -80,7 +81,7 @@
     },
     {
       "example": "example-next-page-token",
-      "help_en": "The next token returned from the previous page. Do not specify this parameter for the first query. To continue pagination, keep the identity provider and parentDepartmentId unchanged and pass the token as is. If the returned value is empty or not returned, it indicates that there are no subsequent pages at the current hierarchy",
+      "help_en": "The nextToken returned from the previous page. Do not specify this parameter for the first query. When continuing pagination, keep the identity provider and parentDepartmentId unchanged, and pass the token as is. An empty or missing return value indicates that there are no subsequent pages at the current hierarchy level",
       "help_zh": "上一页返回的 nextToken。首次查询不传；继续分页时保持身份源和 parentDepartmentId 不变，并原样传入令牌。返回为空或不返回表示当前层级无后续页",
       "location": "query",
       "name": "next_token",
@@ -101,7 +102,7 @@
         "properties": {
           "code": {
             "backendName": "code",
-            "description_en": "The business status code of the API request. A value of SUCCESS indicates that the request is successful, but does not indicate that the asynchronous synchronization task is completed",
+            "description_en": "The business status code of the API request. SUCCESS indicates that the request is successful, but does not indicate that the asynchronous synchronization task is completed",
             "description_zh": "本次 API 请求的业务状态码。SUCCESS 表示本次请求成功，不表示异步同步任务已经完成",
             "example": "SUCCESS",
             "title_en": "业务状态码",
@@ -110,7 +111,7 @@
           },
           "httpStatusCode": {
             "backendName": "httpStatusCode",
-            "description_en": "The HTTP status code of the API request. This code does not indicate the execution result of an asynchronous task",
+            "description_en": "The HTTP status code of the API request, which does not indicate the execution result of the asynchronous task",
             "description_zh": "本次 API 请求的 HTTP 状态码，不表示异步任务的执行结果",
             "example": "200",
             "format": "int32",
@@ -120,17 +121,17 @@
           },
           "items": {
             "backendName": "items",
-            "description_en": "The direct child departments on the current page under the parent department. You must query the details of the child departments separately",
+            "description_en": "The direct child departments on the current page under the current parent department. You must make another query to obtain the details of the child departments",
             "description_zh": "当前父部门下本页的直接子部门；子部门明细需另行查询",
             "example": "[{\"id\":\"10001\",\"name\":\"研发部\",\"parentId\":\"1\",\"memberCount\":12,\"hasChildren\":true}]",
             "items": {
-              "description_en": "A department node returned by the identity provider. It does not include the list of recursively expanded child nodes",
+              "description_en": "A department node returned by the identity provider, which does not include the recursively expanded list of child nodes",
               "description_zh": "身份源返回的一个部门节点，不包含递归展开的子节点列表",
               "example": "{\"id\":\"10001\",\"name\":\"研发部\",\"parentId\":\"1\",\"memberCount\":12,\"hasChildren\":true}",
               "properties": {
                 "hasChildren": {
                   "backendName": "hasChildren",
-                  "description_en": "Indicates whether child departments exist. A value of true indicates that child departments exist and an expansion entry can be displayed. A value of false indicates a leaf node. If this field is not returned, the status is unknown. To query the details of child departments, use the ID of the current node",
+                  "description_en": "Indicates whether the department has child departments. A value of true indicates that the department has child departments and an expansion entry can be displayed accordingly. A value of false indicates a leaf node. If this field is not returned, the status is unknown. You must use the ID of the current node to make another query to obtain the details of the child departments",
                   "description_zh": "true 表示有子部门，可据此显示展开入口；false 表示叶子节点；不返回表示未知。子部门明细需使用当前节点 id 另行查询",
                   "example": "true",
                   "title_en": "是否有子部门",
@@ -139,7 +140,7 @@
                 },
                 "id": {
                   "backendName": "id",
-                  "description_en": "The unique identifier of the department returned by the identity provider. When querying the child departments of this node, use this value as parentDepartmentId",
+                  "description_en": "The unique identifier of the department returned by the identity provider. When querying the child departments of this node, use this value as the parentDepartmentId",
                   "description_zh": "身份源返回的部门唯一标识。查询该节点的子部门时，将此值作为 parentDepartmentId",
                   "example": "10001",
                   "title_en": "部门 ID",
@@ -148,7 +149,7 @@
                 },
                 "memberCount": {
                   "backendName": "memberCount",
-                  "description_en": "The number of members in the department returned by the identity provider. This value is not returned when unknown. Do not treat a missing value as 0",
+                  "description_en": "The number of members in the department returned by the identity provider. This field is not returned when the number is unknown. Do not treat a missing value as 0",
                   "description_zh": "身份源返回的部门成员数量；未知时不返回，不应将缺失值视为 0",
                   "example": "12",
                   "format": "int64",
@@ -185,7 +186,7 @@
           },
           "maxResults": {
             "backendName": "maxResults",
-            "description_en": "The number of entries per page used for this query",
+            "description_en": "The number of items per page used for this query",
             "description_zh": "本次查询使用的每页条数",
             "example": "50",
             "format": "int32",
@@ -204,7 +205,7 @@
           },
           "nextToken": {
             "backendName": "nextToken",
-            "description_en": "The token for the next page. An empty or missing value indicates that there are no subsequent pages at the current hierarchy of the parent department, but does not indicate that the entire department tree has been returned",
+            "description_en": "The token for the next page. An empty or missing value indicates that there are no subsequent pages at the current hierarchy level of the parent department, but does not indicate that the entire department tree has been returned",
             "description_zh": "后续页令牌。为空或不返回表示该父部门的当前层级无后续页，不表示整棵部门树已返回",
             "example": "example-next-page-token",
             "title_en": "分页令牌",
@@ -231,7 +232,7 @@
           },
           "totalCount": {
             "backendName": "totalCount",
-            "description_en": "The total number of departments. This API does not provide this statistic. The value may not be returned and must not be treated as 0",
+            "description_en": "The total number of departments. This operation does not provide this statistic and may not return this field. Do not treat a missing value as 0",
             "description_zh": "部门总数；当前接口不提供该统计，可能不返回，不能按 0 处理",
             "example": "null",
             "format": "int64",
