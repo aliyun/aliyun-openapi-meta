@@ -3,7 +3,7 @@
   "cmd_full_name": "winnexo export-workflow-template",
   "cmd_name": "export-workflow-template",
   "deprecated": false,
-  "description_en": "Exports a simplified template definition for valid members that can be re-imported",
+  "description_en": "Exports a simplified template definition that can be re-imported by valid members",
   "description_zh": "有效成员导出可回流导入的精简模板定义",
   "kebab_example": "aliyun winnexo export-workflow-template --collaboration-group-id group_example --template-id tpl_example --region cn-hangzhou",
   "method": "POST",
@@ -37,9 +37,11 @@
     },
     {
       "example": "group_example",
-      "help_en": "The ID of the collaboration workspace",
+      "help_en": "The collaboration workspace ID",
       "help_zh": "协作空间 ID",
       "location": "formData",
+      "max_length": "64",
+      "min_length": "1",
       "name": "collaboration_group_id",
       "options": [
         "--collaboration-group-id"
@@ -50,15 +52,30 @@
     },
     {
       "example": "tpl_example",
-      "help_en": "The ID of the template",
+      "help_en": "The template ID",
       "help_zh": "模板 ID",
       "location": "formData",
+      "max_length": "64",
+      "min_length": "1",
       "name": "template_id",
       "options": [
         "--template-id"
       ],
       "raw_name": "templateId",
       "required": true,
+      "type": "string"
+    },
+    {
+      "example": "v1",
+      "help_en": "The version number of the template to export. The format is a lowercase v followed by a positive integer, such as v1. If not specified, the effective version is used. If no effective version exists, the latest version is used",
+      "help_zh": "要导出的模板版本号，格式为小写 v + 正整数，例如 v1；不传时回退生效版本，无生效版本时取最新版本",
+      "location": "formData",
+      "name": "version",
+      "options": [
+        "--biz-version"
+      ],
+      "raw_name": "version",
+      "required": false,
       "type": "string"
     }
   ],
@@ -78,14 +95,14 @@
           },
           "message": {
             "backendName": "Message",
-            "description_en": "The error message",
+            "description_en": "The error description",
             "description_zh": "错误描述",
             "example": "请求的资源不存在",
             "type": "string"
           },
           "requestId": {
             "backendName": "RequestId",
-            "description_en": "The request ID",
+            "description_en": "The request tracking ID",
             "description_zh": "请求追踪ID",
             "example": "019FF406-1B10-0065-A97D-2D1920C2A03D",
             "type": "string"
@@ -98,26 +115,26 @@
             "properties": {
               "description": {
                 "backendName": "description",
-                "description_en": "The description of the template",
+                "description_en": "The template description",
                 "description_zh": "模板描述",
                 "example": "example",
                 "type": "string"
               },
               "name": {
                 "backendName": "name",
-                "description_en": "The name of the template",
+                "description_en": "The template name",
                 "description_zh": "模板名称",
                 "example": "example",
                 "type": "string"
               },
               "steps": {
                 "backendName": "steps",
-                "description_en": "The standardization steps",
+                "description_en": "The normalization steps",
                 "description_zh": "规范化步骤",
                 "example": "example",
                 "itemName": "steps",
                 "items": {
-                  "description_en": "The standardization step",
+                  "description_en": "The normalization step",
                   "description_zh": "规范化步骤",
                   "example": "示例流程步骤",
                   "properties": {
@@ -130,21 +147,21 @@
                     },
                     "name": {
                       "backendName": "name",
-                      "description_en": "The name of the step",
+                      "description_en": "The step name",
                       "description_zh": "步骤名称",
                       "example": "example",
                       "type": "string"
                     },
                     "ownerAgentName": {
                       "backendName": "ownerAgentName",
-                      "description_en": "The name of the agent owner",
+                      "description_en": "The name of the responsible agent",
                       "description_zh": "智能体负责人名称",
                       "example": "example",
                       "type": "string"
                     },
                     "ownerType": {
                       "backendName": "ownerType",
-                      "description_en": "The owner type. Valid values: MEMBER: Human. AGENT: Agent",
+                      "description_en": "The owner type. Valid values:\nMEMBER: Human.\nAGENT: Agent",
                       "description_zh": "负责人类型：MEMBER 人工 / AGENT 智能体",
                       "example": "MEMBER",
                       "type": "string"
@@ -159,12 +176,12 @@
                     },
                     "reviewerUserIds": {
                       "backendName": "reviewerUserIds",
-                      "description_en": "The user IDs of the reviewers",
+                      "description_en": "The list of user IDs of the reviewers",
                       "description_zh": "审核人用户ID列表",
                       "example": "example",
                       "itemName": "reviewerUserIds",
                       "items": {
-                        "description_en": "The user IDs of the reviewers",
+                        "description_en": "The list of user IDs of the reviewers",
                         "description_zh": "审核人用户ID列表",
                         "example": "10001",
                         "format": "int64",
@@ -184,14 +201,27 @@
                     },
                     "specification": {
                       "backendName": "specification",
-                      "description_en": "The processing instructions for the step",
+                      "description_en": "The step processing instructions",
                       "description_zh": "步骤处理说明",
                       "example": "example",
                       "type": "string"
                     },
+                    "specificationJson": {
+                      "backendName": "specificationJson",
+                      "description_en": "The array of structured segments for the step instructions. Supported types include text, mention, skill, app, files, and web_search. All segment fields and nested attachments are preserved exactly as returned by the backend",
+                      "description_zh": "步骤说明结构化片段数组，支持 text/mention/skill/app/files/web_search；各片段字段及嵌套附件按后端原样保留",
+                      "example": "[{\"type\":\"text\",\"content\":\"整理输入资料\"}]",
+                      "itemName": "specificationJson",
+                      "items": {
+                        "type": "object"
+                      },
+                      "parseType": "struct",
+                      "required": false,
+                      "type": "array"
+                    },
                     "stepId": {
                       "backendName": "stepId",
-                      "description_en": "The ID of the step",
+                      "description_en": "The step ID",
                       "description_zh": "步骤ID",
                       "example": "collect",
                       "type": "string"

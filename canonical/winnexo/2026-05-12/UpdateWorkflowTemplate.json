@@ -3,7 +3,7 @@
   "cmd_full_name": "winnexo update-workflow-template",
   "cmd_name": "update-workflow-template",
   "deprecated": false,
-  "description_en": "Replaces the entire workflow template for valid members. The last save takes effect",
+  "description_en": "Overwrites and updates a workflow template. The last save takes effect",
   "description_zh": "有效成员整体覆盖更新工作流模板；最后一次保存生效",
   "kebab_example": "aliyun winnexo update-workflow-template --collaboration-group-id group_example --template-id tpl_example --definition example --region cn-hangzhou",
   "method": "POST",
@@ -40,6 +40,8 @@
       "help_en": "The ID of the collaboration workspace",
       "help_zh": "协作空间 ID",
       "location": "formData",
+      "max_length": "64",
+      "min_length": "1",
       "name": "collaboration_group_id",
       "options": [
         "--collaboration-group-id"
@@ -53,6 +55,8 @@
       "help_en": "The ID of the template",
       "help_zh": "模板 ID",
       "location": "formData",
+      "max_length": "64",
+      "min_length": "1",
       "name": "template_id",
       "options": [
         "--template-id"
@@ -63,7 +67,7 @@
     },
     {
       "example": "example",
-      "help_en": "The complete template definition in JSON format. This overwrites the existing definition",
+      "help_en": "The complete JSON definition of the template to overwrite the existing one",
       "help_zh": "完整模板定义 JSON（整体覆盖）",
       "location": "formData",
       "name": "definition",
@@ -77,6 +81,63 @@
       "value": {
         "type": "any"
       }
+    },
+    {
+      "example": "v2",
+      "help_en": "The draft template version number to write. The format is a lowercase v followed by a positive integer, such as v1. Submitted versions cannot be written. If not specified, a new version is generated",
+      "help_zh": "要写入的草稿模板版本号，格式为小写 v + 正整数，例如 v1；已提交版本不可写。不传时生成新版本",
+      "location": "formData",
+      "name": "version",
+      "options": [
+        "--biz-version"
+      ],
+      "raw_name": "version",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "v1",
+      "help_en": "The submitted version number on which the new version is based. This parameter is mutually exclusive with the version parameter. If not specified, the current effective version is used as the fallback",
+      "help_zh": "新增版本所基于的已提交版本号；与 version 互斥，不传时回退当前生效版本",
+      "location": "formData",
+      "name": "source_version",
+      "options": [
+        "--source-version"
+      ],
+      "raw_name": "sourceVersion",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "新增审核步骤",
+      "help_en": "The version description. The maximum length is 500 characters. When writing a draft, if this parameter is not specified or is null, the original value is retained. An empty string clears the value",
+      "help_zh": "版本说明，最多 500 字符；写草稿时不传或 null 保留原值，空字符串清空",
+      "location": "formData",
+      "max_length": "500",
+      "name": "version_description",
+      "options": [
+        "--version-description"
+      ],
+      "raw_name": "versionDescription",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "enum": [
+        "SAVE",
+        "SUBMIT"
+      ],
+      "example": "SUBMIT",
+      "help_en": "The write action. Valid values:\nSAVE: Saves the template as a draft without taking effect.\nSUBMIT: Saves and submits the template, setting it as the only effective version.\nDefault value: SUBMIT",
+      "help_zh": "写入动作：SAVE 保存为草稿（不生效）；SUBMIT 保存并提交，设为唯一生效版本。默认 SUBMIT",
+      "location": "formData",
+      "name": "action",
+      "options": [
+        "--action"
+      ],
+      "raw_name": "action",
+      "required": false,
+      "type": "string"
     }
   ],
   "pathPattern": "/openapi/updateWorkflowTemplate",
@@ -103,9 +164,16 @@
           },
           "description": {
             "backendName": "description",
-            "description_en": "The description of the template",
+            "description_en": "The template description",
             "description_zh": "模板描述",
             "example": "example",
+            "type": "string"
+          },
+          "effectiveVersion": {
+            "backendName": "effectiveVersion",
+            "description_en": "The current effective version number of the template. An empty value indicates that only a draft exists and it cannot be used for work items",
+            "description_zh": "模板当前生效版本号；为空表示仅有草稿、不可用于工作项",
+            "example": "v2",
             "type": "string"
           },
           "gmtCreate": {
@@ -124,21 +192,21 @@
           },
           "message": {
             "backendName": "Message",
-            "description_en": "The error message",
+            "description_en": "The error description",
             "description_zh": "错误描述",
             "example": "请求的资源不存在",
             "type": "string"
           },
           "name": {
             "backendName": "name",
-            "description_en": "The name of the template",
+            "description_en": "The template name",
             "description_zh": "模板名称",
             "example": "example",
             "type": "string"
           },
           "requestId": {
             "backendName": "RequestId",
-            "description_en": "The request trace ID",
+            "description_en": "The request tracking ID",
             "description_zh": "请求追踪ID",
             "example": "019FF406-1B10-0065-A97D-2D1920C2A03D",
             "type": "string"
@@ -163,21 +231,21 @@
                 },
                 "name": {
                   "backendName": "name",
-                  "description_en": "The name of the step",
+                  "description_en": "The step name",
                   "description_zh": "步骤名称",
                   "example": "example",
                   "type": "string"
                 },
                 "ownerAgentName": {
                   "backendName": "ownerAgentName",
-                  "description_en": "The name of the agent owner",
+                  "description_en": "The name of the responsible agent",
                   "description_zh": "智能体负责人名称",
                   "example": "example",
                   "type": "string"
                 },
                 "ownerType": {
                   "backendName": "ownerType",
-                  "description_en": "The owner type. Valid values: MEMBER: Human. AGENT: Agent",
+                  "description_en": "The owner type. Valid values:\nMEMBER: Human.\nAGENT: Agent",
                   "description_zh": "负责人类型：MEMBER 人工 / AGENT 智能体",
                   "example": "MEMBER",
                   "type": "string"
@@ -209,7 +277,7 @@
                 },
                 "sortOrder": {
                   "backendName": "sortOrder",
-                  "description_en": "The sort order of the step",
+                  "description_en": "The step order",
                   "description_zh": "步骤顺序",
                   "example": "1",
                   "format": "int64",
@@ -217,14 +285,27 @@
                 },
                 "specification": {
                   "backendName": "specification",
-                  "description_en": "The processing instructions for the step",
+                  "description_en": "The step processing instructions",
                   "description_zh": "步骤处理说明",
                   "example": "example",
                   "type": "string"
                 },
+                "specificationJson": {
+                  "backendName": "specificationJson",
+                  "description_en": "The array of structured segments for the step instructions. Supports text, mention, skill, app, files, and web_search. The fields and nested attachments of each segment are retained as returned by the backend",
+                  "description_zh": "步骤说明结构化片段数组，支持 text/mention/skill/app/files/web_search；各片段字段及嵌套附件按后端原样保留",
+                  "example": "[{\"type\":\"text\",\"content\":\"整理输入资料\"}]",
+                  "itemName": "specificationJson",
+                  "items": {
+                    "type": "object"
+                  },
+                  "parseType": "struct",
+                  "required": false,
+                  "type": "array"
+                },
                 "stepId": {
                   "backendName": "stepId",
-                  "description_en": "The ID of the step",
+                  "description_en": "The step ID",
                   "description_zh": "步骤ID",
                   "example": "collect",
                   "type": "string"
@@ -238,9 +319,30 @@
           },
           "templateId": {
             "backendName": "templateId",
-            "description_en": "The ID of the template",
+            "description_en": "The template ID",
             "description_zh": "模板ID",
             "example": "tpl_example",
+            "type": "string"
+          },
+          "version": {
+            "backendName": "version",
+            "description_en": "The version number to which the returned content belongs",
+            "description_zh": "本次返回内容所属的版本号",
+            "example": "v2",
+            "type": "string"
+          },
+          "versionDescription": {
+            "backendName": "versionDescription",
+            "description_en": "The change description of the version. An empty value indicates that no description is provided",
+            "description_zh": "该版本的变更说明；为空表示未填写",
+            "example": "新增审核步骤",
+            "type": "string"
+          },
+          "versionStatus": {
+            "backendName": "versionStatus",
+            "description_en": "The version status. Valid values:\nDRAFT: Draft.\nSUBMITTED: Submitted",
+            "description_zh": "版本状态：DRAFT 草稿 / SUBMITTED 已提交",
+            "example": "SUBMITTED",
             "type": "string"
           }
         },

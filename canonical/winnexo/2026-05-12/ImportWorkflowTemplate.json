@@ -3,7 +3,7 @@
   "cmd_full_name": "winnexo import-workflow-template",
   "cmd_name": "import-workflow-template",
   "deprecated": false,
-  "description_en": "Imports a portable template JSON and creates a new template, regardless of whether a template with the same name exists",
+  "description_en": "Imports a portable template JSON and creates a new template. A new template is created regardless of whether the name is identical",
   "description_zh": "有效成员导入可移植模板 JSON 并创建新模板；无论名称是否相同都新建",
   "kebab_example": "aliyun winnexo import-workflow-template --collaboration-group-id group_example --template example --region cn-hangzhou",
   "method": "POST",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "10000",
-      "help_en": "The tenant ID. This is a common parameter. If not specified, the default tenant of the caller is used",
+      "help_en": "The tenant ID. This is a common parameter. If omitted, the default tenant of the caller is used",
       "help_zh": "租户ID，公共参数；缺省时使用调用方默认租户",
       "location": "query",
       "name": "tenant_id",
@@ -37,7 +37,7 @@
     },
     {
       "example": "group_example",
-      "help_en": "The collaboration space ID",
+      "help_en": "The collaboration workspace ID",
       "help_zh": "协作空间 ID",
       "location": "formData",
       "name": "collaboration_group_id",
@@ -93,6 +93,13 @@
             "description_en": "The template description",
             "description_zh": "模板描述",
             "example": "example",
+            "type": "string"
+          },
+          "effectiveVersion": {
+            "backendName": "effectiveVersion",
+            "description_en": "The current effective version number of the template. An empty value indicates that only a draft exists and the template cannot be used for work items. Importing a template always creates a v1 draft, so this field is empty",
+            "description_zh": "模板当前生效版本号；为空表示仅有草稿、不可用于工作项（导入固定创建 v1 草稿，本字段为空）",
+            "example": "v1",
             "type": "string"
           },
           "gmtCreate": {
@@ -157,21 +164,21 @@
                 },
                 "ownerAgentName": {
                   "backendName": "ownerAgentName",
-                  "description_en": "The name of the agent owner",
+                  "description_en": "The name of the responsible agent",
                   "description_zh": "智能体负责人名称",
                   "example": "example",
                   "type": "string"
                 },
                 "ownerType": {
                   "backendName": "ownerType",
-                  "description_en": "The owner type. Valid values: MEMBER (human) and AGENT (agent)",
+                  "description_en": "The type of the responsible party. Valid values:\nMEMBER: human.\nAGENT: agent",
                   "description_zh": "负责人类型：MEMBER 人工 / AGENT 智能体",
                   "example": "MEMBER",
                   "type": "string"
                 },
                 "ownerUserId": {
                   "backendName": "ownerUserId",
-                  "description_en": "The user ID of the human owner",
+                  "description_en": "The user ID of the human responsible party",
                   "description_zh": "人工负责人用户ID",
                   "example": "1",
                   "format": "int64",
@@ -179,12 +186,12 @@
                 },
                 "reviewerUserIds": {
                   "backendName": "reviewerUserIds",
-                  "description_en": "The list of reviewer user IDs",
+                  "description_en": "The list of user IDs for the reviewers",
                   "description_zh": "审核人用户ID列表",
                   "example": "example",
                   "itemName": "reviewerUserIds",
                   "items": {
-                    "description_en": "The list of reviewer user IDs",
+                    "description_en": "The list of user IDs for the reviewers",
                     "description_zh": "审核人用户ID列表",
                     "example": "10001",
                     "format": "int64",
@@ -204,10 +211,23 @@
                 },
                 "specification": {
                   "backendName": "specification",
-                  "description_en": "The step processing instructions",
+                  "description_en": "The processing instructions for the step",
                   "description_zh": "步骤处理说明",
                   "example": "example",
                   "type": "string"
+                },
+                "specificationJson": {
+                  "backendName": "specificationJson",
+                  "description_en": "The structured array of processing instructions for the step. This array supports text, mention, skill, app, files, and web_search types. All fragment fields and nested attachments are preserved exactly as returned by the backend",
+                  "description_zh": "步骤处理说明结构化数组，支持 text/mention/skill/app/files/web_search；各片段字段及嵌套附件按后端原样保留",
+                  "example": "[{\"type\":\"text\",\"content\":\"整理输入资料\"}]",
+                  "itemName": "specificationJson",
+                  "items": {
+                    "type": "object"
+                  },
+                  "parseType": "struct",
+                  "required": false,
+                  "type": "array"
                 },
                 "stepId": {
                   "backendName": "stepId",
@@ -228,6 +248,20 @@
             "description_en": "The template ID",
             "description_zh": "模板ID",
             "example": "tpl_example",
+            "type": "string"
+          },
+          "version": {
+            "backendName": "version",
+            "description_en": "The version number generated by this import",
+            "description_zh": "本次导入生成的版本号",
+            "example": "v1",
+            "type": "string"
+          },
+          "versionStatus": {
+            "backendName": "versionStatus",
+            "description_en": "The version status. Valid values:\nDRAFT: draft.\nSUBMITTED: submitted.\nThe status is always set to DRAFT for imported templates",
+            "description_zh": "版本状态：DRAFT 草稿 / SUBMITTED 已提交；导入固定为 DRAFT",
+            "example": "DRAFT",
             "type": "string"
           }
         },
