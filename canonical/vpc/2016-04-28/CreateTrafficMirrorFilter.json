@@ -3,7 +3,7 @@
   "cmd_full_name": "vpc create-traffic-mirror-filter",
   "cmd_name": "create-traffic-mirror-filter",
   "deprecated": false,
-  "description_en": "Invokes the CreateTrafficMirrorFilter operation to create a traffic mirror filter",
+  "description_en": "Creates a traffic mirror filter",
   "description_zh": "调用CreateTrafficMirrorFilter接口创建流量镜像筛选条件",
   "kebab_example": "aliyun vpc create-traffic-mirror-filter --traffic-mirror-filter-description this_is_a_filter. --traffic-mirror-filter-name abc --client-token 123e4567-e89b-12d3-a456-426655440000 --dry-run false --ingress-rules DestinationPortRange=80/120 Action=accept SourcePortRange=80/120 IpVersion=IPv4 Priority=1 SourceCidrBlock=10.0.0.0/24 DestinationCidrBlock=10.0.0.0/24 Protocol=TCP --egress-rules DestinationPortRange=22/40 Action=accept SourcePortRange=22/40 IpVersion=IPv4 Priority=1 SourceCidrBlock=10.0.0.0/24 DestinationCidrBlock=10.0.0.0/24 Protocol=TCP --biz-region-id cn-hangzhou --resource-group-id rg-bp67acfmxazb4ph0000 --tag Value=FinanceJoshua Key=FinanceDept --region cn-hangzhou",
   "method": "GET|POST",
@@ -48,7 +48,7 @@
     },
     {
       "example": "123e4567-e89b-12d3-a456-426655440000",
-      "help_en": "The client token that is used to ensure the idempotence of the request.\n\nYou can use the client to generate the token, but you must make sure that the token is unique among different requests. The token can contain only ASCII characters.\n\nIf you do not specify this parameter, the system automatically uses the RequestId value as the ClientToken value. The RequestId value is different for each API request",
+      "help_en": "The client token that is used to ensure the idempotence of the request.\n\nYou can use the client to generate the value, but you must ensure that it is unique among different requests. The client token can contain only ASCII characters.\n\nIf you do not specify this parameter, the system automatically uses the RequestId of the API request as the ClientToken. The RequestId of each API request is unique",
       "help_zh": "客户端Token，用于保证请求的幂等性。\n\n从您的客户端生成一个参数值，确保不同请求间该参数值唯一。ClientToken只支持ASCII字符。\n\n若您未指定，则系统自动使用API请求的RequestId作为ClientToken标识。每次API请求的RequestId不一样",
       "location": "query",
       "name": "client_token",
@@ -61,7 +61,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to perform a dry run. Valid values:\n\ntrue: performs a dry run. The system checks the required parameters, request format, and limits. If the request fails the dry run, an error message is returned. If the request passes the dry run, the `DryRunOperation` error code is returned.\n\nfalse (default): sends a normal request. If the request passes the dry run, a 2xx HTTP status code is returned and the traffic mirror filter is created",
+      "help_en": "Specifies whether to only dry run the request. Valid values:\n\ntrue: sends a check request without creating a traffic mirror filter. The system checks whether the required parameters are specified, the request format, and the service limits. If the request fails the precheck, the corresponding error is returned. If the request passes the precheck, the `DryRunOperation` error code is returned.\n\nfalse (default): sends a normal request. If the request passes the check, a 2xx HTTP status code is returned and the filter is created",
       "help_zh": "是否只预检此次请求。取值：\n\ntrue：发送检查请求，不会创建流量镜像筛选条件。检查项包括是否填写了必需参数、请求格式、业务限制。如果检查不通过，则返回对应错误。如果检查通过，则返回错误码`DryRunOperation`。\n\nfalse（默认值）：发送正常请求，通过检查后返回2xx HTTP状态码并直接创建筛选条件",
       "location": "query",
       "name": "dry_run",
@@ -90,7 +90,7 @@
           },
           {
             "example": "10.0.0.0/24",
-            "help_en": "The destination CIDR block of network traffic for the inbound rule",
+            "help_en": "The destination CIDR block of the network traffic for the inbound rule",
             "help_zh": "入方向规则网络流量的目的地址网段",
             "name": "destination_cidr_block",
             "options": [
@@ -102,7 +102,7 @@
           },
           {
             "example": "80/120",
-            "help_en": "The destination port range of network traffic for the inbound rule. The port range is 1 to 65535. Separate the start port and end port with a forward slash (/). Example: 1/200 or 80/80.\n\nIf IngressRules.N.Protocol is set to ALL or ICMP, you do not need to set this parameter, which indicates that all ports are available",
+            "help_en": "The destination port range of the network traffic for the inbound rule. The port range is 1 to 65535. Separate the start port and the end port with a forward slash (/). Examples: 1/200 and 80/80.\n\nIf IngressRules.N.Protocol is set to ALL or ICMP, you do not need to specify this parameter, which indicates that all ports are allowed",
             "help_zh": "入方向规则网络流量的目的端口范围。端口范围为1~65535，使用正斜线（/）隔开起始端口和终止端口，格式为1/200、80/80。\n\n当IngressRules.N.Protocol取值为ALL或ICMP时，该参数无需设置，表示不限制端口",
             "name": "destination_port_range",
             "options": [
@@ -127,7 +127,7 @@
           },
           {
             "example": "1",
-            "help_en": "The priority of the inbound rule. A smaller value indicates a higher priority.\nThe maximum value of N is 10, which indicates that you can configure up to 10 inbound rules for a traffic mirror filter",
+            "help_en": "The priority of the inbound rule. A smaller value indicates a higher priority.\nThe maximum value of N is 10, which means that you can configure up to 10 inbound rules for a filter",
             "help_zh": "入方向规则的优先级。数字越小，优先级越高。\n其中N最大取值为10，即一个筛选条件最多可配置10条入方向规则",
             "name": "priority",
             "options": [
@@ -140,7 +140,7 @@
           {
             "doc_required": true,
             "example": "TCP",
-            "help_en": "The protocol type of network traffic to be mirrored for the inbound rule. Valid values:\n\nALL: all protocols.\nICMP: Internet Control Message Protocol.\nTCP: Transmission Control Protocol.\nUDP: User Datagram Protocol",
+            "help_en": "The protocol type of the network traffic to be mirrored for the inbound rule. Valid values:\n\nALL: all protocols.\nICMP: Internet Control Message Protocol.\nTCP: Transmission Control Protocol.\nUDP: User Datagram Protocol",
             "help_zh": "入方向需要镜像的网络流量使用的协议类型。取值：\n\nALL：所有协议。\nICMP：网络控制报文协议。\nTCP：传输控制协议。\nUDP：用户数据报协议",
             "name": "protocol",
             "options": [
@@ -152,7 +152,7 @@
           },
           {
             "example": "10.0.0.0/24",
-            "help_en": "The source CIDR block of network traffic for the inbound rule",
+            "help_en": "The source CIDR block of the network traffic for the inbound rule",
             "help_zh": "入方向规则网络流量的源地址网段",
             "name": "source_cidr_block",
             "options": [
@@ -164,7 +164,7 @@
           },
           {
             "example": "80/120",
-            "help_en": "The source port range of network traffic for the inbound rule. The port range is 1 to 65535. Separate the start port and end port with a forward slash (/). Example: 1/200 or 80/80.\n\nIf IngressRules.N.Protocol is set to ALL or ICMP, you do not need to set this parameter, which indicates that all ports are available",
+            "help_en": "The source port range of the network traffic for the inbound rule. The port range is 1 to 65535. Separate the start port and the end port with a forward slash (/). Examples: 1/200 and 80/80.\n\nIf IngressRules.N.Protocol is set to ALL or ICMP, you do not need to specify this parameter, which indicates that all ports are allowed",
             "help_zh": "入方向规则网络流量的源端口范围。端口范围为1~65535，使用正斜线（/）隔开起始端口和终止端口，格式为1/200、80/80。\n\n当IngressRules.N.Protocol取值为ALL或ICMP时，该参数无需配置，表示不限制端口",
             "name": "source_port_range",
             "options": [
@@ -177,7 +177,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The information about inbound rules",
+      "help_en": "The information about the inbound rules",
       "help_zh": "入方向规则信息",
       "location": "query",
       "name": "ingress_rules",
@@ -207,7 +207,7 @@
           },
           {
             "example": "10.0.0.0/24",
-            "help_en": "The destination CIDR block of network traffic for the outbound rule",
+            "help_en": "The destination CIDR block of the network traffic for the outbound rule",
             "help_zh": "出方向规则网络流量的目的地址网段",
             "name": "destination_cidr_block",
             "options": [
@@ -219,7 +219,7 @@
           },
           {
             "example": "22/40",
-            "help_en": "The destination port range of network traffic for the outbound rule. The port range is 1 to 65535. Separate the start port and end port with a forward slash (/). Example: 1/200 or 80/80. The value -1/-1 cannot be set independently and indicates that all ports are available.\n\nIf EgressRules.N.Protocol is set to ALL or ICMP, you do not need to set this parameter, which indicates that all ports are available",
+            "help_en": "The destination port range of the network traffic for the outbound rule. The port range is 1 to 65535. Separate the start port and the end port with a forward slash (/). Examples: 1/200 and 80/80. You cannot set this parameter only to -1/-1, which indicates that all ports are allowed.\n\nIf EgressRules.N.Protocol is set to ALL or ICMP, you do not need to specify this parameter, which indicates that all ports are allowed",
             "help_zh": "出方向规则网络流量的目的端口范围。端口范围为1~65535，使用正斜线（/）隔开起始端口和终止端口，格式为1/200、80/80，其中-1/-1不能单独设置，代表不限制端口。\n\n当EgressRules.N.Protocol取值为ALL或ICMP时，该参数无需配置，表示不限制端口",
             "name": "destination_port_range",
             "options": [
@@ -244,7 +244,7 @@
           },
           {
             "example": "1",
-            "help_en": "The priority of the outbound rule. A smaller value indicates a higher priority.\nThe maximum value of N is 10, which indicates that you can configure up to 10 outbound rules for a traffic mirror filter",
+            "help_en": "The priority of the outbound rule. A smaller value indicates a higher priority.\nThe maximum value of N is 10, which means that you can configure up to 10 outbound rules for a filter",
             "help_zh": "出方向规则的优先级。数字越小，优先级越高。\n其中N最大取值为10，即一个筛选条件最多可配置10条出方向规则",
             "name": "priority",
             "options": [
@@ -257,7 +257,7 @@
           {
             "doc_required": true,
             "example": "TCP",
-            "help_en": "The protocol type of network traffic to be mirrored for the outbound rule. Valid values:\n\nALL: all protocols.\nICMP: Internet Control Message Protocol.\nTCP: Transmission Control Protocol.\nUDP: User Datagram Protocol",
+            "help_en": "The protocol type of the network traffic to be mirrored for the outbound rule. Valid values:\n\nALL: all protocols.\nICMP: Internet Control Message Protocol.\nTCP: Transmission Control Protocol.\nUDP: User Datagram Protocol",
             "help_zh": "出方向需要镜像的网络流量使用的协议类型。取值：\n\nALL：所有协议。\nICMP：网络控制报文协议。\nTCP：传输控制协议。\nUDP：用户数据报协议",
             "name": "protocol",
             "options": [
@@ -269,7 +269,7 @@
           },
           {
             "example": "10.0.0.0/24",
-            "help_en": "The source CIDR block of network traffic for the outbound rule",
+            "help_en": "The source CIDR block of the network traffic for the outbound rule",
             "help_zh": "出方向规则网络流量的源地址网段",
             "name": "source_cidr_block",
             "options": [
@@ -281,7 +281,7 @@
           },
           {
             "example": "22/40",
-            "help_en": "The source port range of network traffic for the outbound rule. The port range is 1 to 65535. Separate the start port and end port with a forward slash (/). Example: 1/200 or 80/80. The value -1/-1 cannot be set independently and indicates that all ports are available.\n\nIf EgressRules.N.Protocol is set to ALL or ICMP, you do not need to set this parameter, which indicates that all ports are available",
+            "help_en": "The source port range of the network traffic for the outbound rule. The port range is 1 to 65535. Separate the start port and the end port with a forward slash (/). Examples: 1/200 and 80/80. You cannot set this parameter only to -1/-1, which indicates that all ports are allowed.\n\nIf EgressRules.N.Protocol is set to ALL or ICMP, you do not need to specify this parameter, which indicates that all ports are allowed",
             "help_zh": "出方向规则网络流量的源端口范围。端口范围为1~65535，使用正斜线（/）隔开起始端口和终止端口，格式为1/200、80/80，其中-1/-1不能单独设置，代表不限制端口。\n\n当EgressRules.N.Protocol取值为ALL或ICMP时，该参数无需配置，表示不限制端口",
             "name": "source_port_range",
             "options": [
@@ -294,7 +294,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The information about outbound rules",
+      "help_en": "The information about the outbound rules",
       "help_zh": "出方向规则的信息",
       "location": "query",
       "name": "egress_rules",
@@ -309,7 +309,7 @@
     {
       "doc_required": true,
       "example": "cn-hongkong",
-      "help_en": "The region ID of the traffic mirror filter.\n\nYou can call https://help.aliyun.com/document_detail/36063.html to query the most recent region list. For more information about regions that support traffic mirroring, see https://help.aliyun.com/document_detail/207513.html",
+      "help_en": "The region ID of the traffic mirror.\n\nYou can call the https://help.aliyun.com/document_detail/36063.html operation to query region IDs. For more information about the regions that support traffic mirroring, see https://help.aliyun.com/document_detail/207513.html",
       "help_zh": "流量镜像的所属地域ID。\n\n您可以通过调用https://help.aliyun.com/document_detail/36063.html接口获取地域ID。关于流量镜像支持的地域，请参见https://help.aliyun.com/document_detail/207513.html",
       "location": "query",
       "name": "region_id",
@@ -322,7 +322,7 @@
     },
     {
       "example": "rg-bp67acfmxazb4ph****",
-      "help_en": "The ID of the resource group to which the traffic mirroring filter belongs",
+      "help_en": "The ID of the resource group to which the traffic mirroring belongs",
       "help_zh": "流量镜像所属的资源组ID",
       "location": "query",
       "name": "resource_group_id",
@@ -338,7 +338,7 @@
         "fields": [
           {
             "example": "FinanceDept",
-            "help_en": "The tag key of the resource. You can specify up to 20 tag keys. The tag key cannot be an empty string.\n\nThe tag key can be up to 128 characters in length and cannot start with `aliyun` or `acs:`. It cannot contain `http://` or `https://`",
+            "help_en": "The tag key of the resource. You can specify up to 20 tag keys. If you specify this parameter, you cannot specify an empty string.\n\nA tag key can be up to 128 characters in length. It cannot start with `aliyun` or `acs:`, and cannot contain `http://` or `https://`",
             "help_zh": "资源的标签键。最多支持输入20个标签键。如需传入该值，则不能输入空字符串。\n\n一个标签键最多支持128个字符，不能以`aliyun`和`acs:`开头，不能包含`http://`或者`https://`",
             "name": "key",
             "options": [
@@ -350,7 +350,7 @@
           },
           {
             "example": "FinanceJoshua",
-            "help_en": "The tag value of the resource. You can specify up to 20 tag values. The tag value can be an empty string.\n\nThe tag value can be up to 128 characters in length and cannot start with `aliyun` or `acs:`. It cannot contain `http://` or `https://`",
+            "help_en": "The tag value of the resource. You can specify up to 20 tag values. If you specify this parameter, you can specify an empty string.\n\nA tag value can be up to 128 characters in length. It cannot start with `aliyun` or `acs:`, and cannot contain `http://` or `https://`",
             "help_zh": "资源的标签值。最多支持输入20个标签值。如需传入该值，可以输入空字符串。\n\n最多支持128个字符，不能以`aliyun`和`acs:`开头，不能包含`http://`或者`https://`",
             "name": "value",
             "options": [
@@ -395,7 +395,7 @@
           },
           "ResourceGroupId": {
             "backendName": "data.resourceGroupId",
-            "description_en": "The ID of the resource group to which the traffic mirroring filter belongs",
+            "description_en": "The ID of the resource group to which the traffic mirroring belongs",
             "description_zh": "流量镜像所属的资源组ID",
             "example": "rg-bp67acfmxazb4ph****",
             "type": "string",
