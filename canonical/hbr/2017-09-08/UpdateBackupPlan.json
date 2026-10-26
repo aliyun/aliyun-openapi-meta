@@ -53,7 +53,7 @@
     },
     {
       "example": "I|1602673264|P1D",
-      "help_en": "The backup policy. Use the `I|{startTime}|{interval}` format. This specifies that a backup job runs at a recurring interval. The `{startTime}` is when the backup starts. The `{interval}` is the time between jobs. HBR does not run overdue backup jobs. If the previous backup job is not finished, the next one does not start. For example, `I|1631685600|P1D` means the backup runs once a day, starting at 14:00:00 on September 15, 2021.\n\nstartTime: The start time of the backup. This is a UNIX timestamp in seconds.\n\ninterval: The time interval. Use the ISO 8601 standard. For example, PT1H specifies an interval of one hour. P1D specifies an interval of one day",
+      "help_en": "The backup policy. Valid format: `I|{startTime}|{interval}`. This format specifies that a backup job is executed at an interval of `{interval}` starting from `{startTime}`. Backup jobs for past time are not compensated. If the previous backup job is not completed, the next backup job is not triggered. For example, `I|1631685600|P1D` specifies that a backup is performed every day starting from 2021-09-15 14:00:00.\n\nstartTime: The start time of the backup. The value is a UNIX timestamp in seconds.\ninterval: The ISO 8601 time interval. For example, PT1H specifies an interval of one hour. P1D specifies an interval of one day",
       "help_zh": "备份策略。可选格式：`I|{startTime}|{interval}`。表示从`{startTime}`开始每隔`{interval}`的时间执行一次备份任务。不会补偿已过去时间的备份任务。如果上一次备份任务没有完成，不会触发下一次备份任务。例如`I|1631685600|P1D`表示从2021-09-15 14:00:00开始每隔一天备份一次。\n\nstartTime：备份起始时间，UNIX时间，单位秒。\ninterval： ISO8601时间间隔。例如：PT1H表示间隔一小时。P1D表示间隔一天",
       "location": "query",
       "name": "schedule",
@@ -67,7 +67,7 @@
     {
       "doc_required": true,
       "example": "7",
-      "help_en": "The number of days to retain backups. The minimum value is 1",
+      "help_en": "The retention period of backups in days. The minimum value is 1",
       "help_zh": "备份保留天数，最小值为1天",
       "location": "query",
       "name": "retention",
@@ -80,7 +80,7 @@
     },
     {
       "example": "oss-prefix",
-      "help_en": "This parameter is required only when SourceType is set to OSS. This parameter specifies the prefix of objects to back up. After you specify a prefix, only objects that match the prefix are backed up",
+      "help_en": "The backup prefix. This parameter is required only when SourceType is set to OSS. After this parameter is specified, only objects whose names match the prefix are backed up",
       "help_zh": "仅当SourceType取值为OSS时，需要配置该参数。表示备份前缀。指定后，仅备份前缀相匹配的对象",
       "location": "query",
       "name": "prefix",
@@ -94,7 +94,7 @@
     {
       "doc_required": true,
       "example": "v-0006******q",
-      "help_en": "The ID of the backup repository",
+      "help_en": "The ID of the backup vault",
       "help_zh": "备份仓库ID",
       "location": "query",
       "name": "vault_id",
@@ -107,7 +107,7 @@
     },
     {
       "example": "{\\\"EnableFsFreeze\\\":true,\\\"appConsistent\\\":false,\\\"postScriptPath\\\":\\\"\\\",\\\"preScriptPath\\\":\\\"\\\",\\\"snapshotGroup\\\":true,\\\"timeoutInSeconds\\\":60}",
-      "help_en": "The details of the ECS instance backup. This is a JSON string.\n\nsnapshotGroup: Specifies whether to use a snapshot-consistent group. This feature is available only when all disks of the instance are Enhanced Solid-State Drives (ESSDs).\n\nappConsistent: Specifies whether to enable application consistency. You must also configure the preScriptPath and postScriptPath parameters.\n\npreScriptPath: The path to the pre-freeze script.\n\npostScriptPath: The path to the post-thaw script",
+      "help_en": "The details of the ECS instance backup. The value is a JSON string.\n\nsnapshotGroup: Specifies whether to use a consistent snapshot group. This is valid only when all cloud disks of the instance are ESSDs.\nappConsistent: Specifies whether to use application consistency. This parameter must be used together with the preScriptPath and postScriptPath parameters.\npreScriptPath: The path of the pre-freeze script.\npostScriptPath: The path of the post-thaw script",
       "help_zh": "整机备份详情，类型为JSON字符串。\n\nsnapshotGroup：是否使用一致性快照组（仅实例所有云盘均为ESSD时有效）。\nappConsistent：是否使用应用一致性（需要搭配参数preScriptPath和postScriptPath使用）。\npreScriptPath：冻结脚本路径。\npostScriptPath：解冻脚本路径",
       "location": "query",
       "name": "detail",
@@ -124,7 +124,7 @@
     },
     {
       "example": "ECS_FILE",
-      "help_en": "The type of the data source. Valid values:\n\nECS_FILE: Backs up ECS files.\n\nOSS: Backs up Alibaba Cloud OSS.\n\nNAS: Backs up Alibaba Cloud NAS.\n\nOTS: Backs up Alibaba Cloud Tablestore.\n\nUDM_ECS: Backs up an entire ECS instance",
+      "help_en": "The type of the data source. Valid values:\n\nECS_FILE: ECS files.\nOSS: Alibaba Cloud OSS.\nNAS: Alibaba Cloud NAS.\nOTS: Alibaba Cloud Tablestore.\nUDM_ECS: ECS instances",
       "help_zh": "数据源类型，取值范围：\n\nECS_FILE：备份ECS文件\nOSS：备份阿里云OSS\nNAS：备份阿里云NAS\nOTS：备份阿里云表格存储\nUDM_ECS：备份阿里云ECS整机",
       "location": "query",
       "name": "source_type",
@@ -137,7 +137,7 @@
     },
     {
       "example": "0:24:5120",
-      "help_en": "This parameter is required only when SourceType is set to ECS_FILE. This parameter specifies traffic shaping for backups. Traffic shaping helps you control backup traffic during peak business hours to avoid affecting your services. The format is `{start}|{end}|{bandwidth}`. You can specify multiple traffic shaping rules. Separate them with vertical bars (|). The time ranges of the rules cannot overlap.\n\nstart: The start hour.\n\nend: The end hour.\n\nbandwidth: The maximum speed. Unit: KB/s",
+      "help_en": "The throttling for backup traffic. This parameter is required only when SourceType is set to ECS_FILE. Throttling helps you control the traffic of backup files during peak hours to prevent impacts on normal business. The format is `{start}|{end}|{bandwidth}`. Multiple throttling configurations are separated by vertical bars (|), and the configured time periods cannot overlap.\n\nstart: The start hour.\nend: The end hour.\nbandwidth: The bandwidth limit in KB/s",
       "help_zh": "仅当SourceType取值为ECS_FILE时，需要配置该参数。表示备份流量控制。流量控制可以帮助您在业务高峰期，控制备份文件的流量，以免影响正常业务。格式为`{start}|{end}|{bandwidth}`。多个流量控制配置使用|分隔，并且配置时间不允许有重叠。\n\nstart：起始小时\nend：结束小时\nbandwidth：限制速率，单位KB/s",
       "location": "query",
       "name": "speed_limit",
@@ -150,7 +150,7 @@
     },
     {
       "example": "[\"/home/alice/*.pdf\", \"/home/bob/*.txt\"]",
-      "help_en": "This parameter is required only when SourceType is set to ECS_FILE. This parameter specifies the paths to the files to back up. All files in the specified paths are backed up. The value can be up to 255 characters in length",
+      "help_en": "The paths to be backed up. All files in the specified paths are backed up. This parameter is required only when SourceType is set to ECS_FILE. The value can be up to 255 characters in length",
       "help_zh": "仅当SourceType取值为ECS_FILE时，需要配置该参数。表示需要备份的路径，该路径下所有文件都备份。最多支持255个字符",
       "location": "formData",
       "name": "include",
@@ -163,7 +163,7 @@
     },
     {
       "example": "[\"/var\", \"/proc\"]",
-      "help_en": "This parameter is required only when SourceType is set to ECS_FILE. This parameter specifies the paths to the files to exclude from the backup. All files in the specified paths are not backed up. The value can be up to 255 characters in length",
+      "help_en": "The paths to be excluded from backup. All files in the specified paths are not backed up. This parameter is required only when SourceType is set to ECS_FILE. The value can be up to 255 characters in length",
       "help_zh": "仅当SourceType取值为ECS_FILE时，需要配置该参数。表示不需要进行备份的路径，该路径下所有文件都不备份。最多支持255个字符",
       "location": "formData",
       "name": "exclude",
@@ -176,7 +176,7 @@
     },
     {
       "example": "{\"UseVSS\":false}",
-      "help_en": "This parameter is required only when SourceType is set to ECS_FILE. This parameter specifies whether to use Volume Shadow Copy Service (VSS) to define the backup path.\n\nThis feature is available only for Windows ECS instances.\n\nIf data changes occur in the backup source, set this parameter to `[\"UseVSS\":true]` to ensure data consistency.\n\nIf you enable VSS, you cannot back up multiple file directories at the same time",
+      "help_en": "Specifies whether to use Volume Shadow Copy Service (VSS) to define backup paths for Windows. This parameter is required only when SourceType is set to ECS_FILE.\n\nThis feature is supported only for Windows ECS instances.\nIf data in the backup source changes and you need to ensure consistency between the backup data and the source data, set this parameter to `[\"UseVSS\":true]`.\nIf you use VSS, you cannot back up multiple file folders at the same time",
       "help_zh": "仅当SourceType取值为ECS_FILE时，需要配置该参数。表示是否使用Windows系统VSS定义备份路径。\n\n此功能仅支持Windows类型ECS实例。\n如果备份源中有数据更改，需要确保备份数据与源数据的一致时，才可配置为`[\"UseVSS\":true]`。\n选择使用VSS后，不支持多个文件目录同时备份",
       "location": "formData",
       "name": "options",
@@ -189,7 +189,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to update the backup paths if the Path parameter is empty.\n\ntrue: Updates the backup paths based on the paths specified in this call.\n\nfalse: Does not update the backup paths. The backup paths that were configured when the backup plan was created are used",
+      "help_en": "Specifies whether to update the source paths when the source paths are empty. Valid values:\n\ntrue: updates the source paths based on the paths defined in this operation.\nfalse: does not update the source paths. The backup continues based on the paths specified when the backup plan was created",
       "help_zh": "当备份路径为空时，是否更新备份路径。\n\ntrue：按照该接口中定义路径更新备份路径。\nfalse：不更新备份路径，按照创建备份计划时路径继续备份",
       "location": "query",
       "name": "update_paths",
@@ -204,7 +204,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The backup paths",
+      "help_en": "The backup path",
       "help_zh": "备份路径",
       "location": "query",
       "name": "path",
@@ -221,7 +221,7 @@
         "fields": [
           {
             "example": "COMPLETE",
-            "help_en": "The backup type. Set the value to COMPLETE. This indicates a full backup",
+            "help_en": "The backup type. Valid value: COMPLETE, which specifies a full backup",
             "help_zh": "备份类型。取值为COMPLETE，表示全量备份",
             "name": "backup_type",
             "options": [
@@ -233,7 +233,7 @@
           },
           {
             "example": "cn-shanghai",
-            "help_en": "The ID of the destination region for the geo-redundant backup",
+            "help_en": "The ID of the destination region for geo-redundant backups",
             "help_zh": "异地备份地域ID",
             "name": "destination_region_id",
             "options": [
@@ -245,7 +245,7 @@
           },
           {
             "example": "7",
-            "help_en": "The number of days to retain the geo-redundant backup",
+            "help_en": "The retention period of geo-redundant backups in days",
             "help_zh": "异地备份保留天数",
             "name": "destination_retention",
             "options": [
@@ -257,7 +257,7 @@
           },
           {
             "example": "false",
-            "help_en": "Specifies whether to disable the policy",
+            "help_en": "Specifies whether the policy is disabled",
             "help_zh": "策略是否禁用",
             "name": "disabled",
             "options": [
@@ -269,7 +269,7 @@
           },
           {
             "example": "false",
-            "help_en": "Specifies whether to enable geo-redundant replication",
+            "help_en": "Specifies whether to enable cross-region replication",
             "help_zh": "是否开启异地复制",
             "name": "do_copy",
             "options": [
@@ -281,7 +281,7 @@
           },
           {
             "example": "7",
-            "help_en": "The number of days to retain backups. The minimum value is 1",
+            "help_en": "The retention period of backups in days. The minimum value is 1",
             "help_zh": "备份保留天数，最小值为1天",
             "name": "retention",
             "options": [
@@ -293,7 +293,7 @@
           },
           {
             "example": "rule-test-name",
-            "help_en": "The name of the policy",
+            "help_en": "The policy name",
             "help_zh": "策略名称",
             "name": "rule_name",
             "options": [
@@ -305,7 +305,7 @@
           },
           {
             "example": "I|1631685600|P1D",
-            "help_en": "The backup policy. Use the I|{startTime}|{interval} format. This specifies that a backup job runs at a recurring interval. The {startTime} is when the backup starts. The {interval} is the time between jobs. HBR does not run overdue backup jobs. If the previous backup job is not finished, the next one does not start. For example, I|1631685600|P1D means the backup runs once a day, starting at 14:00:00 on September 15, 2021.\n\nstartTime: The start time of the backup. This is a UNIX timestamp in seconds. interval: The time interval. Use the ISO 8601 standard. For example, PT1H specifies an interval of one hour. P1D specifies an interval of one day",
+            "help_en": "The backup policy. Valid format: I|{startTime}|{interval}. This format specifies that a backup job is executed at an interval of {interval} starting from {startTime}. Backup jobs for past time are not executed. If the previous backup job is not completed, the next backup job is not triggered. For example, I|1631685600|P1D specifies that a backup is performed every day starting from 2021-09-15 14:00:00.\n\nstartTime: The start time of the backup. The value is a UNIX timestamp in seconds. interval: The ISO 8601 time interval. For example, PT1H specifies an interval of one hour. P1D specifies an interval of one day",
             "help_zh": "备份策略。可选格式：I|{startTime}|{interval}。表示从{startTime}开始每隔{interval}的时间执行一次备份任务。不会执行已过去时间的备份任务。如果上一次备份任务没有完成，不会触发下一次备份任务。例如I|1631685600|P1D表示从2021-09-15 14:00:00开始每隔一天备份一次。\n\nstartTime：备份起始时间，UNIX时间，单位为秒。 interval： ISO8601时间间隔。例如：PT1H表示间隔一小时。P1D表示间隔一天",
             "name": "schedule",
             "options": [
@@ -361,7 +361,7 @@
     },
     {
       "example": "1",
-      "help_en": "Specifies whether to permanently retain the latest backup version.\n\n0: No\n\n1: Yes",
+      "help_en": "Specifies whether to retain at least one backup version. Valid values:\n0: does not retain.\n1: retains",
       "help_zh": "是否开启保留至少一个备份版本。\n0 - 不保留\n1 - 保留",
       "location": "query",
       "name": "keep_latest_snapshots",
@@ -374,7 +374,7 @@
     },
     {
       "example": "{\"dataSourceId\": \"ds-123456789\", \"path\": \"/changelist\"}",
-      "help_en": "The configuration for the incremental file synchronization list. (This parameter is required only for file synchronization.)",
+      "help_en": "The configuration of the incremental file synchronization list. This parameter is required only for synchronization",
       "help_zh": "增量文件同步列表的配置。（仅同步需要）",
       "location": "query",
       "name": "change_list_path",
@@ -387,7 +387,7 @@
     },
     {
       "example": "STANDARD",
-      "help_en": "The edition. Valid values are BASIC and STANDARD. The default value is STANDARD",
+      "help_en": "The edition type. Valid values: BASIC and STANDARD. Default value: STANDARD",
       "help_zh": "版本类型，支持BASIC和STANDARD，默认值为STANDARD",
       "location": "query",
       "name": "edition",
@@ -408,7 +408,7 @@
         "properties": {
           "Code": {
             "backendName": "code",
-            "description_en": "The return code. A value of 200 indicates that the request was successful",
+            "description_en": "The HTTP status code. A value of 200 indicates that the request is successful",
             "description_zh": "返回码，200表示成功",
             "example": "200",
             "type": "string",
@@ -416,7 +416,7 @@
           },
           "Message": {
             "backendName": "message",
-            "description_en": "The message returned. If the request is successful, \\`successful\\` is returned. If the request fails, an error message is returned",
+            "description_en": "The returned message. If the request is successful, \"successful\" is returned. If an error occurs, the corresponding error message is returned",
             "description_zh": "返回信息描述，成功一般返回successful，错误时会返回相应错误信息",
             "example": "successful",
             "type": "string",
@@ -424,7 +424,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID",
+            "description_en": "The ID of the request",
             "description_zh": "请求ID",
             "example": "473469C7-AA6F-4DC5-B3DB-A3DC0DE3C83E",
             "type": "string",
@@ -432,7 +432,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful.\n\ntrue: The request was successful.\n\nfalse: The request failed",
+            "description_en": "Indicates whether the request is successful. Valid values:\n\ntrue: The request is successful.\nfalse: The request fails",
             "description_zh": "请求是否成功。\n\ntrue：成功。\nfalse：失败",
             "example": "true",
             "type": "boolean",
