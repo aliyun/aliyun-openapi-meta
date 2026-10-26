@@ -2,7 +2,7 @@
   "cmd_full_name": "ess attach-alb-server-groups",
   "cmd_name": "attach-alb-server-groups",
   "deprecated": false,
-  "description_en": "Attaches Application Load Balancer (ALB) server groups to a scaling group. To seamlessly adjust the number of instances in response to changes in your business workload or to maintain the uninterrupted accessibility of your application, you can call the AttachAlbServerGroups operation. By attaching ALB server groups to your scaling group, this operation enables Auto Scaling to automatically tailor your computing capacity to your business needs. Furthermore, it optimizes traffic routing by dynamically allocating incoming requests based on current workload patterns, which significantly improves the stability and performance of your application",
+  "description_en": "Adds one or more Application Load Balancer (ALB) server groups to a scaling group. This operation is applicable to scenarios where you need to dynamically adjust the number of instances to handle fluctuating workloads and ensure high availability of applications. It enables automatic elastic scaling during business fluctuations, dynamically distributes traffic based on loads, and improves application stability",
   "description_zh": "对于需要动态调整实例数量来应对业务变化负载以及确保应用程序的高可用性场景，调用API AttachAlbServerGroups向伸缩组添加一个或多个ALB服务器组，可以在业务变化时自动实现弹性扩展，并根据负载情况动态分配流量、提高应用程序的稳定性",
   "kebab_example": "aliyun ess attach-alb-server-groups --biz-region-id cn-hangzhou --scaling-group-id asg-bp18p2yfxow2dloq0000 --alb-server-groups AlbServerGroupId=sgp-ddwb0y0g6y9bjm0000 Port=22 Weight=100 --api-version 2022-02-22 --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,7 +22,7 @@
     {
       "doc_required": true,
       "example": "cn-hangzhou",
-      "help_en": "The region ID of the scaling group.\n\nExamples: `cn-hangzhou` and `cn-shanghai`. For more information about regions and zones, see https://help.aliyun.com/document_detail/40654.html",
+      "help_en": "The ID of the region to which the scaling group belongs.\n\nExamples: `cn-hangzhou` and `cn-shanghai`. For more information, see https://help.aliyun.com/document_detail/40654.html",
       "help_zh": "伸缩组所属地域的ID。\n\n例如`cn-hangzhou`、`cn-shanghai`，更多信息，请参见https://help.aliyun.com/document_detail/40654.html",
       "location": "query",
       "name": "region_id",
@@ -49,7 +49,7 @@
     },
     {
       "example": "123e4567-e89b-12d3-a456-42665544****",
-      "help_en": "The client token that is used to ensure the idempotence of the request.\n\nYou can use the client to generate the token, but you must make sure that the token is unique among different requests. The token can contain only ASCII characters and cannot exceed 64 characters in length. For more information, see https://help.aliyun.com/document_detail/25965.html",
+      "help_en": "The client token that is used to ensure the idempotence of the request.\n\nYou can use the client to generate the value, but you must make sure that the value is unique among different requests. The token can contain only ASCII characters and cannot exceed 64 characters in length. For more information, see https://help.aliyun.com/document_detail/25965.html",
       "help_zh": "保证请求幂等性。\n\n从您的客户端生成一个参数值，确保不同请求间该参数值唯一。只支持ASCII字符，且不能超过64个字符。更多信息，请参见https://help.aliyun.com/document_detail/25965.html",
       "location": "query",
       "name": "client_token",
@@ -62,7 +62,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to add the existing Elastic Compute Service (ECS) instances or elastic container instances in the scaling group to the new ALB server group. Valid values:\n\ntrue: adds the existing ECS instances or elastic container instances in the scaling group to the new ALB server group and returns the value of `ScalingActivityId`. You can query the value of ScalingActivityId to check whether the existing ECS instances are added to the ALB server group.\nfalse: does not add the existing ECS instances or elastic container instances in the scaling group to the new ALB server group.\n\nDefault value: false",
+      "help_en": "Specifies whether to add the existing Elastic Compute Service (ECS) instances or elastic container instances in the scaling group to the newly added ALB server groups. Valid values:\n\ntrue: adds ECS instances and returns `ScalingActivityId`. You can check whether the existing instances are added by viewing the ID of the scaling activity.\n\nfalse: does not add ECS instances.\n\nDefault value: false",
       "help_zh": "是否将当前伸缩组内的ECS实例或ECI实例添加到新增的ALB服务器组。取值范围：\n\ntrue：添加，并返回`ScalingActivityId`，您可以通过查看该伸缩活动ID来确定已有实例是否添加成功。\n\nfalse：不添加。\n\n默认值：false",
       "location": "query",
       "name": "force_attach",
@@ -78,7 +78,7 @@
         "fields": [
           {
             "example": "sgp-ddwb0y0g6y9bjm****",
-            "help_en": "The ID of the ALB server group.\n\nYou can attach only a limited number of ALB server groups to a scaling group. To view the predefined quota limit or manually request a quota increase, go to Quota Center (https://quotas.console.aliyun.com/products/ess/quotas)",
+            "help_en": "The ID of the ALB server group.\n\nA scaling group can be associated with a limited number of ALB server groups. To view the quota or manually apply for a quota increase, go to the Quota Center (https://quotas.console.aliyun.com/products/ess/quotas)",
             "help_zh": "ALB服务器组的ID。\n\n一个伸缩组支持关联的ALB服务器组数量有限，如需查看或手动申请提升配额值，请前往配额中心 (https://quotas.console.aliyun.com/products/ess/quotas)",
             "name": "alb_server_group_id",
             "options": [
@@ -90,7 +90,7 @@
           },
           {
             "example": "22",
-            "help_en": "The port used by ECS instances or elastic container instances after being added as backend servers to the ALB server group.\n\nValid values: 1 to 65535",
+            "help_en": "The port number used by the ECS instance or elastic container instance after Auto Scaling adds the instance to the ALB server group.\n\nValid values: 1 to 65535",
             "help_zh": "弹性伸缩将ECS实例或ECI实例添加到ALB服务器组后，ECS实例或ECI实例使用的端口号。\n\n取值范围：1~65535",
             "name": "port",
             "options": [
@@ -102,7 +102,7 @@
           },
           {
             "example": "100",
-            "help_en": "The weight of an ECS instance or elastic container instance after being added as a backend server to the ALB server group. Valid values: 0 to 100.\n\nIf you assign a higher weight to an instance, the instance is allocated a larger proportion of access requests. If you assign zero weight to an instance, the instance is allocated no access requests",
+            "help_en": "The weight of the ECS instance or elastic container instance as a backend server after Auto Scaling adds the instance to the ALB server group. Valid values: 0 to 100.\n\nA higher weight specifies that more access requests are distributed to the ECS instance or elastic container instance. If the weight is 0, the ECS instance or elastic container instance does not receive access requests",
             "help_zh": "弹性伸缩将ECS实例或ECI实例添加到ALB服务器组后，ECS实例或ECI实例作为后端服务器的权重。取值范围：0~100。\n\n权重越高，ECS实例或ECI实例将被分配到越多的访问请求。如果权重为0，则ECS实例或ECI实例不会收到访问请求",
             "name": "weight",
             "options": [
@@ -115,7 +115,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The information about the ALB server groups",
+      "help_en": "The details of the ALB server groups",
       "help_zh": "ALB服务器组的相关信息集合",
       "location": "query",
       "name": "alb_server_groups",
@@ -145,7 +145,7 @@
           },
           "ScalingActivityId": {
             "backendName": "data.scalingActivityId",
-            "description_en": "The ID of the scaling activity. During the scaling activity, the ALB server group is attached to the scaling group and the existing ECS instances or elastic container instances in the scaling group are added to the ALB server group.\n\nThis parameter is returned only if you set `ForceAttach` to `true`",
+            "description_en": "The ID of the scaling activity that is triggered when the ALB server group is added and the ECS instances or elastic container instances in the scaling group are added to the ALB server group.\n\nThis parameter is returned only when `ForceAttach` is set to `true`",
             "description_zh": "添加ALB服务器组并将伸缩组内的ECS实例或ECI实例添加到该ALB服务器组时，伸缩活动的ID。\n\n仅当`ForceAttach`取值为`true`时，返回该参数",
             "example": "asa-2ze6wxj8vsohn6j9****",
             "nullToEmpty": false,
