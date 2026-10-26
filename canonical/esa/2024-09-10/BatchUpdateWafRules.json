@@ -3,7 +3,7 @@
   "cmd_full_name": "esa batch-update-waf-rules",
   "cmd_name": "batch-update-waf-rules",
   "deprecated": false,
-  "description_en": "Batch updates rules in a specified WAF ruleset. You can use this operation to update the configurations of multiple rules at a time",
+  "description_en": "Modifies multiple rules in a specified WAF ruleset in batches. This operation allows you to update the configurations of multiple rules at the same time",
   "description_zh": "该接口用于在指定的WAF规则集中批量修改规则。通过此接口，用户可以同时更新多个规则的配置",
   "kebab_example": "aliyun esa batch-update-waf-rules --site-id 1 --region cn-hangzhou",
   "method": "GET|POST",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "1",
-      "help_en": "The site ID. You can call the https://help.aliyun.com/document_detail/2850189.html operation to obtain the site ID",
+      "help_en": "The site ID. You can call the https://help.aliyun.com/document_detail/2850189.html operation to query the site ID",
       "help_zh": "站点ID，可通过调用https://help.aliyun.com/document_detail/2850189.html接口获取",
       "location": "query",
       "name": "site_id",
@@ -37,7 +37,7 @@
     },
     {
       "example": "0",
-      "help_en": "The version number of the site configuration. For sites with version management enabled, you can use this parameter to specify the site version on which the configuration takes effect. The default value is 0",
+      "help_en": "The version number of the site configuration. For sites with configuration version management enabled, you can use this parameter to specify the site version for which the configuration takes effect. Default value: 0",
       "help_zh": "站点配置的版本号。开启了配置版本管理的站点，可以通过该参数指定配置生效的站点版本，默认为版本0",
       "location": "query",
       "name": "site_version",
@@ -50,7 +50,7 @@
     },
     {
       "example": "http_anti_scan",
-      "help_en": "The WAF rule execution phase. This batch operation supports only the following two phases. For other phases, use the single-rule operation `UpdateWafRule`:\n`http_anti_scan`: scan protection rules\n`http_bot`: advanced mode bots\n\nNote: The `http_anti_scan` and `http_bot` phases support only batch updates. The single-rule operation `UpdateWafRule` does not accept these two values. Conversely, other phases such as `http_custom` and `http_whitelist` can be updated only by using the single-rule operation, not this batch operation.\n\nRequired constraint: Although this parameter is marked as optional (required: false) in the specification, it is required when you call this batch operation. The server cannot determine the target ruleset without the Phase parameter and returns `InvalidParameter(400)` if it is not provided",
+      "help_en": "The execution phase of WAF rules. This batch operation supports only the following two phases. For other phases, use the `UpdateWafRule` operation:\n`http_anti_scan`: scan protection rules\n`http_bot`: advanced bot management\n\nNote: The `http_anti_scan` and `http_bot` phases support only batch updates. The `UpdateWafRule` operation does not accept these two values. Conversely, other phases (such as `http_custom` and `http_whitelist`) can only be updated by using the `UpdateWafRule` operation and cannot be updated by using this batch operation.\n\nRequired constraint: Although this parameter is marked as optional (required: false) in the specification, it must be specified when you call this batch operation. The server cannot determine the target ruleset without the phase. If this parameter is not provided, the `InvalidParameter(400)` error is returned",
       "help_zh": "WAF 规则运行阶段，本批量接口仅支持以下两个 phase（其他 phase 请使用单条接口 `UpdateWafRule`）：\n`http_anti_scan`：扫描防护规则\n`http_bot`：高级模式 Bots\n\n说明：`http_anti_scan` / `http_bot` 两个阶段仅支持批量更新，单条接口 `UpdateWafRule` 不接受这两个取值；反之其他 phase（如 `http_custom`、`http_whitelist` 等）只能通过单条接口更新，不能使用本批量接口。\n\n必填约束：此参数虽在 spec 中标注为可选（required: false），但本批量接口实际调用时必须传入，服务端无法在缺少 Phase 时确定目标规则集，未提供时返回 `InvalidParameter(400)`",
       "location": "formData",
       "name": "phase",
@@ -63,7 +63,7 @@
     },
     {
       "example": "10000001",
-      "help_en": "The ID of the WAF ruleset. You can call the https://help.aliyun.com/document_detail/2878359.html operation to obtain the ruleset ID",
+      "help_en": "The ID of the WAF ruleset. You can call the https://help.aliyun.com/document_detail/2878359.html operation to query the ruleset ID",
       "help_zh": "WAF规则集的ID，可通过调用https://help.aliyun.com/document_detail/2878359.html接口获取",
       "location": "formData",
       "name": "ruleset_id",
@@ -528,7 +528,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The shared configuration for multiple rules. Specifies the common properties shared across multiple rules.\n\nConditionally required: Although this parameter is marked as optional (required: false) in the specification, it is required when `Phase=http_anti_scan`. The server returns `InvalidParameter(400)` if it is not provided.\n\nSubfield requirements: When the phase is `http_anti_scan`, Shared must include the `Name` (rule name), `Expression` (match expression), and `Action` (rule action) shared fields. For other phases, the required subfields of Shared vary depending on the specific phase",
+      "help_en": "The shared configuration for multiple rules, which specifies the common attributes of multiple rules.\n\nConditionally required: Although this parameter is marked as optional (required: false) in the specification, it is actually required when `Phase` is set to `http_anti_scan`. If this parameter is not provided, the `InvalidParameter(400)` error is returned.\n\nSub-field requirements: In the `http_anti_scan` phase, the Shared configuration must include shared fields such as `Name` (rule name), `Expression` (match expression), and `Action` (rule action). For other phases, the required sub-fields of the Shared configuration depend on the specific phase",
       "help_zh": "多规则共享配置，指定多个规则的共有属性。\n\n条件必填：此参数虽在 spec 中标注为可选（required: false），但当 `Phase=http_anti_scan` 时实际必填，未提供时服务返回 `InvalidParameter(400)`。\n\n子字段要求：`http_anti_scan` 阶段下 Shared 必须包含 `Name`（规则名称）、`Expression`（匹配表达式）、`Action`（规则动作）等共享字段；其他 Phase 下 Shared 的必填子字段以具体 Phase 为准",
       "location": "formData",
       "name": "shared",
@@ -545,7 +545,7 @@
         "fields": [
           {
             "example": "deny",
-            "help_en": "The operation to perform after the WAF rule is matched",
+            "help_en": "The action performed after a WAF rule is matched",
             "help_zh": "WAF规则匹配命中后执行的动作",
             "name": "action",
             "options": [
@@ -563,7 +563,7 @@
                     "element": {
                       "type": "int"
                     },
-                    "help_en": "The IDs of custom rules",
+                    "help_en": "The list of custom rule IDs",
                     "help_zh": "自定义规则ID列表",
                     "name": "custom_rules",
                     "options": [
@@ -577,7 +577,7 @@
                     "element": {
                       "type": "int"
                     },
-                    "help_en": "The IDs of managed rules",
+                    "help_en": "The list of managed rule IDs",
                     "help_zh": "托管规则id列表",
                     "name": "regular_rules",
                     "options": [
@@ -591,7 +591,7 @@
                     "element": {
                       "type": "string"
                     },
-                    "help_en": "The types of managed rules",
+                    "help_en": "The list of managed rule types",
                     "help_zh": "托管规则类型列表",
                     "name": "regular_types",
                     "options": [
@@ -603,7 +603,7 @@
                   },
                   {
                     "example": "part",
-                    "help_en": "The skip scope applied when requests match conditions defined in the whitelist rule",
+                    "help_en": "The type of the bypassed module",
                     "help_zh": "跳过模块类型",
                     "name": "skip",
                     "options": [
@@ -617,7 +617,7 @@
                     "element": {
                       "type": "string"
                     },
-                    "help_en": "The skipped rule categories when requests match conditions defined in the whitelist rule",
+                    "help_en": "The list of bypassed module phases",
                     "help_zh": "跳过模块阶段列表",
                     "name": "tags",
                     "options": [
@@ -628,7 +628,7 @@
                     "type": "array"
                   }
                 ],
-                "help_en": "The skip configuration specified by the whitelist rule",
+                "help_en": "The modules bypassed by the whitelist rule",
                 "help_zh": "白名单规则指定的跳过模块",
                 "name": "bypass",
                 "options": [
@@ -654,7 +654,7 @@
                   },
                   {
                     "example": "50000001",
-                    "help_en": "The ID of the custom error page, which can be obtained by calling the https://help.aliyun.com/document_detail/2850223.html operation",
+                    "help_en": "The ID of the custom response page. You can obtain the ID by calling the https://help.aliyun.com/document_detail/2850223.html operation",
                     "help_zh": "自定义响应页面的ID，可通过调用https://help.aliyun.com/document_detail/2850223.html接口获取",
                     "name": "id",
                     "options": [
@@ -665,7 +665,7 @@
                     "type": "int"
                   }
                 ],
-                "help_en": "The custom error page",
+                "help_en": "The custom response page",
                 "help_zh": "自定义响应页面",
                 "name": "response",
                 "options": [
@@ -676,7 +676,7 @@
                 "type": "object"
               }
             ],
-            "help_en": "The extended action configurations",
+            "help_en": "The extended actions",
             "help_zh": "扩展动作",
             "name": "actions",
             "options": [
@@ -693,7 +693,7 @@
                   "fields": [
                     {
                       "example": "name",
-                      "help_en": "The valid package name",
+                      "help_en": "The specified valid package name",
                       "help_zh": "指定合法包名",
                       "name": "name",
                       "options": [
@@ -705,7 +705,7 @@
                     },
                     {
                       "example": "sign",
-                      "help_en": "The valid package signature",
+                      "help_en": "The package signature",
                       "help_zh": "包签名",
                       "name": "sign",
                       "options": [
@@ -718,7 +718,7 @@
                   ],
                   "type": "object"
                 },
-                "help_en": "The package signatures",
+                "help_en": "The repackaging detection",
                 "help_zh": "二次打包检测",
                 "name": "package_signs",
                 "options": [
@@ -729,7 +729,7 @@
                 "type": "array"
               }
             ],
-            "help_en": "The configuration of secondary package detection",
+            "help_en": "The repackaging detection configuration",
             "help_zh": "二次打包检测配置",
             "name": "app_package",
             "options": [
@@ -780,7 +780,7 @@
               },
               {
                 "example": "on",
-                "help_en": "Indicates whether to configure the custom signature field",
+                "help_en": "The custom signature field switch",
                 "help_zh": "自定义加签字段开关",
                 "name": "custom_sign_status",
                 "options": [
@@ -794,7 +794,7 @@
                 "element": {
                   "type": "string"
                 },
-                "help_en": "The app anomalies",
+                "help_en": "The app feature anomaly",
                 "help_zh": "APP特征异常",
                 "name": "feature_abnormal",
                 "options": [
@@ -805,7 +805,7 @@
                 "type": "array"
               }
             ],
-            "help_en": "The SDK configuration for apps",
+            "help_en": "The app SDK configuration",
             "help_zh": "APP SDK 配置",
             "name": "app_sdk",
             "options": [
@@ -817,7 +817,7 @@
           },
           {
             "example": "ip.src eq 10.0.0.1",
-            "help_en": "The match expression",
+            "help_en": "The matching expression",
             "help_zh": "匹配表达式",
             "name": "expression",
             "options": [
@@ -841,7 +841,7 @@
           },
           {
             "example": "30000001",
-            "help_en": "The ID of the managed rule group, which is deprecated",
+            "help_en": "[Deprecated] The managed rule group ID",
             "help_zh": "托管规则组id，已废弃",
             "name": "managed_group_id",
             "options": [
@@ -868,7 +868,7 @@
               "fields": [
                 {
                   "example": "deny",
-                  "help_en": "The action",
+                  "help_en": "The action to perform",
                   "help_zh": "执行动作",
                   "name": "action",
                   "options": [
@@ -895,7 +895,7 @@
                     "fields": [
                       {
                         "example": "deny",
-                        "help_en": "The action performed on requests that match the managed rule",
+                        "help_en": "The action of the managed rule",
                         "help_zh": "托管规则动作",
                         "name": "action",
                         "options": [
@@ -907,7 +907,7 @@
                       },
                       {
                         "example": "100001",
-                        "help_en": "The ID of the managed rule",
+                        "help_en": "The managed rule ID",
                         "help_zh": "托管规则ID",
                         "name": "id",
                         "options": [
@@ -932,7 +932,7 @@
                     ],
                     "type": "object"
                   },
-                  "help_en": "The managed rules",
+                  "help_en": "The list of managed rules",
                   "help_zh": "托管规则列表",
                   "name": "managed_rules",
                   "options": [
@@ -981,7 +981,7 @@
               ],
               "type": "object"
             },
-            "help_en": "The managed rulesets",
+            "help_en": "The list of managed rulesets",
             "help_zh": "托管规则集列表",
             "name": "managed_rulesets",
             "options": [
@@ -1164,7 +1164,7 @@
               },
               {
                 "example": "10",
-                "help_en": "The statistical interval",
+                "help_en": "The statistical period",
                 "help_zh": "统计时长",
                 "name": "interval",
                 "options": [
@@ -1176,7 +1176,7 @@
               },
               {
                 "example": "true",
-                "help_en": "Indicates whether to apply the rule to requests that hit the cache",
+                "help_en": "Specifies whether to apply the rule to requests that hit the cache",
                 "help_zh": "在命中缓存的请求上应用",
                 "name": "on_hit",
                 "options": [
@@ -1188,7 +1188,7 @@
               },
               {
                 "example": "10",
-                "help_en": "The timeout period for creating the stack",
+                "help_en": "The timeout period",
                 "help_zh": "超时时间",
                 "name": "ttl",
                 "options": [
@@ -1202,7 +1202,7 @@
                 "fields": [
                   {
                     "example": "10",
-                    "help_en": "The maximum number of managed rules that are triggered",
+                    "help_en": "The threshold for the number of distinct managed rules",
                     "help_zh": "不同的托管规则个数阈值",
                     "name": "distinct_managed_rules",
                     "options": [
@@ -1214,7 +1214,7 @@
                   },
                   {
                     "example": "10",
-                    "help_en": "The maximum number of times that the managed rule is triggered",
+                    "help_en": "The managed rule hit threshold",
                     "help_zh": "托管规则命中阈值",
                     "name": "managed_rules_blocked",
                     "options": [
@@ -1240,7 +1240,7 @@
                     "fields": [
                       {
                         "example": "404",
-                        "help_en": "The HTTP status code",
+                        "help_en": "The HTTP response code",
                         "help_zh": "HTTP响应码",
                         "name": "code",
                         "options": [
@@ -1252,7 +1252,7 @@
                       },
                       {
                         "example": "10",
-                        "help_en": "The maximum number of times that the status code is returned",
+                        "help_en": "The response code count threshold",
                         "help_zh": "响应码次数阈值",
                         "name": "count",
                         "options": [
@@ -1264,7 +1264,7 @@
                       },
                       {
                         "example": "10",
-                        "help_en": "The percentage of the occurrences of the status code to total status codes",
+                        "help_en": "The response code percentage",
                         "help_zh": "响应码百分比",
                         "name": "ratio",
                         "options": [
@@ -1275,7 +1275,7 @@
                         "type": "int"
                       }
                     ],
-                    "help_en": "The configuration of the status code threshold",
+                    "help_en": "The response code threshold",
                     "help_zh": "响应码阈值",
                     "name": "response_status",
                     "options": [
@@ -1287,7 +1287,7 @@
                   },
                   {
                     "example": "10Gb",
-                    "help_en": "The traffic threshold, which is deprecated",
+                    "help_en": "[Deprecated] The traffic threshold",
                     "help_zh": "流量阈值，已废弃",
                     "name": "traffic",
                     "options": [
@@ -1298,7 +1298,7 @@
                     "type": "string"
                   }
                 ],
-                "help_en": "The thresholds",
+                "help_en": "The statistical threshold",
                 "help_zh": "统计阈值",
                 "name": "threshold",
                 "options": [
@@ -1309,7 +1309,7 @@
                 "type": "object"
               }
             ],
-            "help_en": "The configuration of the rate limiting rule",
+            "help_en": "The configurations related to the rate limiting rule",
             "help_zh": "频次控制规则相关配置",
             "name": "rate_limit",
             "options": [
@@ -1323,7 +1323,7 @@
             "fields": [
               {
                 "example": "low",
-                "help_en": "Valid value:\n\noff\nessentially_off\nlow\nmedium\nhigh\nunder_attack",
+                "help_en": "The security level value. Valid values:\noff: Disabled.\nessentially_off: Essentially disabled.\nlow: Low.\nmedium: Medium.\nhigh: High.\nunder_attack: Under attack",
                 "help_zh": "安全级别的值：\n\noff：关闭\nessentially_off：基本关闭\nlow：低\nmedium：中等\nhigh：高\nunder_attack：我正在遭受攻击",
                 "name": "value",
                 "options": [
@@ -1517,7 +1517,7 @@
           },
           {
             "example": "http_custom",
-            "help_en": "The name of the WAF rule",
+            "help_en": "The type of the WAF rule",
             "help_zh": "WAF规则的类型",
             "name": "type",
             "options": [
@@ -1529,7 +1529,7 @@
           },
           {
             "example": "10.0.0.1",
-            "help_en": "Defines whether the IP can access",
+            "help_en": "The IP access control value",
             "help_zh": "IP访问控制值",
             "name": "value",
             "options": [
@@ -1543,7 +1543,7 @@
         "type": "object"
       },
       "example": "10000001",
-      "help_en": "The list of rule configurations. Specifies the detailed configuration for each rule.\n\nRequired subfields for each phase (applicable only to the two phases supported by this batch operation):\n\n`http_anti_scan`: You must provide `Type` and at least one of `ManagedList` or `RateLimit`.\n`http_bot`: You must provide the advanced mode bots configuration. The subfields are defined in the `WafRuleConfig` data structure.\n\nNote: Other phases such as `http_custom` and `http_whitelist` cannot use this batch operation. Use the single-rule operation `UpdateWafRule` instead. The subfield constraints for those phases are described in the single-rule operation documentation.\n\nImportant: If `Configs` is missing or subfields are incomplete, the server returns `InvalidParameter(400)` or `Rule.Config.Malformed`",
+      "help_en": "The list of rule configurations, which specifies the detailed configuration of each rule.\n\nRequired sub-fields for each phase (applicable only to the two phases supported by this batch operation):\n\n`http_anti_scan`: You must provide `Type` and at least one of `ManagedList` or `RateLimit`.\n`http_bot`: You must provide configurations related to advanced bot management. For sub-fields, refer to the definition of the `WafRuleConfig` data structure.\n\nNote: Other phases such as `http_custom` and `http_whitelist` cannot be updated by using this batch operation. Use the `UpdateWafRule` operation instead. For sub-field constraints of these phases, refer to the documentation of the `UpdateWafRule` operation.\n\nNotice: If `Configs` is empty or sub-fields are missing, the `InvalidParameter(400)` or `Rule.Config.Malformed` error is returned",
       "help_zh": "各规则配置列表，指定每个规则的详细配置。\n\n各 Phase 下的必填子字段（仅适用于本批量接口支持的两个 phase）：\n\n`http_anti_scan`：必须提供 `Type`，以及 `ManagedList` 或 `RateLimit` 中至少一项；\n`http_bot`：需提供高级模式 Bots 相关配置（子字段以 `WafRuleConfig` 数据结构定义为准）。\n\n说明：`http_custom` / `http_whitelist` 等其他阶段不能使用本批量接口，请使用单条接口 `UpdateWafRule`；对应子字段约束以单条接口文档为准。\n\n注意：无 `Configs` 或子字段缺失时服务返回 `InvalidParameter(400)` / `Rule.Config.Malformed`",
       "location": "formData",
       "name": "configs",
@@ -1583,7 +1583,7 @@
   },
   "v1_body_parameters": [
     {
-      "help_en": "The list of rule configurations. Specifies the detailed configuration for each rule.\n\nRequired subfields for each phase (applicable only to the two phases supported by this batch operation):\n\n`http_anti_scan`: You must provide `Type` and at least one of `ManagedList` or `RateLimit`.\n`http_bot`: You must provide the advanced mode bots configuration. The subfields are defined in the `WafRuleConfig` data structure.\n\nNote: Other phases such as `http_custom` and `http_whitelist` cannot use this batch operation. Use the single-rule operation `UpdateWafRule` instead. The subfield constraints for those phases are described in the single-rule operation documentation.\n\nImportant: If `Configs` is missing or subfields are incomplete, the server returns `InvalidParameter(400)` or `Rule.Config.Malformed`",
+      "help_en": "The list of rule configurations, which specifies the detailed configuration of each rule.\n\nRequired sub-fields for each phase (applicable only to the two phases supported by this batch operation):\n\n`http_anti_scan`: You must provide `Type` and at least one of `ManagedList` or `RateLimit`.\n`http_bot`: You must provide configurations related to advanced bot management. For sub-fields, refer to the definition of the `WafRuleConfig` data structure.\n\nNote: Other phases such as `http_custom` and `http_whitelist` cannot be updated by using this batch operation. Use the `UpdateWafRule` operation instead. For sub-field constraints of these phases, refer to the documentation of the `UpdateWafRule` operation.\n\nNotice: If `Configs` is empty or sub-fields are missing, the `InvalidParameter(400)` or `Rule.Config.Malformed` error is returned",
       "help_zh": "各规则配置列表，指定每个规则的详细配置。\n\n各 Phase 下的必填子字段（仅适用于本批量接口支持的两个 phase）：\n\n`http_anti_scan`：必须提供 `Type`，以及 `ManagedList` 或 `RateLimit` 中至少一项；\n`http_bot`：需提供高级模式 Bots 相关配置（子字段以 `WafRuleConfig` 数据结构定义为准）。\n\n说明：`http_custom` / `http_whitelist` 等其他阶段不能使用本批量接口，请使用单条接口 `UpdateWafRule`；对应子字段约束以单条接口文档为准。\n\n注意：无 `Configs` 或子字段缺失时服务返回 `InvalidParameter(400)` / `Rule.Config.Malformed`",
       "name": "Configs",
       "param_style": "json",
@@ -1592,7 +1592,7 @@
       "type": "string"
     },
     {
-      "help_en": "The WAF rule execution phase. This batch operation supports only the following two phases. For other phases, use the single-rule operation `UpdateWafRule`:\n`http_anti_scan`: scan protection rules\n`http_bot`: advanced mode bots\n\nNote: The `http_anti_scan` and `http_bot` phases support only batch updates. The single-rule operation `UpdateWafRule` does not accept these two values. Conversely, other phases such as `http_custom` and `http_whitelist` can be updated only by using the single-rule operation, not this batch operation.\n\nRequired constraint: Although this parameter is marked as optional (required: false) in the specification, it is required when you call this batch operation. The server cannot determine the target ruleset without the Phase parameter and returns `InvalidParameter(400)` if it is not provided",
+      "help_en": "The execution phase of WAF rules. This batch operation supports only the following two phases. For other phases, use the `UpdateWafRule` operation:\n`http_anti_scan`: scan protection rules\n`http_bot`: advanced bot management\n\nNote: The `http_anti_scan` and `http_bot` phases support only batch updates. The `UpdateWafRule` operation does not accept these two values. Conversely, other phases (such as `http_custom` and `http_whitelist`) can only be updated by using the `UpdateWafRule` operation and cannot be updated by using this batch operation.\n\nRequired constraint: Although this parameter is marked as optional (required: false) in the specification, it must be specified when you call this batch operation. The server cannot determine the target ruleset without the phase. If this parameter is not provided, the `InvalidParameter(400)` error is returned",
       "help_zh": "WAF 规则运行阶段，本批量接口仅支持以下两个 phase（其他 phase 请使用单条接口 `UpdateWafRule`）：\n`http_anti_scan`：扫描防护规则\n`http_bot`：高级模式 Bots\n\n说明：`http_anti_scan` / `http_bot` 两个阶段仅支持批量更新，单条接口 `UpdateWafRule` 不接受这两个取值；反之其他 phase（如 `http_custom`、`http_whitelist` 等）只能通过单条接口更新，不能使用本批量接口。\n\n必填约束：此参数虽在 spec 中标注为可选（required: false），但本批量接口实际调用时必须传入，服务端无法在缺少 Phase 时确定目标规则集，未提供时返回 `InvalidParameter(400)`",
       "name": "Phase",
       "position": "body",
@@ -1600,7 +1600,7 @@
       "type": "string"
     },
     {
-      "help_en": "The ID of the WAF ruleset. You can call the https://help.aliyun.com/document_detail/2878359.html operation to obtain the ruleset ID",
+      "help_en": "The ID of the WAF ruleset. You can call the https://help.aliyun.com/document_detail/2878359.html operation to query the ruleset ID",
       "help_zh": "WAF规则集的ID，可通过调用https://help.aliyun.com/document_detail/2878359.html接口获取",
       "name": "RulesetId",
       "position": "body",
@@ -1608,7 +1608,7 @@
       "type": "int"
     },
     {
-      "help_en": "The shared configuration for multiple rules. Specifies the common properties shared across multiple rules.\n\nConditionally required: Although this parameter is marked as optional (required: false) in the specification, it is required when `Phase=http_anti_scan`. The server returns `InvalidParameter(400)` if it is not provided.\n\nSubfield requirements: When the phase is `http_anti_scan`, Shared must include the `Name` (rule name), `Expression` (match expression), and `Action` (rule action) shared fields. For other phases, the required subfields of Shared vary depending on the specific phase",
+      "help_en": "The shared configuration for multiple rules, which specifies the common attributes of multiple rules.\n\nConditionally required: Although this parameter is marked as optional (required: false) in the specification, it is actually required when `Phase` is set to `http_anti_scan`. If this parameter is not provided, the `InvalidParameter(400)` error is returned.\n\nSub-field requirements: In the `http_anti_scan` phase, the Shared configuration must include shared fields such as `Name` (rule name), `Expression` (match expression), and `Action` (rule action). For other phases, the required sub-fields of the Shared configuration depend on the specific phase",
       "help_zh": "多规则共享配置，指定多个规则的共有属性。\n\n条件必填：此参数虽在 spec 中标注为可选（required: false），但当 `Phase=http_anti_scan` 时实际必填，未提供时服务返回 `InvalidParameter(400)`。\n\n子字段要求：`http_anti_scan` 阶段下 Shared 必须包含 `Name`（规则名称）、`Expression`（匹配表达式）、`Action`（规则动作）等共享字段；其他 Phase 下 Shared 的必填子字段以具体 Phase 为准",
       "name": "Shared",
       "param_style": "json",
