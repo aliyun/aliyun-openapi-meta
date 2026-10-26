@@ -157,6 +157,18 @@
                   "type": "string"
                 },
                 {
+                  "example": "qwen3.7-max(openai)",
+                  "help_en": "模型 ID，使用目标环境支持的完整模型标识。省略时沿用默认模型；传入时由服务端校验可用性，并在会话创建成功前应用",
+                  "help_zh": "模型 ID，使用目标环境支持的完整模型标识。省略时沿用默认模型；传入时由服务端校验可用性，并在会话创建成功前应用",
+                  "name": "model",
+                  "options": [
+                    "--model"
+                  ],
+                  "raw_name": "Model",
+                  "required": false,
+                  "type": "string"
+                },
+                {
                   "example": "12345",
                   "help_en": "The DataWorks workspace ID. Used to initialize the session project context. If omitted, the session is treated as having no project context. You can later correct or switch the project context by using PromptAgentSession",
                   "help_zh": "DataWorks 工作空间 ID。用于初始化会话项目上下文；省略时按无项目处理，后续可由 PromptAgentSession 的项目上下文校正或切换",
@@ -165,6 +177,18 @@
                     "--project-id"
                   ],
                   "raw_name": "ProjectId",
+                  "required": false,
+                  "type": "string"
+                },
+                {
+                  "example": "none",
+                  "help_en": "思考配置，取值须由目标模型支持。none 表示关闭思考，default 表示模型默认配置；不支持的值或配置应用失败时，会话创建失败。省略时不修改现有思考配置。成功配置会更新 daemon 工作空间的默认值，不仅影响本次请求",
+                  "help_zh": "思考配置，取值须由目标模型支持。none 表示关闭思考，default 表示模型默认配置；不支持的值或配置应用失败时，会话创建失败。省略时不修改现有思考配置。成功配置会更新 daemon 工作空间的默认值，不仅影响本次请求",
+                  "name": "reasoning_effort",
+                  "options": [
+                    "--reasoning-effort"
+                  ],
+                  "raw_name": "ReasoningEffort",
                   "required": false,
                   "type": "string"
                 },
@@ -241,12 +265,58 @@
             "backendName": "data",
             "description_en": "The JSON-RPC response",
             "description_zh": "JSON-PRC的返回结果",
+            "parseType": "struct",
             "properties": {
+              "Error": {
+                "backendName": "error",
+                "description_zh": "JSON-RPC 错误信息；成功时不返回该字段",
+                "parseType": "struct",
+                "properties": {
+                  "Code": {
+                    "backendName": "code",
+                    "description_zh": "JSON-RPC 错误码",
+                    "example": "500",
+                    "format": "int32",
+                    "title_en": "JSON-RPC 错误码。",
+                    "title_zh": "JSON-RPC 错误码。",
+                    "type": "integer"
+                  },
+                  "Data": {
+                    "backendName": "data",
+                    "description_zh": "可选的错误附加信息；内容取决于错误类型",
+                    "example": "{}",
+                    "title_en": "可选的错误附加信息；内容取决于错误类型。",
+                    "title_zh": "可选的错误附加信息；内容取决于错误类型。",
+                    "type": "any"
+                  },
+                  "ErrorCode": {
+                    "backendName": "errorCode",
+                    "description_zh": "业务错误码",
+                    "example": "0x4883300000000019",
+                    "title_en": "业务错误码。",
+                    "title_zh": "业务错误码。",
+                    "type": "string"
+                  },
+                  "Message": {
+                    "backendName": "message",
+                    "description_zh": "错误信息",
+                    "example": "创建 DataAgent 实例必须指定资源组，请在请求的 _meta.dataAgent.resourceGroupId 中传入资源组 ID",
+                    "title_en": "错误信息。",
+                    "title_zh": "错误信息。",
+                    "type": "string"
+                  }
+                },
+                "title_en": "JSON-RPC 错误信息；成功时不返回该字段。",
+                "title_zh": "JSON-RPC 错误信息；成功时不返回该字段。",
+                "type": "object"
+              },
               "Id": {
                 "backendName": "id",
                 "description_en": "The request ID passed by the caller. The value is returned as-is",
                 "description_zh": "请求方传入的 id，原样回显",
                 "example": "1",
+                "title_en": "本次请求的 JSON-RPC 关联标识，由调用方传入并原样返回。",
+                "title_zh": "本次请求的 JSON-RPC 关联标识，由调用方传入并原样返回。",
                 "type": "string"
               },
               "Jsonrpc": {
@@ -254,24 +324,42 @@
                 "description_en": "The JSON-RPC version. Fixed value: 2.0",
                 "description_zh": "JSON-RPC 版本，固定 2.0",
                 "example": "2.0",
+                "title_en": "JSON-RPC 协议版本。",
+                "title_zh": "JSON-RPC 协议版本。",
                 "type": "string"
               },
               "Result": {
                 "backendName": "result",
                 "description_en": "The business data. The value is null if an error occurs",
                 "description_zh": "业务数据；出错时为 null",
+                "parseType": "struct",
                 "properties": {
                   "SessionId": {
                     "backendName": "sessionId",
                     "description_en": "The ID of the created session",
                     "description_zh": "新建的会话 ID",
                     "example": "sess_0f12abc34",
+                    "title_en": "新建的 Agent 会话 ID。",
+                    "title_zh": "新建的 Agent 会话 ID。",
                     "type": "string"
                   }
                 },
+                "title_en": "会话创建结果；成功时返回，失败时不返回该字段。",
+                "title_zh": "会话创建结果；成功时返回，失败时不返回该字段。",
                 "type": "object"
+              },
+              "Timestamp": {
+                "backendName": "timestamp",
+                "description_zh": "响应时间，Unix 时间戳，单位为毫秒",
+                "example": "1789549200000",
+                "format": "int64",
+                "title_en": "响应时间，Unix 时间戳，单位为毫秒。",
+                "title_zh": "响应时间，Unix 时间戳，单位为毫秒。",
+                "type": "integer"
               }
             },
+            "title_en": "JSON-RPC 响应。成功时返回 Result，协议错误时返回 Error。",
+            "title_zh": "JSON-RPC 响应。成功时返回 Result，协议错误时返回 Error。",
             "type": "object"
           },
           "RequestId": {
