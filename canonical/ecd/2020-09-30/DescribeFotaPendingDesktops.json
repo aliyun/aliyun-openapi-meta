@@ -2,9 +2,9 @@
   "cmd_full_name": "ecd describe-fota-pending-desktops",
   "cmd_name": "describe-fota-pending-desktops",
   "deprecated": false,
-  "description_en": "Queries information about the cloud computers whose images can be and are pending to be updated to the specified version",
+  "description_en": "Retrieves the information about cloud computers that can be upgraded to a specified image version but have not been upgraded",
   "description_zh": "获取可升级到指定版本镜像但尚未升级的云电脑信息",
-  "kebab_example": "aliyun ecd describe-fota-pending-desktops --biz-region-id cn-hangzhou --task-uid aot-c4khwrp9ocml40000 --api-version 2020-09-30 --region cn-hangzhou",
+  "kebab_example": "aliyun ecd describe-fota-pending-desktops --biz-region-id cn-hangzhou --max-results 20 --next-token caeba0bbb2be03f84eb48b699f0a4883 --task-uid 'aot-c4khwrp9ocml4****' --desktop-id 'ecd-gx2x1dhsmucyy****' --office-site-id 'cn-shanghai+dir-428216****' --desktop-name demo-computer --api-version 2020-09-30 --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": true,
   "name": "DescribeFotaPendingDesktops",
@@ -21,7 +21,7 @@
     {
       "doc_required": true,
       "example": "cn-hangzhou",
-      "help_en": "The region ID. You can call the https://help.aliyun.com/document_detail/196646.html operation to query the regions supported by Elastic Desktop Service",
+      "help_en": "The region ID. You can call the https://help.aliyun.com/document_detail/196646.html operation to query the list of regions supported by cloud computers",
       "help_zh": "地域ID。可以调用https://help.aliyun.com/document_detail/196646.html获取无影云电脑支持的地域列表",
       "location": "query",
       "name": "region_id",
@@ -34,7 +34,7 @@
     },
     {
       "example": "20",
-      "help_en": "The number of entries per page.\n\nValid values: 1 to 100.\nDefault value: 20",
+      "help_en": "The maximum number of entries per page for a paged query.\n\nMaximum value: 100\nDefault value: 20",
       "help_zh": "分页查询时，每页最大行数。\n\n最大值：100\n默认值：20",
       "location": "query",
       "maximum": "500",
@@ -49,7 +49,7 @@
     },
     {
       "example": "caeba0bbb2be03f84eb48b699f0a4883",
-      "help_en": "The pagination token that is used in the next request to retrieve a new page of results. You do not need to specify this parameter for the first request. You must specify the token that is obtained from the previous query as the value of `NextToken`",
+      "help_en": "The pagination token. Set the value to the `NextToken` value returned from the previous call to this operation. You do not need to specify this parameter for the first call",
       "help_zh": "查询凭证（Token）。取值为上一次调用该接口返回的`NextToken`参数值，初次调用接口时无需设置该参数",
       "location": "query",
       "name": "next_token",
@@ -63,7 +63,7 @@
     {
       "doc_required": true,
       "example": "aot-c4khwrp9ocml4****",
-      "help_en": "The ID of the image update task. You can call the https://help.aliyun.com/document_detail/437001.html operation to obtain the value of this parameter",
+      "help_en": "The information about the image upgrade task. You can call the https://help.aliyun.com/document_detail/437001.html operation to obtain this parameter",
       "help_zh": "镜像升级任务的信息。可调用https://help.aliyun.com/document_detail/437001.html获取该参数",
       "location": "query",
       "name": "task_uid",
@@ -89,7 +89,7 @@
     },
     {
       "example": "cn-shanghai+dir-428216****",
-      "help_en": "The ID of the office network. You can call the https://help.aliyun.com/document_detail/216071.html operation to obtain the value of this parameter",
+      "help_en": "The ID of the office network. You can call the https://help.aliyun.com/document_detail/216071.html operation to obtain this parameter",
       "help_zh": "办公网络ID。可调用https://help.aliyun.com/document_detail/216071.html获取该参数",
       "location": "query",
       "name": "office_site_id",
@@ -120,27 +120,28 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response parameters",
+        "description_en": "The returned information",
         "description_zh": "返回信息集合",
         "properties": {
           "Code": {
             "backendName": "code",
-            "description_en": "The response code",
+            "description_en": "The status code",
             "description_zh": "状态码",
             "example": "200",
             "type": "string"
           },
           "FotaPendingDesktops": {
             "backendName": "data",
-            "description_en": "The cloud computers whose images can be and are pending to be updated to the version specified in `TaskUid`",
+            "description_en": "The list of cloud computers that can be upgraded to the image version corresponding to `TaskUid` but have not been upgraded",
             "description_zh": "可升级到`TaskUid`对应版本的镜像但尚未升级的云电脑列表",
             "itemName": "FotaPendingDesktop",
             "items": {
+              "description_en": "The cloud computer that can be upgraded to the image version corresponding to `TaskUid` but has not been upgraded",
               "description_zh": "可升级到`TaskUid`对应版本的镜像但尚未升级的云电脑",
               "properties": {
                 "CurrentAppVersion": {
                   "backendName": "currentAppVersion",
-                  "description_en": "The current version of the image used by the cloud computer",
+                  "description_en": "The current image version of the cloud computer",
                   "description_zh": "云电脑当前的镜像版本",
                   "example": "0.0.1-D-20220513.143129",
                   "nullToEmpty": false,
@@ -183,15 +184,16 @@
                 },
                 "Sessions": {
                   "backendName": "sessions",
-                  "description_en": "The connected sessions",
+                  "description_en": "The list of connected sessions",
                   "description_zh": "连接的会话列表",
                   "itemName": "Session",
                   "items": {
+                    "description_en": "The connected session",
                     "description_zh": "连接的会话",
                     "properties": {
                       "EndUserId": {
                         "backendName": "endUserId",
-                        "description_en": "The ID of the end user that connects to the cloud computer",
+                        "description_en": "The ID of the connected user",
                         "description_zh": "连接的用户ID",
                         "example": "alice",
                         "type": "string",
@@ -206,7 +208,7 @@
                 },
                 "Status": {
                   "backendName": "status",
-                  "description_en": "The status of the cloud computer.\n\nValid values:\n\n0: The cloud computer is being created.\n1: The cloud computer is being started.\n2: The cloud computer is running.\n3: The cloud computer is being stopped.\n5: The cloud computer is stopped.\n6: The cloud computer expires.\n7: The cloud computer is deleted.\n9: Failed to create the cloud computer",
+                  "description_en": "The status of the cloud computer",
                   "description_zh": "云电脑的状态",
                   "example": "2",
                   "format": "int64",
@@ -221,14 +223,14 @@
           },
           "Message": {
             "backendName": "message",
-            "description_en": "The returned message",
+            "description_en": "The message",
             "description_zh": "信息",
             "example": "Succeeded",
             "type": "string"
           },
           "NextToken": {
             "backendName": "nextToken",
-            "description_en": "A pagination token. It can be used in the next request to retrieve a new page of results. If NextToken is empty, no next page exists",
+            "description_en": "The pagination token for the next query. If NextToken is empty, no more results are available",
             "description_zh": "下一个查询开始的Token，NextToken为空表示没有下一个",
             "example": "caeba0bbb2be03f84eb48b699f0a4883",
             "type": "string"
