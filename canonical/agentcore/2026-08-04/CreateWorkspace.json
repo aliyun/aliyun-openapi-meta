@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun agentcore POST /workspaces --region cn-hangzhou --clientToken 'workspace-create-20260805-001' --header \"Content-Type=application/x-www-form-urlencoded\" --body body={networkConfiguration={publicEgressEnabled=true,vpc={vSwitchIds=[vsw-bp1234567890],vpcId=vpc-bp1234567890,enabled=true},publicIngressEnabled=true},name=production-agents,storageType=PRIVATE} --version 2026-08-04 --force",
+  "camel_example": "aliyun agentcore POST /workspaces --region cn-hangzhou --clientToken 'workspace-create-20260805-001' --header \"Content-Type=application/x-www-form-urlencoded\" --body 'body={networkConfiguration={publicEgressEnabled=true, vpc={vSwitchIds=[vsw-bp1234567890], vpcId=vpc-bp1234567890, enabled=true}, publicIngressEnabled=true}, cmsWorkspace=my-cms-workspace, name=production-agents, agentSpace=my-agent-space, storageType=PRIVATE}' --version 2026-08-04 --force",
   "cmd_full_name": "agentcore create-workspace",
   "cmd_name": "create-workspace",
   "deprecated": false,
   "description_en": "Creates an AgentCore workspace control plane record. The server completes the state transition from Initializing to Initialized within the same transaction",
   "description_zh": "创建 AgentCore 工作空间控制面记录。服务端在同一事务内完成 Initializing 到 Initialized 的状态转换",
-  "kebab_example": "aliyun agentcore create-workspace --biz-body '{\"networkConfiguration\":{\"publicEgressEnabled\":true,\"vpc\":{\"vSwitchIds\":[\"vsw-bp1234567890\"],\"vpcId\":\"vpc-bp1234567890\",\"enabled\":true},\"publicIngressEnabled\":true},\"name\":\"production-agents\",\"storageType\":\"PRIVATE\"}' --client-token workspace-create-20260805-001 --region cn-hangzhou",
+  "kebab_example": "aliyun agentcore create-workspace --biz-body '{\"networkConfiguration\":{\"publicEgressEnabled\":true,\"vpc\":{\"vSwitchIds\":[\"vsw-bp1234567890\"],\"vpcId\":\"vpc-bp1234567890\",\"enabled\":true},\"publicIngressEnabled\":true},\"cmsWorkspace\":\"my-cms-workspace\",\"name\":\"production-agents\",\"agentSpace\":\"my-agent-space\",\"storageType\":\"PRIVATE\"}' --client-token workspace-create-20260805-001 --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "CreateWorkspace",
@@ -25,6 +25,30 @@
     {
       "fields": [
         {
+          "example": "my-agent-space",
+          "help_en": "If specified, the workspace is directly bound to this AgentSpace without creating a new one. The associated CloudMonitor (CMS) workspace is determined by the server's reverse lookup result, and CmsWorkspace validation is skipped. When the workspace is deleted, only the binding is removed, and the AgentSpace is not deleted. The value must match the current account and region, and the associated CMS workspace must be found through reverse lookup. Otherwise, InvalidParameter is returned",
+          "help_zh": "传入后工作空间将直接绑定该 AgentSpace（不再新建），其所属的 CMS 工作空间以服务端反查结果为准，此时无需校验 CmsWorkspace。工作空间删除时仅解除绑定，不会删除该 AgentSpace。必须与当前账号和地域匹配，且反查得到所属 CMS 工作空间，否则返回 InvalidParameter",
+          "name": "agent_space",
+          "options": [
+            "--agent-space"
+          ],
+          "raw_name": "agentSpace",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "my-cms-workspace",
+          "help_en": "If specified, the workspace is bound to this CloudMonitor (CMS) workspace without creating a new one. When the workspace is deleted, only the binding is removed, and the CMS workspace is not deleted. The value must match the current account and region. Otherwise, InvalidParameter is returned",
+          "help_zh": "传入后工作空间将绑定该 CMS 工作空间，平台不再新建；工作空间删除时仅解除绑定，不会删除该 CMS 工作空间。必须与当前账号和地域匹配，否则返回 InvalidParameter",
+          "name": "cms_workspace",
+          "options": [
+            "--cms-workspace"
+          ],
+          "raw_name": "cmsWorkspace",
+          "required": false,
+          "type": "string"
+        },
+        {
           "example": "production-agents",
           "help_en": "The name of the workspace",
           "help_zh": "工作空间名称",
@@ -40,7 +64,7 @@
           "fields": [
             {
               "example": "true",
-              "help_en": "Specifies whether to allow public outbound access from the platform. If this parameter is not specified, the default value is true. This setting only controls whether the latest versions of managed and custom agents use the public outbound endpoint of the platform. It does not affect fixed historical versions, model or MCP proxy endpoints, or the public outbound endpoint of the user VPC",
+              "help_en": "Specifies whether to allow public outbound access from the platform. If not specified, the default value is true. This setting only controls whether the latest versions of managed and custom agents use the public outbound endpoint of the platform. It does not affect fixed historical versions, model or Model Context Protocol (MCP) proxy outbound endpoints, or the public outbound endpoint of the user VPC",
               "help_zh": "未传时默认开启。仅控制托管及自定义 Agent 最新版本使用平台公网出口；不控制固定历史版本、模型/MCP 代理出口和用户 VPC 自身公网出口",
               "name": "public_egress_enabled",
               "options": [
@@ -52,7 +76,7 @@
             },
             {
               "example": "true",
-              "help_en": "Specifies whether to allow public inbound access. If this parameter is not specified, the default value is true. If disabled, the public inbound endpoints of all agent endpoints in the workspace are closed, and the original public inbound endpoints are restored when re-enabled. INNER_DIRECT and user VPC endpoints are not affected. Collaboration and Element Web endpoints are not controlled by this parameter",
+              "help_en": "Specifies whether to allow public inbound access. If not specified, the default value is true. If disabled, the public inbound endpoints of all agent endpoints in the workspace are closed. If re-enabled, the original public inbound endpoints are restored. INNER_DIRECT and user VPC inbound endpoints are not affected. Collaboration and Element Web inbound endpoints are not controlled by this setting",
               "help_zh": "未传时默认开启。关闭后工作空间内所有 Agent Endpoint 的公网入口关闭，重新开启后恢复原公网入口；INNER_DIRECT 和用户 VPC 入口不受影响，协作及 Element Web 入口不在控制范围内",
               "name": "public_ingress_enabled",
               "options": [
@@ -80,7 +104,7 @@
                   "element": {
                     "type": "string"
                   },
-                  "help_en": "The list of vSwitch IDs. When the VPC network is enabled, the list must contain at least one vSwitch, and all vSwitches must belong to the VPC specified by VpcId",
+                  "help_en": "The list of vSwitch IDs. If the VPC network is enabled, at least one vSwitch must be included, and all vSwitches must belong to the VPC specified by VpcId",
                   "help_zh": "交换机 ID 列表，开启 VPC 网络时至少包含一个交换机，且所有交换机必须属于 VpcId 指定的 VPC",
                   "name": "vswitchids",
                   "options": [
@@ -92,7 +116,7 @@
                 },
                 {
                   "example": "vpc-bp1234567890",
-                  "help_en": "The user VPC ID",
+                  "help_en": "The ID of the user VPC",
                   "help_zh": "用户专有网络 ID",
                   "name": "vpc_id",
                   "options": [
@@ -103,7 +127,7 @@
                   "type": "string"
                 }
               ],
-              "help_en": "The user VPC network configuration",
+              "help_en": "The VPC network configuration of the user",
               "help_zh": "用户 VPC 网络配置",
               "name": "vpc",
               "options": [
@@ -130,7 +154,7 @@
             "PRIVATE"
           ],
           "example": "PRIVATE",
-          "help_en": "The workspace storage type. PLATFORM indicates platform-managed storage, and PRIVATE indicates user private OSS storage",
+          "help_en": "The storage type of the workspace. PLATFORM indicates platform-managed storage. PRIVATE indicates user-owned private Object Storage Service (OSS) storage",
           "help_zh": "工作空间存储类型。PLATFORM 表示平台托管存储，PRIVATE 表示用户私有 OSS 存储",
           "name": "storage_type",
           "options": [
@@ -141,7 +165,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The workspace creation request body",
+      "help_en": "The request body for creating a workspace",
       "help_zh": "创建工作空间请求体",
       "location": "formData",
       "name": "body",
@@ -175,7 +199,7 @@
       "description_en": "创建请求受理成功",
       "description_zh": "创建请求受理成功",
       "schema": {
-        "description_en": "The create workspace response",
+        "description_en": "The response for creating a workspace",
         "description_zh": "创建工作空间响应",
         "properties": {
           "code": {
@@ -194,7 +218,7 @@
             "properties": {
               "aiRegistryNamespaceId": {
                 "backendName": "aiRegistryNamespaceId",
-                "description_en": "The AI Registry namespace ID. It is returned after related resources are bound and may be empty during initialization",
+                "description_en": "The AI Registry namespace ID. This value is returned after related resources are bound and may be empty during initialization",
                 "description_zh": "AI Registry 命名空间 ID。相关资源绑定完成后返回，初始化期间可能为空",
                 "example": "namespace-0123456789abcdef",
                 "nullable": true,
@@ -227,17 +251,17 @@
               },
               "cmsWorkspaceId": {
                 "backendName": "cmsWorkspaceId",
-                "description_en": "The CloudMonitor workspace ID. It is returned after related resources are bound and may be empty during initialization",
+                "description_en": "The CloudMonitor workspace ID. This value is returned after related resources are bound and may be empty during initialization",
                 "description_zh": "云监控工作空间 ID。相关资源绑定完成后返回，初始化期间可能为空",
                 "example": "cms-ws-0123456789abcdef",
                 "nullable": true,
-                "title_en": "云监控工作空间 ID。相关资源绑定完成后返回，初始化期间可能为空。",
-                "title_zh": "云监控工作空间 ID。相关资源绑定完成后返回，初始化期间可能为空。",
+                "title_en": "云监控工作空间 ID。初始化完成后返回，初始化期间可能为空；绑定用户已有 CMS 工作空间时，返回创建请求中指定的 CMS 工作空间名称。",
+                "title_zh": "云监控工作空间 ID。初始化完成后返回，初始化期间可能为空；绑定用户已有 CMS 工作空间时，返回创建请求中指定的 CMS 工作空间名称。",
                 "type": "string"
               },
               "createTime": {
                 "backendName": "createTime",
-                "description_en": "The time when the workspace was created, in ISO 8601 format",
+                "description_en": "The time when the workspace was created. The time follows the ISO 8601 standard",
                 "description_zh": "工作空间创建时间，使用 ISO-8601 格式",
                 "example": "2026-08-28T10:00:00+08:00",
                 "required": true,
@@ -261,7 +285,7 @@
                 "properties": {
                   "publicEgressEnabled": {
                     "backendName": "publicEgressEnabled",
-                    "description_en": "Returns the target configuration value. Updating indicates that the change is still in progress, and UpdateFailed indicates that the current change failed. This parameter only controls whether the latest versions of managed and custom agents use the public network egress of the platform. It does not control fixed historical versions, model or MCP proxy egress, or the public network egress of the user VPC",
+                    "description_en": "Returns the target configuration value. Updating indicates that the change is still in progress, and UpdateFailed indicates that the current change failed. This parameter only controls whether the latest versions of managed and custom agents use the public egress of the platform. It does not control fixed historical versions, model or MCP proxy egress, or the public egress of the user VPC",
                     "description_zh": "返回配置目标值；Updating 表示变更仍在执行，UpdateFailed 表示本轮变更失败。仅控制托管及自定义 Agent 最新版本使用平台公网出口；不控制固定历史版本、模型/MCP 代理出口和用户 VPC 自身公网出口",
                     "example": "true",
                     "title_en": "是否允许平台公网出访问",
@@ -270,7 +294,7 @@
                   },
                   "publicIngressEnabled": {
                     "backendName": "publicIngressEnabled",
-                    "description_en": "Returns the target configuration value. Updating indicates that the change is in progress, and UpdateFailed indicates that the change failed. When disabled, the public network ingress for all agent endpoints in the workspace is closed. The original public network ingress is restored when re-enabled. INNER_DIRECT and user VPC ingress are not affected. Collaboration and Element Web ingress are not controlled by this parameter",
+                    "description_en": "Returns the target configuration value. Updating indicates that the change is in progress, and UpdateFailed indicates that the change failed. If disabled, the public ingress for all agent endpoints in the workspace is closed, and the original public ingress is restored when re-enabled. INNER_DIRECT and user VPC ingress are not affected. Collaboration and Element Web ingress are not controlled by this parameter",
                     "description_zh": "返回配置目标值；Updating 表示变更中，UpdateFailed 表示变更失败。关闭后工作空间内所有 Agent Endpoint 的公网入口关闭，重新开启后恢复原公网入口；INNER_DIRECT 和用户 VPC 入口不受影响，协作及 Element Web 入口不在控制范围内",
                     "example": "true",
                     "title_en": "是否允许公网入访问",
@@ -279,7 +303,7 @@
                   },
                   "vpc": {
                     "backendName": "vpc",
-                    "description_en": "The user VPC network configuration",
+                    "description_en": "The VPC network configuration of the user",
                     "description_zh": "用户 VPC 网络配置",
                     "properties": {
                       "enabled": {
@@ -308,7 +332,7 @@
                       },
                       "vpcId": {
                         "backendName": "vpcId",
-                        "description_en": "The user VPC ID",
+                        "description_en": "The ID of the user VPC",
                         "description_zh": "用户专有网络 ID",
                         "example": "vpc-bp1234567890",
                         "title_en": "用户专有网络 ID",
@@ -336,7 +360,7 @@
               },
               "resourceGroupId": {
                 "backendName": "resourceGroupId",
-                "description_en": "The ID of the resource group to which the workspace belongs. It may be empty if no resource group is specified",
+                "description_en": "The ID of the resource group to which the workspace belongs. This value may be empty if no resource group is specified",
                 "description_zh": "工作空间所属资源组 ID，未指定资源组时可能为空",
                 "example": "rg-acfm1234567890",
                 "nullable": true,
@@ -363,7 +387,7 @@
               },
               "statusReason": {
                 "backendName": "statusReason",
-                "description_en": "The supplementary reason for the current status of the workspace. It is used to display the specific reason when initialization fails or when waiting for authorization. It may be empty under normal circumstances",
+                "description_en": "The supplementary reason for the current status of the workspace. This value is used to display the specific reason when initialization fails or authorization is pending, and may be empty under normal circumstances",
                 "description_zh": "工作空间当前状态的补充原因；初始化失败或等待授权时用于展示具体原因，正常情况下可能为空",
                 "example": "Waiting for OSS RAM authorization",
                 "nullable": true,
@@ -421,7 +445,7 @@
               },
               "tenantId": {
                 "backendName": "tenantId",
-                "description_en": "The ID of the tenant",
+                "description_en": "The ID of the tenant to which the workspace belongs",
                 "description_zh": "所属租户 ID",
                 "example": "tenant-123456",
                 "title_en": "所属租户 ID",
@@ -430,7 +454,7 @@
               },
               "workspaceId": {
                 "backendName": "workspaceId",
-                "description_en": "The workspace ID",
+                "description_en": "The ID of the workspace",
                 "description_zh": "工作空间 ID",
                 "example": "ws-123456",
                 "title_en": "工作空间 ID",

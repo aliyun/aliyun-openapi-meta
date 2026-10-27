@@ -70,7 +70,13 @@
       "cmd_name": "create-identity-provider",
       "deprecated": false,
       "description_en": "Binds an external identity provider to a specified workspace for single sign-on and organization member synchronization of workspace users. A maximum of one external identity provider can be bound to each workspace. The binding is an asynchronous operation. After the API returns, you can query the status by calling GetIdentityProvider to track the progress",
-      "description_zh": "为指定工作空间绑定外部身份提供商，用于工作空间用户的单点登录和组织成员同步。每个工作空间最多绑定一个外部身份提供商。绑定为异步操作，接口返回后可通过 GetIdentityProvider 查询 status 跟踪进展"
+      "description_zh": "为工作空间绑定钉钉、飞书或 CustomSSO 身份源。CustomSSO 仅异步初始化共享用户池，SAML 登录与 SCIM 同步后续分别配置"
+    },
+    "CreateIdentityProviderSCIMCredential": {
+      "cmd_name": "create-identity-provider-scim-credential",
+      "deprecated": false,
+      "description_en": "Issues a SCIM credential explicitly and returns the plaintext token only for the current call. A maximum of two credentials are allowed in the same pool. This operation does not automatically revoke old credentials or enable AC user synchronization",
+      "description_zh": "显式签发一枚 SCIM 凭据并仅当次返回 Token 明文。同池最多两枚，不自动撤销旧凭据或开启 AC 用户同步"
     },
     "CreateIdentityProviderSyncJob": {
       "cmd_name": "create-identity-provider-sync-job",
@@ -183,8 +189,14 @@
     "DeleteIdentityProvider": {
       "cmd_name": "delete-identity-provider",
       "deprecated": false,
-      "description_en": "Disconnects the external identity provider from a specified workspace and cleans up users synchronized by the identity provider. The disconnection is an asynchronous operation. After the API returns a response, you can call GetIdentityProvider to query the status and track the progress",
-      "description_zh": "解绑指定工作空间的外部身份提供商，并清理由该身份提供商同步产生的用户。解绑为异步操作，接口返回后可通过 GetIdentityProvider 查询 status 跟踪进展"
+      "description_en": "Disconnects the identity source integration of a workspace. For CustomSSO, this operation clears the shared user pool and related SAML and SCIM resources. To disable only logon or synchronization, use the corresponding switch API operations",
+      "description_zh": "整体断开工作空间的身份源集成。CustomSSO 会清理共享用户池及相关 SAML、SCIM 资源；只关闭登录或同步时应使用对应开关接口"
+    },
+    "DeleteIdentityProviderSCIMCredential": {
+      "cmd_name": "delete-identity-provider-scim-credential",
+      "deprecated": false,
+      "description_en": "删除 SCIM 凭据",
+      "description_zh": "撤销指定 SCIM 凭据。不会自动创建新 Token、修改 AC 同步开关或关闭 SAML 登录"
     },
     "DeleteImageCache": {
       "cmd_name": "delete-image-cache",
@@ -363,8 +375,20 @@
     "GetIdentityProvider": {
       "cmd_name": "get-identity-provider",
       "deprecated": false,
-      "description_en": "Queries the binding details of the external identity provider for a specified workspace, including the binding status, application configurations, and the callback URL that must be configured on the identity provider side. Application secret configurations are not returned",
-      "description_zh": "查询指定工作空间的外部身份提供商绑定详情，包括绑定状态、应用配置以及需要在身份提供商侧配置的回调地址。应用密钥类配置不会返回"
+      "description_en": "Queries the binding and expected configuration of a specified identity provider. When CustomSSO is configured with SAML, this operation reads back the actual upstream SSO configuration. The SCIM status is queried through a separate API operation",
+      "description_zh": "查询指定身份源的绑定和期望配置。CustomSSO 已配置 SAML 时回读上游实际 SSO 配置，SCIM 状态通过独立接口查询"
+    },
+    "GetIdentityProviderSCIM": {
+      "cmd_name": "get-identity-provider-scim",
+      "deprecated": false,
+      "description_en": "Queries the actual SCIM receiving configuration, the expected AC synchronization switch, and the status of the most recent independent SCIM task. Prior SAML configuration is not required",
+      "description_zh": "查询 SCIM 实际接收配置、AC 同步期望开关和最近一次独立 SCIM 任务状态。无需先配置 SAML"
+    },
+    "GetIdentityProviderServiceProvider": {
+      "cmd_name": "get-identity-provider-service-provider",
+      "deprecated": false,
+      "description_en": "查询 SAML 服务提供商信息",
+      "description_zh": "查询 CustomSSO 的 SAML SP 信息，包括 Entity ID、ACS URL 和 SP Metadata XML，供用户配置外部 IdP"
     },
     "GetIdentityProviderSyncJob": {
       "cmd_name": "get-identity-provider-sync-job",
@@ -570,11 +594,17 @@
       "description_en": "Queries the departments of an identity provider by page",
       "description_zh": "分页查询身份源部门"
     },
+    "ListIdentityProviderSCIMCredentials": {
+      "cmd_name": "list-identity-provider-scim-credentials",
+      "deprecated": false,
+      "description_en": "Queries the complete summary list of up to two SCIM credentials in the shared user pool, without returning plaintext tokens or supporting pagination",
+      "description_zh": "查询共享用户池中最多两枚 SCIM 凭据的完整摘要列表，不返回 Token 明文，不提供分页"
+    },
     "ListIdentityProviders": {
       "cmd_name": "list-identity-providers",
       "deprecated": false,
-      "description_en": "Queries the external identity providers bound to a specified workspace. Each workspace can be bound to at most one external identity provider, so the response returns at most one record. Application secret configurations are not returned",
-      "description_zh": "查询指定工作空间已绑定的外部身份提供商。每个工作空间最多绑定一个外部身份提供商，因此响应最多返回一条记录。应用密钥类配置不会返回"
+      "description_en": "Queries the summary of existing identity provider bindings for a workspace, including CustomSSO. Returns local binding information without querying the actual upstream SAML or SCIM configurations",
+      "description_zh": "查询工作空间已有的身份源绑定摘要，包括 CustomSSO。返回本地绑定信息，不回查上游 SAML 或 SCIM 实际配置"
     },
     "ListImageCaches": {
       "cmd_name": "list-image-caches",
@@ -720,6 +750,12 @@
       "description_en": "Parses and checks one or more Skill ZIP packages uploaded to OSS, and returns the name, version, and conflict check results",
       "description_zh": "解析并检查已上传到 OSS 的一个或多个 Skill ZIP 包，返回名称、版本和冲突检查结果"
     },
+    "PrepareIdentityProviderSCIM": {
+      "cmd_name": "prepare-identity-provider-scim",
+      "deprecated": false,
+      "description_en": "Prepares the SCIM receiving configuration, and returns the provisioning URL and credential summary. Issues a token if no available credentials exist and returns the plaintext only in the current response. Does not automatically enable user synchronization",
+      "description_zh": "准备 SCIM 接收配置，返回预配 URL 和凭据摘要；没有可用凭据时签发 Token，仅本次返回明文，不自动开启 AC 用户同步"
+    },
     "PublishSkillVersion": {
       "cmd_name": "publish-skill-version",
       "deprecated": false,
@@ -809,6 +845,12 @@
       "deprecated": false,
       "description_en": "Modifies the logon configuration of a bound identity provider in a specified workspace. DingTalk and Lark support logon switches, incremental synchronization switches, application configurations, and synchronization scopes. CustomSSO supports SAML configurations and logon switches. Actual updates take effect asynchronously. Call GetIdentityProvider to query the status",
       "description_zh": "修改指定工作空间已绑定身份源的登录配置。DingTalk、Feishu 支持登录开关、增量同步开关、应用配置和同步范围；CustomSSO 支持 SAML 配置和登录开关。实际更新异步生效，请通过 GetIdentityProvider 查询状态"
+    },
+    "UpdateIdentityProviderSCIM": {
+      "cmd_name": "update-identity-provider-scim",
+      "deprecated": false,
+      "description_en": "Enables or disables SCIM user synchronization independently. When enabled, the initial full import is executed asynchronously. You can query the result by calling GetIdentityProviderSCIM. The SAML logon configuration is retained",
+      "description_zh": "独立启用或关闭 SCIM 用户同步。开启时异步执行首次全量导入，结果通过 GetIdentityProviderSCIM 查询，保留 SAML 登录配置"
     },
     "UpdateManagedAgent": {
       "cmd_name": "update-managed-agent",

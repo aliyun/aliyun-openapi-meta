@@ -3,8 +3,8 @@
   "cmd_full_name": "agentcore list-identity-providers",
   "cmd_name": "list-identity-providers",
   "deprecated": false,
-  "description_en": "Queries the external identity providers bound to a specified workspace. Each workspace can be bound to at most one external identity provider, so the response returns at most one record. Application secret configurations are not returned",
-  "description_zh": "查询指定工作空间已绑定的外部身份提供商。每个工作空间最多绑定一个外部身份提供商，因此响应最多返回一条记录。应用密钥类配置不会返回",
+  "description_en": "Queries the summary of existing identity provider bindings for a workspace, including CustomSSO. Returns local binding information without querying the actual upstream SAML or SCIM configurations",
+  "description_zh": "查询工作空间已有的身份源绑定摘要，包括 CustomSSO。返回本地绑定信息，不回查上游 SAML 或 SCIM 实际配置",
   "kebab_example": "aliyun agentcore list-identity-providers --workspace-id ws-123456 --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
@@ -35,7 +35,7 @@
     },
     {
       "example": "10",
-      "help_en": "The maximum number of records to return on a single page. Valid values: 1 to 100. If you do not specify this parameter, 10 records are returned by default",
+      "help_en": "The maximum number of records to return per page. Valid values: 1 to 100. Default value: 10",
       "help_zh": "单页返回的最大记录数，取值范围为 1~100。不指定该参数时默认返回 10 条",
       "location": "query",
       "name": "max_results",
@@ -48,7 +48,7 @@
     },
     {
       "example": "aWRlbnRpdHktcHJvdmlkZXItb2Zmc2V0OjEw",
-      "help_en": "The cursor for querying the next page. Do not specify this parameter in the first call. In subsequent calls, specify the nextToken value returned in the previous call",
+      "help_en": "The cursor for querying the next page. Do not specify this parameter for the first call. For subsequent calls, specify the nextToken value returned from the previous call",
       "help_zh": "查询下一页的游标。首次调用不指定该参数，后续调用指定上一次返回的 nextToken",
       "location": "query",
       "name": "next_token",
@@ -94,7 +94,7 @@
               "properties": {
                 "configuration": {
                   "backendName": "configuration",
-                  "description_en": "The actual SAML configuration is read back on demand only in GetIdentityProvider. SCIM queries and preparations return the actual receiving status and URL",
+                  "description_en": "The actual SAML configuration is retrieved on demand only through GetIdentityProvider. SCIM queries and provisioning return the actual receiving status and URL",
                   "description_zh": "SAML 实际配置只在 GetIdentityProvider 按需回读；SCIM 查询和准备返回实际接收状态及 URL",
                   "properties": {
                     "bindingType": {
@@ -108,7 +108,7 @@
                     },
                     "entityId": {
                       "backendName": "entityId",
-                      "description_en": "Required for manual entry. Must be non-empty and no more than 2,048 characters in length. Existing configurations cannot be changed. This is different from the entity ID of the service provider returned in queries",
+                      "description_en": "Required for manual entry. Must be non-empty and up to 2048 characters. Existing configurations cannot be changed. This is different from the local entity ID returned by SP queries",
                       "description_zh": "手填时必填，非空且不超过 2048 字符；已有配置不支持更换。与 SP 查询的我方 Entity ID 不同",
                       "example": "https://idp.example.com/entity",
                       "title_en": "IdP 实体标识",
@@ -126,7 +126,7 @@
                     },
                     "ssoStatus": {
                       "backendName": "ssoStatus",
-                      "description_en": "The actual switch value is Enabled or Disabled. This value differs from the expected loginEnabled value saved in the access configuration",
+                      "description_en": "The actual switch value is Enabled or Disabled. This is not equivalent to the expected loginEnabled value saved in AC",
                       "description_zh": "实际开关值 Enabled 或 Disabled，不等同 AC 保存的 loginEnabled 期望值",
                       "example": "Enabled",
                       "title_en": "AgentIdentity 实际 SSO 登录状态",
@@ -149,7 +149,7 @@
                 },
                 "eventSubscriptionCallbackUrl": {
                   "backendName": "eventSubscriptionCallbackUrl",
-                  "description_en": "The event subscription callback URL. You must configure this URL in the application of the external identity provider to receive organization change events. An empty string is returned if the user pool is not activated",
+                  "description_en": "The event subscription callback URL. Configure this URL in the external identity provider application to receive organization change events. Returns an empty string if the user pool is not activated",
                   "description_zh": "事件订阅回调地址。需要将该地址配置到外部身份提供商的应用中用于接收组织变更事件，用户池尚未开通时返回空字符串",
                   "example": "http://auth.cn-hangzhou.agentteams.aliyuncs.com/roa/dingtalk/event/up-123456",
                   "title_en": "厂商事件回调地址",
@@ -158,7 +158,7 @@
                 },
                 "identityProviderType": {
                   "backendName": "identityProviderType",
-                  "description_en": "The type of the external identity provider. Valid values: DingTalk and Feishu",
+                  "description_en": "The type of the external identity provider. Valid values: DingTalk, Feishu",
                   "description_zh": "外部身份提供商类型。可选值：DingTalk、Feishu",
                   "enum": [
                     "DingTalk",
@@ -172,7 +172,7 @@
                 },
                 "loginCallbackUrl": {
                   "backendName": "loginCallbackUrl",
-                  "description_en": "The logon callback URL. You must configure this URL in the application of the external identity provider. An empty string is returned if the user pool is not activated",
+                  "description_en": "The logon callback URL. Configure this URL in the external identity provider application. Returns an empty string if the user pool is not activated",
                   "description_zh": "登录回调地址。需要将该地址配置到外部身份提供商的应用中，用户池尚未开通时返回空字符串",
                   "example": "https://signin-cn-hangzhou.aliyunagentid.com/up-123456/dingtalk/callback",
                   "title_en": "厂商登录回调地址",
@@ -212,7 +212,7 @@
                     },
                     "binding": {
                       "backendName": "binding",
-                      "description_en": "The SAML binding URI in the historical metadata snapshot. To update CustomSSO, use saml.bindingType",
+                      "description_en": "The SAML binding URI in the historical metadata snapshot. Use saml.bindingType for CustomSSO updates",
                       "description_zh": "历史 metadata 快照中的 SAML Binding URI；CustomSSO 更新请使用 saml.bindingType",
                       "example": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
                       "title_en": "SAML 绑定协议",
@@ -221,7 +221,7 @@
                     },
                     "certificates": {
                       "backendName": "certificates",
-                      "description_en": "The certificate string in the historical metadata snapshot. To edit the configuration, use saml.x509Certificates and do not submit the old metadata",
+                      "description_en": "The certificate string in the historical metadata snapshot. Use saml.x509Certificates to edit the configuration. Do not submit the old metadata",
                       "description_zh": "历史 metadata 快照中的证书串；编辑配置使用 saml.x509Certificates，不提交旧 metadata",
                       "example": "MIICwDCCAaigAwIBAgIULlsHLfcADyBax5ZtFlj+YGzZVo0wDQYJKoZIhvcNAQELBQAwGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMB4XDTI2MDEwMTAwMDAwMFoXDTM2MDEwMTAwMDAwMFowGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAto0DN0W1CrPRzK9QZ9A1aApb4Lg8oGlp2c0PbN3LokXe/HzwxCMXx65IDnrenttxzTwp9BgUnUN/3LRzWaOL2UQ/vNYNW9LFLkI1T64UPyI7eyi28YlALhb41xkYhEp7rz+MjqifBzVZeTDUxBYtbK2hAhbYEL1+udwsXEx0KB7xuQ/rbI2OKeqAEAD1tfYg7T/SM2wrXNYhx+o1HtchM4/0I8Okkk27JQ4y3ofzC5sTySmFF1Y7XcpSd+5WSyazedhkAieo8AB01DkJV6nnKfH8sH0EBsnH3FP8FhqCLrIeEkjX9B9OcIRLGjiZqx4u/ryW1QhMldnv+pFfNjWy/wIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQC1hSQG8AwtGOoX2gKBK4Hi5XBrBreij8WlLTUWld0FINQ0Rg84f/27CjDthywj6wgxCesCuOVFhpxQa1UacsP/Gcai1aKABtLWImcaWECRYK5gDkwhTMFKM9mXA26hH1l4v/UR2iTpEK9H78egC4W7bs2LDTpPryuaNKTqP2O0tMbNkAHB8yecz5LxHXnxadL9Egow25g2RClvpifWqDnuS9TSbKkIWLcPLjocJj2K9ILpBwhXiXi/BiSgyYTLiYvVvih9vX4s+hKGZNJc0j92YLiOHDF0XH1oxgdVjfTmRiedeb2VZJZElptD92z0AqFR7z2d5B+OqpPA2gjuMLV5",
                       "title_en": "IdP 公共签名证书",
@@ -239,7 +239,7 @@
                     },
                     "entityId": {
                       "backendName": "entityId",
-                      "description_en": "Required for manual entry. Must be non-empty and no more than 2,048 characters in length. Existing configurations cannot be changed. This is different from the entity ID of the service provider returned in queries",
+                      "description_en": "Required for manual entry. Must be non-empty and up to 2048 characters. Existing configurations cannot be changed. This is different from the local entity ID returned by SP queries",
                       "description_zh": "手填时必填，非空且不超过 2048 字符；已有配置不支持更换。与 SP 查询的我方 Entity ID 不同",
                       "example": "https://idp.example.com/entity",
                       "title_en": "IdP 实体标识",
@@ -262,7 +262,7 @@
                 },
                 "protocol": {
                   "backendName": "protocol",
-                  "description_en": "Only SAML is currently supported. This field may not be returned if no valid configuration is saved. OIDC placeholder initialization is not supported",
+                  "description_en": "Only SAML is currently supported. May not be returned if no valid configuration is saved. OIDC placeholder initialization is not supported",
                   "description_zh": "当前仅支持 SAML；未保存有效配置时可不返回。不支持用 OIDC 占位初始化",
                   "example": "SAML",
                   "title_en": "登录协议",
@@ -271,7 +271,7 @@
                 },
                 "saml": {
                   "backendName": "saml",
-                  "description_en": "The input supports either XML or complete manual entry. Queries return the standardized configuration and do not echo the original XML. This field can be omitted if it is not configured",
+                  "description_en": "Input supports either XML or full manual entry. Queries return the standardized configuration and do not echo the original XML. Can be omitted if not configured",
                   "description_zh": "输入支持 XML 与完整手填二选一。查询返回标准化配置，不回显原始 XML；未配置时可省略",
                   "properties": {
                     "bindingType": {
@@ -285,7 +285,7 @@
                     },
                     "entityId": {
                       "backendName": "entityId",
-                      "description_en": "Required for manual entry. Must be non-empty and no more than 2,048 characters in length. Existing configurations cannot be changed. This is different from the entity ID of the service provider returned in queries",
+                      "description_en": "Required for manual entry. Must be non-empty and up to 2048 characters. Existing configurations cannot be changed. This is different from the local entity ID returned by SP queries",
                       "description_zh": "手填时必填，非空且不超过 2048 字符；已有配置不支持更换。与 SP 查询的我方 Entity ID 不同",
                       "example": "https://idp.example.com/entity",
                       "title_en": "IdP 实体标识",
@@ -303,8 +303,8 @@
                     },
                     "x509Certificates": {
                       "backendName": "x509Certificates",
-                      "description_en": "A non-empty array is required for manual entry. Use PEM X.509 certificate text. The current validity period is verified. A maximum of 10 certificates are supported",
-                      "description_zh": "手填时必填非空数组，使用 PEM X.509 证书文本；校验当前有效期，最多十张",
+                      "description_en": "Required as a non-empty array for manual entry. Uses PEM X.509 certificate text. Validates the current validity period. A maximum of two certificates are allowed after deduplication",
+                      "description_zh": "手填时必填非空数组，使用 PEM X.509 证书文本；校验当前有效期，去重后最多 2 张",
                       "example": "[\"-----BEGIN CERTIFICATE-----\\\\nMIICwDCCAaigAwIBAgIULlsHLfcADyBax5ZtFlj+YGzZVo0wDQYJKoZIhvcNAQEL\\\\nBQAwGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMB4XDTI2MDEwMTAwMDAwMFoX\\\\nDTM2MDEwMTAwMDAwMFowGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMIIBIjAN\\\\nBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAto0DN0W1CrPRzK9QZ9A1aApb4Lg8\\\\noGlp2c0PbN3LokXe/HzwxCMXx65IDnrenttxzTwp9BgUnUN/3LRzWaOL2UQ/vNYN\\\\nW9LFLkI1T64UPyI7eyi28YlALhb41xkYhEp7rz+MjqifBzVZeTDUxBYtbK2hAhbY\\\\nEL1+udwsXEx0KB7xuQ/rbI2OKeqAEAD1tfYg7T/SM2wrXNYhx+o1HtchM4/0I8Ok\\\\nkk27JQ4y3ofzC5sTySmFF1Y7XcpSd+5WSyazedhkAieo8AB01DkJV6nnKfH8sH0E\\\\nBsnH3FP8FhqCLrIeEkjX9B9OcIRLGjiZqx4u/ryW1QhMldnv+pFfNjWy/wIDAQAB\\\\nMA0GCSqGSIb3DQEBCwUAA4IBAQC1hSQG8AwtGOoX2gKBK4Hi5XBrBreij8WlLTUW\\\\nld0FINQ0Rg84f/27CjDthywj6wgxCesCuOVFhpxQa1UacsP/Gcai1aKABtLWImca\\\\nWECRYK5gDkwhTMFKM9mXA26hH1l4v/UR2iTpEK9H78egC4W7bs2LDTpPryuaNKTq\\\\nP2O0tMbNkAHB8yecz5LxHXnxadL9Egow25g2RClvpifWqDnuS9TSbKkIWLcPLjoc\\\\nJj2K9ILpBwhXiXi/BiSgyYTLiYvVvih9vX4s+hKGZNJc0j92YLiOHDF0XH1oxgdV\\\\njfTmRiedeb2VZJZElptD92z0AqFR7z2d5B+OqpPA2gjuMLV5\\\\n-----END CERTIFICATE-----\"]",
                       "items": {
                         "description_en": "A valid PEM X.509 signing certificate. The example is a public test certificate for idp.example.com. You must replace it with the certificate of the external IdP for actual integration",
@@ -325,9 +325,10 @@
                 },
                 "status": {
                   "backendName": "status",
-                  "description_en": "The binding status. Valid values:\nCONFIGURED: The configuration is accepted and the system is waiting for the user pool to be activated.\nSYNCING: Organization members are being synchronized.\nSYNCED: Organization members are synchronized.\nREADY: The binding is in effect.\nSYNC_FAILED: Organization member synchronization failed.\nUPDATING: The configuration is being updated.\nUPDATE_FAILED: Configuration update failed.\nDISCONNECTING: The binding is being removed.\nDISCONNECT_FAILED: Binding removal failed",
+                  "description_en": "The binding status. Valid values: CONFIGURED (the configuration is accepted and waiting for user pool activation), SYNCING (synchronizing organization members), SYNCED (organization member synchronization is completed), READY (the binding is effective), SYNC_FAILED (organization member synchronization failed), UPDATING (updating the configuration), UPDATE_FAILED (configuration update failed), DISCONNECTING (disconnecting), DISCONNECT_FAILED (disconnection failed)",
                   "description_zh": "绑定状态。可选值：CONFIGURED（配置已受理，等待开通用户池）、SYNCING（正在同步组织成员）、SYNCED（组织成员同步完成）、READY（绑定已生效）、SYNC_FAILED（组织成员同步失败）、UPDATING（正在更新配置）、UPDATE_FAILED（更新配置失败）、DISCONNECTING（正在解绑）、DISCONNECT_FAILED（解绑失败）",
                   "enum": [
+                    "WAITING_CONFIGURATION",
                     "CONFIGURED",
                     "SYNCING",
                     "READY",
@@ -345,7 +346,7 @@
                 },
                 "syncEnabled": {
                   "backendName": "syncEnabled",
-                  "description_en": "Specifies whether to enable organization member synchronization. After this feature is enabled, organization members are synchronized as workspace users by this external identity provider",
+                  "description_en": "Specifies whether to enable organization member synchronization. If enabled, the external identity provider synchronizes organization members as workspace users",
                   "description_zh": "是否开启组织成员同步。开启后由该外部身份提供商同步组织成员为工作空间用户",
                   "title_en": "用户同步期望开关",
                   "title_zh": "用户同步期望开关",
@@ -353,16 +354,16 @@
                 },
                 "syncScope": {
                   "backendName": "syncScope",
-                  "description_en": "Follows the synchronization scope definition by department. If omitted during creation, the default value is AllAuthorized, and the first provider synchronization is determined by syncOnBind. If omitted or set to null during an update, the original value is retained. Updating and saving the scope does not automatically trigger full synchronization",
+                  "description_en": "Follows the department-based synchronization scope definition. If omitted during creation, the default is AllAuthorized. The first vendor synchronization is determined by syncOnBind. If omitted or null during an update, the original value is retained. Updating the saved scope does not automatically trigger full synchronization",
                   "description_zh": "沿用按部门同步范围定义；创建省略默认 AllAuthorized，首次厂商同步由 syncOnBind 决定；更新省略或 null 保留原值，更新保存范围不自动执行全量同步",
                   "properties": {
                     "departmentIds": {
                       "backendName": "departmentIds",
-                      "description_en": "When the mode is SelectedDepartments, at least one non-empty department ID must be included, which should be obtained from ListIdentityProviderDepartments. When the mode is AllAuthorized, pass an empty array or omit this field",
+                      "description_en": "Must contain at least one non-empty department ID when set to SelectedDepartments. The IDs should be obtained from ListIdentityProviderDepartments. Pass an empty array or omit this parameter when set to AllAuthorized",
                       "description_zh": "SelectedDepartments 时至少包含一个非空部门 ID，应取自 ListIdentityProviderDepartments；AllAuthorized 时传空数组或省略",
                       "example": "[\"10001\"]",
                       "items": {
-                        "description_en": "The unique identifier of the department returned by the identity provider, which is obtained from ListIdentityProviderDepartments",
+                        "description_en": "The unique identifier of the department returned by the identity provider. Obtained from ListIdentityProviderDepartments",
                         "description_zh": "身份源返回的部门唯一标识，取自 ListIdentityProviderDepartments",
                         "example": "10001",
                         "title_en": "部门 ID",
@@ -375,7 +376,7 @@
                     },
                     "mode": {
                       "backendName": "mode",
-                      "description_en": "Valid values:\nAllAuthorized: The full authorization scope, which is limited by the application address book authorization.\nSelectedDepartments: The selected departments and all their sub-departments.\nWhen explicitly submitting syncScope, you must provide a valid mode for backend verification",
+                      "description_en": "AllAuthorized: the full authorization scope, limited by the application address book authorization. SelectedDepartments: the selected departments and all their sub-departments. A valid mode must be provided and verified by the backend when syncScope is explicitly submitted",
                       "description_zh": "AllAuthorized：全部授权范围，受应用通讯录授权限制；SelectedDepartments：选中部门及所有子部门。显式提交 syncScope 时必须提供有效 mode，由后端校验",
                       "enum": [
                         "AllAuthorized",
@@ -428,7 +429,7 @@
           },
           "message": {
             "backendName": "message",
-            "description_en": "The response message. An error description is returned if the request fails",
+            "description_en": "The response message. Returns an error description if the request fails",
             "description_zh": "响应消息。请求失败时返回错误描述",
             "example": "success",
             "title_en": "结果消息",
@@ -463,7 +464,7 @@
           },
           "totalCount": {
             "backendName": "totalCount",
-            "description_en": "The total number of external identity providers that meet the query conditions",
+            "description_en": "The total number of external identity providers that match the query conditions",
             "description_zh": "符合查询条件的外部身份提供商总数",
             "example": "42",
             "format": "int64",
