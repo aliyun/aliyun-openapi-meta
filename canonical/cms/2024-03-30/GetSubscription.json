@@ -1,0 +1,471 @@
+{
+  "cmd_full_name": "cms get-subscription",
+  "cmd_name": "get-subscription",
+  "components": {
+    "schemas": {
+      "FilterSetting": {
+        "description_en": "The filter configuration",
+        "description_zh": "过滤配置",
+        "properties": {
+          "conditions": {
+            "backendName": "conditions",
+            "description_en": "The subscription conditions",
+            "description_zh": "订阅条件",
+            "items": {
+              "description_en": "The individual condition",
+              "description_zh": "单个条件",
+              "properties": {
+                "field": {
+                  "backendName": "field",
+                  "description_en": "The JSON path of the event field. Dot-notation nesting is supported",
+                  "description_zh": "事件字段的 JSON 路径，支持点号嵌套",
+                  "example": "labels.alertname\t",
+                  "title": "字段",
+                  "type": "string"
+                },
+                "op": {
+                  "backendName": "op",
+                  "description_en": "The comparison operator",
+                  "description_zh": "比较符",
+                  "example": "EQ",
+                  "title": "比较符",
+                  "type": "string"
+                },
+                "value": {
+                  "backendName": "value",
+                  "description_en": "The matching value. Separate multiple values with commas when using IN or NOT_IN",
+                  "description_zh": "匹配值，IN/NOT_IN 时逗号分隔多个值",
+                  "example": "CRITICAL",
+                  "title": "值",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "maxItems": 10,
+            "title": "订阅条件",
+            "type": "array"
+          },
+          "expression": {
+            "backendName": "expression",
+            "description_en": "Use either expression or relation. If expression is not empty, it takes precedence and relation is ignored. If expression is empty or not specified, relation (AND or OR) is used to perform a simple AND/OR operation on all conditions. Condition numbers correspond to the indexes of the conditions array (starting from 1). Each condition evaluates whether a single event field matches by using field (the event field path, which supports dot-notation nesting such as resource.tags.pod), op (the operator, such as CONTAIN, EQ, or IN), and value (the matching value)",
+            "description_zh": "expression 和 relation 二选一使用。如果 expression 非空，它优先生效，relation 被忽略；如果 expression 为空或不传，则用 relation（AND 或 OR）对所有条件做简单全量与/或运算。条件编号对应 conditions 数组的下标（从 1 开始），每个条件通过 field（事件字段路径，支持点号嵌套如 resource.tags.pod）、op（操作符，如 CONTAIN、EQ、IN 等）、value（匹配值）来评估单个事件字段是否匹配",
+            "example": "1 and 2 or 3",
+            "title": "表达式",
+            "type": "string"
+          },
+          "relation": {
+            "backendName": "relation",
+            "description_en": "The logical relationship between conditions. This parameter takes effect when expression is empty",
+            "description_zh": "条件间逻辑关系。expression 为空时生效",
+            "example": "AND",
+            "title": "条件间关系",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "NotifyRouteForSubscription": {
+        "description_en": "The notification routing configuration at the subscription level",
+        "description_zh": "通知路由配置（订阅级别）",
+        "properties": {
+          "channels": {
+            "backendName": "channels",
+            "description_en": "The list of notification channels",
+            "description_zh": "通知渠道列表",
+            "items": {
+              "properties": {
+                "channelType": {
+                  "backendName": "channelType",
+                  "description_en": "The channel type",
+                  "description_zh": "渠道类型",
+                  "example": "default",
+                  "title": "渠道类型",
+                  "type": "string"
+                },
+                "enabledSubChannels": {
+                  "backendName": "enabledSubChannels",
+                  "description_en": "The list of enabled subchannels",
+                  "description_zh": "已启用的子渠道列表",
+                  "items": {
+                    "description_en": "The enabled notification subchannel type. This parameter is required only when channelType is set to CONTACT, GROUP, or DUTY",
+                    "description_zh": "已启用的通知子渠道类型，仅当 channelType 为 CONTACT/GROUP/DUTY 时需要指定",
+                    "example": "SMS",
+                    "type": "string"
+                  },
+                  "title": "已启用的子渠道列表",
+                  "type": "array"
+                },
+                "receivers": {
+                  "backendName": "receivers",
+                  "description_en": "The list of receivers",
+                  "description_zh": "接收者列表",
+                  "items": {
+                    "description_en": "The receiver identifier, such as a webhook UUID, robot UUID, or contact ID",
+                    "description_zh": "接收方标识，如 webhook uuid、robot uuid 或联系人 ID",
+                    "example": "my-contact",
+                    "type": "string"
+                  },
+                  "title": "接收者列表",
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "title": "通知渠道列表",
+            "type": "array"
+          },
+          "effectTimeRange": {
+            "backendName": "effectTimeRange",
+            "description_en": "The effective period configuration",
+            "description_zh": "生效时间段配置",
+            "properties": {
+              "dayInWeek": {
+                "backendName": "dayInWeek",
+                "description_en": "The effective days of the week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)",
+                "description_zh": "一周中的有效天数（0=周日，1=周一，...，6=周六）",
+                "items": {
+                  "description_en": "The effective day. Valid values: 0 to 6 (0 = Sunday, 6 = Saturday)",
+                  "description_zh": "生效天，取值 0-6（0=周日，6=周六）",
+                  "example": "1",
+                  "format": "int32",
+                  "type": "integer"
+                },
+                "title": "一周中的有效天数（0=周日，1=周一，...，6=周六）",
+                "type": "array"
+              },
+              "endTimeInMinute": {
+                "backendName": "endTimeInMinute",
+                "description_en": "The end time of the day, in minutes from 0:00",
+                "description_zh": "当天结束时间（分钟数，从 0:00 起算）",
+                "example": "1",
+                "format": "int32",
+                "title": "当天结束时间（分钟数，从 0:00 起算）",
+                "type": "integer"
+              },
+              "startTimeInMinute": {
+                "backendName": "startTimeInMinute",
+                "description_en": "The start time of the day, in minutes from 0:00",
+                "description_zh": "当天开始时间（分钟数，从 0:00 起算）",
+                "example": "1",
+                "format": "int32",
+                "title": "当天开始时间（分钟数，从 0:00 起算）",
+                "type": "integer"
+              },
+              "timeZone": {
+                "backendName": "timeZone",
+                "description_en": "The time zone",
+                "description_zh": "时区",
+                "example": "1700000000",
+                "title": "时区",
+                "type": "string"
+              }
+            },
+            "title": "生效时间段配置",
+            "type": "object"
+          }
+        },
+        "title": "通知路由配置（订阅级别）",
+        "type": "object"
+      },
+      "SubscriptionForView": {
+        "description_en": "The entity for viewing",
+        "description_zh": "用于查看的实体",
+        "properties": {
+          "agentConfig": {
+            "backendName": "agentConfig",
+            "description_en": "The Agent configuration information",
+            "description_zh": "Agent 配置信息",
+            "properties": {
+              "agentUuid": {
+                "backendName": "agentUuid",
+                "description_en": "The unique identifier of the Agent",
+                "description_zh": "Agent 的唯一标识",
+                "example": "agent-uuid-001",
+                "type": "string"
+              },
+              "routes": {
+                "backendName": "routes",
+                "description_en": "The list of Agent routing configurations",
+                "description_zh": "Agent 路由配置列表",
+                "items": {
+                  "$ref": "#/components/schemas/NotifyRouteForSubscription",
+                  "description_en": "The configuration of a single Agent route",
+                  "description_zh": "单个 Agent 路由配置"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "createTime": {
+            "backendName": "createTime",
+            "description_en": "The creation time",
+            "description_zh": "创建时间",
+            "example": "2025-03-11T08:21:58Z",
+            "title": "创建时间",
+            "type": "string"
+          },
+          "description": {
+            "backendName": "description",
+            "description_en": "The description",
+            "description_zh": "描述",
+            "example": "workspace test",
+            "title": "描述",
+            "type": "string"
+          },
+          "enable": {
+            "backendName": "enabled",
+            "description_en": "Indicates whether the subscription is enabled",
+            "description_zh": "是否启用",
+            "example": "false",
+            "title": "是否启用",
+            "type": "boolean"
+          },
+          "filterSetting": {
+            "$ref": "#/components/schemas/FilterSetting",
+            "backendName": "filterSetting",
+            "description_en": "The filter settings",
+            "description_zh": "筛选设置"
+          },
+          "notifyStrategyId": {
+            "backendName": "notifyStrategyId",
+            "description_en": "The UUID of the notification policy",
+            "description_zh": "通知策略UUID",
+            "example": "23123123",
+            "title": "通知策略UUID",
+            "type": "string"
+          },
+          "pushingSetting": {
+            "backendName": "pushingSetting",
+            "description_en": "The push settings",
+            "description_zh": "推送设置",
+            "properties": {
+              "alertActionIds": {
+                "backendName": "alertActionIds",
+                "description_en": "The list of action integration IDs for alert pushing",
+                "description_zh": "报警推送行动集成ID列表",
+                "items": {
+                  "description_en": "The action integration ID",
+                  "description_zh": "行动集成Id",
+                  "example": "123123123",
+                  "type": "string"
+                },
+                "title": "报警推送行动计划ID列表",
+                "type": "array"
+              },
+              "responsePlanId": {
+                "backendName": "responsePlanId",
+                "description_en": "The action plan ID",
+                "description_zh": "行动计划ID",
+                "example": "123123123",
+                "title": "行动计划ID",
+                "type": "string"
+              },
+              "restoreActionIds": {
+                "backendName": "restoreActionIds",
+                "description_en": "The list of action integration IDs for recovery pushing",
+                "description_zh": "恢复推送行动集成ID列表",
+                "items": {
+                  "description_en": "The action integration ID",
+                  "description_zh": "行动集成Id",
+                  "example": "123123123",
+                  "type": "string"
+                },
+                "title": "恢复推送行动计划ID列表",
+                "type": "array"
+              },
+              "templateUuid": {
+                "backendName": "templateUuid",
+                "description_en": "The UUID of the template",
+                "description_zh": "模板UUID",
+                "example": "123123123",
+                "title": "模板UUID",
+                "type": "string"
+              }
+            },
+            "title": "推送设置",
+            "type": "object"
+          },
+          "subscribeLegacyEvent": {
+            "backendName": "subscribeLegacyEvent",
+            "description_en": "Specifies whether to subscribe to legacy product events (CMS 1.0, ARMS, or SLS events where workspace is null). Valid values: true: Subscribe. false or null: Do not subscribe",
+            "description_zh": "是否订阅老产品事件（workspace=null 的 cms 1.0 / ARMS / SLS 事件）：true=订阅，false 或 null=不订阅",
+            "example": "false",
+            "title": "是否订阅老产品事件",
+            "type": "boolean"
+          },
+          "subscriptionId": {
+            "backendName": "subscriptionId",
+            "description_en": "The unique identifier of the subscription",
+            "description_zh": "订阅的唯一标识",
+            "example": "123123123123",
+            "title": "UUID",
+            "type": "string"
+          },
+          "subscriptionName": {
+            "backendName": "subscriptionName",
+            "description_en": "The name of the subscription",
+            "description_zh": "名称",
+            "example": "订阅测试",
+            "required": true,
+            "title": "名称",
+            "type": "string"
+          },
+          "subscriptionType": {
+            "backendName": "subscriptionType",
+            "default": "NORMAL",
+            "description_en": "The subscription type",
+            "description_zh": "订阅类型",
+            "enum": [
+              "NORMAL",
+              "AI_AGENT"
+            ],
+            "example": "NORMAL",
+            "type": "string",
+            "visibility": "Public"
+          },
+          "syncFromType": {
+            "backendName": "syncFromType",
+            "description_en": "The source type of the synchronization policy",
+            "description_zh": "同步策略来源类型",
+            "example": "\"ARMS\"",
+            "type": "string"
+          },
+          "updateTime": {
+            "backendName": "updateTime",
+            "description_en": "The update time",
+            "description_zh": "更新时间",
+            "example": "2025-05-23T02:29:02Z",
+            "title": "更新时间",
+            "type": "string"
+          },
+          "userId": {
+            "backendName": "userId",
+            "description_en": "The user ID",
+            "description_zh": "用户id",
+            "example": "123123123",
+            "title": "用户id",
+            "type": "string"
+          },
+          "workspace": {
+            "backendName": "workspace",
+            "description_en": "The workspace identifier",
+            "description_zh": "工作空间标识",
+            "example": "workspace-test",
+            "title": "workspace",
+            "type": "string"
+          },
+          "workspaceFilterSetting": {
+            "$ref": "#/components/schemas/WorkspaceFilterSetting",
+            "backendName": "workspaceFilterSetting",
+            "description_en": "The workspace filter settings",
+            "description_zh": "工作空间过滤设置"
+          }
+        },
+        "title": "A short description of struct",
+        "type": "object"
+      },
+      "WorkspaceFilterSetting": {
+        "description_en": "The workspace filter settings object",
+        "description_zh": "工作空间过滤设置对象",
+        "properties": {
+          "tagSelector": {
+            "$ref": "#/components/schemas/FilterSetting",
+            "backendName": "tagSelector",
+            "description_en": "The label filter. This parameter is not supported and does not take effect if specified",
+            "description_zh": "标签筛选器，尚未支持，传入不生效"
+          },
+          "workspaceUuids": {
+            "backendName": "workspaceUuids",
+            "description_en": "The list of workspace UUIDs",
+            "description_zh": "工作空间 UUID 列表",
+            "items": {
+              "description_en": "The workspace UUID",
+              "description_zh": "工作空间 UUID",
+              "example": "\"ws-abc123\"",
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "获取订阅",
+  "description_zh": "获取订阅",
+  "kebab_example": "aliyun cms get-subscription --subscription-id 123123123123 --api-version 2024-03-30 --region cn-hangzhou",
+  "method": "GET",
+  "multi_version": true,
+  "name": "GetSubscription",
+  "operation": {
+    "action": "GetSubscription",
+    "api_style": "ROA",
+    "api_version": "2024-03-30",
+    "method": "GET",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "get",
+    "url": "/subscriptions/{subscriptionId}"
+  },
+  "parameters": [
+    {
+      "example": "workspace-test",
+      "help_en": "The workspace",
+      "help_zh": "工作空间名称",
+      "location": "query",
+      "name": "workspace",
+      "options": [
+        "--workspace"
+      ],
+      "raw_name": "workspace",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "123123123123",
+      "help_en": "The subscriptionId",
+      "help_zh": "订阅ID",
+      "location": "path",
+      "name": "subscription_id",
+      "options": [
+        "--subscription-id"
+      ],
+      "raw_name": "subscriptionId",
+      "required": true,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/subscriptions/[subscriptionId]",
+  "product_code": "Cms",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "Schema of Response",
+        "description_zh": "Schema of Response",
+        "properties": {
+          "requestId": {
+            "backendName": "requestId",
+            "description_en": "Id of the request",
+            "description_zh": "Id of the request",
+            "example": "111111-222-333-1111-33333",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          },
+          "subscription": {
+            "$ref": "#/components/schemas/SubscriptionForView",
+            "backendName": "data",
+            "description_zh": "订阅对象"
+          }
+        },
+        "title_en": "Schema of Response",
+        "title_zh": "Schema of Response",
+        "type": "object"
+      }
+    }
+  }
+}
