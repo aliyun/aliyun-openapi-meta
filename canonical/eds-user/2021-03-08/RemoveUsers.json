@@ -2,7 +2,7 @@
   "cmd_full_name": "eds-user remove-users",
   "cmd_name": "remove-users",
   "deprecated": false,
-  "description_en": "Deletes one or more convenience accounts",
+  "description_en": "Deletes one or more convenience users",
   "description_zh": "删除一个或者多个便捷账号",
   "kebab_example": "aliyun eds-user remove-users --users test1 --api-version 2021-03-08 --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,11 +22,23 @@
   },
   "parameters": [
     {
+      "help_en": "是否在删除便捷账号前自动取消其云电脑授权。取值：\n\ntrue：异步执行取消云电脑授权及删除便捷账号，接口返回任务受理结果。\nfalse（默认值）：同步删除便捷账号，不自动取消云电脑授权；仍有关联资源阻止删除时，返回删除失败。\n\n设置为 true 时，调用者还需具备 ecd:ModifyUserEntitlement 权限。任务受理不表示便捷账号已删除完成",
+      "help_zh": "是否在删除便捷账号前自动取消其云电脑授权。取值：\n\ntrue：异步执行取消云电脑授权及删除便捷账号，接口返回任务受理结果。\nfalse（默认值）：同步删除便捷账号，不自动取消云电脑授权；仍有关联资源阻止删除时，返回删除失败。\n\n设置为 true 时，调用者还需具备 ecd:ModifyUserEntitlement 权限。任务受理不表示便捷账号已删除完成",
+      "location": "query",
+      "name": "unbind_desktops",
+      "options": [
+        "--unbind-desktops"
+      ],
+      "raw_name": "UnbindDesktops",
+      "required": false,
+      "type": "bool"
+    },
+    {
       "element": {
         "type": "string"
       },
       "example": "test1",
-      "help_en": "The list of usernames of the convenience accounts to delete",
+      "help_en": "The usernames of the convenience users to delete",
       "help_zh": "要删除的便捷账号的用户名列表",
       "location": "formData",
       "name": "users",
@@ -40,7 +52,7 @@
     },
     {
       "example": "ENTERPRISE",
-      "help_en": "The channel",
+      "help_en": "The business channel",
       "help_zh": "渠道",
       "location": "formData",
       "name": "business_channel",
@@ -58,26 +70,26 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response parameters",
+        "description_en": "The response information",
         "description_zh": "返回信息集合",
         "properties": {
           "RemoveUsersResult": {
             "backendName": "data",
-            "description_en": "The result of the operation to delete convenience accounts",
+            "description_en": "The result of deleting the convenience users",
             "description_zh": "删除便捷账号操作的结果",
             "properties": {
               "FailedUsers": {
                 "backendName": "failedUsers",
-                "description_en": "The collection of information about users that failed to be deleted",
+                "description_en": "The information about the users that failed to be deleted",
                 "description_zh": "删除失败的用户信息集合",
                 "itemName": "failedUsers",
                 "items": {
-                  "description_en": "The convenience account that failed to be deleted",
+                  "description_en": "The convenience user that failed to be deleted",
                   "description_zh": "删除失败的便捷账号",
                   "properties": {
                     "EndUserId": {
                       "backendName": "endUserId",
-                      "description_en": "The convenience account that failed to be deleted",
+                      "description_en": "The convenience user that failed to be deleted",
                       "description_zh": "删除失败的便捷账号",
                       "example": "test2",
                       "type": "string"
@@ -101,17 +113,47 @@
                 },
                 "type": "array"
               },
+              "ProcessingUsers": {
+                "backendName": "processingUsers",
+                "description_zh": "已存在尚未结束的异步删除任务的便捷账号用户名列表。本次请求不会为这些账号重复创建删除任务；返回该字段不表示账号已删除完成",
+                "itemName": "processingUsers",
+                "items": {
+                  "description_zh": "已存在异步删除任务、当前仍在处理中的便捷账号用户名",
+                  "example": "test2",
+                  "title_en": "已存在异步删除任务、当前仍在处理中的便捷账号用户名。",
+                  "title_zh": "已存在异步删除任务、当前仍在处理中的便捷账号用户名。",
+                  "type": "string"
+                },
+                "title_en": "已存在尚未结束的异步删除任务的便捷账号用户名列表。本次请求不会为这些账号重复创建删除任务；返回该字段不表示账号已删除完成。",
+                "title_zh": "已存在尚未结束的异步删除任务的便捷账号用户名列表。本次请求不会为这些账号重复创建删除任务；返回该字段不表示账号已删除完成。",
+                "type": "array"
+              },
               "RemovedUsers": {
                 "backendName": "removedUsers",
-                "description_en": "The convenience accounts that were successfully deleted",
+                "description_en": "The convenience users that are successfully deleted",
                 "description_zh": "删除成功的便捷账号",
                 "itemName": "removedUsers",
                 "items": {
-                  "description_en": "The convenience accounts that were successfully deleted",
+                  "description_en": "The convenience users that are successfully deleted",
                   "description_zh": "删除成功的便捷账号",
                   "example": "test1",
                   "type": "string"
                 },
+                "type": "array"
+              },
+              "SubmittedUsers": {
+                "backendName": "submittedUsers",
+                "description_zh": "本次请求已成功受理并创建异步删除任务的便捷账号用户名列表。UnbindDesktops 为 true 时采用异步删除；任务受理不表示便捷账号已删除完成",
+                "itemName": "submittedUsers",
+                "items": {
+                  "description_zh": "本次请求已成功受理异步删除任务的便捷账号用户名",
+                  "example": "test1",
+                  "title_en": "本次请求已成功受理异步删除任务的便捷账号用户名。",
+                  "title_zh": "本次请求已成功受理异步删除任务的便捷账号用户名。",
+                  "type": "string"
+                },
+                "title_en": "本次请求已成功受理并创建异步删除任务的便捷账号用户名列表。UnbindDesktops 为 true 时采用异步删除；任务受理不表示便捷账号已删除完成。",
+                "title_zh": "本次请求已成功受理并创建异步删除任务的便捷账号用户名列表。UnbindDesktops 为 true 时采用异步删除；任务受理不表示便捷账号已删除完成。",
                 "type": "array"
               }
             },
