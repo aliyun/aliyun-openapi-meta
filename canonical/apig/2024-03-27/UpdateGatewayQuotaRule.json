@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun apig PUT /v1/gateways/gw-123456/quota-rules/qr-d8j7fpmm1hks65xxxx --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"conflictHash\":\"f8f44dc6cf369a017d56b7197eb4fb5ac4bbb6b09a92b9b41999541f50xxxxxx\",\"addIds\":[\"cs-001xxxxx\"],\"dryRun\":true,\"ruleName\":\"team-rule\",\"removeIds\":[\"cs-003xxxxx\"],\"overwrite\":true,\"quotaLimit\":1000,\"consumerGroupIds\":[\"consumer-group-001\"]}'",
+  "camel_example": "aliyun apig PUT /v1/gateways/gw-123456/quota-rules/qr-d8j7fpmm1hks65xxxx --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"conflictHash\":\"\\t\\nf8f44dc6cf369a017d56b7197eb4fb5ac4bbb6b09a92b9b41999541f50xxxxxx\",\"addIds\":[\"cs-001xxxxx\"],\"dryRun\":true,\"ruleName\":\"team-rule\",\"removeIds\":[\"cs-003xxxxx\"],\"overwrite\":true,\"quotaLimit\":1000,\"consumerGroupIds\":[\"consumer-group-001\"]}'",
   "cmd_full_name": "apig update-gateway-quota-rule",
   "cmd_name": "update-gateway-quota-rule",
   "deprecated": false,
-  "description_en": "Edits a quota throttling rule on a gateway",
+  "description_en": "Updates a quota throttling rule on a gateway",
   "description_zh": "编辑网关上某条配额限流规则",
-  "kebab_example": "aliyun apig update-gateway-quota-rule --gateway-id gw-123456 --rule-id qr-d8j7fpmm1hks65xxxx --add-ids cs-001xxxxx --conflict-hash f8f44dc6cf369a017d56b7197eb4fb5ac4bbb6b09a92b9b41999541f50xxxxxx --consumer-group-ids consumer-group-001 --dry-run true --overwrite true --quota-limit 1000 --remove-ids cs-003xxxxx --rule-name team-rule --region cn-hangzhou",
+  "kebab_example": "aliyun apig update-gateway-quota-rule --gateway-id gw-123456 --rule-id qr-d8j7fpmm1hks65xxxx --add-ids cs-001xxxxx --conflict-hash '\t\nf8f44dc6cf369a017d56b7197eb4fb5ac4bbb6b09a92b9b41999541f50xxxxxx' --consumer-group-ids consumer-group-001 --dry-run true --overwrite true --quota-limit 1000 --remove-ids cs-003xxxxx --rule-name team-rule --region cn-hangzhou",
   "method": "PUT",
   "multi_version": false,
   "name": "UpdateGatewayQuotaRule",
@@ -63,7 +63,7 @@
         "type": "string"
       },
       "example": "cs-001,cs-002",
-      "help_en": "The list of consumer subject IDs to bind",
+      "help_en": "The list of IDs of the subjects (consumption subjects) to be bound",
       "help_zh": "新增绑定主体（消费主体）ID列表",
       "location": "body",
       "name": "add_ids",
@@ -77,7 +77,7 @@
     },
     {
       "example": "\t\nf8f44dc6cf369a017d56b7197eb4fb5ac4bbb6b09a92b9b41999541f50xxxxxx",
-      "help_en": "The conflict snapshot hash, used to prevent concurrent dirty overwrites when confirming an overwrite. Obtain this value from the response of a dry run request with dryRun set to true.\n\nThis parameter is not required in the following cases: no conflict exists, the request is a dry run with dryRun set to true, or overwrite is set to false (no overwrite confirmation).\n\nWhen dryRun is set to false and overwrite is set to true, if this parameter is not provided or the value has expired and no longer matches, the backend returns accepted=false with a new conflict preview. Perform a new dry run to confirm the updated conflicts",
+      "help_en": "The conflict snapshot hash, which is used to prevent concurrent dirty overwrites when you confirm an overwrite. You can obtain this value by first performing a dry run with dryRun=true and extracting it from the response.\n\nYou do not need to specify this parameter in the following scenarios: no conflicts exist; you are only performing a dry run with dryRun=true; or overwrite=false, which means you do not confirm the overwrite.\n\nIf dryRun=false and overwrite=true but this parameter is not specified or has expired and does not match, the backend returns accepted=false along with a new conflict preview. In this case, you must perform a dry run again to confirm the new conflicts",
       "help_zh": "冲突快照哈希，用于“确认覆盖时防并发脏覆盖”。通过先执行 dryRun=true 在返回数据提取。\n\n当以下情况不需要填写：没有冲突；只是 dryRun=true 预检；overwrite=false，即不确认覆盖。\n\n当当 dryRun = false 且 overwrite=true 时不带改参数或者该参数过期不匹配，后端会返回：accepted=false 并带新的冲突预览，需要重新执行 dryrun 确认新的冲突",
       "location": "body",
       "name": "conflict_hash",
@@ -108,7 +108,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to perform only a dry run without persisting or applying the configuration. A dry run checks whether conflicting rules exist on the bound consumer subjects. The same consumer subject cannot have two calendar-period quotas with the same period. For example, a consumer subject that already has a daily calendar quota cannot be assigned another daily calendar quota rule",
+      "help_en": "Specifies whether to perform a dry run only without saving data to the database or delivering actual configurations. This is used to check whether conflicting rules exist on the bound consumption subjects. A single consumption subject cannot be configured with two natural period quotas of the same period. For example, a consumption subject that already has a natural daily quota cannot be added with another natural daily quota rule",
       "help_zh": "是否仅预检（预检不下发实际配置），用于检查绑定的消费主体上是否存在冲突的规则（同一消费主体不能配置两个相同周期的自然周期配额，例如已有自然日配额的消费主体不能再新增一个自然日配额规则）",
       "location": "body",
       "name": "dry_run",
@@ -121,7 +121,7 @@
       "type": "bool"
     },
     {
-      "help_en": "Specifies whether to allow overwriting when a conflict exists. If overwriting is allowed, conflicting subjects (consumers or consumer groups) are unbound from the old rule and bound to the new rule",
+      "help_en": "Specifies whether to allow overwriting when conflicts exist. Note that if you choose to allow overwriting, the conflicting subjects (consumers or consumer groups) are unbound from the old rule and bound to the new rule",
       "help_zh": "冲突时是否允许覆盖。注意如果选择允许覆盖，冲突主体（消费者或消费者组）会从旧规则解绑并绑定到新规则",
       "location": "body",
       "name": "overwrite",
@@ -135,7 +135,7 @@
     },
     {
       "example": "1000",
-      "help_en": "The updated total available quota per period",
+      "help_en": "The updated total available quota",
       "help_zh": "修改后的可用总额度",
       "location": "body",
       "name": "quota_limit",
@@ -152,7 +152,7 @@
         "type": "string"
       },
       "example": "cs003,cs-004",
-      "help_en": "The list of consumer subject IDs to unbind",
+      "help_en": "The list of IDs of the subjects (consumption subjects) to be unbound",
       "help_zh": "解绑主体（消费主体）ID列表",
       "location": "body",
       "name": "remove_ids",
@@ -205,7 +205,7 @@
             "properties": {
               "accepted": {
                 "backendName": "accepted",
-                "description_en": "Indicates whether the write request is accepted by the system. A value of false typically indicates a retryable scenario, such as an unconfirmed conflict overwrite",
+                "description_en": "Specifies whether the semantics of the current write request can be accepted by the system. A value of false typically occurs in retryable scenarios such as unconfirmed overwrites for conflicts",
                 "description_zh": "本次写请求语义是否可被系统接收，false 常见于冲突未确认覆盖等可重试场景",
                 "example": "true",
                 "title_en": "是否接受请求。dryRun=true时仅表示预检已受理，不表示已保存；正式写入返回false时表示因冲突未保存，应检查conflictPreview。",
@@ -232,13 +232,13 @@
                     "description_zh": "冲突的主体（消费者或消费者组）列表",
                     "itemName": "items",
                     "items": {
-                      "description_en": "The details of a conflicting subject (consumer or consumer group)",
+                      "description_en": "The details of the conflicting subject (consumer or consumer group)",
                       "description_zh": "冲突的主体（消费者或消费者组）详情",
                       "properties": {
                         "conflictPeriodType": {
                           "backendName": "conflictPeriodType",
                           "deprecated": true,
-                          "description_en": "The period type of the existing conflicting rule on the consumer subject. Valid values: day (daily), week (weekly), and month (monthly)",
+                          "description_en": "The period type of the existing conflicting rule on the consumption subject. A value of day, week, or month indicates that the period of the existing conflicting rule on the consumption subject is day, week, or month, respectively",
                           "description_zh": "消费主体上已有冲突规则的周期类型。conflictPeriodType  = \"day\"/\"week\"/\"month\"分别表示消费主体已有冲突规则的周期为日/周/月",
                           "example": "week",
                           "title_en": "历史声明字段，请使用实际响应中的periodType；本字段不保证返回。",
@@ -247,7 +247,7 @@
                         },
                         "conflictType": {
                           "backendName": "conflictType",
-                          "description_en": "The type of the existing conflicting rule on the consumer subject. A value of calendar indicates a calendar-period rule. A value of epoch indicates a custom-period rule",
+                          "description_en": "The type of the existing conflicting rule on the consumption subject. A value of calendar indicates that the existing conflicting rule on the consumption subject uses a natural period. A value of epoch indicates that the existing conflicting rule uses a custom period",
                           "description_zh": "消费主体上已有冲突规则的类型。conflictType  = \"calendar\"表示消费主体已有冲突规则为自然周期；conflictType = \"epoch\"表示已有冲突规则为自定义周期",
                           "example": "calendar",
                           "title_en": "消费者上已有冲突规则的类型。conflictType  = \"calendar\"表示消费者已有冲突规则为自然周期；conflictType = \"epoch\"表示已有冲突规则为自定义周期。",
@@ -256,20 +256,21 @@
                         },
                         "consumerId": {
                           "backendName": "consumerId",
-                          "description_en": "The consumer ID. Use subjectId instead",
+                          "description_en": "The consumer ID. You can now uniformly use subjectId instead",
                           "description_zh": "消费者 ID（现可统一使用 subjectId 替代）",
                           "example": "cs-d82n1g6m1hkm375xxxxx",
                           "type": "string"
                         },
                         "consumerName": {
                           "backendName": "consumerName",
-                          "description_en": "The consumer name. Use subjectName instead",
+                          "description_en": "The consumer name. You can now uniformly use subjectName instead",
                           "description_zh": "消费者名称（现可统一使用 subjectName替代）",
                           "example": "consumer-a",
                           "type": "string"
                         },
                         "periodType": {
                           "backendName": "periodType",
+                          "description_en": "The period type of the existing conflicting rule. Valid values: day, week, and month, which indicate day, week, and month, respectively",
                           "description_zh": "已有冲突规则的周期类型，day、week、month分别表示日、周、月",
                           "example": "day",
                           "title_en": "已有冲突规则的周期类型，day、week、month分别表示日、周、月。",
@@ -325,7 +326,7 @@
               },
               "dryRun": {
                 "backendName": "dryRun",
-                "description_en": "Indicates whether the request is a dry run",
+                "description_en": "Specifies whether a dry run is performed",
                 "description_zh": "是否预检",
                 "example": "true",
                 "title_en": "是否预检",
@@ -348,7 +349,7 @@
           },
           "message": {
             "backendName": "message",
-            "description_en": "The response message",
+            "description_en": "The message",
             "description_zh": "消息内容",
             "example": "你好，世界！",
             "title_en": "消息内容",
