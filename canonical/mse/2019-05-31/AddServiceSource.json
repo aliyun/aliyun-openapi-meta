@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun mse AddServiceSource --region cn-hangzhou --GatewayUniqueId 'gw-c70622ff52fe49beb29bea9a6f520000'",
+  "camel_example": "aliyun mse AddServiceSource --region cn-hangzhou --IngressOptionsRequest '{\"IngressClass\":\"com.test.xxx\",\"EnableStatus\":true,\"WatchNamespace\":\"default\",\"EnableIngress\":true}' --GatewayUniqueId 'gw-c70622ff52fe49beb29bea9a6f52****' --Type 'NACOS\n' --Address 'mse-********-nacos-ans.mse.aliyuncs.com:8848' --GroupList '[\"NACOS\"]' --PathList '[\"/test\"]' --AcceptLanguage 'zh-CN' --ToAuthorizeSecurityGroups '[{\"PortRange\":\"8080/8080,9000/10000\",\"Description\":\"rule for xxx\",\"SecurityGroupId\":\"sg-bp1acepclex0vmi1****\"}]' --Source MSE --Name nacos",
   "cmd_full_name": "mse add-service-source",
   "cmd_name": "add-service-source",
   "deprecated": false,
-  "description_en": "Adds a Nacos service source",
+  "description_en": "Creates a Nacos service source",
   "description_zh": "创建Nacos服务来源",
-  "kebab_example": "aliyun mse add-service-source --gateway-unique-id gw-c70622ff52fe49beb29bea9a6f520000 --region cn-hangzhou",
+  "kebab_example": "aliyun mse add-service-source --type 'NACOS\n' --source MSE --address 'mse-********-nacos-ans.mse.aliyuncs.com:8848' --name nacos --gateway-unique-id 'gw-c70622ff52fe49beb29bea9a6f52****' --ingress-option-srequest IngressClass=com.test.xxx EnableStatus=true WatchNamespace=default EnableIngress=true --to-authorize-security-groups '[{\"PortRange\":\"8080/8080,9000/10000\",\"Description\":\"rule for xxx\",\"SecurityGroupId\":\"sg-bp1acepclex0vmi1****\"}]' --group-list NACOS --path-list /test --accept-language zh-CN --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": false,
   "name": "AddServiceSource",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "NACOS\n",
-      "help_en": "The type of the service source.\n\nK8s: Container Service for Kubernetes (ACK) cluster\nNACOS: Nacos instance",
+      "help_en": "The service registration type. Specify the corresponding value based on the source type:\nContainer Service: K8S\nMSE Nacos: NACOS\nMSE ZooKeeper: ZOOKEEPER\nSAE registry: NACOS\nEDAS registry: NACOS",
       "help_zh": "服务注册类型，按来源类型填写对应的值：\n容器服务：K8S\nMSE Nacos：NACOS\nMSE ZooKeeper：ZOOKEEPER\nSAE 注册中心：NACOS\nEDAS 注册中心：NACOS",
       "location": "query",
       "name": "type",
@@ -36,7 +36,7 @@
     {
       "doc_required": true,
       "example": "MSE",
-      "help_en": "The service source.\n\nK8s: ACK cluster\nNACOS: MSE Nacos instance",
+      "help_en": "The service source type:\nContainer Service: K8S\nMSE Nacos: MSE\nMSE ZooKeeper: MSE_ZK\nSAE registry: SAE\nEDAS registry: EDAS",
       "help_zh": "服务来源类型：\n容器服务：K8S\nMSE Nacos：MSE\nMSE ZooKeeper：MSE_ZK\nSAE 注册中心：SAE\nEDAS 注册中心：EDAS",
       "location": "query",
       "name": "source",
@@ -49,7 +49,7 @@
     },
     {
       "example": "mse-********-nacos-ans.mse.aliyuncs.com:8848",
-      "help_en": "Specifies whether to monitor Ingress classes",
+      "help_en": "The access address. This parameter is required.\nContainer Service: the ID of the Container Service cluster.\nMSE Nacos: the internal endpoint of the instance.\nMSE ZooKeeper: the internal endpoint of the instance.\nSAE registry: the namespace TID.\nEDAS registry: the microservice namespace",
       "help_zh": "访问地址（必填）：\n容器服务：对应容器服务集群ID\nMSE Nacos：实例内网访问地址\nMSE ZooKeeper：实例内网访问地址\nSAE 注册中心：命名空间TID\nEDAS 注册中心：微服务空间Namespace",
       "location": "query",
       "name": "address",
@@ -63,7 +63,7 @@
     {
       "doc_required": true,
       "example": "nacos",
-      "help_en": "The namespace whose resources you want to monitor",
+      "help_en": "The name.\n\n\nDescriptions for different source types.\nWhen the type is K8s, the input parameter is the name.\nWhen the type is NACOS, the input parameter is the instance ID",
       "help_zh": "名称。\n\n\n不同来源类型描述。\n类型为K8s时入参为名称。\n类型为NACOS时入参为实例ID",
       "location": "query",
       "name": "name",
@@ -77,7 +77,7 @@
     {
       "doc_required": true,
       "example": "gw-c70622ff52fe49beb29bea9a6f52****",
-      "help_en": "Specifies whether to update the Ingress status",
+      "help_en": "The unique ID of the gateway",
       "help_zh": "网关唯一ID",
       "location": "query",
       "name": "gateway_unique_id",
@@ -92,7 +92,7 @@
       "fields": [
         {
           "example": "true",
-          "help_en": "The group to which the service belongs",
+          "help_en": "Specifies whether to enable Ingress",
           "help_zh": "是否开启Ingress",
           "name": "enable_ingress",
           "options": [
@@ -104,7 +104,7 @@
         },
         {
           "example": "true",
-          "help_en": "The language of the response. Valid values:\n\nzh-CN: Chinese. This is the default value.\nen-US: English.\nja: Japanese",
+          "help_en": "Specifies whether to update the Ingress status",
           "help_zh": "是否更新Ingress Status",
           "name": "enable_status",
           "options": [
@@ -116,7 +116,7 @@
         },
         {
           "example": "com.test.xxx",
-          "help_en": "An array of service root paths",
+          "help_en": "The Ingress class to listen on",
           "help_zh": "监听Ingress Class",
           "name": "ingress_class",
           "options": [
@@ -128,7 +128,7 @@
         },
         {
           "example": "default",
-          "help_en": "The root path of the service",
+          "help_en": "The target namespace to watch",
           "help_zh": "监听目标命名空间",
           "name": "watch_namespace",
           "options": [
@@ -139,7 +139,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The list of service groups",
+      "help_en": "The Ingress configurations. This parameter is used when the service source type is K8s",
       "help_zh": "Ingress配置（服务来源类型为K8s时使用）",
       "location": "query",
       "name": "ingress_option_srequest",
@@ -168,7 +168,7 @@
           },
           {
             "example": "8080/8080,9000/10000",
-            "help_en": "The authorized port range of the security group. You can select multiple port ranges. Separate each port range with a comma (,)",
+            "help_en": "The authorized port range of the security group. You can specify multiple port ranges separated by commas (,)",
             "help_zh": "安全组的授权端口范围，可多选，使用,分隔",
             "name": "port_range",
             "options": [
@@ -193,7 +193,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The list of security groups to be authorized. You can specify security groups to allow backend services to access data sources that you create",
+      "help_en": "The list of security groups to be authorized. This parameter is used to remove security group restrictions for backend services when creating a source",
       "help_zh": "待授权安全组列表，用于在创建来源时打通后端服务的安全组限制",
       "location": "query",
       "name": "to_authorize_security_groups",
@@ -209,7 +209,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The data structure",
+      "help_en": "The list of service groups",
       "help_zh": "服务分组列表",
       "location": "query",
       "name": "group_list",
@@ -225,7 +225,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The HTTP status code returned",
+      "help_en": "The array of service root paths",
       "help_zh": "服务根路径数组",
       "location": "query",
       "name": "path_list",
@@ -239,7 +239,7 @@
     },
     {
       "example": "zh-CN",
-      "help_en": "The language of the response. Valid values:\n\nzh-CN (default): Chinese\nen-US: English\nja: Japanese",
+      "help_en": "The supported languages. Valid values:\n\nzh-CN: Chinese. This is the default value.\nen-US: English.\nja: Japanese",
       "help_zh": "支持的语言。包括以下取值：\n\n中文：zh-CN（默认值）。\n英文：en-US。\n日文：ja",
       "location": "query",
       "name": "accept_language",
@@ -257,12 +257,12 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "Indicates whether the request was successful. Valid values:\n\ntrue: The request was successful.\nfalse: The request failed",
+        "description_en": "The data structure",
         "description_zh": "数据结构",
         "properties": {
           "Code": {
             "backendName": "code",
-            "description_en": "duplicatedClusterAliasName",
+            "description_en": "The return code",
             "description_zh": "返回值",
             "example": "200",
             "format": "int32",
@@ -270,7 +270,7 @@
           },
           "Data": {
             "backendName": "data",
-            "description_en": "mse-100-007",
+            "description_en": "The returned data",
             "description_zh": "返回数据",
             "example": "63",
             "format": "int64",
@@ -278,7 +278,7 @@
           },
           "HttpStatusCode": {
             "backendName": "httpStatusCode",
-            "description_en": "code",
+            "description_en": "The HTTP status code",
             "description_zh": "HTTP状态码",
             "example": "200",
             "format": "int32",
@@ -286,14 +286,14 @@
           },
           "Message": {
             "backendName": "message",
-            "description_en": "mse-200-105",
+            "description_en": "The returned message",
             "description_zh": "返回信息",
             "example": "You are not authorized to perform this operation. Action: mse:AddServiceSource, Resource: acs:mse:cn-hangzhou:1105471854403716:instance/gw-082c943a8c304e48a37a7a29a5ddeda7",
             "type": "string"
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The response data",
+            "description_en": "The ID of the request",
             "description_zh": "请求ID",
             "example": "D0DB055C-51F2-5BB2-82A6-CD8A3C6EE6BA",
             "title_en": "Id of the request",
@@ -302,7 +302,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "duplicated cluster alias name",
+            "description_en": "The request result. Valid values:\n\ntrue: The request is successful.\nfalse: The request fails",
             "description_zh": "请求结果，取值如下：\n\ntrue：请求成功。\nfalse：请求失败",
             "example": "true",
             "type": "boolean"
