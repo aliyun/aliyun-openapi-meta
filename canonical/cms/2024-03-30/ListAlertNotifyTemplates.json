@@ -2,7 +2,7 @@
   "cmd_full_name": "cms list-alert-notify-templates",
   "cmd_name": "list-alert-notify-templates",
   "deprecated": false,
-  "description_en": "查询通知模板",
+  "description_en": "Queries notification templates",
   "description_zh": "查询通知模板",
   "kebab_example": "aliyun cms list-alert-notify-templates --page-size 10 --page-number 1 --alert-notify-template-ids template-abc --alert-notify-template-name '告警通知模板' --program-lang GO --type DING --api-version 2024-03-30 --region cn-hangzhou",
   "method": "GET",
@@ -21,7 +21,7 @@
   "parameters": [
     {
       "example": "10",
-      "help_en": "The pageSize",
+      "help_en": "The page size",
       "help_zh": "分页大小",
       "location": "query",
       "name": "page_size",
@@ -34,7 +34,7 @@
     },
     {
       "example": "1",
-      "help_en": "The pageNumber",
+      "help_en": "The page number",
       "help_zh": "分页页码",
       "location": "query",
       "name": "page_number",
@@ -49,7 +49,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The alertNotifyTemplateIds",
+      "help_en": "The list of notification template IDs",
       "help_zh": "通知模板 ID 列表",
       "location": "query",
       "name": "alert_notify_template_ids",
@@ -63,7 +63,7 @@
     },
     {
       "example": "告警通知模板",
-      "help_en": "The alertNotifyTemplateName",
+      "help_en": "The notification template name",
       "help_zh": "通知模板名称",
       "location": "query",
       "name": "alert_notify_template_name",
@@ -76,7 +76,7 @@
     },
     {
       "example": "GO",
-      "help_en": "The programLang",
+      "help_en": "The template locale",
       "help_zh": "模板语言环境",
       "location": "query",
       "name": "program_lang",
@@ -107,30 +107,35 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "Schema of Response",
+        "description_en": "The response content structure",
         "description_zh": "响应内容结构",
         "properties": {
           "alertNotifyTemplates": {
             "backendName": "data.data",
+            "description_en": "The list of notification templates",
             "description_zh": "通知模板列表",
             "itemName": "alertNotifyTemplate",
             "items": {
+              "description_en": "The notification template",
               "description_zh": "通知模板",
               "properties": {
                 "alertNotifyTemplateId": {
                   "backendName": "identifier",
+                  "description_en": "The notification template ID",
                   "description_zh": "通知模板ID",
                   "example": "template-abc123",
                   "type": "string"
                 },
                 "alertNotifyTemplateName": {
                   "backendName": "name",
+                  "description_en": "The notification template name",
                   "description_zh": "通知模板名称",
                   "example": "高可用性告警模板",
                   "type": "string"
                 },
                 "programLang": {
                   "backendName": "programLang",
+                  "description_en": "The template syntax type. The current template syntax is fixed to GO and uses the Go template syntax",
                   "description_zh": "按模板语法类型过滤。当前模板语法固定为 GO，使用 Go template 语法",
                   "example": "GO",
                   "type": "string"
@@ -138,21 +143,25 @@
                 "templates": {
                   "additionalProperties": {
                     "additionalProperties": {
+                      "description_en": "The values of the template fields. All values are strings. The title and content fields use Go templates. Each event in incidentLifeCycleNotifyTemplates includes the title, content, and enable fields. If an event is not configured or enable is set to false, the system falls back to the title and content of the same language. If those are also empty, the system default template is used. Available Go template variables include {{.incident.title}}, {{.incident.severity}}, {{.incident.state}}, and {{len .events}}",
                       "description_zh": "模板字段值，均为字符串。title、content 为 Go template 模板；incidentLifeCycleNotifyTemplates 中每个事件包含 title、content 和 enable。事件未配置或 enable 为 false 时，回退使用同语言的 title、content，仍为空时使用系统默认模板。可用 Go template 变量如 {{.incident.title}}、{{.incident.severity}}、{{.incident.state}}、{{len .events}}",
                       "example": "云监控报警: {{.incident.title}}",
                       "type": "string"
                     },
+                    "description_en": "The template configuration object for a specified language. It can include title (title template), content (content template), and incidentLifeCycleNotifyTemplates (templates configured by incident lifecycle events). Supported event types include IncidentCreationNotify (incident creation), IncidentCycleNotify (sent at repeated notification intervals while the incident is unresolved), IncidentResolutionNotify (incident resolution), and IncidentEscalationNotify (incident escalation). In query responses, incidentLifeCycleNotifyTemplates is returned as a JSON object. In create and update requests, it must be passed as a JSON string. If no template is configured for a language, the key for that language is not returned in the response",
                     "description_zh": "指定语言的模板配置对象，可包含 title（标题模板）、content（正文模板）和 incidentLifeCycleNotifyTemplates（按问题生命周期事件配置的模板）。事件类型支持 IncidentCreationNotify（问题创建）、IncidentCycleNotify（问题未恢复期间按重复通知间隔发送）、IncidentResolutionNotify（问题恢复）、IncidentEscalationNotify（问题升级）。查询响应中 incidentLifeCycleNotifyTemplates 以 JSON 对象返回，创建、更新请求中需传 JSON 字符串。某语言未配置任何模板时，响应中不返回该语言的 key",
                     "example": "{\"title\":\"云监控报警: {{.incident.title}}\",\"content\":\"**报警标题:** {{.incident.title}}\\n**级别:** {{.incident.severity}}\\n**事件数:** {{len .events}}\",\"incidentLifeCycleNotifyTemplates\":{\"IncidentCreationNotify\":{\"title\":\"云监控报警: {{.incident.title}}\",\"content\":\"**报警标题:** {{.incident.title}}\\n**级别:** {{.incident.severity}}\",\"enable\":true},\"IncidentResolutionNotify\":{\"title\":\"云监控报警已解决: {{.incident.title}}\",\"content\":\"**报警标题:** {{.incident.title}}\\n**级别:** {{.incident.severity}}\",\"enable\":true}}}",
                     "type": "object"
                   },
                   "backendName": "templateMap",
+                  "description_en": "The multilingual notification templates. The key is the language code: zh (Chinese) or en (English). The value is the template configuration object for the language. When a notification is sent, the corresponding template is selected based on the recipient's language. The content format varies by type: Markdown for DING, WEIXIN, and FEISHU; HTML for EMAIL; plain text for SMS, CALL, and SLACK; and JSON for CUSTOM",
                   "description_zh": "多语言通知模板。key 为语言代码：zh（中文）、en（英文）；value 为该语言的模板配置对象。发送通知时按收件人语言选择对应模板。正文格式随 type 不同：DING、WEIXIN、FEISHU 为 Markdown，EMAIL 为 HTML，SMS、CALL、SLACK 为纯文本，CUSTOM 为 JSON",
                   "example": "{\"zh\":{\"title\":\"云监控报警: {{.incident.title}}\",\"content\":\"**报警标题:** {{.incident.title}}\\n**级别:** {{.incident.severity}}\\n**事件数:** {{len .events}}\",\"incidentLifeCycleNotifyTemplates\":{\"IncidentCreationNotify\":{\"title\":\"云监控报警: {{.incident.title}}\",\"content\":\"**报警标题:** {{.incident.title}}\\n**级别:** {{.incident.severity}}\",\"enable\":true},\"IncidentResolutionNotify\":{\"title\":\"云监控报警已解决: {{.incident.title}}\",\"content\":\"**报警标题:** {{.incident.title}}\\n**级别:** {{.incident.severity}}\",\"enable\":true}}},\"en\":{\"title\":\"CloudMonitor Alert: {{.incident.title}}\",\"content\":\"**Alert Title:** {{.incident.title}}\\n**Severity:** {{.incident.severity}}\\n**Events:** {{len .events}}\",\"incidentLifeCycleNotifyTemplates\":{\"IncidentCreationNotify\":{\"title\":\"CloudMonitor Alert: {{.incident.title}}\",\"content\":\"**Alert Title:** {{.incident.title}}\\n**Severity:** {{.incident.severity}}\",\"enable\":true},\"IncidentResolutionNotify\":{\"title\":\"CloudMonitor Alert Resolved: {{.incident.title}}\",\"content\":\"**Alert Title:** {{.incident.title}}\\n**Severity:** {{.incident.severity}}\",\"enable\":true}}}}",
                   "type": "object"
                 },
                 "type": {
                   "backendName": "type",
+                  "description_en": "The notification channel type. Valid values:\nDING\nWEIXIN\nFEISHU\nSLACK\nCUSTOM\nTEAMS\nSMS\nEMAIL\nCALL\nPAGER_DUTY",
                   "description_zh": "通知渠道类型。支持：\nDING\nWEIXIN\nFEISHU\nSLACK\nCUSTOM\nTEAMS\nSMS\nEMAIL\nCALL\nPAGER_DUTY",
                   "example": "DING",
                   "type": "string"
@@ -164,6 +173,7 @@
           },
           "pageNumber": {
             "backendName": "data.pageNumber",
+            "description_en": "The page number",
             "description_zh": "分页页码",
             "example": "1",
             "format": "int64",
@@ -171,6 +181,7 @@
           },
           "pageSize": {
             "backendName": "data.pageSize",
+            "description_en": "The page size",
             "description_zh": "分页大小",
             "example": "10",
             "format": "int64",
@@ -178,6 +189,7 @@
           },
           "requestId": {
             "backendName": "requestId",
+            "description_en": "The request ID",
             "description_zh": "请求ID",
             "example": "CD8BA7D6-995D-578D-9941-**********",
             "title_en": "Id of the request",
@@ -186,6 +198,7 @@
           },
           "total": {
             "backendName": "data.total",
+            "description_en": "The total number of records",
             "description_zh": "总记录数",
             "example": "33",
             "format": "int64",
