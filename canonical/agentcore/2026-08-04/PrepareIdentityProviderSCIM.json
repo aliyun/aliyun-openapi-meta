@@ -3,7 +3,7 @@
   "cmd_full_name": "agentcore prepare-identity-provider-scim",
   "cmd_name": "prepare-identity-provider-scim",
   "deprecated": false,
-  "description_en": "Prepares the SCIM receiving configuration, and returns the provisioning URL and credential summary. Issues a token if no available credentials exist and returns the plaintext only in the current response. Does not automatically enable user synchronization",
+  "description_en": "Prepares the SCIM receiving configuration and returns the provisioning URL and credential summary. Issues a token if no available credentials exist and returns the plaintext only for the current request. This operation does not automatically enable user synchronization",
   "description_zh": "准备 SCIM 接收配置，返回预配 URL 和凭据摘要；没有可用凭据时签发 Token，仅本次返回明文，不自动开启 AC 用户同步",
   "kebab_example": "aliyun agentcore prepare-identity-provider-scim --workspace-id ws-example --region cn-hangzhou",
   "method": "POST",
@@ -52,17 +52,17 @@
           },
           "data": {
             "backendName": "data",
-            "description_en": "The operation result. For the result structure, see the response fields of this API operation. For asynchronous write API operations, the response indicates that the request is accepted and does not guarantee that the background task is completed",
+            "description_en": "The operation result. For the result structure, see the response fields of this API. For asynchronous write APIs, the response indicates that the request is accepted, but does not guarantee that the background task is completed",
             "description_zh": "结果结构见本接口返回字段；异步写接口的返回表示受理，不保证后台任务已完成",
             "properties": {
               "configuration": {
                 "backendName": "configuration",
-                "description_en": "The AgentIdentity receiving configuration. The actual SAML configuration is read on demand only by calling GetIdentityProvider. SCIM query and prepare operations return the actual receiving status and URL",
+                "description_en": "The actual SAML configuration is read on demand only by using GetIdentityProvider. SCIM query and prepare operations return the actual receiving status and URL",
                 "description_zh": "SAML 实际配置只在 GetIdentityProvider 按需回读；SCIM 查询和准备返回实际接收状态及 URL",
                 "properties": {
                   "baseUrl": {
                     "backendName": "baseUrl",
-                    "description_en": "The URL configured for the external provisioning system. The presence of a URL does not indicate that the external configuration is completed or that AC synchronization is enabled",
+                    "description_en": "The URL configured for the external provisioning system. The presence of a URL does not indicate that the external configuration is completed or that access control synchronization is enabled",
                     "description_zh": "配置给外部预配系统的 URL；有地址不代表已完成外部配置或开启 AC 同步",
                     "example": "https://example.com/scim/v2",
                     "title_en": "IdP 配置使用的 SCIM 地址",
@@ -71,7 +71,7 @@
                   },
                   "status": {
                     "backendName": "status",
-                    "description_en": "The AgentIdentity receiving status. Enabled indicates that SCIM receiving is enabled, and Disabled indicates that it is disabled. This status is not equivalent to the expected value of syncEnabled in AC",
+                    "description_en": "The receiving status of AgentIdentity. Enabled indicates that SCIM receiving is enabled, and Disabled indicates that it is disabled. This status is not equivalent to the expected value of syncEnabled for access control",
                     "description_zh": "Enabled 表示已开启 SCIM 接收，Disabled 表示关闭；不等同 AC 的 syncEnabled 期望值",
                     "example": "Enabled",
                     "title_en": "AgentIdentity 接收状态",
@@ -85,7 +85,7 @@
               },
               "credential": {
                 "backendName": "credential",
-                "description_en": "The current credential summary, including credentialId, status, createTime, and expireTime. It does not include the repeatedly retrievable token",
+                "description_en": "The current credential summary, which includes the credentialId, status, createTime, and expireTime fields. This summary does not include the token",
                 "description_zh": "credentialId、status、createTime、expireTime；不包含可重复获取的 Token",
                 "properties": {
                   "createTime": {
@@ -117,7 +117,7 @@
                   },
                   "status": {
                     "backendName": "status",
-                    "description_en": "The AgentIdentity credential status. Only credentials that are in the Enabled state and have not expired are considered available. This field is not the operationStatus of a SCIM task",
+                    "description_en": "The credential status of AgentIdentity. Only credentials that are in the Enabled state and have not expired are considered available. This field is not the operationStatus of a SCIM task",
                     "description_zh": "仅 Enabled 且尚未过期的凭据视为可用；此字段不是 SCIM 任务 operationStatus",
                     "example": "Enabled",
                     "title_en": "AgentIdentity 凭据状态",
@@ -131,7 +131,7 @@
               },
               "token": {
                 "backendName": "token",
-                "description_en": "The plaintext token returned only when a new credential is created. If the prepare operation reuses a valid credential, this value is null. The token cannot be retrieved again from the list. If the response is lost, query the list first. The token is not automatically reissued. Do not write the token to logs or persistent frontend caches",
+                "description_en": "The plaintext token is returned only when a new credential is created. If the prepare operation reuses a valid credential, this field is null. The token cannot be retrieved again from the list. If the response is lost, query the list first instead of automatically reissuing the token. Do not write the token to logs or persist it in frontend caches",
                 "description_zh": "新建凭据才返回明文，prepare 复用有效凭据时为 null；列表无法重取。响应丢失应先查询列表，不自动重签发；不写入日志或前端持久化缓存",
                 "example": "example-scim-token",
                 "sensitive": true,
@@ -146,7 +146,7 @@
           },
           "httpStatusCode": {
             "backendName": "httpStatusCode",
-            "description_en": "The HTTP status code of the current request. This code indicates the processing status of the request and is not equivalent to the final result of the background task",
+            "description_en": "The processing status of the current request. This status is not equivalent to the final result of the background task",
             "description_zh": "本次请求的处理状态，不等同后台任务最终结果",
             "example": "200",
             "format": "int32",
@@ -156,7 +156,7 @@
           },
           "message": {
             "backendName": "message",
-            "description_en": "The result message, which indicates that the request is accepted or contains an error message. For asynchronous tasks, check the task result by calling the corresponding query API operation",
+            "description_en": "The request acceptance or error message. For asynchronous tasks, you must check the task result by using the corresponding query API",
             "description_zh": "请求受理或错误消息；异步任务结果需按对应查询接口核对",
             "example": "success",
             "title_en": "结果消息",
@@ -174,7 +174,7 @@
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the current request is successful. A value of true indicates that the request is processed successfully. For asynchronous write operations, you must continue to query the task result",
+            "description_en": "Indicates whether the current request is processed successfully. A value of true indicates success. For asynchronous write operations, you must continue to query the task result",
             "description_zh": "true 表示本次请求处理成功；异步写入仍需继续查询任务结果",
             "title_en": "本次请求是否成功",
             "title_zh": "本次请求是否成功",
