@@ -2,7 +2,7 @@
   "cmd_full_name": "config start-configuration-recorder",
   "cmd_name": "start-configuration-recorder",
   "deprecated": false,
-  "description_en": "Enables Cloud Config to monitor the resources of your Alibaba Cloud account",
+  "description_en": "Enables Cloud Config and sets the resource monitoring scope to all resources",
   "description_zh": "开启配置审计服务并设置资源监控范围为全部",
   "kebab_example": "aliyun config start-configuration-recorder --api-version 2020-09-07 --region cn-hangzhou",
   "method": "POST",
@@ -12,13 +12,42 @@
     "action": "StartConfigurationRecorder",
     "api_style": "RPC",
     "api_version": "2020-09-07",
+    "content_type": "application/x-www-form-urlencoded",
     "method": "POST",
     "operation_type": "readAndWrite",
     "protocol": "HTTPS",
+    "req_body_type": "formData",
     "system_operation_type": "create",
     "url": ""
   },
-  "parameters": [],
+  "parameters": [
+    {
+      "example": "false",
+      "help_en": "Specifies whether to perform a dry run on the request. Valid values:\n\ntrue: performs a dry run. The system checks the request parameters and validates the business logic, but does not perform the actual operation. If the dry run succeeds, the DryRunOperation error code is returned. If the dry run fails, the corresponding error code is returned.\nfalse: performs the actual operation. Default value",
+      "help_zh": "是否仅预检本次请求。取值：\n\ntrue：执行请求参数及相关业务校验，不执行实际操作。预检通过时返回错误码 DryRunOperation；预检失败时返回对应错误码。\nfalse（默认值）：正常执行请求",
+      "location": "formData",
+      "name": "dry_run",
+      "options": [
+        "--dry-run"
+      ],
+      "raw_name": "DryRun",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "example": "1594295238-f9361358-5843-4294-8d30-b5183fac****",
+      "help_en": "The client token that is used to ensure the idempotence of the request and prevent duplicate executions. You can generate the token. The token can be up to 64 ASCII characters in length and is case-sensitive. Use different client tokens for different requests.\n\nIf a request with the same client token and parameters has been successfully executed, the original result is returned within the validity period of the idempotence record, and the request is not executed again.\nIf the parameters of a request with the same client token are inconsistent with those of the previous request, the IdempotentParameterMismatch error code is returned.\nIf the request is being executed, the IdempotentRequestInProgress error code is returned.\nIf the execution result cannot be determined, the IdempotentResultPending error code is returned. Check the execution result before you resubmit the request with a different client token.\nIf this parameter is not specified or contains only whitespace characters, idempotence is disabled",
+      "help_zh": "用于保证请求幂等性，避免重复执行。由调用方生成，最长支持64个 ASCII 可打印字符，区分大小写。不同业务请求应使用不同的 ClientToken。\n\n相同 ClientToken、相同参数的请求已执行成功时，在幂等记录有效期内返回原业务结果，不重复执行。\n相同 ClientToken 对应的参数不一致时，返回 IdempotentParameterMismatch。\n请求正在执行时，返回 IdempotentRequestInProgress。\n执行结果暂时无法确认时，返回 IdempotentResultPending，请先核实执行结果，避免更换 ClientToken 重复提交。\n不传或仅包含空白字符时，不启用幂等处理",
+      "location": "formData",
+      "name": "client_token",
+      "options": [
+        "--client-token"
+      ],
+      "raw_name": "ClientToken",
+      "required": false,
+      "type": "string"
+    }
+  ],
   "pathPattern": "",
   "product_code": "Config",
   "protocol": "HTTPS",
@@ -28,13 +57,13 @@
         "properties": {
           "ConfigurationRecorder": {
             "backendName": "data",
-            "description_en": "The details of the configuration recorder",
+            "description_en": "The resource monitoring information",
             "description_zh": "资源监控信息",
             "nullToEmpty": false,
             "properties": {
               "ConfigurationRecorderStatus": {
                 "backendName": "recorderStatus",
-                "description_en": "The status of the configuration recorder. Valid values:\n\nREGISTRABLE: The configuration recorder has not been registered.\n\nBUILDING: The configuration recorder is being deployed.\n\nREGISTERED: The configuration recorder has been registered.\n\nREBUILDING: The configuration recorder is being redeployed",
+                "description_en": "The resource monitoring status. Valid values:\n\nREGISTRABLE: not registered.\n\nBUILDING: building.\n\nREGISTERED: registered.\n\nREBUILDING: rebuilding",
                 "description_zh": "资源监控状态。取值：\n\nREGISTRABLE：未注册。\n\nBUILDING：构建中。\n\nREGISTERED：已注册。\n\nREBUILDING：重新构建中",
                 "example": "REGISTERED",
                 "mappingResourcePropertyName": "$.Status",
@@ -44,12 +73,12 @@
               },
               "ResourceTypes": {
                 "backendName": "resourceTypes",
-                "description_en": "The types of the resources that are monitored by Cloud Config",
+                "description_en": "The list of monitored resource types",
                 "description_zh": "监控资源类型列表",
                 "itemName": "ResourceType",
                 "items": {
                   "backendName": "resourceTypes",
-                  "description_en": "The type of the resource that is monitored by Cloud Config",
+                  "description_en": "The resource type",
                   "description_zh": "资源类型",
                   "example": "ACS::ECS::Instance",
                   "mappingResourcePropertyName": "$.ResourceTypes[*]",

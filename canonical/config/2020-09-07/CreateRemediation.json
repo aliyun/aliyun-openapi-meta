@@ -2,9 +2,9 @@
   "cmd_full_name": "config create-remediation",
   "cmd_name": "create-remediation",
   "deprecated": false,
-  "description_en": "Creates a remediation for an existing rule",
+  "description_en": "Configures a remediation for an existing rule",
   "description_zh": "为已有规则设置修正",
-  "kebab_example": "aliyun config create-remediation --config-rule-id cr-8a973ac2e2be00a20000 --remediation-type OOS --remediation-template-id ACS-OSS-PutBucketAcl --invoke-type MANUAL_EXECUTION --params bucketName_:_resourceId_,_regionId_:_regionId_,_permissionName_:_private --api-version 2020-09-07 --region cn-hangzhou",
+  "kebab_example": "aliyun config create-remediation --config-rule-id 'cr-8a973ac2e2be00a2****' --remediation-type OOS --remediation-template-id ACS-OSS-PutBucketAcl --invoke-type MANUAL_EXECUTION --params '{\"bucketName\": \"{resourceId}\", \"regionId\": \"{regionId}\", \"permissionName\": \"private\"}' --api-version 2020-09-07 --region cn-hangzhou",
   "method": "POST",
   "multi_version": true,
   "name": "CreateRemediation",
@@ -22,9 +22,22 @@
   },
   "parameters": [
     {
+      "example": "false",
+      "help_en": "Specifies whether to perform a dry run on the request. Valid values:\n\ntrue: performs a dry run. The system checks the request parameters and business logic but does not perform the actual operation. If the dry run succeeds, the DryRunOperation error code is returned. If the dry run fails, the corresponding error code is returned.\nfalse: performs the request. This is the default value",
+      "help_zh": "是否仅预检本次请求。取值：\n\ntrue：执行请求参数及相关业务校验，不执行实际操作。预检通过时返回错误码 DryRunOperation；预检失败时返回对应错误码。\nfalse（默认值）：正常执行请求",
+      "location": "formData",
+      "name": "dry_run",
+      "options": [
+        "--dry-run"
+      ],
+      "raw_name": "DryRun",
+      "required": false,
+      "type": "bool"
+    },
+    {
       "doc_required": true,
       "example": "cr-8a973ac2e2be00a2****",
-      "help_en": "The rule ID.\n\nFor more information, see https://help.aliyun.com/document_detail/169607.html",
+      "help_en": "The ID of the rule.\n\nFor information about how to obtain the rule ID, see https://help.aliyun.com/document_detail/169607.html",
       "help_zh": "规则ID。\n\n关于如何获取规则ID，请参见https://help.aliyun.com/document_detail/169607.html",
       "location": "formData",
       "name": "config_rule_id",
@@ -38,7 +51,7 @@
     {
       "doc_required": true,
       "example": "OOS",
-      "help_en": "The type of the remediation. Valid values:\n\nOOS: template-based remediation using OOS.\n\nFC: custom remediation using FC",
+      "help_en": "The remediation type. Valid values:\n\nOOS: CloudOps Orchestration Service (template remediation).\nFC: Function Compute (custom remediation)",
       "help_zh": "修正类型。取值：\n\nOOS：运维编排（模板修正）。\nFC：函数计算（自定义修正）",
       "location": "formData",
       "name": "remediation_type",
@@ -52,7 +65,7 @@
     {
       "doc_required": true,
       "example": "ACS-OSS-PutBucketAcl",
-      "help_en": "The ID of the remediation template.\n\nIf `RemediationType` is set to `OOS`, set this parameter to `ACS-OSS-PutBucketAcl`. For more information, see https://help.aliyun.com/document_detail/416781.html.\n\nIf `RemediationType` is set to `FC`, set this parameter to the Alibaba Cloud Resource Name (ARN) of the function in Function Compute. Example: `acs:fc:cn-hangzhou:100931896542****:services/ConfigService.LATEST/functions/test-php`",
+      "help_en": "The ID of the remediation template.\n\nIf `RemediationType` is set to `OOS`, set this parameter to `ACS-OSS-PutBucketAcl`. For information about how to obtain the remediation template ID, see https://help.aliyun.com/document_detail/416781.html.\n\nIf `RemediationType` is set to `FC`, set this parameter to the ARN of the Function Compute function. Example: `acs:fc:cn-hangzhou:100931896542****:services/ConfigService.LATEST/functions/test-php`",
       "help_zh": "修正模板ID。\n\n当`RemediationType`为`OOS`时，该参数为`ACS-OSS-PutBucketAcl`。关于如何获取修正模板ID，请参见https://help.aliyun.com/document_detail/416781.html。\n\n当`RemediationType`为`FC`时，该参数为函数计算的ARN，例如：`acs:fc:cn-hangzhou:100931896542****:services/ConfigService.LATEST/functions/test-php`",
       "location": "formData",
       "name": "remediation_template_id",
@@ -66,7 +79,7 @@
     {
       "doc_required": true,
       "example": "MANUAL_EXECUTION",
-      "help_en": "The execution mode of the remediation. Valid values:\n\nNON_EXECUTION: The remediation is not executed.\n\nAUTO_EXECUTION: The remediation is automatically executed.\n\nMANUAL_EXECUTION: The remediation is manually executed.\n\nNOT_CONFIG: The execution mode is not set",
+      "help_en": "The execution method of the remediation. Valid values:\nNON_EXECUTION: does not execute the remediation.\nAUTO_EXECUTION: automatically executes the remediation.\nMANUAL_EXECUTION: manually executes the remediation.\nNOT_CONFIG: not configured",
       "help_zh": "修正执行方式。取值：\nNON_EXECUTION：不执行。\nAUTO_EXECUTION：自动执行。\nMANUAL_EXECUTION：手动执行。\nNOT_CONFIG：未设置",
       "location": "formData",
       "name": "invoke_type",
@@ -79,7 +92,7 @@
     },
     {
       "example": "ALIYUN",
-      "help_en": "The source of the remediation template. Valid values:\n\nALIYUN (default): an official template.\n\nCUSTOM: a custom template. This value is required for custom FC remediations.\n\nNONE: no source",
+      "help_en": "The source of the template used to execute the remediation. Valid values:\nALIYUN: official template. This is the default value.\nCUSTOM: custom template. Set this parameter to CUSTOM when you configure a custom FC remediation.\nNONE: none",
       "help_zh": "执行修正的模板来源。取值：\nALIYUN（默认值）：官方模板。\nCUSTOM：自定义模板。（自定义FC修正时需要填写此值）\nNONE：无",
       "location": "formData",
       "name": "source_type",
@@ -92,7 +105,7 @@
     },
     {
       "example": "{\"bucketName\": \"{resourceId}\", \"regionId\": \"{regionId}\", \"permissionName\": \"private\"}",
-      "help_en": "The remediation parameters.\n\nFor more information, see the `TemplateDefinition` parameter in https://help.aliyun.com/document_detail/416781.html",
+      "help_en": "The parameters of the remediation setting.\n\nFor information about how to obtain the parameters of the remediation setting, see the `TemplateDefinition` parameter in https://help.aliyun.com/document_detail/416781.html",
       "help_zh": "修正设置的参数。\n\n关于如何获取修正设置的参数，请参见https://help.aliyun.com/document_detail/416781.html中的参数0",
       "location": "formData",
       "name": "params",
@@ -105,7 +118,7 @@
     },
     {
       "example": "AAAAAdDWBF2****",
-      "help_en": "A client token to ensure the idempotence of the request. The token must be unique for each request. The `ClientToken` parameter contains only ASCII characters and must not exceed 64 characters in length",
+      "help_en": "The client token that is used to ensure the idempotence of the request. You can use the client to generate the token, but you must make sure that the token is unique among different requests. The token can contain only ASCII characters and cannot exceed 64 characters in length",
       "help_zh": "保证请求幂等性。从您的客户端生成一个参数值，确保不同请求间该参数值唯一。`ClientToken`只支持ASCII字符，且不能超过64个字符",
       "location": "formData",
       "name": "client_token",
@@ -128,7 +141,7 @@
         "properties": {
           "RemediationId": {
             "backendName": "data",
-            "description_en": "The ID of the remediation",
+            "description_en": "The ID of the remediation setting",
             "description_zh": "修正设置ID",
             "example": "crr-909ba2d4716700eb****",
             "mappingResourcePropertyName": "$.RemediationId",
@@ -138,7 +151,7 @@
           },
           "RequestId": {
             "backendName": "traceId",
-            "description_en": "The request ID",
+            "description_en": "The ID of the request",
             "description_zh": "请求ID",
             "example": "C7817373-78CB-4F9A-8AFA-E7A88E9D64A2",
             "nullToEmpty": false,
