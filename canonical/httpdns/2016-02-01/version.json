@@ -6,6 +6,12 @@
       "description_en": "Adds a domain name based on the specified parameters",
       "description_zh": "根据传入参数添加域名"
     },
+    "CreateSdnsRuleCategory": {
+      "cmd_name": "create-sdns-rule-category",
+      "deprecated": false,
+      "description_en": "Creates a custom resolution policy for a domain name connected to the current account. This operation supports the LINE mode and the IP_RANGE mode. IP address ranges can include IPv4 and IPv6 addresses. When a match occurs, A or AAAA records are returned based on the rules. By default, the policy is created in the disabled state. If Enable is set to true, the policy is enabled upon creation, but actual resolution still requires waiting for configuration propagation. The returned Id is used for subsequent queries, updates, enabling, disabling, and deletion. Create a disabled policy first, and then enable it after querying and verifying it. The policy type and the bound domain name cannot be modified after creation. If the response times out or is lost, query the list first to verify and avoid duplicate creation",
+      "description_zh": "为当前账号已接入的域名创建自定义解析策略，支持线路模式 LINE 和客户端地址段模式 IP_RANGE。地址段可包含 IPv4、IPv6，命中后按规则返回 A 或 AAAA 记录。默认创建为停用状态；Enable=true 表示创建时设为启用，实际解析仍需等待配置传播。成功返回的 Id 用于后续查询、更新、启停和删除。建议先创建停用策略，查询并验证后再启用。策略类型及绑定域名创建后不可修改。若响应超时或丢失，请先查询列表核对，避免重复创建"
+    },
     "DeleteDomain": {
       "cmd_name": "delete-domain",
       "deprecated": false,
@@ -47,6 +53,42 @@
       "deprecated": false,
       "description_en": "Refreshes the domain name cache",
       "description_zh": "刷新域名缓存"
+    },
+    "SdnsDeleteRuleCategory": {
+      "cmd_name": "sdns-delete-rule-category",
+      "deprecated": false,
+      "description_en": "Deletes a custom resolution policy of the current account by policy ID. A deleted policy cannot be recovered by using its original ID, and a new ID is generated when the policy is recreated. Disable the policy and verify the resolution results before deletion. After an address block policy is deleted, its scope is excluded from overlap checks with other policies. Actual resolution takes effect after configuration propagation. You can call SdnsListRuleCategories to verify the deletion",
+      "description_zh": "根据策略 Id 删除当前账号的自定义解析策略。删除后不能通过原 Id 恢复；重新创建会获得新的 Id。建议先停用并验证解析结果，再删除。删除地址段策略后，其范围不再参与其他策略的重叠检查；实际解析需等待配置传播。可通过 SdnsListRuleCategories 确认删除结果"
+    },
+    "SdnsGetRuleCategory": {
+      "cmd_name": "sdns-get-rule-category",
+      "deprecated": false,
+      "description_en": "根据ID获取规则策略",
+      "description_zh": "根据ID获取规则策略"
+    },
+    "SdnsListRuleCategories": {
+      "cmd_name": "sdns-list-rule-categories",
+      "deprecated": false,
+      "description_en": "Queries the custom resolution policies for a specified domain name under the current account, including line policies, client CIDR block policies, and policies in enabled or disabled states. The returned IDs can be used to query details, update, enable, disable, or delete policies. This operation does not provide pagination parameters and does not guarantee the order of returned results. CIDR blocks are returned in the original input format",
+      "description_zh": "查询当前账号指定域名下的自定义解析策略，包含线路策略、客户端地址段策略以及启用和停用状态的策略。返回的 Id 可用于查询详情、更新、启停或删除。接口不提供分页参数，也不保证返回顺序；地址段按保存的原始输入返回"
+    },
+    "SdnsSwitchRuleCategory": {
+      "cmd_name": "sdns-switch-rule-category",
+      "deprecated": false,
+      "description_en": "启用、禁用规则策略",
+      "description_zh": "启用、禁用规则策略"
+    },
+    "SdnsVerifyRuleCategory": {
+      "cmd_name": "sdns-verify-rule-category",
+      "deprecated": false,
+      "description_en": "Validates the submitted rules without saving or enabling any policies. In IP_RANGE mode, the Cip parameter is used to simulate a client IPv4 or IPv6 address. The system checks for CIDR block matches first and then returns the matched rules. If no custom parameters are used, pass an empty JSON object {} for the top-level Args parameter. If no rules are matched, the Data field is empty or omitted. A successful API call does not indicate a policy match. This operation does not check for CIDR block conflicts with existing policies, perform A/AAAA query type filtering or weight sampling, or simulate the complete resolution chain such as legacy CIDR block configurations, line fallback, or Function Compute. After saving and enabling the policies, verify them by using the actual resolution API",
+      "description_zh": "验证本次提交的规则，不保存或启用任何策略。IP_RANGE 模式使用 Cip 模拟客户端 IPv4 或 IPv6 地址，先检查地址段匹配，再返回命中的规则；无自定义参数时，顶层 Args 传空对象的 JSON 文本 {}。未命中时 Data 为空或省略，接口调用成功不表示策略命中。本接口不检查与已有策略的地址段冲突，不进行 A/AAAA 查询类型过滤或权重抽样，也不模拟老地址段配置、线路回退、函数计算等完整解析链路。保存和启用后仍应通过实际解析接口验证"
+    },
+    "UpdateSdnsRuleCategory": {
+      "cmd_name": "update-sdns-rule-category",
+      "deprecated": false,
+      "description_en": "Updates the complete rule list of an existing policy for the current account. For IP_RANGE policies, the client IP address ranges can be replaced as a whole at the same time. If ClientIpRanges is omitted, the original IP address ranges are retained. Explicitly passing an empty array is not allowed. The update does not change the bound domain names, match types, or enabled status of the policy. The new ranges are checked for conflicts only with other IP address range policies under the same domain name. If the validation fails, the update is not saved. After a successful update, you can call SdnsGetRuleCategory to verify the configuration. Actual DNS resolution requires waiting for configuration propagation",
+      "description_zh": "更新当前账号已有策略的完整规则列表。对于 IP_RANGE 策略，可同时整体替换客户端地址段；省略 ClientIpRanges 时保留原地址段，显式传入空数组不允许。更新不改变策略的绑定域名、匹配类型和启停状态。新范围仅与同域名的其他地址段策略检查冲突；校验失败不保存本次更新。成功后可调用 SdnsGetRuleCategory 核对配置，实际解析需等待配置传播"
     }
   },
   "endpoints": [
