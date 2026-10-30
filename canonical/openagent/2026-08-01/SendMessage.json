@@ -1,11 +1,11 @@
 {
-  "camel_example": "",
+  "camel_example": "aliyun openagent POST /openapi/v1/agent/sessions/session_example_001/messages --region cn-hangzhou --header \"Content-Type=application/json\" --version 2026-08-01 --force",
   "cmd_full_name": "openagent send-message",
   "cmd_name": "send-message",
   "deprecated": false,
-  "description_en": "统一对话端点(POST→SSE,AG-UI 事件流)",
+  "description_en": "Sends a message",
   "description_zh": "发送消息",
-  "kebab_example": "",
+  "kebab_example": "aliyun openagent send-message --session-id session_example_001 --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "SendMessage",
@@ -31,7 +31,7 @@
   "parameters": [
     {
       "example": "session_example_001",
-      "help_en": "The sessionId",
+      "help_en": "The ID of the target session to which the message is sent or the run is resumed",
       "help_zh": "发送消息或恢复运行的目标会话 ID",
       "location": "path",
       "name": "session_id",
@@ -44,7 +44,7 @@
     },
     {
       "example": "请查询示例资源状态，不执行变更。",
-      "help_en": "type=MESSAGE 时必填且非空",
+      "help_en": "The message text in MESSAGE mode. This parameter cannot be empty. The type can be omitted in this mode",
       "help_zh": "MESSAGE 模式的消息文本，不能为空。该模式可省略 type",
       "location": "body",
       "min_length": "1",
@@ -62,7 +62,7 @@
         "fields": [
           {
             "example": "interrupt_example_001",
-            "help_en": "The interruptId",
+            "help_en": "The ID of the interrupt to be replied to. Obtain this value from `data.outcome.interrupts[].id` in the SSE `RUN_FINISHED` event or `data.outcome.interrupts[].id` in the `GetRun` response",
             "help_zh": "待回复的中断 ID。取自 SSE `RUN_FINISHED` 事件的 `data.outcome.interrupts[].id`，或 `GetRun` 响应的 `data.outcome.interrupts[].id`",
             "name": "interrupt_id",
             "options": [
@@ -74,7 +74,7 @@
           },
           {
             "example": "{\"region\":\"cn-hangzhou\"}",
-            "help_en": "The payload",
+            "help_en": "The interrupt handling result. This parameter is required when `status` is set to `resolved` and must conform to the `responseSchema` of the corresponding interrupt. Do not pass this parameter when `status` is set to `cancelled`",
             "help_zh": "中断处理结果。status 为 resolved 时必填，须符合对应中断的 responseSchema；为 cancelled 时不传",
             "name": "payload",
             "options": [
@@ -90,7 +90,7 @@
               "cancelled"
             ],
             "example": "resolved",
-            "help_en": "The status",
+            "help_en": "The reply method for the current interrupt. `resolved` indicates that the answer, confirmation, or tool result required by the interrupt is submitted, and `payload` must be provided. `cancelled` indicates that the interrupt is canceled, and `payload` is not passed",
             "help_zh": "本次中断的回复方式：`resolved` 表示提交中断要求的回答、确认或工具结果，必须携带 `payload`；`cancelled` 表示取消该中断，不传 `payload`",
             "name": "status",
             "options": [
@@ -103,7 +103,7 @@
         ],
         "type": "object"
       },
-      "help_en": "type=RESUME 时必填且非空；必须覆盖全部待处理 Interrupt",
+      "help_en": "The list of interrupt replies. This parameter is required when `type` is set to `RESUME`. You must reply to all pending interrupts at once, and each `interruptId` can appear only once",
       "help_zh": "中断回复列表，`type=RESUME` 时必填。须一次回复当前全部待处理中断，每个 `interruptId` 只能出现一次",
       "location": "body",
       "name": "resume",
@@ -117,7 +117,7 @@
     },
     {
       "example": "run_example_001",
-      "help_en": "type=RECONNECT 时必填且非空",
+      "help_en": "The ID of the active run to resubscribe to. This parameter is required in RECONNECT mode",
       "help_zh": "RECONNECT 模式必填，指定需要重新订阅的活动运行 ID",
       "location": "body",
       "min_length": "1",
@@ -137,7 +137,7 @@
         "RECONNECT"
       ],
       "example": "MESSAGE",
-      "help_en": "请求判别式；省略时为 MESSAGE",
+      "help_en": "The request type. Valid values: `MESSAGE` (sends a message), `RESUME` (resumes a run), and `RECONNECT` (reconnects to a run). Default value: `MESSAGE`",
       "help_zh": "请求类型。取值：`MESSAGE`（发送消息）、`RESUME`（恢复运行）、`RECONNECT`（重连运行）。默认值：`MESSAGE`",
       "location": "body",
       "name": "type",
@@ -151,7 +151,7 @@
     },
     {
       "example": "send-message-example-001",
-      "help_en": "可选幂等键；相同身份、键和请求摘要安全重试，摘要冲突返回 IdempotencyKey.Conflict",
+      "help_en": "The idempotency key for the request. Use the same key and the same business parameters when retrying the same request",
       "help_zh": "请求幂等键。重试同一请求应使用相同键和相同业务参数",
       "location": "header",
       "name": "x_open_agent_idempotency_key",
@@ -170,6 +170,7 @@
     "200": {
       "schema": {
         "backendName": "eventStream",
+        "description_en": "The SSE event stream. The `Content-Type` is `text/event-stream`. Each business frame contains an `event` and `data` in JSON format. The `event` is consistent with `data.type`. The example shows the simplest lifecycle without text increments",
         "description_zh": "SSE 事件流，Content-Type 为 text/event-stream。每个业务帧包含 event 和 JSON 格式的 data，event 与 data.type 一致。示例为不含文本增量的最简生命周期",
         "example": "event: RUN_STARTED\ndata: {\"type\":\"RUN_STARTED\",\"sessionId\":\"session_example_001\",\"runId\":\"run_example_001\"}\n\nevent: RUN_FINISHED\ndata: {\"type\":\"RUN_FINISHED\",\"sessionId\":\"session_example_001\",\"runId\":\"run_example_001\",\"outcome\":{\"type\":\"success\"}}\n\n",
         "sensitive": true,
@@ -180,6 +181,7 @@
   "timeout_ms": 62000,
   "v1_body_parameters": [
     {
+      "help_en": "The request body. Select the corresponding structure for MESSAGE, RESUME, or RECONNECT based on the type. Do not mix fields",
       "help_zh": "请求体。按 type 选择 MESSAGE、RESUME 或 RECONNECT 对应结构，不能混用字段",
       "name": "body",
       "param_style": "json",
