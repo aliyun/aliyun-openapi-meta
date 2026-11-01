@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun dataphin-public CreateNodeSupplement --region cn-hangzhou --CreateCommand '{\"MinDueTime\":\"00:00\",\"ProjectId\":101121,\"DownStreamNodeIdList\":[{}],\"ContainAllDownStream\":false,\"FilterList\":[{}],\"MaxDueTime\":\"20:59\",\"GlobalParamList\":[{}],\"EndBizDate\":\"2024-05-21\",\"Name\":\"xx测试\",\"StartBizDate\":\"2024-05-21\",\"RunImmediately\":true,\"NodeIdList\":[{}],\"Parallelism\":1,\"NodeParamsList\":[{}]}' --OpTenantId 30001011 --version 2023-06-30 --method POST --force",
+  "camel_example": "aliyun dataphin-public CreateNodeSupplement --region cn-hangzhou --CreateCommand '{\"StartBizDate\":\"2024-05-21\",\"NodeIdList\":[{\"Id\":\"n_1232324\"}],\"ProjectId\":101121,\"EndBizDate\":\"2024-05-21\"}' --OpTenantId 30001011 --version 2023-06-30 --method POST --force",
   "cmd_full_name": "dataphin-public create-node-supplement",
   "cmd_name": "create-node-supplement",
   "deprecated": false,
-  "description_en": "General-purpose data backfill operation that supports both list mode and batch mode data backfill:\nGenerates data backfill instances that run and affect data output of related tables.\nTriggers node execution, which incurs compute and storage costs",
+  "description_en": "Backfills data in list mode or massive mode. Take note of the following items: 1. Data backfill instances are generated and run, which affects the data output of related tables. 2. Nodes are run, which incurs computing and storage costs",
   "description_zh": "通用补数据接口，支持列表模式补数据和海量模式补数据：\n1.会生成补数据实例运行，影响相关表数据产出。\n2.会进行任务运行，造成计算的费用以及存储的费用",
-  "kebab_example": "aliyun dataphin-public create-node-supplement --op-tenant-id 30001011 --create-command '{\"MinDueTime\":\"00:00\",\"ProjectId\":101121,\"DownStreamNodeIdList\":[{}],\"ContainAllDownStream\":false,\"FilterList\":[{}],\"MaxDueTime\":\"20:59\",\"GlobalParamList\":[{}],\"EndBizDate\":\"2024-05-21\",\"Name\":\"xx测试\",\"StartBizDate\":\"2024-05-21\",\"RunImmediately\":true,\"NodeIdList\":[{}],\"Parallelism\":1,\"NodeParamsList\":[{}]}' --region cn-hangzhou",
+  "kebab_example": "aliyun dataphin-public create-node-supplement --op-tenant-id 30001011 --create-command '{\"StartBizDate\":\"2024-05-21\",\"NodeIdList\":[{\"Id\":\"n_1232324\"}],\"ProjectId\":101121,\"EndBizDate\":\"2024-05-21\"}' --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "CreateNodeSupplement",
@@ -37,7 +37,7 @@
     },
     {
       "example": "30001011",
-      "help_en": "The ID of the operator user",
+      "help_en": "The ID of the operator",
       "help_zh": "操作用户ID",
       "location": "query",
       "name": "op_user_id",
@@ -52,7 +52,7 @@
       "fields": [
         {
           "example": "false",
-          "help_en": "Specifies whether to include all downstream nodes in batch mode. Default value: false",
+          "help_en": "Specifies whether to include all downstream nodes in massive mode. Default value: false",
           "help_zh": "海量模式：包含所有下游，默认为false",
           "name": "contain_all_down_stream",
           "options": [
@@ -69,7 +69,7 @@
                 "element": {
                   "type": "string"
                 },
-                "help_en": "The field ID",
+                "help_en": "The field IDs",
                 "help_zh": "字段ID",
                 "name": "field_id_list",
                 "options": [
@@ -94,7 +94,7 @@
             ],
             "type": "object"
           },
-          "help_en": "The IDs of downstream nodes to run. This parameter takes effect only when ContainAllDownStream is set to false",
+          "help_en": "The IDs of the downstream nodes to run. This parameter takes effect only when ContainAllDownStream is set to false",
           "help_zh": "下游节点ID，指定下游节点运行",
           "name": "down_stream_node_id_list",
           "options": [
@@ -106,14 +106,38 @@
         },
         {
           "example": "2024-05-21",
-          "help_en": "The end business date",
-          "help_zh": "截止业务日期",
+          "help_en": "The end business date. Format: YYYY-MM-DD",
+          "help_zh": "截止业务日期，格式为 YYYY-MM-DD",
           "name": "end_biz_date",
           "options": [
             "--end-biz-date"
           ],
           "raw_name": "EndBizDate",
           "required": true,
+          "type": "string"
+        },
+        {
+          "example": "NORMAL",
+          "help_en": "The execution status of idle nodes. Valid values: NORMAL, PAUSED, and IDLE",
+          "help_zh": "空闲节点执行状态，如 NORMAL,PAUSED,IDLE",
+          "name": "execute_status_of_idle_node",
+          "options": [
+            "--execute-status-of-idle-node"
+          ],
+          "raw_name": "ExecuteStatusOfIdleNode",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "NORMAL",
+          "help_en": "The execution status of paused nodes. Valid values: NORMAL, PAUSED, and IDLE",
+          "help_zh": "暂停节点执行状态，如 NORMAL,PAUSED,IDLE",
+          "name": "execute_status_of_pause_node",
+          "options": [
+            "--execute-status-of-pause-node"
+          ],
+          "raw_name": "ExecuteStatusOfPauseNode",
+          "required": false,
           "type": "string"
         },
         {
@@ -133,7 +157,7 @@
               },
               {
                 "example": "NODE_OUTPUT_NAME",
-                "help_en": "The filter key. Valid values:\nPROJECT: project\nNODE_OUTPUT_NAME: node output name\nNODE_NAME: node name\nNODE_ID: node ID\nTARGETS: specified endpoints\nSOURCES: specified start points",
+                "help_en": "The filter key. Valid values:\nPROJECT: project\nNODE_OUTPUT_NAME: node output name\nNODE_NAME: node name\nNODE_ID: node ID\nTARGETS: specified destination\nSOURCES: specified source",
                 "help_zh": "筛选键，支持：\nPROJECT: 项目\nNODE_OUTPUT_NAME: 节点输出名\nNODE_NAME: 节点名称\nNODE_ID: 节点ID\nTARGETS: 指定终点\nSOURCES:指定起点",
                 "name": "key",
                 "options": [
@@ -160,7 +184,7 @@
             ],
             "type": "object"
           },
-          "help_en": "The list of filters. This parameter is used together with ContainAllDownStream to include or exclude nodes based on criteria such as project or node. Default value: empty",
+          "help_en": "The filter list. This parameter is used together with ContainAllDownStream to include or exclude items such as projects and nodes. Default value: empty",
           "help_zh": "过滤器列表：和ContainAllDownStream搭配使用，可以根据项目，节点等进行正选和反选，默认为空",
           "name": "filter_list",
           "options": [
@@ -200,7 +224,7 @@
             ],
             "type": "object"
           },
-          "help_en": "The runtime global parameters",
+          "help_en": "The global parameters at runtime",
           "help_zh": "运行时全局参数",
           "name": "global_param_list",
           "options": [
@@ -212,7 +236,7 @@
         },
         {
           "example": "20:59",
-          "help_en": "The latest trigger time in the HH:MM format. This parameter is applicable only to hourly nodes",
+          "help_en": "The latest trigger time. Format: HH:MM. This parameter is dedicated to hourly nodes",
           "help_zh": "最晚调起时间(HH:MM)，小时任务专用",
           "name": "max_due_time",
           "options": [
@@ -224,7 +248,7 @@
         },
         {
           "example": "00:00",
-          "help_en": "The earliest trigger time in the HH:MM format. This parameter is applicable only to hourly nodes",
+          "help_en": "The earliest trigger time. Format: HH:MM. This parameter is dedicated to hourly nodes",
           "help_zh": "最早调起时间(HH:MM)，小时任务专用",
           "name": "min_due_time",
           "options": [
@@ -236,7 +260,7 @@
         },
         {
           "example": "xx测试",
-          "help_en": "The name of the data backfill. If this parameter is not specified, the system automatically generates a name",
+          "help_en": "The name of the data backfill task. If you do not specify this parameter, the system generates a name",
           "help_zh": "补数据名称，不传时系统生成",
           "name": "name",
           "options": [
@@ -253,7 +277,7 @@
                 "element": {
                   "type": "string"
                 },
-                "help_en": "The list of field IDs. This parameter is applicable when the node ID is a logical table node ID. If this parameter is not specified, all fields in the table are used by default",
+                "help_en": "The list of field IDs. This parameter can be specified when the node is a logical table node. If you do not specify this parameter, all fields in the table are used by default",
                 "help_zh": "字段ID列表：当节点是逻辑表节点ID时可以传，不传默认是全表",
                 "name": "field_id_list",
                 "options": [
@@ -278,7 +302,7 @@
             ],
             "type": "object"
           },
-          "help_en": "The root nodes for data backfill. Multiple root nodes are supported",
+          "help_en": "The IDs of the root nodes for data backfill. Multiple root nodes are supported",
           "help_zh": "补数据的根节点，支持多个根节点",
           "name": "node_id_list",
           "options": [
@@ -333,7 +357,7 @@
                   ],
                   "type": "object"
                 },
-                "help_en": "The parameter list",
+                "help_en": "The list of parameters",
                 "help_zh": "参数列表",
                 "name": "param_list",
                 "options": [
@@ -346,7 +370,7 @@
             ],
             "type": "object"
           },
-          "help_en": "The runtime custom parameters configured by node",
+          "help_en": "The custom parameters at runtime, configured by node",
           "help_zh": "运行时自定义参数, 按照节点进行配置",
           "name": "node_params_list",
           "options": [
@@ -381,7 +405,7 @@
           "type": "int"
         },
         {
-          "help_en": "Corresponds to the \"Task Run Time\" option in the data backfill dialog box. If this parameter is set to true, the scheduled run time of instances is ignored and all instances run immediately. If this parameter is set to false, instances wait for their scheduled run time before running. Default value: true",
+          "help_en": "Corresponds to the Task Run Time option in the data backfill dialog box on the page. Valid values:\ntrue: ignores the scheduled run time of instances and runs all instances immediately.\nfalse: waits for the scheduled run time of instances and runs each instance only when its scheduled time is reached.\nDefault value: true",
           "help_zh": "对应页面补数据对话框\"任务运行时间\"。true=忽略实例定时运行时间，所有实例立即运行；false=等待实例定时运行时间，实例到达各自定时时间后才运行。默认不传即 true",
           "name": "run_immediately",
           "options": [
@@ -392,9 +416,21 @@
           "type": "bool"
         },
         {
+          "example": "123",
+          "help_en": "The ID of the schedule resource group",
+          "help_zh": "调度资源组 ID",
+          "name": "schedule_resource_group_id",
+          "options": [
+            "--schedule-resource-group-id"
+          ],
+          "raw_name": "ScheduleResourceGroupId",
+          "required": false,
+          "type": "string"
+        },
+        {
           "example": "2024-05-21",
-          "help_en": "The start business date",
-          "help_zh": "起始业务日期",
+          "help_en": "The start business date. Format: YYYY-MM-DD",
+          "help_zh": "起始业务日期，格式为 YYYY-MM-DD",
           "name": "start_biz_date",
           "options": [
             "--start-biz-date"
@@ -418,7 +454,7 @@
     },
     {
       "example": "PROD",
-      "help_en": "The environment identifier. Valid values:\nDEV: Development environment. \nPROD (default): Production environment",
+      "help_en": "The environment identifier. Valid values:\nDEV: development environment \nPROD: production environment (default)",
       "help_zh": "环境标识\nDEV：开发环境 \nPROD（默认）：生产环境",
       "location": "query",
       "name": "env",
@@ -436,12 +472,12 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response",
+        "description_en": "The response result",
         "description_zh": "响应结果",
         "properties": {
           "Code": {
             "backendName": "Code",
-            "description_en": "The error code. A value of OK indicates that the request was successful",
+            "description_en": "The error code. A value of OK indicates that the request is successful",
             "description_zh": "请求错误码, OK表示请求正常",
             "example": "OK",
             "title_en": "请求错误码, OK表示请求正常",
@@ -478,7 +514,7 @@
           },
           "SubmitId": {
             "backendName": "SubmitId",
-            "description_en": "The submit ID.\nList mode: Returns the FlowId.\nBatch mode: Returns the JobId. You can call the GetOperationSubmitStatus operation to query the submit status. After the submission succeeds, the FlowId is returned",
+            "description_en": "The submit ID.\nNormal mode: The flow ID is returned.\nMassive mode: The submitted job ID is returned. You can call GetOperationSubmitStatus to query the submission status. After the submission succeeds, the flow ID is returned",
             "description_zh": "普通模式:返回的是FlowId\n海量模式，返回提交的JobId，可以根据GetOperationSubmitStatus查询任务提交的状态，提交成功后会返回FlowId",
             "example": "f_2264518792396800000_20210223_2329354897145659392",
             "title_en": "如果是普通模式，返回的是flowId; 如果是海量模式，返回提交的jobId，可以根据GetOperationSubmitStatus 查询提交的状态，提交成功后会返回flowId",
@@ -487,7 +523,7 @@
           },
           "Success": {
             "backendName": "Success",
-            "description_en": "Indicates whether the request was successful",
+            "description_en": "Indicates whether the request is successful",
             "description_zh": "请求成功与否",
             "example": "true/false",
             "title_en": "请求成功与否",
@@ -500,5 +536,6 @@
         "type": "object"
       }
     }
-  }
+  },
+  "timeout_ms": 62000
 }
