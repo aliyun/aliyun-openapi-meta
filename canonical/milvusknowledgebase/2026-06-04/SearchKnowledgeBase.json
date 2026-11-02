@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun milvusknowledgebase POST /api/v1/knowledge-bases/kd-620ad908ec651/search --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"image\":{\"objectKey\":\"uploaded/invoice.png\",\"base64\":\"data:image/png_base64,iVBORw0KGgoAAA...\",\"url\":\"https://example.com/invoice.png\"},\"tagFilter\":{\"conditions\":[{\"op\":\"in\",\"field\":\"category\",\"value\":\"invoice\"}],\"relation\":\"or\"},\"pageNumber\":1,\"query\":\"发票的税额是多少？\",\"pageSize\":5,\"rerankModelName\":\"qwen3-rerank\",\"version\":\"v1\",\"enableKnowledgeGraph\":false,\"documentIds\":[\"539ddb688fe811f182f637422a0713b5\"],\"retrievalConfig\":{\"minScore\":0.2,\"translationLanguages\":[\"English\"],\"semanticWeight\":0.5,\"enableQueryExpansion\":true,\"candidateCount\":5},\"rerankModelId\":123}' --version 2026-06-04 --force",
+  "camel_example": "aliyun milvusknowledgebase POST /api/v1/knowledge-bases/kd-620ad908ec651/search --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"image\":{\"objectKey\":\"uploaded/invoice.png\",\"base64\":\"data:image/png;base64,iVBORw0KGgoAAA...\",\"url\":\"https://example.com/invoice.png\"},\"tagFilter\":{\"conditions\":[{\"op\":\"in\",\"field\":\"category\",\"value\":\"invoice\"}],\"relation\":\"or\"},\"pageNumber\":1,\"query\":\"发票的税额是多少？\",\"pageSize\":5,\"rerankModelName\":\"qwen3-rerank\",\"version\":\"v1\",\"enableKnowledgeGraph\":false,\"documentIds\":[\"539ddb688fe811f182f637422a0713b5\"],\"retrievalConfig\":{\"minScore\":0.2,\"translationLanguages\":[\"English\"],\"semanticWeight\":0.5,\"enableQueryExpansion\":true,\"candidateCount\":5},\"rerankModelId\":123}' --version 2026-06-04 --force",
   "cmd_full_name": "milvusknowledgebase search-knowledge-base",
   "cmd_name": "search-knowledge-base",
   "deprecated": false,
-  "description_en": "Retrieves documents from a knowledge base",
+  "description_en": "Searches a knowledge base",
   "description_zh": "检索知识库",
-  "kebab_example": "aliyun milvusknowledgebase search-knowledge-base --knowledge-base-id kd-620ad908ec651 --query '发票的税额是多少？' --biz-version v1 --document-ids 539ddb688fe811f182f637422a0713b5 --image objectKey=uploaded/invoice.png base64=data:image/png_base64,iVBORw0KGgoAAA... url=https://example.com/invoice.png --page-number 1 --page-size 5 --retrieval-config '{\"minScore\":0.2,\"translationLanguages\":[\"English\"],\"semanticWeight\":0.5,\"enableQueryExpansion\":true,\"candidateCount\":5}' --tag-filter '{\"conditions\":[{\"op\":\"in\",\"field\":\"category\",\"value\":\"invoice\"}],\"relation\":\"or\"}' --rerank-model-id 123 --enable-knowledge-graph false --rerank-model-name qwen3-rerank --region cn-hangzhou",
+  "kebab_example": "aliyun milvusknowledgebase search-knowledge-base --knowledge-base-id kd-620ad908ec651 --query '发票的税额是多少？' --biz-version v1 --document-ids 539ddb688fe811f182f637422a0713b5 --image '{\"objectKey\":\"uploaded/invoice.png\",\"base64\":\"data:image/png;base64,iVBORw0KGgoAAA...\",\"url\":\"https://example.com/invoice.png\"}' --page-number 1 --page-size 5 --retrieval-config '{\"minScore\":0.2,\"translationLanguages\":[\"English\"],\"semanticWeight\":0.5,\"enableQueryExpansion\":true,\"candidateCount\":5}' --tag-filter '{\"conditions\":[{\"op\":\"in\",\"field\":\"category\",\"value\":\"invoice\"}],\"relation\":\"or\"}' --rerank-model-id 123 --enable-knowledge-graph false --rerank-model-name qwen3-rerank --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "SearchKnowledgeBase",
@@ -16,7 +16,9 @@
     "body_mapping": {
       "document_ids": "documentIds",
       "enable_knowledge_graph": "enableKnowledgeGraph",
+      "evidence_page_token": "evidencePageToken",
       "image": "image",
+      "include_wiki": "includeWiki",
       "page_number": "pageNumber",
       "page_size": "pageSize",
       "query": "query",
@@ -37,7 +39,7 @@
   "parameters": [
     {
       "example": "kd-620ad908ec651",
-      "help_en": "The knowledge base ID",
+      "help_en": "The ID of the knowledge base",
       "help_zh": "知识库 ID",
       "location": "path",
       "name": "knowledge_base_id",
@@ -79,6 +81,20 @@
       "type": "bool"
     },
     {
+      "example": "example-opaque-next-token",
+      "help_en": "Optional. This parameter is returned conditionally and can be passed only when includeWiki is set to true. Omit this parameter for the first evidence page. For subsequent pages, pass the evidenceNextToken from the previous page as is. The candidate pool, subject, parameters, and page size are fixed and expire after 5 minutes without renewal. If the token expires, a 409 error is returned and no automatic re-search is performed. The pageNumber parameter only controls the legacy results. Constraints: {\"minLength\":1,\"maxLength\":4096}",
+      "help_zh": "可选/条件返回；仅includeWiki=true可传；首个证据页省略，后续原样传上一页evidenceNextToken。固定候选池、主体、参数和页大小，5分钟不续期；失效409，不自动重搜。pageNumber仅控制旧results。；约束：{\"minLength\":1,\"maxLength\":4096}",
+      "location": "body",
+      "name": "evidence_page_token",
+      "options": [
+        "--evidence-page-token"
+      ],
+      "param_style": "json",
+      "raw_name": "evidencePageToken",
+      "required": false,
+      "type": "string"
+    },
+    {
       "fields": [
         {
           "example": "data:image/png;base64,iVBORw0KGgoAAA...",
@@ -106,7 +122,7 @@
         },
         {
           "example": "https://example.com/invoice.png",
-          "help_en": "The image URL",
+          "help_en": "The URL of the image",
           "help_zh": "图片 URL",
           "name": "url",
           "options": [
@@ -117,7 +133,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The image retrieval input",
+      "help_en": "The image search input",
       "help_zh": "图片检索输入",
       "location": "body",
       "name": "image",
@@ -128,6 +144,20 @@
       "raw_name": "image",
       "required": false,
       "type": "object"
+    },
+    {
+      "example": "true",
+      "help_en": "Optional. This parameter is returned conditionally and is added for compatibility. Default value: false. If set to true, the unified evidenceResults are additionally returned, and Wiki content is not disguised as original text. Constraints: {\"default\":false}",
+      "help_zh": "可选/条件返回；兼容新增；缺省 false；true 时另返回统一 evidenceResults，不将 Wiki 伪装成原文；约束：{\"default\":false}",
+      "location": "body",
+      "name": "include_wiki",
+      "options": [
+        "--include-wiki"
+      ],
+      "param_style": "json",
+      "raw_name": "includeWiki",
+      "required": false,
+      "type": "bool"
     },
     {
       "example": "1",
@@ -145,7 +175,7 @@
     },
     {
       "example": "5",
-      "help_en": "The number of entries per page",
+      "help_en": "The number of items per page",
       "help_zh": "每页数量",
       "location": "body",
       "name": "page_size",
@@ -159,7 +189,7 @@
     },
     {
       "example": "发票的税额是多少？",
-      "help_en": "The retrieval query",
+      "help_en": "The search query",
       "help_zh": "检索问题",
       "location": "body",
       "name": "query",
@@ -173,7 +203,7 @@
     },
     {
       "example": "123",
-      "help_en": "The reranking model ID",
+      "help_en": "The ID of the rerank model",
       "help_zh": "重排模型 ID",
       "location": "body",
       "name": "rerank_model_id",
@@ -187,7 +217,7 @@
     },
     {
       "example": "qwen3-rerank",
-      "help_en": "The name of a reranking model that the tenant has activated. If both rerankModelName and rerankModelId are specified, this parameter takes precedence",
+      "help_en": "The name of the rerank model activated for the tenant. If both rerankModelId and this parameter are specified, this parameter takes precedence",
       "help_zh": "租户已开通的重排模型名称。同时填写 rerankModelId 时，本参数优先生效",
       "location": "body",
       "name": "rerank_model_name",
@@ -203,7 +233,7 @@
       "fields": [
         {
           "example": "5",
-          "help_en": "The number of candidate recall results",
+          "help_en": "The number of recalled candidates",
           "help_zh": "候选召回数量",
           "name": "candidate_count",
           "options": [
@@ -357,7 +387,7 @@
     },
     {
       "example": "v1",
-      "help_en": "The knowledge base version",
+      "help_en": "The version of the knowledge base",
       "help_zh": "知识库版本",
       "location": "body",
       "name": "version",
@@ -376,12 +406,12 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The retrieval result",
+        "description_en": "The search results",
         "description_zh": "检索结果",
         "properties": {
           "accessDeniedDetail": {
             "backendName": "accessDeniedDetail",
-            "description_en": "The details of the access denial due to a permission verification failure",
+            "description_en": "The access denial details",
             "description_zh": "权限校验失败详情",
             "example": "{\"PolicyType\":\"AccountLevelIdentityBasedPolicy\",\"NoPermissionType\":\"ImplicitDeny\",\"AuthAction\":\"milvusknowledgebase:SearchKnowledgeBase\"}",
             "title_en": "权限校验失败详情",
@@ -390,13 +420,333 @@
           },
           "code": {
             "backendName": "code",
-            "description_en": "The return code",
+            "description_en": "The status code",
             "description_zh": "返回状态码",
             "example": "0",
             "format": "int32",
             "title_en": "返回状态码",
             "title_zh": "返回状态码",
             "type": "integer"
+          },
+          "evidenceNextToken": {
+            "backendName": "evidenceNextToken",
+            "description_en": "Optional. Conditionally returned. Required when includeWiki is set to true. The cursor for the next page of evidence. Null for the last page. Not used for legacy results pagination. Null is allowed. The not-equal-to condition can be omitted. Constraints: {\"minLength\":1,\"maxLength\":4096}",
+            "description_zh": "可选/条件返回；includeWiki=true必返；下一证据页游标，末页null；不用于旧results分页。；允许null；不等于可以省略；约束：{\"minLength\":1,\"maxLength\":4096}",
+            "example": "example-opaque-next-token",
+            "required": false,
+            "title_en": "下一证据页游标",
+            "title_zh": "下一证据页游标",
+            "type": "string"
+          },
+          "evidenceResults": {
+            "backendName": "evidenceResults",
+            "description_en": "Optional. Conditionally returned. Returned only when includeWiki is set to true. The current page of unified and merged evidence. Constraints: {\"minItems\":0,\"maxItems\":100}",
+            "description_zh": "可选/条件返回；仅 includeWiki=true 时返回；统一融合后的当前页；约束：{\"minItems\":0,\"maxItems\":100}",
+            "example": "[{\"evidenceId\":\"wiki_section_page_1_sec_1_rev_7\",\"kind\":\"wiki_section\",\"knowledgeBaseId\":\"example_kb\",\"documentId\":null,\"chunkId\":null,\"pageId\":\"page_1\",\"sectionId\":\"sec_1\",\"entityId\":null,\"relationId\":null,\"revisionId\":\"rev_7\",\"batchId\":\"batch_7\",\"title\":\"保修说明\",\"content\":\"产品甲保修期为18个月。\",\"score\":0.62,\"sourceRefs\":[{\"documentId\":\"doc_manual\",\"chunkId\":\"chunk_1\",\"sourceRevisionId\":\"source_rev_7\",\"version\":\"DRAFT\"}],\"sourceRefCount\":1,\"sourceRefsTruncated\":false,\"sourceTaskId\":\"11111111111111111111111111111111\"}]",
+            "itemName": "evidenceResultsItem",
+            "items": {
+              "description_en": "Required. Always returned. A structured object. Conditional requirements and cross-field rules are validated by the backend. Refer to the operation description and the full contract for details",
+              "description_zh": "必填/必返；结构化对象；条件必填/跨字段规则由后端校验，见本接口说明与完整契约",
+              "example": "{\"evidenceId\":\"wiki_section_page_1_sec_1_rev_7\",\"kind\":\"wiki_section\",\"knowledgeBaseId\":\"example_kb\",\"documentId\":null,\"chunkId\":null,\"pageId\":\"page_1\",\"sectionId\":\"sec_1\",\"entityId\":null,\"relationId\":null,\"revisionId\":\"rev_7\",\"batchId\":\"batch_7\",\"title\":\"保修说明\",\"content\":\"产品甲保修期为18个月。\",\"score\":0.62,\"sourceRefs\":[{\"documentId\":\"doc_manual\",\"chunkId\":\"chunk_1\",\"sourceRevisionId\":\"source_rev_7\",\"version\":\"DRAFT\"}],\"sourceRefCount\":1,\"sourceRefsTruncated\":false,\"sourceTaskId\":\"11111111111111111111111111111111\"}",
+              "parseType": "struct",
+              "properties": {
+                "batchId": {
+                  "backendName": "batchId",
+                  "description_en": "Required. Always returned. Null is allowed. The semantics of null values follow the field description. Null is allowed. The not-equal-to condition can be omitted. Constraints: {\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "description_zh": "必填/必返；允许 null；空值语义按字段说明；允许null；不等于可以省略；约束：{\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "example": "null",
+                  "required": true,
+                  "title_en": "加工批次ID",
+                  "title_zh": "加工批次ID",
+                  "type": "string"
+                },
+                "chunkId": {
+                  "backendName": "chunkId",
+                  "description_en": "Required. Always returned. Null is allowed. The semantics of null values follow the field description. Null is allowed. The not-equal-to condition can be omitted. Constraints: {\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "description_zh": "必填/必返；允许 null；空值语义按字段说明；允许null；不等于可以省略；约束：{\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "example": "null",
+                  "required": true,
+                  "title_en": "切片ID",
+                  "title_zh": "切片ID",
+                  "type": "string"
+                },
+                "content": {
+                  "backendName": "content",
+                  "description_en": "Required. Always returned. The readable evidence text. Constraints: {\"maxLength\":65535}",
+                  "description_zh": "必填/必返；有预算的可读证据文本；约束：{\"maxLength\":65535}",
+                  "example": "产品甲保修期为18个月。",
+                  "required": true,
+                  "title_en": "content",
+                  "title_zh": "content",
+                  "type": "string"
+                },
+                "documentId": {
+                  "backendName": "documentId",
+                  "description_en": "Required. Always returned. Null is allowed. The semantics of null values follow the field description. Null is allowed. The not-equal-to condition can be omitted. Constraints: {\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "description_zh": "必填/必返；允许 null；空值语义按字段说明；允许null；不等于可以省略；约束：{\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "example": "null",
+                  "required": true,
+                  "title_en": "文档ID",
+                  "title_zh": "文档ID",
+                  "type": "string"
+                },
+                "entityId": {
+                  "backendName": "entityId",
+                  "description_en": "Required. Always returned. Null is allowed. The semantics of null values follow the field description. Null is allowed. The not-equal-to condition can be omitted. Constraints: {\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "description_zh": "必填/必返；允许 null；空值语义按字段说明；允许null；不等于可以省略；约束：{\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "example": "null",
+                  "required": true,
+                  "title_en": "实体ID",
+                  "title_zh": "实体ID",
+                  "type": "string"
+                },
+                "evidenceId": {
+                  "backendName": "evidenceId",
+                  "description_en": "Required. Always returned. The opaque business ID generated by the server. Validates ownership and does not accept arbitrary paths. Constraints: {\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "description_zh": "必填/必返；服务端生成的不透明业务 ID；校验归属，不接受任意路径；约束：{\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "example": "wiki_section_page_1_sec_1_rev_7",
+                  "required": true,
+                  "title_en": "证据ID",
+                  "title_zh": "证据ID",
+                  "type": "string"
+                },
+                "kind": {
+                  "backendName": "kind",
+                  "description_en": "Required. Always returned. The actual evidence object type. Constraints: {\"enum\":[\"raw\",\"wiki_page\",\"wiki_section\",\"graph_fact\"],\"maxLength\":64}",
+                  "description_zh": "必填/必返；真实证据对象类型；约束：{\"enum\":[\"raw\",\"wiki_page\",\"wiki_section\",\"graph_fact\"],\"maxLength\":64}",
+                  "enum": [
+                    "raw",
+                    "wiki_page",
+                    "wiki_section",
+                    "graph_fact"
+                  ],
+                  "example": "wiki_section",
+                  "required": true,
+                  "title_en": "对象类型",
+                  "title_zh": "对象类型",
+                  "type": "string"
+                },
+                "knowledgeBaseId": {
+                  "backendName": "knowledgeBaseId",
+                  "description_en": "Required. Always returned. The opaque business ID generated by the server. Validates ownership and does not accept arbitrary paths. Constraints: {\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "description_zh": "必填/必返；服务端生成的不透明业务 ID；校验归属，不接受任意路径；约束：{\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "example": "example_kb",
+                  "required": true,
+                  "title_en": "知识库ID",
+                  "title_zh": "知识库ID",
+                  "type": "string"
+                },
+                "pageId": {
+                  "backendName": "pageId",
+                  "description_en": "Required. Always returned. Null is allowed. The semantics of null values follow the field description. Null is allowed. The not-equal-to condition can be omitted. Constraints: {\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "description_zh": "必填/必返；允许 null；空值语义按字段说明；允许null；不等于可以省略；约束：{\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "example": "page_1",
+                  "required": true,
+                  "title_en": "Wiki页面ID",
+                  "title_zh": "Wiki页面ID",
+                  "type": "string"
+                },
+                "relationId": {
+                  "backendName": "relationId",
+                  "description_en": "Required. Always returned. Null is allowed. The semantics of null values follow the field description. Null is allowed. The not-equal-to condition can be omitted. Constraints: {\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "description_zh": "必填/必返；允许 null；空值语义按字段说明；允许null；不等于可以省略；约束：{\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "example": "null",
+                  "required": true,
+                  "title_en": "关系ID",
+                  "title_zh": "关系ID",
+                  "type": "string"
+                },
+                "revisionId": {
+                  "backendName": "revisionId",
+                  "description_en": "Required. Always returned. The opaque business ID generated by the server. Validates ownership and does not accept arbitrary paths. Constraints: {\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "description_zh": "必填/必返；服务端生成的不透明业务 ID；校验归属，不接受任意路径；约束：{\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "example": "example_value",
+                  "required": true,
+                  "title_en": "页面修订ID",
+                  "title_zh": "页面修订ID",
+                  "type": "string"
+                },
+                "score": {
+                  "backendName": "score",
+                  "description_en": "Required. Always returned. The finite numerical value used for unified ranking. For hybrid, it is the relevance of the existing Dealer.rerank. For rerank, it is the text and model hybrid relevance of the existing Dealer.rerank_by_model, along the semanticWeight and rank feature, which is not a relevance probability. The minScore is applied according to the existing unified scoring rules. Can be null for non-ranking fact evidence. Null is allowed. The not-equal-to condition can be omitted",
+                  "description_zh": "必填/必返；统一排序使用的有限数值；hybrid为现有Dealer.rerank相关度，rerank为现有Dealer.rerank_by_model的文本/模型混合相关度，沿semanticWeight和rank feature，不是相关概率；minScore按既有统一评分规则应用；非排序事实证据可为null。；允许null；不等于可以省略",
+                  "example": "0.62",
+                  "format": "double",
+                  "required": true,
+                  "title_en": "统一排序分数",
+                  "title_zh": "统一排序分数",
+                  "type": "number"
+                },
+                "sectionId": {
+                  "backendName": "sectionId",
+                  "description_en": "Required. Always returned. Null is allowed. The semantics of null values follow the field description. Null is allowed. The not-equal-to condition can be omitted. Constraints: {\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "description_zh": "必填/必返；允许 null；空值语义按字段说明；允许null；不等于可以省略；约束：{\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                  "example": "sec_1",
+                  "required": true,
+                  "title_en": "章节ID",
+                  "title_zh": "章节ID",
+                  "type": "string"
+                },
+                "sourceRefCount": {
+                  "backendName": "sourceRefCount",
+                  "description_en": "Required. Always returned. The total number of source chunk references. Authorization is performed on the full set. Constraints: {\"minimum\":1,\"maximum\":9223372036854775807}",
+                  "description_zh": "必填/必返；完整来源切片引用数；鉴权按全量集合执行；约束：{\"minimum\":1,\"maximum\":9223372036854775807}",
+                  "example": "1",
+                  "format": "int64",
+                  "required": true,
+                  "title_en": "完整来源引用数",
+                  "title_zh": "完整来源引用数",
+                  "type": "integer"
+                },
+                "sourceRefs": {
+                  "backendName": "sourceRefs",
+                  "description_en": "Required. Always returned. The actually supported sources. Constraints: {\"minItems\":1,\"maxItems\":1000}",
+                  "description_zh": "必填/必返；实际支持来源；约束：{\"minItems\":1,\"maxItems\":1000}",
+                  "example": "[{\"documentId\":\"doc_manual\",\"chunkId\":\"chunk_1\",\"sourceRevisionId\":\"source_rev_7\",\"version\":\"DRAFT\",\"contentHash\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}]",
+                  "itemName": "sourceRefsItem",
+                  "items": {
+                    "description_en": "Required. Always returned. A structured object",
+                    "description_zh": "必填/必返；结构化对象",
+                    "example": "{\"documentId\":\"example_value\",\"chunkId\":\"example_value\",\"sourceRevisionId\":\"example_value\",\"version\":\"DRAFT\",\"contentHash\":\"0000000000000000000000000000000000000000000000000000000000000000\"}",
+                    "parseType": "struct",
+                    "properties": {
+                      "chunkId": {
+                        "backendName": "chunkId",
+                        "description_en": "Required. Always returned. The opaque business ID generated by the server. Validates ownership and does not accept arbitrary paths. Constraints: {\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                        "description_zh": "必填/必返；服务端生成的不透明业务 ID；校验归属，不接受任意路径；约束：{\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                        "example": "example_value",
+                        "required": true,
+                        "title_en": "切片ID",
+                        "title_zh": "切片ID",
+                        "type": "string"
+                      },
+                      "documentId": {
+                        "backendName": "documentId",
+                        "description_en": "Required. Always returned. The opaque business ID generated by the server. Validates ownership and does not accept arbitrary paths. Constraints: {\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                        "description_zh": "必填/必返；服务端生成的不透明业务 ID；校验归属，不接受任意路径；约束：{\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                        "example": "example_value",
+                        "required": true,
+                        "title_en": "文档ID",
+                        "title_zh": "文档ID",
+                        "type": "string"
+                      },
+                      "documentName": {
+                        "backendName": "documentName",
+                        "description_en": "Optional. Conditionally returned. The document name returned only after authorization. Constraints: {\"maxLength\":1024}",
+                        "description_zh": "可选/条件返回；授权后才可返回的文档名；约束：{\"maxLength\":1024}",
+                        "example": "example_value",
+                        "required": false,
+                        "title_en": "文档名称",
+                        "title_zh": "文档名称",
+                        "type": "string"
+                      },
+                      "mediaEndMs": {
+                        "backendName": "mediaEndMs",
+                        "description_en": "Optional. Conditionally returned. Null is allowed. The semantics of null values follow the field description. Null is allowed. The not-equal-to condition can be omitted. Constraints: {\"minimum\":0,\"maximum\":9223372036854775807}",
+                        "description_zh": "可选/条件返回；允许 null；空值语义按字段说明；允许null；不等于可以省略；约束：{\"minimum\":0,\"maximum\":9223372036854775807}",
+                        "example": "0",
+                        "format": "int64",
+                        "required": false,
+                        "title_en": "mediaEndMs",
+                        "title_zh": "mediaEndMs",
+                        "type": "integer"
+                      },
+                      "mediaStartMs": {
+                        "backendName": "mediaStartMs",
+                        "description_en": "Optional. Conditionally returned. Null is allowed. The semantics of null values follow the field description. Null is allowed. The not-equal-to condition can be omitted. Constraints: {\"minimum\":0,\"maximum\":9223372036854775807}",
+                        "description_zh": "可选/条件返回；允许 null；空值语义按字段说明；允许null；不等于可以省略；约束：{\"minimum\":0,\"maximum\":9223372036854775807}",
+                        "example": "0",
+                        "format": "int64",
+                        "required": false,
+                        "title_en": "mediaStartMs",
+                        "title_zh": "mediaStartMs",
+                        "type": "integer"
+                      },
+                      "pageNumber": {
+                        "backendName": "pageNumber",
+                        "description_en": "Optional. Conditionally returned. Null is allowed. The semantics of null values follow the field description. Null is allowed. The not-equal-to condition can be omitted. Constraints: {\"minimum\":1,\"maximum\":9223372036854775807}",
+                        "description_zh": "可选/条件返回；允许 null；空值语义按字段说明；允许null；不等于可以省略；约束：{\"minimum\":1,\"maximum\":9223372036854775807}",
+                        "example": "1",
+                        "format": "int64",
+                        "required": false,
+                        "title_en": "页码",
+                        "title_zh": "页码",
+                        "type": "integer"
+                      },
+                      "sourceRevisionId": {
+                        "backendName": "sourceRevisionId",
+                        "description_en": "Required. Always returned. The opaque business ID generated by the server. Validates ownership and does not accept arbitrary paths. Constraints: {\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                        "description_zh": "必填/必返；服务端生成的不透明业务 ID；校验归属，不接受任意路径；约束：{\"minLength\":1,\"maxLength\":128,\"pattern\":\"^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$\"}",
+                        "example": "example_value",
+                        "required": true,
+                        "title_en": "来源修订ID",
+                        "title_zh": "来源修订ID",
+                        "type": "string"
+                      },
+                      "version": {
+                        "backendName": "version",
+                        "default": "DRAFT",
+                        "description_en": "Required. Always returned. The display name of the version. Does not fall back to draft if invalid or unavailable. Constraints: {\"maxLength\":64,\"pattern\":\"^(DRAFT|LATEST_PUBLISHED|v[1-9][0-9]*)$\",\"default\":\"DRAFT\"}",
+                        "description_zh": "必填/必返；版本展示名；非法/不可用不回退草稿；约束：{\"maxLength\":64,\"pattern\":\"^(DRAFT|LATEST_PUBLISHED|v[1-9][0-9]*)$\",\"default\":\"DRAFT\"}",
+                        "example": "DRAFT",
+                        "required": true,
+                        "title_en": "知识库版本",
+                        "title_zh": "知识库版本",
+                        "type": "string"
+                      }
+                    },
+                    "required": true,
+                    "title_en": "sourceRefs元素",
+                    "title_zh": "sourceRefs元素",
+                    "type": "object"
+                  },
+                  "parseType": "struct",
+                  "required": true,
+                  "title_en": "来源引用",
+                  "title_zh": "来源引用",
+                  "type": "array"
+                },
+                "sourceRefsTruncated": {
+                  "backendName": "sourceRefsTruncated",
+                  "description_en": "Required. Always returned. True when a single sourceRefs contains only the first 1000 items. You can paginate and verify by using sourceTaskId",
+                  "description_zh": "必填/必返；单次sourceRefs仅首1000条时true，可按sourceTaskId分页核查",
+                  "example": "false",
+                  "required": true,
+                  "title_en": "来源展示是否截断",
+                  "title_zh": "来源展示是否截断",
+                  "type": "boolean"
+                },
+                "sourceTaskId": {
+                  "backendName": "sourceTaskId",
+                  "description_en": "Required. Always returned. The entry point for complete sources. Must be a non-null locator when sourceRefsTruncated is true. The source operation references held by the artifact or revision remain readable, and archiving task details does not delete this source manifest. Null is allowed. The not-equal-to condition can be omitted. Constraints: {\"minLength\":32,\"maxLength\":32,\"pattern\":\"^[0-9a-f]{32}$\"}",
+                  "description_zh": "必填/必返；完整来源入口。sourceRefsTruncated=true时必为非空定位；由产物/修订持有的来源操作引用保持可读，Task详情归档不删除该来源manifest。；允许null；不等于可以省略；约束：{\"minLength\":32,\"maxLength\":32,\"pattern\":\"^[0-9a-f]{32}$\"}",
+                  "example": "null",
+                  "required": true,
+                  "title_en": "来源分页任务ID",
+                  "title_zh": "来源分页任务ID",
+                  "type": "string"
+                },
+                "title": {
+                  "backendName": "title",
+                  "description_en": "Required. Always returned. The display title after authorization. Constraints: {\"maxLength\":1024}",
+                  "description_zh": "必填/必返；授权后的展示标题；约束：{\"maxLength\":1024}",
+                  "example": "保修说明",
+                  "required": true,
+                  "title_en": "标题",
+                  "title_zh": "标题",
+                  "type": "string"
+                }
+              },
+              "required": true,
+              "title_en": "evidenceResults元素",
+              "title_zh": "evidenceResults元素",
+              "type": "object"
+            },
+            "parseType": "struct",
+            "required": false,
+            "title_en": "统一证据结果页",
+            "title_zh": "统一证据结果页",
+            "type": "array"
           },
           "httpStatusCode": {
             "backendName": "httpStatusCode",
@@ -410,7 +760,7 @@
           },
           "message": {
             "backendName": "message",
-            "description_en": "The return message",
+            "description_en": "The returned message",
             "description_zh": "返回消息",
             "example": "success",
             "title_en": "返回消息",
@@ -429,7 +779,7 @@
           },
           "pageSize": {
             "backendName": "pageSize",
-            "description_en": "The number of entries per page",
+            "description_en": "The number of items per page",
             "description_zh": "每页数量",
             "example": "5",
             "format": "int32",
@@ -555,7 +905,7 @@
                 },
                 "knowledgeBaseId": {
                   "backendName": "knowledgeBaseId",
-                  "description_en": "The knowledge base ID",
+                  "description_en": "The ID of the knowledge base",
                   "description_zh": "知识库 ID",
                   "example": "kd-xxxxxxxxxx",
                   "title_en": "知识库 ID",
@@ -573,7 +923,7 @@
                     "properties": {
                       "bottom": {
                         "backendName": "bottom",
-                        "description_en": "The bottom boundary",
+                        "description_en": "The bottom edge",
                         "description_zh": "下边界",
                         "example": "364",
                         "format": "int32",
@@ -583,7 +933,7 @@
                       },
                       "left": {
                         "backendName": "left",
-                        "description_en": "The left boundary",
+                        "description_en": "The left edge",
                         "description_zh": "左边界",
                         "example": "13",
                         "format": "int32",
@@ -603,7 +953,7 @@
                       },
                       "right": {
                         "backendName": "right",
-                        "description_en": "The right boundary",
+                        "description_en": "The right edge",
                         "description_zh": "右边界",
                         "example": "566",
                         "format": "int32",
@@ -613,7 +963,7 @@
                       },
                       "top": {
                         "backendName": "top",
-                        "description_en": "The top boundary",
+                        "description_en": "The top edge",
                         "description_zh": "上边界",
                         "example": "12",
                         "format": "int32",
@@ -632,7 +982,7 @@
                 },
                 "mediaEndMs": {
                   "backendName": "mediaEndMs",
-                  "description_en": "The end time of the audio or video chunk in the original media, in milliseconds. This field is not returned for non-media chunks",
+                  "description_en": "The end time of the audio or video chunk in the original media, in milliseconds. This parameter is not returned for non-media chunks",
                   "description_zh": "音频或视频切片在原始媒体中的结束时间，单位为毫秒；非媒体切片不返回",
                   "example": "8400",
                   "format": "int64",
@@ -642,7 +992,7 @@
                 },
                 "mediaStartMs": {
                   "backendName": "mediaStartMs",
-                  "description_en": "The start time of the audio or video chunk in the original media, in milliseconds. This field is not returned for non-media chunks",
+                  "description_en": "The start time of the audio or video chunk in the original media, in milliseconds. This parameter is not returned for non-media chunks",
                   "description_zh": "音频或视频切片在原始媒体中的开始时间，单位为毫秒；非媒体切片不返回",
                   "example": "1250",
                   "format": "int64",
@@ -652,7 +1002,7 @@
                 },
                 "mediaTimeline": {
                   "backendName": "mediaTimeline",
-                  "description_en": "The time ranges of sentence-level or paragraph-level content within the chunk in the original media. This field is not returned for non-audio chunks",
+                  "description_en": "The time range of each sentence or paragraph within the chunk in the original media. This parameter is not returned for non-audio chunks",
                   "description_zh": "切片内逐句或逐段内容在原始媒体中的时间范围；非音频切片不返回",
                   "itemName": "mediaTimelineItem",
                   "items": {
@@ -681,7 +1031,7 @@
                       },
                       "text": {
                         "backendName": "text",
-                        "description_en": "The segment text",
+                        "description_en": "The text of the segment",
                         "description_zh": "片段文字",
                         "example": "第一句话。",
                         "title_en": "片段文字",
@@ -708,7 +1058,7 @@
                 },
                 "scalarFields": {
                   "backendName": "scalarFields",
-                  "description_en": "The scalar columns of the structured knowledge base. The columns are returned by their original column names and are not used in retrieval",
+                  "description_en": "The scalar columns of the structured knowledge base. The columns are returned by their original names and are not used for retrieval",
                   "description_zh": "结构化知识库标量列（按原始列名返回，不参与检索）",
                   "example": "{\"question\":\"How do I reset it?\",\"category\":\"account\"}",
                   "parseType": "json",
@@ -758,11 +1108,11 @@
                 },
                 "tags": {
                   "backendName": "tags",
-                  "description_en": "The list of labels",
+                  "description_en": "The list of tags",
                   "description_zh": "标签列表",
                   "itemName": "tag",
                   "items": {
-                    "description_en": "The label",
+                    "description_en": "The tag",
                     "description_zh": "标签",
                     "example": "invoice",
                     "title_en": "标签",
@@ -784,7 +1134,7 @@
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful",
+            "description_en": "Indicates whether the request is successful",
             "description_zh": "请求是否成功",
             "example": "true",
             "title_en": "请求是否成功",
@@ -811,7 +1161,7 @@
   "timeout_ms": 32000,
   "v1_body_parameters": [
     {
-      "help_en": "The retrieval request",
+      "help_en": "The search request",
       "help_zh": "检索请求",
       "name": "body",
       "param_style": "json",
@@ -822,7 +1172,7 @@
   ],
   "v1_parameters": [
     {
-      "help_en": "The retrieval request",
+      "help_en": "The search request",
       "help_zh": "检索请求",
       "name": "body",
       "param_style": "json",
@@ -831,7 +1181,7 @@
       "type": "string"
     },
     {
-      "help_en": "The knowledge base ID",
+      "help_en": "The ID of the knowledge base",
       "help_zh": "知识库 ID",
       "name": "knowledgeBaseId",
       "position": "path",
