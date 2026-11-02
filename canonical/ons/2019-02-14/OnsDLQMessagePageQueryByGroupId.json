@@ -3,7 +3,7 @@
   "cmd_full_name": "ons ons-dlq-message-page-query-by-group-id",
   "cmd_name": "ons-dlq-message-page-query-by-group-id",
   "deprecated": false,
-  "description_en": "Queries dead-letter messages by page for a specified Group ID and time range",
+  "description_en": "Queries all dead-letter messages that exist in memory within a specified consumer group during a specified time period by using paging",
   "description_zh": "通过传入Group ID和时间段，分页查询指定时间段内该Group ID内存在的所有死信消息",
   "kebab_example": "aliyun ons ons-dlq-message-page-query-by-group-id --group-id GID_test_group_id --begin-time 1570723200000 --end-time 1570809600000 --current-page 2 --region cn-hangzhou",
   "method": "GET|POST",
@@ -23,7 +23,7 @@
     {
       "doc_required": true,
       "example": "GID_test_group_id",
-      "help_en": "The ID of the consumer group to query",
+      "help_en": "The ID of the consumer group to be queried",
       "help_zh": "需查询的消费端Group ID",
       "location": "query",
       "name": "group_id",
@@ -37,7 +37,7 @@
     {
       "doc_required": true,
       "example": "1570723200000",
-      "help_en": "The start of the time range to query. This value is a UNIX timestamp in milliseconds.\nIf you specify `TaskId` to retrieve more pages, this parameter is ignored. The start time from the first query is used",
+      "help_en": "The start timestamp of the query range. Unit: milliseconds.\nWhen you retrieve subsequent messages by using TaskId, the value of this parameter does not take effect. The start time specified in the first query is used by default",
       "help_zh": "查询范围的起始时间戳，单位：毫秒。\n通过TaskId进行后续取消息时，该参数设置的值不生效，默认以第一次查询时输入的起始时间为准",
       "location": "query",
       "name": "begin_time",
@@ -51,7 +51,7 @@
     {
       "doc_required": true,
       "example": "1570809600000",
-      "help_en": "The end of the time range to query. This value is a UNIX timestamp in milliseconds.\nIf you specify `TaskId` to retrieve more pages, this parameter is ignored. The end time from the first query is used",
+      "help_en": "The end timestamp of the query range. Unit: milliseconds.\nWhen you retrieve subsequent messages by using TaskId, the value of this parameter does not take effect. The end time specified in the first query is used by default",
       "help_zh": "查询范围的终止时间戳，单位：毫秒。\n通过TaskId进行后续取消息时，该参数设置的值不生效，默认以第一次查询时输入的终止时间为准",
       "location": "query",
       "name": "end_time",
@@ -64,7 +64,7 @@
     },
     {
       "example": "0BC1310300002A9F000021E4D7A48346",
-      "help_en": "The ID of the query task. Omit this parameter for the first query. For subsequent queries, use the task ID returned by the previous query",
+      "help_en": "The ID of the query task. This parameter is not required for the first query but is required for retrieving subsequent messages. You can obtain this field from the result of the previous query",
       "help_zh": "查询任务的ID，首次查询不需要输入，后续取消息必须传入，根据前一次的返回结果取出该字段",
       "location": "query",
       "name": "task_id",
@@ -78,7 +78,7 @@
     {
       "doc_required": true,
       "example": "2",
-      "help_en": "The page number to return. Pages start from 1. The value can be up to 50 and must not exceed the total number of pages",
+      "help_en": "The current page number of messages to retrieve. The value starts from 1 and increments. The maximum value is 50. The page number cannot exceed the maximum number of pages when you retrieve messages",
       "help_zh": "当前取第几页消息，从1开始递增，最大值为50，取消息时不可超过最大页数",
       "location": "query",
       "name": "current_page",
@@ -91,7 +91,7 @@
     },
     {
       "example": "5",
-      "help_en": "The number of messages to return on each page. Default value: 20. Minimum value: 5. Maximum value: 50.\nIf you specify `TaskId` to retrieve more pages, this parameter is ignored. The page size from the first query is used",
+      "help_en": "The maximum number of messages to display per page during paging. Default value: 20. Minimum value: 5. Maximum value: 50.\nWhen you retrieve subsequent messages by using TaskId, the settings of this parameter do not take effect. The number of messages per page specified in the first query is used by default",
       "help_zh": "分页查询，每页最多显示的消息数量，默认显示20条，最小5条，最多50条。\n通过TaskId进行后续取消息时，该参数设置的值不生效，默认以第一次查询时输入的每页消息数量为准",
       "location": "query",
       "name": "page_size",
@@ -105,7 +105,7 @@
     {
       "doc_required": true,
       "example": "MQ_INST_111111111111_DOxxxxxx",
-      "help_en": "The ID of the instance that contains the message",
+      "help_en": "The instance ID corresponding to the messages to be queried",
       "help_zh": "需查询的消息所对应的实例ID",
       "location": "query",
       "name": "instance_id",
@@ -140,7 +140,7 @@
               },
               "MaxPageCount": {
                 "backendName": "maxPageCount",
-                "description_en": "The total number of pages available",
+                "description_en": "The maximum number of pages in the query result",
                 "description_zh": "查询结果最大页数",
                 "example": "400",
                 "format": "int64",
@@ -239,7 +239,7 @@
               },
               "TaskId": {
                 "backendName": "taskId",
-                "description_en": "The ID of the query task. This ID is returned on the first query. Use this ID to retrieve subsequent pages",
+                "description_en": "The ID of the query task returned when the query is created for the first time. This ID is used to retrieve subsequent messages",
                 "description_zh": "第一次新建查询时，返回的查询任务ID，用于后续取消息",
                 "example": "0BC1310300002A9F000021E4D7A48346",
                 "type": "string",
@@ -251,7 +251,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID. Each request has a unique ID. Use this ID to troubleshoot issues",
+            "description_en": "The common parameter. The ID of each request is unique and can be used for troubleshooting and locating issues",
             "description_zh": "公共参数，每个请求的ID都是唯一的，可用于排查和定位问题",
             "example": "B00CD3C8-D81E-4A41-85E2-38F19252****",
             "type": "string",
