@@ -1,5 +1,5 @@
 {
-  "camel_example": "aliyun apig GET /v1/services --region cn-hangzhou --pageNumber 1 --sourceType MSE_NACOS --sourceTypes '[\"K8S\", \"FC3\"]' --name 'user-service' --pageSize 10 --resourceGroupId 'rg-acfmxxe5rc6cvla' --gatewayId 'gw-cpv4sqdl*****' --header \"Content-Type=application/json\"",
+  "camel_example": "aliyun apig GET /v1/services --region cn-hangzhou --pageNumber 1 --sourceType MSE_NACOS --sourceTypes 'K8S, FC3' --name 'user-service' --pageSize 10 --resourceGroupId 'rg-acfmxxe5rc6cvla' --gatewayId 'gw-cpv4sqdl*****' --header \"Content-Type=application/json\"",
   "cmd_full_name": "apig list-services",
   "cmd_name": "list-services",
   "components": {
@@ -19,13 +19,19 @@
           },
           "customConfig": {
             "backendName": "customConfig",
-            "description_en": "The custom configuration. This parameter is required when provider is set to custom",
+            "description_en": "The custom configuration. Specify this parameter when provider is set to custom",
             "description_zh": "自定义配置（provider=custom 时填写）",
             "if": {
               "properties": {
                 "provider": {
                   "const": "custom",
                   "enum": []
+                },
+                "upstreamAuthMode": {
+                  "enum": [
+                    "",
+                    "api-key"
+                  ]
                 }
               }
             },
@@ -56,7 +62,7 @@
           },
           "dashScopeConfig": {
             "backendName": "dashScopeConfig",
-            "description_en": "The DashScope service configuration. This parameter is required when provider is set to qwen. The appCredentials parameter cannot be empty, and each entry must have non-empty appId and apiKey values",
+            "description_en": "The DashScope service configuration. Specify this parameter when provider is set to qwen. The appCredentials parameter cannot be empty, and both appId and apiKey must be specified for each item",
             "description_zh": "百炼服务配置（provider=qwen 时填写，appCredentials 不能为空，每项 appId+apiKey 非空）",
             "if": {
               "properties": {
@@ -72,7 +78,7 @@
                 "description_en": "The application configuration",
                 "description_zh": "应用配置",
                 "items": {
-                  "description_en": "The parameter",
+                  "description_en": "The parameters",
                   "description_zh": "参数",
                   "properties": {
                     "apiKey": {
@@ -110,7 +116,7 @@
           },
           "difyConfig": {
             "backendName": "difyConfig",
-            "description_en": "The Dify service configuration. This parameter is required when provider is set to dify. The botType and apiKey parameters cannot be empty",
+            "description_en": "The Dify service configuration. Specify this parameter when provider is set to dify. Both botType and apiKey must be specified",
             "description_zh": "Dify服务配置（provider=dify 时填写，botType+apiKey 非空）",
             "if": {
               "properties": {
@@ -150,7 +156,7 @@
           },
           "enableHealthCheck": {
             "backendName": "enableHealthCheck",
-            "description_en": "Specifies whether to enable health check",
+            "description_en": "Specifies whether to enable the health check",
             "description_zh": "启用健康检查",
             "example": "true",
             "title": "启用健康检查",
@@ -184,6 +190,19 @@
             "example": "qwen",
             "required": true,
             "title": "服务供应商",
+            "type": "string"
+          },
+          "upstreamAuthMode": {
+            "backendName": "upstreamAuthMode",
+            "description_en": "Supported only for custom agents. The value api-key indicates a managed API key, and downstream-auth indicates passing through the complete client Authorization header. If this parameter is omitted or left empty during creation, the historical rule applies. If this parameter is omitted or left empty during an update, the existing mode is retained. When passing through the authorization, you can omit customConfig, and you cannot submit a non-empty key",
+            "description_zh": "仅自定义 Agent 支持。api-key 表示托管 API Key，downstream-auth 表示透传客户端完整 Authorization。创建时省略或传空沿用历史规则；更新时省略或传空保留已保存模式。透传时可省略 customConfig，且不能提交非空 Key",
+            "enum": [
+              "",
+              "api-key",
+              "downstream-auth"
+            ],
+            "example": "api-key",
+            "title": "上游鉴权模式",
             "type": "string"
           }
         },
@@ -883,9 +902,9 @@
     }
   },
   "deprecated": false,
-  "description_en": "Retrieves a list of services",
+  "description_en": "Retrieves the list of services",
   "description_zh": "获取服务列表",
-  "kebab_example": "aliyun apig list-services --page-number 1 --page-size 10 --name user-service --source-type MSE_NACOS --source-types '[\"K8S\", \"FC3\"]' --gateway-id 'gw-cpv4sqdl*****' --resource-group-id rg-acfmxxe5rc6cvla --region cn-hangzhou",
+  "kebab_example": "aliyun apig list-services --page-number 1 --page-size 10 --name user-service --source-type MSE_NACOS --source-types 'K8S, FC3' --gateway-id 'gw-cpv4sqdl*****' --resource-group-id rg-acfmxxe5rc6cvla --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
   "name": "ListServices",
@@ -928,7 +947,7 @@
     },
     {
       "example": "user-service",
-      "help_en": "The service name for exact match query",
+      "help_en": "The service name for exact match",
       "help_zh": "根据服务名精确查询",
       "location": "query",
       "name": "name",
@@ -941,7 +960,7 @@
     },
     {
       "example": "MSE_NACOS",
-      "help_en": "The source type of the service. Valid values:\n\nMSE_NACOS: The service originates from MSE Nacos.\nK8S: The service originates from a Kubernetes cluster in Container Service.\nFC3: The service originates from Function Compute.\nVIP: The service originates from a fixed address.\nDNS: The service originates from a domain name",
+      "help_en": "The source type of the service. Valid values:\nMSE_NACOS: Services from MSE Nacos.\nK8S: Services from Kubernetes clusters in Container Service.\nFC3: Services from Function Compute.\nVIP: Services from fixed addresses.\nDNS: Services from domain names",
       "help_zh": "根据服务来源类型查询, 服务来源：\nMSE_NACOS:  来源为MSE Nacos里的服务。\nK8S: 来源为容器服务里K8S集群里的服务。\nFC3: 来源为函数计算里的服务。\nVIP: 来源为固定地址的服务。\nDNS: 来源为域名的服务",
       "location": "query",
       "name": "source_type",
@@ -980,7 +999,7 @@
     },
     {
       "example": "rg-acfmxxe5rc6cvla",
-      "help_en": "The resource group ID",
+      "help_en": "The ID of the resource group",
       "help_zh": "资源组ID",
       "location": "query",
       "name": "resource_group_id",
