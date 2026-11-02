@@ -1,9 +1,9 @@
 {
-  "camel_example": "aliyun agentcore POST /image-caches/img-example/retry --region cn-hangzhou --regionId 'cn-hangzhou' --clientToken '550e8400-e29b-41d4-a716-446655440000' --workspaceId 'ws-example' --header \"Content-Type=application/json\" --version 2026-08-04 --force",
+  "camel_example": "aliyun agentcore POST /image-caches/img-example/retry --region cn-hangzhou --regionId 'cn-hangzhou' --clientToken '550e8400-e29b-41d4-a716-446655440000' --workspaceId 'ws-example' --header \"Content-Type=application/x-www-form-urlencoded\" --body 'body={}' --version 2026-08-04 --force",
   "cmd_full_name": "agentcore retry-image-cache",
   "cmd_name": "retry-image-cache",
   "deprecated": false,
-  "description_en": "Retries the image cache",
+  "description_en": "Retries an image cache",
   "description_zh": "重试镜像缓存",
   "kebab_example": "aliyun agentcore retry-image-cache --biz-region-id cn-hangzhou --workspace-id ws-example --image-id img-example --client-token 550e8400-e29b-41d4-a716-446655440000 --region cn-hangzhou",
   "method": "POST",
@@ -37,7 +37,7 @@
     },
     {
       "example": "ws-example",
-      "help_en": "The current routed workspace. The server verifies the account, region, and resource ownership. You cannot omit this parameter or use it to access other workspaces",
+      "help_en": "The current routed workspace. The server verifies the account, region, and resource ownership. This parameter cannot be omitted or used to access other workspaces",
       "help_zh": "当前路由的 Workspace，服务端校验账号、地域及资源归属；不允许省略或访问其他 Workspace",
       "location": "query",
       "name": "workspace_id",
@@ -50,7 +50,7 @@
     },
     {
       "example": "img-example",
-      "help_en": "The image cache record ID",
+      "help_en": "The cache record ID",
       "help_zh": "缓存记录标识",
       "location": "path",
       "name": "image_id",
@@ -63,7 +63,7 @@
     },
     {
       "example": "550e8400-e29b-41d4-a716-446655440000",
-      "help_en": "This parameter is required and cannot be empty. It is reserved to keep the API compatible. This field does not currently deduplicate requests or recover the original result. If a timeout occurs or the result is not confirmed, query the query cache status first before deciding whether to commit again",
+      "help_en": "The client token. It is required and non-empty, and is reserved to keep the API compatible. This field does not currently deduplicate requests or recover original results. If a timeout occurs or the result is not confirmed, query the query cache status first before deciding whether to commit again",
       "help_zh": "必填且非空，保留用于接口兼容。当前不提供基于此字段的请求去重或原结果恢复；超时或结果未确认时，先查询缓存状态，再决定是否重新提交",
       "location": "query",
       "name": "client_token",
@@ -76,7 +76,7 @@
     },
     {
       "fields": [],
-      "help_en": "The request body is a fixed empty object {}. WorkspaceId is passed as a query parameter. Do not pass the Pool, role, Digest, or network parameters",
+      "help_en": "The request body, which is a fixed empty object {}. WorkspaceId is placed in the query. Do not pass Pool, role, Digest, or network",
       "help_zh": "body 固定空对象 {}；WorkspaceId 放 query，不传 Pool、角色、Digest 或网络",
       "location": "formData",
       "name": "body",
@@ -125,7 +125,7 @@
               },
               "agentCount": {
                 "backendName": "agentCount",
-                "description_en": "The deduplicated number of agents in the current workspace that have useImageCache set to true and are associated with this logical resource. The value is greater than or equal to 0. This uses the same set as the imageCacheId filter in ListAllAgents. Agents with the feature disabled are not counted, regardless of the number of occupied instances",
+                "description_en": "The deduplicated number of agents in the current workspace that have useImageCache set to true and are associated with this logical resource. The value is greater than or equal to 0. This is the same set as the imageCacheId filter in ListAllAgents. Agents with the feature disabled are not counted, regardless of the number of occupied instances",
                 "description_zh": "当前 Workspace 内 useImageCache=true 且关联本逻辑资源的 Agent 去重数，大于等于 0；与 ListAllAgents 的 imageCacheId 筛选同集合。关闭即不计入，与实例占用数量无关",
                 "example": "0",
                 "format": "int64",
@@ -148,7 +148,7 @@
               },
               "canDelete": {
                 "backendName": "canDelete",
-                "description_en": "Indicates whether deletion is allowed. The value is true when the current workspace has no configuration references with the switch enabled, no valid instances are occupying the resource, and the resource is not being deleted. If the reference status is unknown, the query fails instead of allowing deletion by default",
+                "description_en": "Indicates whether deletion is allowed. The value is true when the current workspace has no configuration references with the switch enabled, no valid instances occupy the resource, and the resource is not being deleted. If the reference status is unknown, the query should fail instead of allowing deletion by default",
                 "description_zh": "当前 Workspace 无开启开关的配置引用且无有效实例占用、资源不在删除中时为 true。引用状态未知应使查询失败，不能默认允许",
                 "example": "false",
                 "required": true,
@@ -168,7 +168,7 @@
               },
               "deleteBlockReason": {
                 "backendName": "deleteBlockReason",
-                "description_en": "The reason why deletion is blocked. The value is null when canDelete is true. Otherwise, the value is returned based on the priority of DELETING, AGENT_ENABLED, and INSTANCES_RELEASING. Old instances may still occupy the resource even if the agent count is 0",
+                "description_en": "The reason for blocking deletion. The value is null when canDelete is true. Otherwise, the value is returned based on the priority of DELETING, AGENT_ENABLED, and INSTANCES_RELEASING. Old instances may still occupy the resource even if the agent count is 0",
                 "description_zh": "canDelete=true 时为 null；否则按 DELETING、AGENT_ENABLED、INSTANCES_RELEASING 的优先级返回。Agent 数量为 0 仍可能有旧实例占用",
                 "enum": [
                   "AGENT_ENABLED",
@@ -194,7 +194,7 @@
               },
               "error": {
                 "backendName": "error",
-                "description_en": "The reason for cache failure. This is a non-empty object when the status is FAILED, and null for other statuses. It only describes the current content and the current production round",
+                "description_en": "The cache failure reason. It must be a non-empty object when the status is FAILED, and null for other statuses. It only describes the current content and the current production round",
                 "description_zh": "FAILED 时必为非空对象，其他状态为 null；只描述当前内容和当前制作轮次",
                 "nullable": true,
                 "properties": {
@@ -256,7 +256,7 @@
               },
               "status": {
                 "backendName": "status",
-                "description_en": "The image cache status. Valid values:\nPENDING: The cache is being created.\nREADY: The cache is available.\nFAILED: An exception occurred.\nDELETING: The cache is being deleted in the current workspace",
+                "description_en": "The image cache status. Valid values:\nPENDING: creating\nREADY: available\nFAILED: abnormal\nDELETING: deleting in the current workspace",
                 "description_zh": "PENDING 创建中，READY 可用，FAILED 异常，DELETING 当前 Workspace 删除中",
                 "enum": [
                   "PENDING",
@@ -272,7 +272,7 @@
               },
               "tag": {
                 "backendName": "tag",
-                "description_en": "The source image tag with case preserved. Regular tags cannot be registered with different digests, except for the exact lowercase \"latest\" tag",
+                "description_en": "The source image tag. Case is preserved. Regular tags cannot be registered with different digests, except for the exact lowercase \"latest\" tag",
                 "description_zh": "保留大小写；普通 tag 不允许登记为不同 Digest，仅精确小写 latest 例外",
                 "example": "v1",
                 "required": true,
@@ -282,7 +282,7 @@
               },
               "workspaceId": {
                 "backendName": "workspaceId",
-                "description_en": "The workspace ID, which is consistent with the requested workspace. Resources with the same content from other workspaces are not returned",
+                "description_en": "The workspace ID. It is consistent with the requested workspace. Resources with the same content from other workspaces are not returned",
                 "description_zh": "与请求 Workspace 一致，禁止返回其他 Workspace 的同内容资源",
                 "example": "ws-example",
                 "required": true,
