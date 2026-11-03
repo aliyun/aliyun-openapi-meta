@@ -1232,12 +1232,12 @@
         "type": "object"
       },
       "DatasourceConfigUnified": {
-        "description_en": "The data source configuration aggregation, which is a shared object for PROMETHEUS, UMODEL, and APM, where fields are selected based on the type",
+        "description_en": "The datasource config aggregation (shared by PROMETHEUS, UMODEL, and APM, with fields selected based on type)",
         "description_zh": "数据源配置聚合（PROMETHEUS / UMODEL / APM 共用一对象，按 type 选用字段）",
         "properties": {
           "instanceId": {
             "backendName": "instanceId",
-            "description_en": "The Prometheus instance ID, which is used when the type is PROMETHEUS",
+            "description_en": "The Prometheus instance ID. This field is used when type is PROMETHEUS",
             "description_zh": "Prometheus 实例 ID（type=PROMETHEUS 时使用）",
             "example": "rw-xxx",
             "title": "Prometheus 实例 ID（type=PROMETHEUS / VIRTUAL_PROMETHEUS 必填；其它 type 忽略）",
@@ -1245,7 +1245,7 @@
           },
           "legacyRaw": {
             "backendName": "legacyRaw",
-            "description_en": "The original V1 datasource JSON string returned as a fallback when the type is UNKNOWN and the read path parsing fails. If this field is not empty, the frontend displays it in read-only mode",
+            "description_en": "The original V1 datasource JSON string returned as a fallback when type is UNKNOWN and read path parsing fails. The frontend displays this field as read-only when it is not empty",
             "description_zh": "当 type=UNKNOWN 且为读路径解析失败兜底时返回的原始 V1 datasource JSON 字符串。前端见此字段非空时仅做只读展示",
             "example": "{\"type\":\"SLS\"}",
             "title": "当 type=UNKNOWN 且为读路径解析失败兜底时返回的原始 V1 datasource JSON 字符串。前端见此字段非空时仅做只读展示。",
@@ -1253,7 +1253,7 @@
           },
           "legacyType": {
             "backendName": "legacyType",
-            "description_en": "The legacy type returned when the type is UNKNOWN. This indicates that the rule cannot be edited by using the new API. Submit a ticket to contact the CloudMonitor team",
+            "description_en": "The legacy type, which is returned when type is UNKNOWN to indicate that this rule cannot be edited by using the new API. Submit a ticket to contact the CloudMonitor team",
             "description_zh": "当 type=UNKNOWN 时返回，用于标识本规则当前不可在新 API 上编辑；请提服务工单联系云监控产品团队",
             "example": "SLS",
             "title": "当 type=UNKNOWN 时返回，用于标识本规则当前不可在新 API 上编辑；请提服务工单联系云监控产品团队",
@@ -1261,7 +1261,7 @@
           },
           "namespace": {
             "backendName": "namespace",
-            "description_en": "The namespace of the virtual Prometheus instance. This parameter is optional when the type is VIRTUAL_PROMETHEUS",
+            "description_en": "The namespace. This field is optional when type is VIRTUAL_PROMETHEUS and identifies the namespace to which the virtual Prometheus instance belongs",
             "description_zh": "命名空间（type=VIRTUAL_PROMETHEUS 可选），标识虚拟 Prometheus 实例所属命名空间",
             "example": "selectdb",
             "title": "命名空间（type=VIRTUAL_PROMETHEUS 可选），标识虚拟 Prometheus 实例所属命名空间",
@@ -1269,7 +1269,7 @@
           },
           "productCategory": {
             "backendName": "productCategory",
-            "description_en": "The category of the Alibaba Cloud service. This parameter is optional when the type is CLOUD_MONITORING. If this information is missing from the source, the value is unknown",
+            "description_en": "The cloud service category. This field is optional when type is CLOUD_MONITORING. Outputs unknown when this information is missing from the source",
             "description_zh": "云产品分类（type=CLOUD_MONITORING 可选）；当来源缺失该信息时输出 unknown",
             "example": "ecs",
             "title": "云产品分类（type=CLOUD_MONITORING 可选）；当来源缺失该信息时输出 unknown",
@@ -1277,7 +1277,7 @@
           },
           "project": {
             "backendName": "project",
-            "description_en": "The name of the Simple Log Service project. This parameter is required when the type is SLS. All stores share the same project",
+            "description_en": "The Simple Log Service project name. This field is required when type is SLS, and all stores share the same project",
             "description_zh": "SLS Project 名称（type=SLS 必填，所有 stores 共享同一 Project）",
             "example": "my-project",
             "title": "SLS Project 名称（type=SLS 必填，所有 stores 共享同一 Project）",
@@ -1285,7 +1285,7 @@
           },
           "regionId": {
             "backendName": "regionId",
-            "description_en": "The region ID. This parameter is optional for all types and defaults to the region of the rule or gateway",
+            "description_en": "The region ID. This field is optional for all types and defaults to the rule or gateway region",
             "description_zh": "地域 ID（各类型可选，缺省与规则/网关一致）",
             "example": "cn-hangzhou",
             "title": "地域 ID（PROMETHEUS / VIRTUAL_PROMETHEUS / UMODEL / APM / XTRACE / EBPF / RUM / SLS 各类型可选，缺省与规则/网关一致；CLOUD_MONITORING 不使用此字段，改用 AlertRuleV2.regionId）",
@@ -1293,12 +1293,11 @@
           },
           "stores": {
             "backendName": "stores",
-            "description_en": "The list of Simple Log Service stores. This parameter is used when the type is SLS and must contain at least one store. Each store includes the store and storeType fields. The project and regionId fields are moved to the top level. The fields with the same names remaining in the stores are deprecated and return a 400 error if used in the write path",
+            "description_en": "The Simple Log Service store list. This field is used when type is SLS and requires at least one store. Each store includes store and storeType. The project and regionId fields are moved to the top level. The fields with the same names remaining in Stores are deprecated and return 400 in the write path",
             "description_zh": "SLS Store 列表（type=SLS 时使用，至少 1 个），每个 store 包含 store / storeType；project 和 regionId 已上移至顶层，Stores 中残留的同名字段已废弃，写路径使用会返回 400",
-            "example": "[{\"store\":\"cms-alert-log\",\"storeType\":\"log\"}]",
             "items": {
               "$ref": "#/components/schemas/Stores",
-              "description_en": "The configuration of a single Simple Log Service store, which includes the store and storeType fields",
+              "description_en": "The configuration item for a single Simple Log Service store, which includes store and storeType",
               "description_zh": "单个 SLS Store 配置项，包含 store 和 storeType"
             },
             "title": "SLS Store 列表（type=SLS 时使用，至少 1 个），每个 store 包含 store / storeType；project 和 regionId 已上移至顶层，Stores 中残留的同名字段已废弃，写路径使用会返回 400",
@@ -1306,7 +1305,7 @@
           },
           "tenantId": {
             "backendName": "tenantId",
-            "description_en": "The ID of the tenant to which the virtual Prometheus instance belongs. This parameter is optional when the type is VIRTUAL_PROMETHEUS",
+            "description_en": "The tenant ID. This field is optional when type is VIRTUAL_PROMETHEUS and identifies the tenant to which the virtual Prometheus instance belongs",
             "description_zh": "租户 ID（type=VIRTUAL_PROMETHEUS 可选），标识虚拟 Prometheus 实例所属租户",
             "example": "t-xxxxxxx",
             "title": "租户 ID（type=VIRTUAL_PROMETHEUS 可选），标识虚拟 Prometheus 实例所属租户",
@@ -1314,7 +1313,7 @@
           },
           "type": {
             "backendName": "type",
-            "description_en": "The data source type. Valid values and corresponding fields: PROMETHEUS (instanceId is required; regionId is optional), VIRTUAL_PROMETHEUS (instanceId is required; regionId, namespace, and tenantId are optional), UMODEL (regionId is optional; other fields are carried in queryConfig or conditionConfig), APM (regionId is optional), XTRACE (regionId is optional), EBPF (regionId is optional), RUM (regionId is optional), CLOUD_MONITORING (regionId and productCategory are optional), SLS (project and stores are required), and UNKNOWN (read-only fallback; do not use in the write path). Non-enum values such as CMS_BASIC_DS or SLS_DS are not allowed and return an Invalidtype 400 error",
+            "description_en": "The data source type",
             "description_zh": "数据源类型",
             "enum": [
               "PROMETHEUS",
