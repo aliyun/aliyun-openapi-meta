@@ -3,7 +3,7 @@
   "cmd_full_name": "rdsai create-context-database-workspace",
   "cmd_name": "create-context-database-workspace",
   "deprecated": false,
-  "description_en": "Creates a workspace, the first member, and the first API key in a one-time onboarding process",
+  "description_en": "Creates a workspace, the first member, and the first API key in a one-time onboarding flow",
   "description_zh": "创建业务空间、首位成员和首把 API Key 的一次性引导流程",
   "kebab_example": "aliyun rdsai create-context-database-workspace --workspace-name my-workspace --member-name my-member --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "my-workspace",
-      "help_en": "The workspace name",
+      "help_en": "The name of the workspace",
       "help_zh": "业务空间名称",
       "location": "query",
       "name": "workspace_name",
@@ -45,6 +45,19 @@
       "raw_name": "MemberName",
       "required": true,
       "type": "string"
+    },
+    {
+      "example": "advanced",
+      "help_en": "The permission mode selected when creating the workspace. Valid values:\n`compatibility`: Compatibility mode. This mode is used if this parameter is not specified.\n`advanced`: Advanced permission mode. Only the Alibaba Cloud account can select this mode. It takes effect immediately after the workspace is created and cannot be disabled after creation.\n\nThis parameter is a string, not a Boolean switch. Valid values are case-insensitive and ignore leading and trailing whitespace. If an empty string, a string with only whitespace, or an invalid value is explicitly specified, `InvalidParameter` (HTTP 400) is returned. If a RAM user selects `advanced`, `NoPermission` (HTTP 403) is returned",
+      "help_zh": "创建工作区时选择的权限模式。可选值：\n`compatibility`：兼容模式。未传入本参数时使用此模式。\n`advanced`：高级权限模式。仅主账号可选择，创建成功后立即生效，且创建后无法关闭。\n\n本参数为字符串，不是布尔开关。合法值忽略大小写及首尾空白；显式传入空字符串、纯空白或其他取值时，返回 `InvalidParameter`（HTTP 400）。RAM 子账号选择 `advanced` 时，返回 `NoPermission`（HTTP 403）",
+      "location": "query",
+      "name": "permission_mode",
+      "options": [
+        "--permission-mode"
+      ],
+      "raw_name": "PermissionMode",
+      "required": false,
+      "type": "string"
     }
   ],
   "pathPattern": "/",
@@ -55,27 +68,27 @@
       "description_en": "创建成功",
       "description_zh": "创建成功",
       "schema": {
-        "description_en": "The workspace was created",
+        "description_en": "The workspace is created",
         "description_zh": "创建成功",
         "properties": {
           "ApiKey": {
             "backendName": "data.apiKey",
-            "description_en": "The plaintext API key. This value is returned only once at creation time. The caller must persist it",
+            "description_en": "The plaintext API key. This key is returned only once upon creation. The caller must persist the key",
             "description_zh": "明文 API Key，仅创建时返回一次，调用方需自行持久化",
-            "example": "ctxdb-*****",
+            "example": "REDACTED_API_KEY",
             "sensitive": true,
             "type": "string"
           },
           "ApiKeyName": {
             "backendName": "data.apiKeyName",
-            "description_en": "The name of the first API key. The value is fixed as default",
+            "description_en": "The name of the first API key. The value is fixed to default",
             "description_zh": "首把 API Key 名称，固定为 default",
             "example": "default",
             "type": "string"
           },
           "CreatedAt": {
             "backendName": "data.createdAt",
-            "description_en": "The time when the workspace was created, in ISO 8601 format",
+            "description_en": "The creation time in ISO 8601 format",
             "description_zh": "创建时间（ISO-8601 格式）",
             "example": "2026-05-28T17:59:55Z",
             "type": "string"
@@ -94,6 +107,15 @@
             "example": "my-member",
             "type": "string"
           },
+          "PermissionMode": {
+            "backendName": "data.permissionMode",
+            "description_en": "The permission mode that actually takes effect after the workspace is created. The value is returned as a lowercase string:\n`personal_compatibility`: Compatibility mode, which corresponds to the request value `compatibility`.\n`advanced`: Advanced permission mode.\n\nThis field is optional. If it is not returned in the response, check the actual mode in the workspace details. Do not recreate the workspace only because this field is missing",
+            "description_zh": "工作区创建完成后实际生效的权限模式，返回小写字符串：\n`personal_compatibility`：兼容模式，对应请求值 `compatibility`。\n`advanced`：高级权限模式。\n\n该字段为可选字段。若响应中未返回，请通过工作区详情确认实际模式，不应仅因该字段缺失而重复创建工作区",
+            "example": "advanced",
+            "title_en": "创建完成后实际生效的权限模式",
+            "title_zh": "创建完成后实际生效的权限模式",
+            "type": "string"
+          },
           "RequestId": {
             "backendName": "requestId",
             "description_en": "The request ID",
@@ -103,35 +125,35 @@
           },
           "Role": {
             "backendName": "data.role",
-            "description_en": "The role of the first member. The value is fixed as owner",
+            "description_en": "The role of the first member. The value is fixed to owner",
             "description_zh": "首位成员角色，固定为 owner",
             "example": "owner",
             "type": "string"
           },
           "Status": {
             "backendName": "data.status",
-            "description_en": "The workspace status. Valid values:\nActive: running as expected.\nLocked: locked due to overdue payment or expiration",
+            "description_en": "The status of the workspace. Valid values: Active (running normally) and Locked (stopped due to an overdue payment or locked due to expiration)",
             "description_zh": "业务空间状态（Active：正常运行；Locked：欠费停机/过期锁定）",
             "example": "Active",
             "type": "string"
           },
           "Type": {
             "backendName": "data.type",
-            "description_en": "The workspace type. Valid values:\npersonal: individual account.\nenterprise: enterprise account",
+            "description_en": "The type of the workspace. Valid values: personal and enterprise",
             "description_zh": "业务空间类型（personal：个人；enterprise：企业）",
             "example": "personal",
             "type": "string"
           },
           "WorkspaceId": {
             "backendName": "data.workspaceId",
-            "description_en": "The ID of the new workspace",
+            "description_en": "The ID of the newly created workspace",
             "description_zh": "新建业务空间 ID",
             "example": "ws-as1llqmkol****",
             "type": "string"
           },
           "WorkspaceName": {
             "backendName": "data.workspaceName",
-            "description_en": "The workspace name",
+            "description_en": "The name of the workspace",
             "description_zh": "业务空间名称",
             "example": "my-workspace",
             "type": "string"
