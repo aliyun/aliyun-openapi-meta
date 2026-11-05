@@ -3,7 +3,7 @@
   "cmd_full_name": "rocketmq list-instance-inspections",
   "cmd_name": "list-instance-inspections",
   "deprecated": false,
-  "description_en": "Queries the inspection configurations of instances in batches",
+  "description_en": "Queries instance inspection configurations in batches",
   "description_zh": "批量查询实例巡检配置",
   "kebab_example": "aliyun rocketmq list-instance-inspections --biz-region-id cn-hangzhou --region cn-hangzhou",
   "method": "GET",
@@ -35,7 +35,7 @@
     },
     {
       "example": "100",
-      "help_en": "The maximum number of results to return per page. Default value: 20. Valid values: 1 to 100",
+      "help_en": "The maximum number of results per page. Default value: 20. Valid values: 1 to 100",
       "help_zh": "单页数量；默认 20，范围 1～100",
       "location": "query",
       "maximum": "100",
@@ -50,7 +50,7 @@
     },
     {
       "example": "eyJvZmZzZXQiOjIwfQ",
-      "help_en": "The pagination token returned from the previous request. Do not specify this parameter for the first request. Keep all filter conditions unchanged when you request the next page",
+      "help_en": "The cursor returned from the previous page. Do not specify this parameter for the first query. Keep all filter conditions consistent when querying subsequent pages",
       "help_zh": "上一页返回的游标；首次查询不传；翻页须保持所有筛选条件一致",
       "location": "query",
       "max_length": "2048",
@@ -72,32 +72,32 @@
         "properties": {
           "data": {
             "backendName": "data",
-            "description_en": "The list of configured and authorized instance diagnosis configurations",
+            "description_en": "The list of configured instance diagnosis configurations that you have permissions to access",
             "description_zh": "已配置且有权限的实例诊断配置列表",
             "example": "[]",
             "items": {
               "properties": {
                 "config": {
                   "backendName": "config",
-                  "description_en": "The unified configuration. This parameter is empty if the instance is not configured or the configuration is disabled",
-                  "description_zh": "统一配置；未配置或已关闭时为空",
-                  "example": "{}",
+                  "description_en": "The unified configuration. This parameter is empty if the configuration is not set or is soft-deleted",
+                  "description_zh": "统一配置；未配置或已软删除时为空",
+                  "example": "{\"items\":[{\"templateCode\":\"rmq.consumer-health\",\"parameters\":{\"lookback\":\"24h\"}}],\"schedule\":{\"enabled\":false}}",
                   "properties": {
                     "items": {
                       "backendName": "items",
-                      "description_en": "The independent configurations for each inspection item. You can specify 1 to 20 items. The templateCode values must be unique. The entire array is replaced during updates",
-                      "description_zh": "逐项独立配置；1～20 项，templateCode 不重复，整数组替换",
-                      "example": "[{\"templateCode\":\"rmq.consumer-health\",\"parameters\":{\"lookback\":\"1h\"}},{\"templateCode\":\"rmq.traffic-capacity\",\"parameters\":{\"lookback\":\"6h\"}}]",
+                      "description_en": "The configurations of inspection items. You can configure 1 to 20 items. The templateCode values must be unique. The entire array is replaced during an update. Time-based items use a unified window. The default window for a single run is 24 hours. For periodic runs, the window is overridden by intervalHours",
+                      "description_zh": "巡检项配置；1～20 项，templateCode 不重复，整数组替换；时间类项目使用统一窗口，单次默认 24 小时，周期运行按 intervalHours 覆盖",
+                      "example": "[{\"templateCode\":\"rmq.consumer-health\",\"parameters\":{\"lookback\":\"1h\"}},{\"templateCode\":\"rmq.traffic-capacity\",\"parameters\":{\"lookback\":\"1h\"}}]",
                       "items": {
                         "properties": {
                           "parameters": {
                             "backendName": "parameters",
-                            "description_en": "The JSON object of parameters for this item, not a JSON string. The parameters are validated against the parameter catalog. Omitted keys use default values. Pass an empty object {} if no parameters are required. Nesting timeWindow or thresholds is not allowed",
-                            "description_zh": "本项参数 JSON 对象，非 JSON 字符串；按参数目录校验，省略键使用默认值；无参数传 {}；禁止 timeWindow/thresholds 嵌套",
+                            "description_en": "The JSON object of parameters for this item, not a JSON string. The parameters are validated against the parameter catalog. Omitted keys use default values. For time-based items, the lookback value must be unified. The default lookback for a single run is 24 hours. For periodic runs, intervalHours is used. Pass an empty object {} if no parameters are required. Nesting timeWindow or thresholds is not allowed",
+                            "description_zh": "本项参数 JSON 对象，非 JSON 字符串；按参数目录校验，省略键使用默认值；时间类项目 lookback 必须统一，单次默认 24h，周期运行使用 intervalHours；无参数传 {}；禁止 timeWindow/thresholds 嵌套",
                             "example": "{\"lookback\":\"1h\",\"consumerDelayThresholdSeconds\":600}",
                             "required": true,
-                            "title_en": "本项参数 JSON 对象，非 JSON 字符串；按参数目录校验，省略键使用默认值；无参数传 {}；禁止 timeWindow/thresholds 嵌套",
-                            "title_zh": "本项参数 JSON 对象，非 JSON 字符串；按参数目录校验，省略键使用默认值；无参数传 {}；禁止 timeWindow/thresholds 嵌套",
+                            "title_en": "本项参数 JSON 对象，非 JSON 字符串；按参数目录校验，省略键使用默认值；时间类项目 lookback 必须统一，单次默认 24h，周期运行使用 intervalHours；无参数传 {}；禁止 timeWindow/thresholds 嵌套",
+                            "title_zh": "本项参数 JSON 对象，非 JSON 字符串；按参数目录校验，省略键使用默认值；时间类项目 lookback 必须统一，单次默认 24h，周期运行使用 intervalHours；无参数传 {}；禁止 timeWindow/thresholds 嵌套",
                             "type": "any"
                           },
                           "templateCode": {
@@ -114,96 +114,41 @@
                         "type": "object"
                       },
                       "required": true,
-                      "title_en": "逐项独立配置；1～20 项，templateCode 不重复，整数组替换",
-                      "title_zh": "逐项独立配置；1～20 项，templateCode 不重复，整数组替换",
+                      "title_en": "巡检项配置；1～20 项，templateCode 不重复，整数组替换；时间类项目使用统一窗口，单次默认 24 小时，周期运行按 intervalHours 覆盖",
+                      "title_zh": "巡检项配置；1～20 项，templateCode 不重复，整数组替换；时间类项目使用统一窗口，单次默认 24 小时，周期运行按 intervalHours 覆盖",
                       "type": "array"
-                    },
-                    "resourceScope": {
-                      "backendName": "resourceScope",
-                      "description_en": "The resource scope within the instance. Valid values: All and Selected",
-                      "description_zh": "实例内资源范围；All 或 Selected",
-                      "example": "{\"mode\":\"All\"}",
-                      "properties": {
-                        "consumerGroups": {
-                          "backendName": "consumerGroups",
-                          "description_en": "The array of consumer group names. This parameter is required when the mode is Selected, and can be an empty array. You must specify at least one of topics or consumer groups. Do not specify this parameter when the mode is All",
-                          "description_zh": "Selected 时必填；Group 名称数组，可为空；两类至少选择一个；All 时不传",
-                          "example": "[\"orders-g1\"]",
-                          "items": {
-                            "description_en": "The name of the consumer group within the selected inspection scope",
-                            "description_zh": "选定巡检范围内的消费组名称",
-                            "example": "orders-g1",
-                            "title_en": "选定巡检范围内的消费组名称",
-                            "title_zh": "选定巡检范围内的消费组名称",
-                            "type": "string"
-                          },
-                          "title_en": "Selected 时必填；Group 名称数组，可为空；两类至少选择一个；All 时不传",
-                          "title_zh": "Selected 时必填；Group 名称数组，可为空；两类至少选择一个；All 时不传",
-                          "type": "array"
-                        },
-                        "mode": {
-                          "backendName": "mode",
-                          "description_en": "The resource scope mode. A value of All indicates that all resources in the instance are inspected. A value of Selected indicates that specified resources are inspected",
-                          "description_zh": "All 检查实例全部资源；Selected 检查指定资源",
-                          "enum": [
-                            "All",
-                            "Selected"
-                          ],
-                          "example": "All",
-                          "required": true,
-                          "title_en": "All 检查实例全部资源；Selected 检查指定资源",
-                          "title_zh": "All 检查实例全部资源；Selected 检查指定资源",
-                          "type": "string"
-                        },
-                        "topics": {
-                          "backendName": "topics",
-                          "description_en": "The array of topic names. This parameter is required when the mode is Selected, and can be an empty array. Do not specify this parameter when the mode is All",
-                          "description_zh": "Selected 时必填；Topic 名称数组，可为空；All 时不传",
-                          "example": "[\"orders\"]",
-                          "items": {
-                            "description_en": "The name of the topic within the selected inspection scope",
-                            "description_zh": "选定巡检范围内的 Topic 名称",
-                            "example": "orders",
-                            "title_en": "选定巡检范围内的 Topic 名称",
-                            "title_zh": "选定巡检范围内的 Topic 名称",
-                            "type": "string"
-                          },
-                          "title_en": "Selected 时必填；Topic 名称数组，可为空；All 时不传",
-                          "title_zh": "Selected 时必填；Topic 名称数组，可为空；All 时不传",
-                          "type": "array"
-                        }
-                      },
-                      "required": true,
-                      "title_en": "实例内资源范围；All 或 Selected",
-                      "title_zh": "实例内资源范围；All 或 Selected",
-                      "type": "object"
                     },
                     "schedule": {
                       "backendName": "schedule",
                       "description_en": "The unified schedule configuration",
                       "description_zh": "统一定时配置",
-                      "example": "{\"enabled\":true,\"cron\":\"0 3 * * *\"}",
+                      "example": "{\"enabled\":true,\"intervalHours\":24}",
                       "properties": {
-                        "cron": {
-                          "backendName": "cron",
-                          "description_en": "The cron expression in the Asia/Shanghai time zone. This parameter is required when enabled is set to true",
-                          "description_zh": "Asia/Shanghai 时区 Cron；enabled=true 时必填",
-                          "example": "0 3 * * *",
-                          "maxLength": 64,
-                          "minLength": 1,
-                          "title_en": "Asia/Shanghai 时区 Cron；enabled=true 时必填",
-                          "title_zh": "Asia/Shanghai 时区 Cron；enabled=true 时必填",
-                          "type": "string"
-                        },
                         "enabled": {
                           "backendName": "enabled",
-                          "description_en": "Specifies whether the schedule is enabled. Manual inspection is still available if the schedule is disabled",
+                          "description_en": "Specifies whether the schedule is enabled. You can still perform manual inspections after the schedule is disabled",
                           "description_zh": "是否启用定时；关闭后仍可手动巡检",
                           "example": "true",
                           "required": true,
                           "title_en": "是否启用定时；关闭后仍可手动巡检",
                           "title_zh": "是否启用定时；关闭后仍可手动巡检",
                           "type": "boolean"
+                        },
+                        "intervalHours": {
+                          "backendName": "intervalHours",
+                          "description_en": "The fixed interval in hours. This parameter is required when enabled is set to true. Valid values: 1 to 168. The inspection time range equals this interval, including the first execution",
+                          "description_zh": "固定小时间隔；enabled=true 时必填，整数 1～168；检查时间范围等于此周期，首次执行亦相同",
+                          "example": "24",
+                          "format": "int32",
+                          "mumRange": [
+                            {
+                              "maximum": "168",
+                              "minimum": "1"
+                            }
+                          ],
+                          "title_en": "固定小时间隔；enabled=true 时必填，整数 1～168；检查时间范围等于此周期，首次执行亦相同",
+                          "title_zh": "固定小时间隔；enabled=true 时必填，整数 1～168；检查时间范围等于此周期，首次执行亦相同",
+                          "type": "integer"
                         }
                       },
                       "required": true,
@@ -212,13 +157,13 @@
                       "type": "object"
                     }
                   },
-                  "title_en": "统一配置；未配置或已关闭时为空",
-                  "title_zh": "统一配置；未配置或已关闭时为空",
+                  "title_en": "统一配置；未配置或已软删除时为空",
+                  "title_zh": "统一配置；未配置或已软删除时为空",
                   "type": "object"
                 },
                 "configured": {
                   "backendName": "configured",
-                  "description_en": "Indicates whether instance inspection is configured",
+                  "description_en": "Specifies whether instance inspection is configured",
                   "description_zh": "是否已配置实例巡检",
                   "example": "true",
                   "title_en": "是否已配置实例巡检",
@@ -271,7 +216,7 @@
                       },
                       "resourceTypes": {
                         "backendName": "resourceTypes",
-                        "description_en": "The resource types associated with this inspection item",
+                        "description_en": "The resource types associated with this item",
                         "description_zh": "本项关联的资源类型",
                         "example": "[\"ConsumerGroup\"]",
                         "items": {
@@ -322,7 +267,7 @@
                 },
                 "revision": {
                   "backendName": "revision",
-                  "description_en": "The configuration version. This parameter is required for updates. The value is 0 if the instance has never been configured",
+                  "description_en": "The configuration revision. This parameter is required for updates. The value is 0 if the configuration has never been set",
                   "description_zh": "配置版本，更新时必须携带；从未配置时为 0",
                   "example": "1",
                   "format": "int64",
@@ -349,7 +294,7 @@
           },
           "nextToken": {
             "backendName": "nextToken",
-            "description_en": "The pagination token for the next page. An empty value indicates that no more pages are available. A page may be empty due to permission filtering. Continue querying if the token is not empty",
+            "description_en": "The cursor for the next page. An empty value indicates that no more pages are available. Permission filtering may result in an empty page. If the cursor is not empty, continue querying",
             "description_zh": "下一页游标；为空表示结束；权限过滤可能使页为空，非空游标仍应继续查询",
             "example": "eyJvZmZzZXQiOjIwfQ",
             "title_en": "下一页游标；为空表示结束；权限过滤可能使页为空，非空游标仍应继续查询",
