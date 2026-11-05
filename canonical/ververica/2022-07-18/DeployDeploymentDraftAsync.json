@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun ververica POST /api/v2/namespaces/default-namespace/deployment-drafts/async-deploy --region cn-hangzhou --header \"workspace=a14bd5d90a0000\" --header \"Content-Type=application/json\" --body '{\"deploymentTarget\":{},\"skipValidate\":false,\"deploymentDraftId\":\"c84d73be-40ad-4627-8bdd-fa1eba510000\"}'",
+  "camel_example": "aliyun ververica POST /api/v2/namespaces/default-namespace/deployment-drafts/async-deploy --region cn-hangzhou --header \"workspace=a14bd5d90a****\" --header \"Content-Type=application/json\" --body '{\"deploymentTarget\":{\"mode\":\"PER_JOB\",\"name\":\"default-queue\\t\"},\"skipValidate\":false,\"deploymentDraftId\":\"c84d73be-40ad-4627-8bdd-fa1eba51****\"}'",
   "cmd_full_name": "ververica deploy-deployment-draft-async",
   "cmd_name": "deploy-deployment-draft-async",
   "deprecated": false,
-  "description_en": "Deploys a draft of an SQL job",
+  "description_en": "Deploys and publishes an SQL job draft",
   "description_zh": "SQL作业草稿部署上线",
-  "kebab_example": "aliyun ververica deploy-deployment-draft-async --workspace a14bd5d90a0000 --namespace default-namespace --skip-validate false --deployment-draft-id c84d73be-40ad-4627-8bdd-fa1eba510000 --region cn-hangzhou",
+  "kebab_example": "aliyun ververica deploy-deployment-draft-async --workspace 'a14bd5d90a****' --namespace default-namespace --skip-validate false --deployment-target '{\"mode\":\"PER_JOB\",\"name\":\"default-queue\\t\"}' --deployment-draft-id 'c84d73be-40ad-4627-8bdd-fa1eba51****' --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "DeployDeploymentDraftAsync",
@@ -22,13 +22,13 @@
     "method": "POST",
     "protocol": "HTTPS",
     "req_body_type": "json",
-    "system_operation_type": "none",
+    "system_operation_type": "create",
     "url": "/api/v2/namespaces/{namespace}/deployment-drafts/async-deploy"
   },
   "parameters": [
     {
       "example": "a14bd5d90a****",
-      "help_en": "The ID of the workspace",
+      "help_en": "The workspace ID",
       "help_zh": "工作空间ID",
       "location": "header",
       "name": "workspace",
@@ -41,7 +41,7 @@
     },
     {
       "example": "default-namespace",
-      "help_en": "The name of the namespace",
+      "help_en": "The namespace name",
       "help_zh": "项目空间名称",
       "location": "path",
       "name": "namespace",
@@ -84,7 +84,7 @@
         },
         {
           "example": "default-queue\t",
-          "help_en": "The name of the queue used for the deployment",
+          "help_en": "The name.\nperjob type: Use the deployment target name, which can be obtained by calling the ListDeploymentTargets operation.\nsession type: Use the session cluster name",
           "help_zh": "perjob类型：使用部署目标名称，可通过ListDeploymentTargets接口获取。\nsession类型：使用session集群名称",
           "name": "name",
           "options": [
@@ -131,12 +131,12 @@
         "properties": {
           "data": {
             "backendName": "data",
-            "description_en": "The result of the asynchronous operation. This parameter is returned when the request is successful",
+            "description_en": "The information about the asynchronous operation result. This field is returned only when success is true",
             "description_zh": "当 success 为 true，返回异步操作结果信息",
             "properties": {
               "ticketId": {
                 "backendName": "ticketId",
-                "description_en": "The ID of the asynchronous ticket. Use this ID to query the result of the asynchronous operation",
+                "description_en": "The ID of the asynchronous ticket. You can use this ID to query the asynchronous operation result",
                 "description_zh": "异步工单ID，可以使用该ID查询异步操作结果",
                 "example": "b3dcdb25-bf36-457d-92ba-a36077e8****",
                 "title_en": "异步工单ID，可以使用该ID查询异步操作结果。",
@@ -148,7 +148,7 @@
           },
           "errorCode": {
             "backendName": "errorCode",
-            "description_en": "If success is false, an error code is returned.\n\nIf success is true, an empty value is returned",
+            "description_en": "If success is false, a business error code is returned.\n \nIf success is true, an empty value is returned",
             "description_zh": "当success为false，返回业务错误码；\n \n当success为true，返回空值",
             "example": "\"\"",
             "title_en": "当success为false时，该值不为空，表示业务错误码；当success为true时，该值为空。",
@@ -157,7 +157,7 @@
           },
           "errorMessage": {
             "backendName": "errorMessage",
-            "description_en": "If success is false, an error message is returned.\n\nIf success is true, an empty value is returned",
+            "description_en": "If success is false, a business error message is returned.\n\nIf success is true, an empty value is returned",
             "description_zh": "当success为false，返回业务错误信息；\n\n当success为true，返回空值",
             "example": "\"\"",
             "title_en": "当success为false时，该值不为空，表示业务错误信息；当success为true时，该值为空。",
@@ -166,7 +166,7 @@
           },
           "httpCode": {
             "backendName": "httpCode",
-            "description_en": "The status code of the business operation. A value other than 200 indicates that the operation failed",
+            "description_en": "The business status code. If the value is not empty and is not 200, the business processing failed",
             "description_zh": "业务成功与否。如果非空且不是200，那么表示业务处理失败",
             "example": "200",
             "format": "int32",
@@ -185,7 +185,7 @@
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful",
+            "description_en": "Indicates whether the business request is successful",
             "description_zh": "表示业务请求是否成功",
             "example": "true",
             "title_en": "表示业务请求是否成功。",
@@ -201,7 +201,7 @@
   },
   "v1_body_parameters": [
     {
-      "help_en": "The job draft and deployment information",
+      "help_en": "The information about the job draft and deployment stage",
       "help_zh": "作业草稿及部署阶段信息",
       "name": "body",
       "param_style": "json",
