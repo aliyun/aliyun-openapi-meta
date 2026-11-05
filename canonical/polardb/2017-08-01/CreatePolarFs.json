@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun polardb CreatePolarFs --region cn-hangzhou --AuthorizedUserIds '128***********，198***********' --AccelerateStorageSize 500 --AutoRenew true --AccelerateType alluxio --DBClusterId 'pc-**************' --DBType MySQL --CustomBucketPathList.1.Bucket 'pfs-xxx.oss-[regionId]-internal.aliyuncs.com' --CustomOssAk xxx --CustomBucketCount 1 --CustomBucketPath '/test' --CustomOssSk xxx --StorageType local_redundancy --ZoneId 'cn-beijing-i' --VPCId 'vpc-*******************' --VSwitchId 'vsw-*********************' --PromotionCode 727xxxxxx934 --Period Month --PayType Postpaid --CreationCategory basic --CustomBucketPathList.1.Path '/data' --StorageSpace 50 --AutoUseCoupon true --AccelerateSwitch ONLY --UsedTime 1 --RegionId 'cn-hangzhou'",
+  "camel_example": "aliyun polardb CreatePolarFs --region cn-hangzhou --AuthorizedUserIds '128***********，198***********' --AccelerateStorageSize 500 --ResourceGroupId 'rg-xxx' --AutoRenew true --AccelerateType alluxio --DBClusterId 'pc-**************' --DBType MySQL --CustomBucketPathList.1.Bucket 'pfs-xxx.oss-[regionId]-internal.aliyuncs.com' --CustomOssAk xxx --CustomBucketCount 1 --CustomBucketPath '/test' --CustomOssSk xxx --StorageType local_redundancy --ZoneId 'cn-beijing-i' --VPCId 'vpc-*******************' --VSwitchId 'vsw-*********************' --PromotionCode 727xxxxxx934 --Period Month --PayType Postpaid --CreationCategory basic --CustomBucketPathList.1.Path '/data' --StorageSpace 50 --AutoUseCoupon true --AccelerateSwitch ONLY --UsedTime 1 --RegionId 'cn-hangzhou'",
   "cmd_full_name": "polardb create-polar-fs",
   "cmd_name": "create-polar-fs",
   "deprecated": false,
   "description_en": "Enables PolarFS support",
   "description_zh": "开启polarfs支持",
-  "kebab_example": "aliyun polardb create-polar-fs --biz-region-id cn-hangzhou --storage-type local_redundancy --authorized-user-ids '128***********，198***********' --db-type MySQL --vpc-id 'vpc-*******************' --vswitch-id 'vsw-*********************' --zone-id cn-beijing-i --storage-space 50 --db-cluster-id 'pc-**************' --pay-type Postpaid --period Month --used-time 1 --auto-renew true --accelerate-switch ONLY --accelerate-storage-size 500 --creation-category basic --custom-bucket-count 1 --custom-bucket-path /test --custom-oss-ak xxx --custom-oss-sk xxx --auto-use-coupon true --promotion-code 727xxxxxx934 --accelerate-type alluxio --custom-bucket-path-list '[{\"Path\":\"/data\",\"Bucket\":\"pfs-xxx.oss-[regionId]-internal.aliyuncs.com\"}]' --region cn-hangzhou",
+  "kebab_example": "aliyun polardb create-polar-fs --biz-region-id cn-hangzhou --storage-type local_redundancy --authorized-user-ids '128***********，198***********' --db-type MySQL --vpc-id 'vpc-*******************' --vswitch-id 'vsw-*********************' --zone-id cn-beijing-i --storage-space 50 --db-cluster-id 'pc-**************' --pay-type Postpaid --period Month --used-time 1 --auto-renew true --accelerate-switch ONLY --accelerate-storage-size 500 --creation-category basic --custom-bucket-count 1 --custom-bucket-path /test --custom-oss-ak xxx --custom-oss-sk xxx --auto-use-coupon true --promotion-code 727xxxxxx934 --accelerate-type alluxio --custom-bucket-path-list '[{\"Path\":\"/data\",\"Bucket\":\"pfs-xxx.oss-[regionId]-internal.aliyuncs.com\"}]' --resource-group-id rg-xxx --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": false,
   "name": "CreatePolarFs",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "cn-beijing",
-      "help_en": "The region ID.\nYou can call the https://help.aliyun.com/document_detail/98041.html operation to query the region ID",
+      "help_en": "The region ID.\nYou can call the https://help.aliyun.com/document_detail/98041.html operation to query region IDs",
       "help_zh": "地域ID。\n您可以通过接口https://help.aliyun.com/document_detail/98041.html查看地域ID详情。 ",
       "location": "query",
       "name": "region_id",
@@ -41,8 +41,8 @@
         "essdpl0"
       ],
       "example": "local_redundancy",
-      "help_en": "Valid values for the high-performance storage type:\nESSDPL0\nESSDPL1\n\nValid values for the Basic Edition storage type:\ncity_redundancy (zone-redundant)\n\nValid values for the Cold Storage Edition storage type:\ncity_redundancy (zone-redundant)\nlocal_redundancy (locally redundant)",
-      "help_zh": "高性能存储类型取值如下：\nESSDPL0\nESSDPL1\n\n基础版存储类型取值如下：\ncity_redundancy(同城冗余)\n\n冷存版存储类型取值如下：\ncity_redundancy(同城冗余)\nlocal_redundancy (本地冗余)",
+      "help_en": "The storage type. For the high_performance edition, use lowercase essdpl0 or essdpl1. For the cold edition, use local_redundancy or city_redundancy. Select the value based on the edition. The value is case-sensitive",
+      "help_zh": "存储类型。high_performance 使用小写 essdpl0 或 essdpl1；cold 使用 local_redundancy 或 city_redundancy。请按所属产品系列选择，大小写敏感",
       "location": "query",
       "name": "storage_type",
       "options": [
@@ -54,7 +54,7 @@
     },
     {
       "example": "128***********，198***********",
-      "help_en": "The list of authorized account IDs for the Cold Storage Edition instance, separated by commas (,)",
+      "help_en": "The list of authorized accounts for the Cold Storage Edition instance, separated by commas (`,`)",
       "help_zh": "冷存版实例授权账号列表，用`,`分隔",
       "location": "query",
       "name": "authorized_user_ids",
@@ -66,8 +66,12 @@
       "type": "string"
     },
     {
+      "enum": [
+        "MySQL",
+        "PostgreSQL"
+      ],
       "example": "MySQL",
-      "help_en": "The database engine. Valid values:\nMySQL\nPostgreSQL",
+      "help_en": "The database ecosystem. Valid values:\nMySQL\nPostgreSQL",
       "help_zh": "所属数据库生态，取值范围如下：\nMySQL\nPostgreSQL",
       "location": "query",
       "name": "db_type",
@@ -80,7 +84,7 @@
     },
     {
       "example": "vpc-*******************",
-      "help_en": "The virtual private cloud (VPC) ID",
+      "help_en": "The VPC ID",
       "help_zh": "专有网络ID",
       "location": "query",
       "name": "vpc_id",
@@ -134,8 +138,8 @@
     },
     {
       "example": "pc-**************",
-      "help_en": "The cluster ID",
-      "help_zh": "集群ID",
+      "help_en": "The PolarDB cluster ID. This parameter is required when you call this operation. If this parameter is not specified, the InvalidDBClusterId.Malformed error is returned",
+      "help_zh": "PolarDB 集群 ID。调用本接口时必须提供；缺失会返回 InvalidDBClusterId.Malformed",
       "location": "query",
       "name": "db_cluster_id",
       "options": [
@@ -151,7 +155,7 @@
         "Prepaid"
       ],
       "example": "Postpaid",
-      "help_en": "The billing method. Valid values: \n\nPostpaid: pay-as-you-go.\nPrepaid: subscription",
+      "help_en": "The billing method. Valid values: \n\nPostpaid: pay-as-you-go\nPrepaid: subscription",
       "help_zh": "付费类型，取值范围如下： \n\nPostpaid：按量付费\nPrepaid：预付费（包年包月）",
       "location": "query",
       "name": "pay_type",
@@ -168,7 +172,7 @@
         "Year"
       ],
       "example": "Month",
-      "help_en": "The unit of the subscription duration. This parameter is required if PayType is set to Prepaid. Specifies whether the subscription cluster uses a yearly or monthly billing cycle. Valid values: \n\nYear: The subscription duration is measured in years.\nMonth: The subscription duration is measured in months",
+      "help_en": "If the PayType parameter is set to Prepaid, this parameter is required. Specifies the billing cycle of the upfront cluster. Valid values: \n\nYear: year.\nMonth: month",
       "help_zh": "若付费类型为Prepaid时，该参数为必传参数。指定预付费集群为包年或包月类型。 \n\nYear：包年。即选择包年包月时，单位为年。\nMonth：包月。即选择包年包月时，单位为月",
       "location": "query",
       "name": "period",
@@ -181,7 +185,7 @@
     },
     {
       "example": "1",
-      "help_en": "The subscription duration. This parameter is required when PayType is set to Prepaid.\nIf Period is set to Month, valid values of UsedTime are integers in the range of `[1-9]`.\nIf Period is set to Year, valid values of UsedTime are integers in the range of `[1-3]`",
+      "help_en": "This parameter is required when the PayType parameter is set to Prepaid.\nIf the Period parameter is set to Month, the value of UsedTime must be an integer in the range of `[1-9]`.\nIf the Period parameter is set to Year, the value of UsedTime must be an integer in the range of `[1-3]`",
       "help_zh": "若付费类型为Prepaid时，该参数为必传参数。\n当Period为Month时，UsedTime取值为整数类型，取值范围为`[1-9]`。\n当Period为Year时，UsedTime取值为整数类型，取值范围为`[1-3]`",
       "location": "query",
       "name": "used_time",
@@ -194,7 +198,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to enable auto-renewal. Valid values:\n\ntrue: Auto-renewal is enabled.\nfalse: Auto-renewal is disabled.\n\nDefault value: false.\n\nThis parameter takes effect only when PayType is set to Prepaid",
+      "help_en": "Specifies whether to enable auto-renewal. Valid values:\n\ntrue: enables auto-renewal.\nfalse: disables auto-renewal.\n\nDefault value: false.\n\nThis parameter takes effect only when the PayType parameter is set to Prepaid",
       "help_zh": "是否自动续费，取值范围如下：\n\ntrue：自动续费。\nfalse：不自动续费。\n\n默认为false。\n\n当参数PayType取值为Prepaid时，该参数才生效",
       "location": "query",
       "name": "auto_renew",
@@ -207,7 +211,7 @@
     },
     {
       "example": "ONLY",
-      "help_en": "The acceleration mode. Valid values:\n\nONLY: enables acceleration only.\nON: enables cold data storage and acceleration",
+      "help_en": "The acceleration startup mode. Valid values:\n\nONLY: enables acceleration only.\nON: enables cold data and acceleration",
       "help_zh": "加速启动，取值范围如下：\n\nONLY：仅开启加速。\nON：开启冷叔据+加速",
       "location": "query",
       "name": "accelerate_switch",
@@ -219,9 +223,9 @@
       "type": "string"
     },
     {
-      "example": "500",
-      "help_en": "The acceleration storage space for the Basic Edition with acceleration enabled. Unit: GB",
-      "help_zh": "加速空间，基础班开启加速，单位GB",
+      "example": "5000",
+      "help_en": "The size of the acceleration space. Unit: GB. The value must be no less than 5000 and must be a multiple of 1000. This parameter is required when acceleration is enabled for the Basic Edition",
+      "help_zh": "加速空间大小，单位为 GB。取值不小于 5000，且必须为 1000 的整数倍；basic 类型开启加速时需提供",
       "location": "query",
       "name": "accelerate_storage_size",
       "options": [
@@ -233,8 +237,8 @@
     },
     {
       "example": "basic",
-      "help_en": "The edition. Valid values:\n\nbasic: Basic Edition (default).\ncold: Cold Storage Edition.\nhigh_performance: High-performance Edition",
-      "help_zh": "产品系列，取值范围如下：\n\nbasic：基础版（默认值）\ncold：冷存版\nhigh_performance：高性能版",
+      "help_en": "The edition. Valid values: basic (Basic Edition, default), high_performance (High-performance Edition), and cold (Cold Storage Edition). For the basic edition, you must specify AccelerateSwitch and AccelerateStorageSize. For the high_performance edition, you must specify StorageType (essdpl0 or essdpl1). For the cold edition, StorageType (local_redundancy or city_redundancy) is optional",
+      "help_zh": "产品系列：basic（基础版，默认）、high_performance（高性能版）或 cold（冷存版）。basic 类型需指定 AccelerateSwitch 和 AccelerateStorageSize；high_performance 类型需指定 StorageType（essdpl0 或 essdpl1）；cold 类型可选 StorageType（local_redundancy 或 city_redundancy）",
       "location": "query",
       "name": "creation_category",
       "options": [
@@ -271,7 +275,7 @@
       "type": "string"
     },
     {
-      "example": "xxx",
+      "example": "REDACTED_ACCESS_KEY_ID",
       "help_en": "The custom AccessKey ID",
       "help_zh": "自定义ak",
       "location": "query",
@@ -284,7 +288,7 @@
       "type": "string"
     },
     {
-      "example": "xxx",
+      "example": "ExampleCustomOssSecret123",
       "help_en": "The custom AccessKey secret",
       "help_zh": "自定义sk",
       "location": "query",
@@ -298,7 +302,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to automatically use coupons. Valid values:\ntrue: Coupons are automatically used (default).\nfalse: Coupons are not used",
+      "help_en": "Specifies whether to automatically use coupons. Valid values:\ntrue: uses coupons. This is the default value.\nfalse: does not use coupons",
       "help_zh": "是否自动使用优惠券，取值范围如下：\ntrue：使用优惠券（默认值）。\nfalse：不使用优惠券",
       "location": "query",
       "name": "auto_use_coupon",
@@ -365,7 +369,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The bucket and path information.\n\nThis parameter is required for the transparent acceleration scenario",
+      "help_en": "The bucket and corresponding path information.\n\nThis parameter is required for transparent acceleration",
       "help_zh": "Bucket及对应路径信息。\n\n透明加速场景必填",
       "location": "query",
       "name": "custom_bucket_path_list",
@@ -379,7 +383,7 @@
     },
     {
       "example": "rg-xxx",
-      "help_en": "资源组ID",
+      "help_en": "The resource group ID",
       "help_zh": "资源组ID",
       "location": "query",
       "name": "resource_group_id",
