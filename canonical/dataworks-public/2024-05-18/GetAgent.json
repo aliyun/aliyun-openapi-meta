@@ -37,7 +37,7 @@
     },
     {
       "example": "2",
-      "help_en": "If omitted, the current definition is retrieved. If a published version is specified, the corresponding snapshot and the fixed versions of official skills and suite artifacts are retrieved. If the current unpublished version is specified, the draft is returned without fixed artifact versions. This is not the POP system parameter Version",
+      "help_en": "If omitted, the current definition is retrieved. If a published version is specified, the corresponding snapshot and the fixed versions of official skills and suite artifacts are retrieved. If an unpublished version is specified, the draft is returned without fixed artifact versions. This is not the POP system parameter Version",
       "help_zh": "省略时读取当前定义；指定已发布版本时读取对应快照及固定的官方 Skill、套件制品版本；指定当前未发布版本时仍返回草稿，不返回固定制品版本。不是 POP 系统参数 Version",
       "location": "formData",
       "minimum": "1",
@@ -56,7 +56,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "Response parameters",
+        "description_en": "The response parameters",
         "description_zh": "返回参数",
         "properties": {
           "Agent": {
@@ -66,7 +66,7 @@
             "properties": {
               "AgentVersion": {
                 "backendName": "version",
-                "description_en": "The definition version read in this request. When updating the current definition, use this value as the ExpectedVersion for UpdateAgent to prevent overwriting new versions submitted by other callers. The version of a historical snapshot does not represent the current version",
+                "description_en": "The definition version read in this request. When updating the current definition, use this value as the ExpectedVersion for UpdateAgent to prevent overwriting new versions submitted by other callers. The version read from a historical snapshot does not represent the current version",
                 "description_zh": "本次读取的定义版本。更新当前定义时，将该值作为 UpdateAgent 的 ExpectedVersion，可拒绝覆盖其他调用者已提交的新版本。读取历史快照的版本不代表当前版本",
                 "example": "2",
                 "format": "int32",
@@ -138,14 +138,14 @@
               },
               "ExpertSuites": {
                 "backendName": "expertSuites",
-                "description_en": "The expert suites and fixed release versions associated with the agent definition",
-                "description_zh": "Agent 定义绑定的专家套件及固定发布版本",
+                "description_en": "The expert suites bound to the agent definition, including a fixed integer revision number or a version selection policy. Official resources continue to use PackageVersion to indicate the artifact version",
+                "description_zh": "Agent 定义绑定的专家套件，包含固定整数修订号或版本选择策略；官方资源继续使用 PackageVersion 表示制品版本",
                 "itemName": "ExpertSuite",
                 "items": {
                   "properties": {
                     "Description": {
                       "backendName": "description",
-                      "description_en": "If the suite is deleted, the release snapshot is missing, or the caller does not have permission to view it, the suite summary is not returned, and only the ID and version number are retained",
+                      "description_en": "If the suite is deleted, the published snapshot is missing, or the caller does not have permission to view it, the suite summary is not returned, and only the ID and version number are retained",
                       "description_zh": "套件已删除、发布快照缺失或调用者无权查看时，不返回套件摘要，仅保留 ID 和版本号",
                       "example": "数据分析专家能力集合",
                       "title_en": "绑定版本的套件描述",
@@ -154,7 +154,7 @@
                     },
                     "DisplayName": {
                       "backendName": "displayName",
-                      "description_en": "The display name of the associated version",
+                      "description_en": "The display name of the bound version",
                       "description_zh": "绑定版本的展示名称",
                       "example": "数据分析专家套件",
                       "title_en": "绑定版本的展示名称",
@@ -163,7 +163,7 @@
                     },
                     "Name": {
                       "backendName": "name",
-                      "description_en": "The suite name of the associated version",
+                      "description_en": "The suite name of the bound version",
                       "description_zh": "绑定版本的套件名称",
                       "example": "analysis-suite",
                       "title_en": "绑定版本的套件名称",
@@ -172,7 +172,7 @@
                     },
                     "PackageVersion": {
                       "backendName": "packageVersion",
-                      "description_en": "The fixed official artifact version returned when explicitly querying a released version of the agent. This is not returned when querying a draft or a custom suite",
+                      "description_en": "Returns the fixed official artifact version when explicitly querying a published version of the agent. Not returned when querying a draft or a custom suite",
                       "description_zh": "显式查询 Agent 已发布版本时返回固定的官方制品版本；查询草稿或自定义套件时不返回",
                       "example": "0.1.0.202610211408",
                       "title_en": "官方套件制品版本",
@@ -181,7 +181,7 @@
                     },
                     "SemanticVersion": {
                       "backendName": "semanticVersion",
-                      "description_en": "An optional suite summary field that is not returned for new DataAgent applications. A missing value does not indicate version 0. This cannot be used as the Version for UpdateAgent and must be omitted when writing back references. For the fixed version of official artifacts, read PackageVersion",
+                      "description_en": "An optional suite summary field that is not returned by current new DataAgent applications. A missing value does not indicate version 0. This field cannot be used as the Version for UpdateAgent and must be omitted when writing back references. For the fixed version of official artifacts, read PackageVersion",
                       "description_zh": "可选套件摘要字段，当前新 DataAgent 应用不返回；缺省不表示版本 0。不可作为 UpdateAgent 的 Version，回写引用时必须省略。官方制品的固定版本请读取 PackageVersion",
                       "example": "1.2.0",
                       "title_en": "绑定版本的语义版本",
@@ -190,7 +190,7 @@
                     },
                     "Source": {
                       "backendName": "source",
-                      "description_en": "OFFICIAL indicates an official catalog resource. An omitted value or DB indicates a personal or enterprise resource",
+                      "description_en": "OFFICIAL indicates an official catalog resource. Omitted or DB indicates a personal or enterprise resource",
                       "description_zh": "OFFICIAL 表示官方目录资源；省略或 DB 表示个人或企业资源",
                       "example": "OFFICIAL",
                       "title_en": "专家套件来源",
@@ -208,13 +208,22 @@
                     },
                     "Version": {
                       "backendName": "version",
-                      "description_en": "Returned only for personal or enterprise suites when referencing an explicitly specified version or reading a release snapshot. This is not returned for official suites. A missing value is not 0. If the SDK initializes a missing integer to 0, it must be omitted when writing back. For official items, only Source and SuiteId are written back, and Version, SemanticVersion, or PackageVersion are not passed",
-                      "description_zh": "仅个人或企业套件在引用明确指定版本或读取发布快照时返回；官方套件不返回。未返回不是 0；SDK 若将缺省整数初始化为 0，回写时必须省略。官方项只回写 Source 和 SuiteId，不传 Version、SemanticVersion 或 PackageVersion",
+                      "description_en": "Returned only when a personal or enterprise suite explicitly specifies a fixed integer version in the reference. Not returned for official suites. A missing value is not 0. If the SDK initializes a missing integer to 0, it must be omitted when writing back. For official items, only Source and SuiteId are written back, and Version, VersionSelector, SemanticVersion, or PackageVersion are not passed",
+                      "description_zh": "仅个人或企业套件在引用明确指定固定整数版本时返回；官方套件不返回。未返回不是 0；SDK 若将缺省整数初始化为 0，回写时必须省略。官方项只回写 Source 和 SuiteId，不传 Version、VersionSelector、SemanticVersion 或 PackageVersion",
                       "example": "3",
                       "format": "int32",
                       "title_en": "自定义套件发布版本号",
                       "title_zh": "自定义套件发布版本号",
                       "type": "integer"
+                    },
+                    "VersionSelector": {
+                      "backendName": "versionSelector",
+                      "description_en": "Returned only for personal or enterprise resources to indicate the saved version selection policy, which is mutually exclusive with the fixed integer Version. It does not represent the specific revision actually loaded in the session. Not returned for official resources",
+                      "description_zh": "仅个人或企业资源返回已保存的版本选择策略，与固定整数 Version 互斥；不代表会话实际加载的具体修订。官方资源不返回",
+                      "example": "^1.2.3",
+                      "title_en": "版本选择表达式",
+                      "title_zh": "版本选择表达式",
+                      "type": "string"
                     }
                   },
                   "type": "object"
@@ -225,19 +234,23 @@
               },
               "GmtCreateTime": {
                 "backendName": "gmtCreate",
-                "description_en": "The creation time, as a timestamp in milliseconds",
+                "description_en": "The creation time in milliseconds",
                 "description_zh": "创建时间（毫秒时间戳）",
                 "example": "1780555634000",
-                "format": "iso8601",
-                "type": "string"
+                "format": "int64",
+                "title_en": "创建时间",
+                "title_zh": "创建时间",
+                "type": "integer"
               },
               "GmtModifiedTime": {
                 "backendName": "gmtModified",
-                "description_en": "The last modification time, as a timestamp in milliseconds",
+                "description_en": "The last modified time in milliseconds",
                 "description_zh": "最近修改时间（毫秒时间戳）",
                 "example": "1780555634000",
-                "format": "iso8601",
-                "type": "string"
+                "format": "int64",
+                "title_en": "最近修改时间",
+                "title_zh": "最近修改时间",
+                "type": "integer"
               },
               "Metadata": {
                 "backendName": "metadata",
@@ -319,7 +332,7 @@
                 "description_zh": "运行所需的环境依赖",
                 "itemName": "requiredRuntime",
                 "items": {
-                  "description_en": "None",
+                  "description_en": "Empty",
                   "description_zh": "空",
                   "example": "-",
                   "type": "string"
@@ -346,7 +359,7 @@
                     },
                     "PackageVersion": {
                       "backendName": "packageVersion",
-                      "description_en": "The fixed official artifact version returned when querying a released snapshot with a specified AgentVersion. This is not returned when querying a draft or a custom skill",
+                      "description_en": "Returns the fixed official artifact version when querying a published snapshot with a specified AgentVersion. Not returned when querying a draft or a custom skill",
                       "description_zh": "指定 AgentVersion 查询已发布快照时返回固定的官方制品版本；查询草稿或自定义 Skill 时不返回",
                       "example": "0.6.0.202608201110",
                       "title_en": "官方 Skill 制品版本",
@@ -364,7 +377,7 @@
                     },
                     "Source": {
                       "backendName": "source",
-                      "description_en": "OFFICIAL indicates an official catalog resource. An omitted value or DB indicates an original personal or enterprise resource",
+                      "description_en": "OFFICIAL indicates an official catalog resource. Omitted or DB indicates an original personal or enterprise resource",
                       "description_zh": "OFFICIAL 表示官方目录资源；省略或 DB 表示原有个人或企业资源",
                       "example": "OFFICIAL",
                       "title_en": "Skill 来源",
@@ -380,6 +393,15 @@
                       "title_en": "自定义 Skill 发布版本号",
                       "title_zh": "自定义 Skill 发布版本号",
                       "type": "integer"
+                    },
+                    "VersionSelector": {
+                      "backendName": "versionSelector",
+                      "description_en": "Returned only for personal or enterprise resources to indicate the saved version selection policy, which is mutually exclusive with the fixed integer Version. It does not represent the specific revision actually loaded in the session. Not returned for official resources",
+                      "description_zh": "仅个人或企业资源返回已保存的版本选择策略，与固定整数 Version 互斥；不代表会话实际加载的具体修订。官方资源不返回",
+                      "example": "^1.2.3",
+                      "title_en": "版本选择表达式",
+                      "title_zh": "版本选择表达式",
+                      "type": "string"
                     }
                   },
                   "type": "object"
@@ -420,7 +442,7 @@
                       "description_zh": "选用的 MCP 工具项，Kind 为 `mcp` 时有效",
                       "itemName": "mcpItem",
                       "items": {
-                        "description_en": "The name of the tool. The default value is all",
+                        "description_en": "The name of the tool. Defaults to all",
                         "description_zh": "工具名称，默认为全部",
                         "example": "search_table",
                         "type": "string"

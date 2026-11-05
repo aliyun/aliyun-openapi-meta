@@ -1,0 +1,111 @@
+{
+  "camel_example": "aliyun dataworks-public GetAgentSessionEvents --region cn-hangzhou --SessionCode session_example",
+  "cmd_full_name": "dataworks-public get-agent-session-events",
+  "cmd_name": "get-agent-session-events",
+  "deprecated": false,
+  "description_en": "Subscribes to real-time Server-Sent Events (SSE) for a specified agent session independently, with support for resumption using a remote cursor. This API operation is available only when the canary release feature is enabled. Before calling this operation, ensure that the corresponding canary release is enabled for your account and the target region",
+  "description_zh": "独立订阅指定 Agent 会话的实时 SSE 事件，支持携带远端游标续接。本接口需要开启灰度才可以使用。调用前请确认当前账号及目标地域已开启相应灰度",
+  "kebab_example": "aliyun dataworks-public get-agent-session-events --session-code session_example --api-version 2024-05-18 --region cn-hangzhou",
+  "method": "GET|POST",
+  "multi_version": true,
+  "name": "GetAgentSessionEvents",
+  "operation": {
+    "action": "GetAgentSessionEvents",
+    "api_style": "RPC",
+    "api_version": "2024-05-18",
+    "is_sse": true,
+    "method": "POST",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "none",
+    "url": ""
+  },
+  "parameters": [
+    {
+      "example": "session_example",
+      "help_en": "The ID of the target agent session. Set the value to the SessionId returned by CreateAgentSession. The parameter name for this API operation is SessionCode",
+      "help_zh": "目标 Agent 会话 ID，值为 CreateAgentSession 返回的 SessionId；该接口参数名为 SessionCode",
+      "location": "query",
+      "name": "session_code",
+      "options": [
+        "--session-code"
+      ],
+      "raw_name": "SessionCode",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "42",
+      "help_en": "The cursor of the last consumed remote SSE event, passed in the HTTP request header. Use the original value as a pure decimal non-negative safe integer (up to 9007199254740991). If omitted, only real-time events are subscribed to. Explicitly setting it to 0 attempts to replay from the starting point of the unevicted cache, which does not represent the complete history. Do not use local message sequence numbers",
+      "help_zh": "最后已消费的远端 SSE 事件游标，通过 HTTP 请求头传入。使用纯十进制非负安全整数（最大 9007199254740991）的原值。省略时只订阅实时事件；显式 0 尝试从尚未淘汰的缓存起点回放，不代表完整历史。不能使用本地消息序号",
+      "location": "header",
+      "name": "last_event_id",
+      "options": [
+        "--last-event-id"
+      ],
+      "raw_name": "Last-Event-Id",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "epoch_example",
+      "help_en": "The epoch identifier of the event stream, obtained from data.eventEpoch in the stream_open control frame of the server. Pass the original value only when Last-Event-Id of the same native session and the same epoch is provided. Omit this parameter when subscribing for the first time or when the epoch is not obtained. Do not construct it yourself or reuse it across native sessions",
+      "help_zh": "事件流代次标识，来自服务端 stream_open 控制帧 data.eventEpoch。仅在有同一原生会话、同一代次的 Last-Event-Id 时配套传入原值；首次订阅或未取得代次时省略，不自行构造，也不跨原生会话复用",
+      "location": "query",
+      "name": "event_epoch",
+      "options": [
+        "--event-epoch"
+      ],
+      "raw_name": "EventEpoch",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "",
+  "product_code": "dataworks-public",
+  "protocol": "HTTPS|SSE",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "The OpenAPI mapping structure of a single SSE frame. The response is a continuous event stream. Parse it frame by frame. Do not treat the entire response as a single JSON object",
+        "description_zh": "SSE 单帧的 OpenAPI 映射结构。响应为持续事件流，按帧解析，不能把整个响应当作单个 JSON 对象",
+        "properties": {
+          "Data": {
+            "backendName": "data",
+            "description_en": "The event data of the current frame. The content varies with the Event type and should be parsed according to the event type. The original session, turn, and tool invoke identifiers are retained",
+            "description_zh": "本帧事件数据，内容随 Event 类型变化，应按事件类型解析；保留原始会话、轮次及工具调用标识",
+            "example": "{}",
+            "type": "any"
+          },
+          "Event": {
+            "backendName": "event",
+            "description_en": "The SSE event type, such as session_update. Process control frames and business frames separately",
+            "description_zh": "SSE 事件类型，例如 session_update；控制帧和业务帧应分别处理",
+            "example": "session_update",
+            "type": "string"
+          },
+          "Id": {
+            "backendName": "id",
+            "description_en": "The remote SSE event cursor. Save it after consumption for subsequent resumption using Last-Event-Id. Some control frames may not have a cursor. Do not generate a local cursor for them",
+            "description_zh": "远端 SSE 事件游标，消费完成后保存，用于后续 Last-Event-Id 续接。部分控制帧可能没有游标，不能为其生成本地游标",
+            "example": "42",
+            "title_en": "SSE 事件游标；续传时传回 Last-Event-Id",
+            "title_zh": "SSE 事件游标；续传时传回 Last-Event-Id",
+            "type": "string"
+          },
+          "RequestId": {
+            "backendName": "requestId",
+            "description_en": "The request ID of the current OpenAPI subscription request, used to troubleshoot subscription failures. It is not an event cursor or an interactive question ID",
+            "description_zh": "本次 OpenAPI 订阅请求的请求 ID，用于排查订阅失败；它不是事件游标或人机交互问题 ID",
+            "example": "01A0B6E0-E005-1465-B5DE-5CD17677426F",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "timeout_ms": 62000
+}

@@ -3,7 +3,7 @@
   "cmd_full_name": "dataworks-public create-agent-session",
   "cmd_name": "create-agent-session",
   "deprecated": false,
-  "description_en": "Creates an agent session and returns the session ID",
+  "description_en": "Creates a new agent session and returns the session ID",
   "description_zh": "创建一个新的Agent会话并返回会话ID",
   "kebab_example": "aliyun dataworks-public create-agent-session --jsonrpc 2.0 --id 4758330557805415712 --params '{\"Meta\":{\"Agent\":{\"AgentName\":\"dataworks_data_agent\"},\"Config\":{\"SessionSource\":\"openapi_sdk\",\"SessionTags\":[{\"SessionTagCode\":\"chatbi\"}]},\"InitialConfigOptions\":{\"ExecutionLane\":\"chat，cli\",\"ResourceGroupId\":\"Serverless_res_group_123123123_564657857\",\"Skills\":\"skill-name-1,skill-name2,skill-name-3\",\"Mode\":\"yolo\",\"Model\":\"qwen3.7-max(openai)\",\"ProjectId\":\"12345\",\"ReasoningEffort\":\"none\"}}}' --api-version 2024-05-18 --region cn-hangzhou",
   "method": "POST",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "2.0",
-      "help_en": "The JSON-RPC version. This value is always 2.0",
+      "help_en": "The JSON-RPC version. Fixed to 2.0",
       "help_zh": "JSON-RPC 版本，固定 2.0",
       "location": "formData",
       "name": "jsonrpc",
@@ -81,7 +81,7 @@
               "fields": [
                 {
                   "example": "openapi_sdk",
-                  "help_en": "The session source identifier, which facilitates retrieval by source. For example, if an agent is used on both Page A and Page B, and you want to display only sessions created on Page A, you can filter sessions based on this parameter. The value can be up to 128 characters in length and can contain letters, digits, hyphens (-), and underscores (_)",
+                  "help_en": "The session source identifier, which facilitates retrieval by source. For example, if an agent is used on both Page A and Page B, and you want to display only sessions created on Page A when you are on Page A, you can filter sessions based on this parameter. The value can be up to 128 characters in length and can contain letters, digits, hyphens (-), and underscores (_)",
                   "help_zh": "会话来源标识，便于按来源检索。比如Agent可以在A页面使用，也可以在B页面进行使用，此时如果有需求需要在A页面只展示A页面创建出来的Session，就可以基于该参数进行过滤。长度不超过128位，支持英文字母+数字+中划线+下划线组合",
                   "name": "session_source",
                   "options": [
@@ -96,7 +96,7 @@
                     "fields": [
                       {
                         "example": "chatbi",
-                        "help_en": "The session tag. You can filter sessions based on session tags. For example, if a fixed RAM user is used to call an API operation but the calling system has its own account system, you need to filter the session list based on the account ID. In this case, you can pass the account ID of the calling system as the session tag. The value can be up to 128 characters in length and can contain letters, digits, hyphens (-), and underscores (_)",
+                        "help_en": "The session tag. You can filter sessions based on session tags. For example, if you use a fixed RAM user to call an API operation but the calling system has its own account system, and you need to filter the session list based on the account ID, you can pass the account ID of the calling system as this tag. The value can be up to 128 characters in length and can contain letters, digits, hyphens (-), and underscores (_)",
                         "help_zh": "会话标签。可以基于会话标签进行过滤，比如调用OpenAPI的时候用的是固定的RAM子账号，但是调用系统中有自己的账号体系，此时需要基于账号ID过滤Session列表，该标签就可以传调用系统的账号ID。长度不超过128位，支持英文字母+数字+中划线+下划线组合",
                         "name": "session_tag_code",
                         "options": [
@@ -109,7 +109,7 @@
                     ],
                     "type": "object"
                   },
-                  "help_en": "The list of session tags. You can search and filter sessions based on session tags",
+                  "help_en": "The list of session tags. You can search and filter sessions based on session tags later",
                   "help_zh": "会话标签列表，后续可以基于会话标签进行搜索过滤",
                   "name": "session_tags",
                   "options": [
@@ -133,8 +133,20 @@
             {
               "fields": [
                 {
+                  "example": "4",
+                  "help_en": "The compute unit (CU) specifications of the session instance. Only 2, 4, 8, and 12 are supported. If this parameter is omitted, the instance CU is not specified, and reuse in shared mode is not constrained by the CU. If this parameter is specified, shared mode reuses only instances with the same CU. If the CU does not match, a new instance is created",
+                  "help_zh": "会话实例 CU 规格；仅支持 2/4/8/12。省略时不指定实例 CU，共享模式复用不受 CU 约束；指定后 shared 模式只复用 CU 相同的实例，不一致时新建",
+                  "name": "cu",
+                  "options": [
+                    "--cu"
+                  ],
+                  "raw_name": "Cu",
+                  "required": false,
+                  "type": "string"
+                },
+                {
                   "example": "chat，cli",
-                  "help_en": "The execution mode. Valid values:\nchat: conversation mode only. This mode is suitable for simple scenarios such as data querying and Q&A. It is fast and consumes fewer tokens, but cannot handle complex problems.\ncli: sandbox mode. This mode is suitable for complex scenarios such as data analytics, data processing, and code writing. It can handle complex problems and allows the model to independently analyze and process problems. However, it is slower and consumes more tokens than conversation mode",
+                  "help_en": "Execution mode:\nchat: conversation mode, suitable for simple data querying and Q&A scenarios. The advantage is that it is fast and consumes fewer tokens, but the disadvantage is that it cannot handle complex problems.\ncli: sandbox mode, suitable for complex data analytics, data processing, and code writing scenarios. The advantage is that it can handle complex problems, and the model independently performs analytics and problem processing. The disadvantage is that the processing speed is slower and token consumption is higher compared to the chat mode",
                   "help_zh": "执行模式：\nchat：仅对话模式，适合简单的问数、答疑的场景，优点是快、token消耗低，缺点是无法处理复杂问题\ncli：沙箱模式，适合复杂的数据分析、数据处理、代码编写等场景，优点是能够处理复杂问题，模型自主进行分析和问题处理等，缺点是相对于chat模式处理速度慢，token消耗较高",
                   "name": "execution_lane",
                   "options": [
@@ -146,7 +158,7 @@
                 },
                 {
                   "example": "yolo",
-                  "help_en": "The authorization mode for script execution. OpenAPI currently supports only the yolo mode. Valid values:\nyolo: automatic authorization. No manual intervention is required, and the model can process tasks automatically",
+                  "help_en": "The authorization mode for script execution. OpenAPI currently supports only the yolo mode. Valid values:\nyolo: automatic authorization. No manual intervention is required, and the model can process automatically",
                   "help_zh": "脚本执行的授权模式（OpenApi目前仅支持yolo模式）：\nyolo：自动授权，无需人为介入，模型可以自动处理",
                   "name": "mode",
                   "options": [
@@ -158,7 +170,7 @@
                 },
                 {
                   "example": "qwen3.7-max(openai)",
-                  "help_en": "The model ID. Use the full model identifier supported by the target environment. If this parameter is omitted, the default model is used. If this parameter is specified, the server verifies its availability and applies it before the session is created",
+                  "help_en": "The model ID. Use the full model identifier supported by the target environment. If this parameter is omitted, the default model is used. If this parameter is passed, the server verifies its availability and applies it before the session is created",
                   "help_zh": "模型 ID，使用目标环境支持的完整模型标识。省略时沿用默认模型；传入时由服务端校验可用性，并在会话创建成功前应用",
                   "name": "model",
                   "options": [
@@ -170,7 +182,7 @@
                 },
                 {
                   "example": "12345",
-                  "help_en": "The DataWorks workspace ID. This parameter is used to initialize the project context of the session. If this parameter is omitted, the session is processed without a project context. You can subsequently correct or switch the project context by using PromptAgentSession",
+                  "help_en": "The DataWorks workspace ID. It is used to initialize the session project context. If this parameter is omitted, it is processed as having no project. The project context can be corrected or switched later by the project context of PromptAgentSession",
                   "help_zh": "DataWorks 工作空间 ID。用于初始化会话项目上下文；省略时按无项目处理，后续可由 PromptAgentSession 的项目上下文校正或切换",
                   "name": "project_id",
                   "options": [
@@ -182,7 +194,7 @@
                 },
                 {
                   "example": "none",
-                  "help_en": "The reasoning effort configuration. The value must be supported by the target model. A value of none disables reasoning, and a value of default uses the default configuration of the model. If an unsupported value is specified or the configuration application has failed, the session creation is marked as failed. If this parameter is omitted, the existing reasoning effort configuration is not modified. A successful configuration updates the default value of the daemon workspace and affects not only the current request",
+                  "help_en": "The reasoning configuration. The value must be supported by the target model. A value of none indicates shutdown of reasoning, and default indicates the default configurations of the model. If an unsupported value is used or the configuration application is failed, the session creation is failed. If this parameter is omitted, the existing reasoning configuration is not modified. A successful configuration updates the default value of the daemon workspace, which affects not only the current request",
                   "help_zh": "思考配置，取值须由目标模型支持。none 表示关闭思考，default 表示模型默认配置；不支持的值或配置应用失败时，会话创建失败。省略时不修改现有思考配置。成功配置会更新 daemon 工作空间的默认值，不仅影响本次请求",
                   "name": "reasoning_effort",
                   "options": [
@@ -206,7 +218,7 @@
                 },
                 {
                   "example": "skill-name-1,skill-name2,skill-name-3",
-                  "help_en": "The names of the custom skills to be loaded. Separate multiple names with commas (,)",
+                  "help_en": "The names of the loaded custom skills. Separate multiple names with commas (,)",
                   "help_zh": "加载的自定义skill名称，多个用英文逗号相隔",
                   "name": "skills",
                   "options": [
@@ -263,13 +275,13 @@
         "properties": {
           "JsonRpcResponse": {
             "backendName": "data",
-            "description_en": "The JSON-RPC response",
+            "description_en": "The JSON-RPC response result",
             "description_zh": "JSON-PRC的返回结果",
             "parseType": "struct",
             "properties": {
               "Error": {
                 "backendName": "error",
-                "description_en": "The JSON-RPC error message. This field is not returned if the request is successful",
+                "description_en": "The JSON-RPC error message. This field is not returned when the request is successful",
                 "description_zh": "JSON-RPC 错误信息；成功时不返回该字段",
                 "parseType": "struct",
                 "properties": {
@@ -326,7 +338,7 @@
               },
               "Jsonrpc": {
                 "backendName": "jsonrpc",
-                "description_en": "The JSON-RPC version. This value is always 2.0",
+                "description_en": "The JSON-RPC version. Fixed to 2.0",
                 "description_zh": "JSON-RPC 版本，固定 2.0",
                 "example": "2.0",
                 "title_en": "JSON-RPC 协议版本。",
@@ -335,7 +347,7 @@
               },
               "Result": {
                 "backendName": "result",
-                "description_en": "The business data. The value is null if an error occurs",
+                "description_en": "The business data. The value is null when an error occurs",
                 "description_zh": "业务数据；出错时为 null",
                 "parseType": "struct",
                 "properties": {
@@ -355,7 +367,7 @@
               },
               "Timestamp": {
                 "backendName": "timestamp",
-                "description_en": "The response time. The value is a UNIX timestamp in milliseconds",
+                "description_en": "The response time. It is a UNIX timestamp in milliseconds",
                 "description_zh": "响应时间，Unix 时间戳，单位为毫秒",
                 "example": "1789549200000",
                 "format": "int64",
@@ -370,8 +382,8 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "Id of the request",
-            "description_zh": "Id of the request",
+            "description_en": "The request ID of this OpenAPI invoke, used to troubleshoot API call issues",
+            "description_zh": "本次 OpenAPI 调用的请求 ID，用于排查调用问题",
             "example": "8A9D5E6C-5817-5837-9715-6E3967EC6123",
             "title_en": "Id of the request",
             "title_zh": "Id of the request",
@@ -384,5 +396,5 @@
       }
     }
   },
-  "timeout_ms": 47000
+  "timeout_ms": 62000
 }
