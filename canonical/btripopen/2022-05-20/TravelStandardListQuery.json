@@ -3,11 +3,11 @@
   "cmd_full_name": "btripopen travel-standard-list-query",
   "cmd_name": "travel-standard-list-query",
   "deprecated": false,
-  "description_en": "Queries the list of enterprise travel standards (including categories such as domestic flights, international flights, train tickets, and hotels)",
+  "description_en": "Queries the list of corporate travel standards, including categories such as flights, international flights, train tickets, and hotels",
   "description_zh": "查询企业差旅标准列表（包括机票、国际机票、火车票、酒店等类目）",
   "kebab_example": "aliyun btripopen travel-standard-list-query --page-no 1 --page-size 10 --x-acs-btrip-corp-token feth00jqwls --api-version 2022-05-20 --region cn-hangzhou",
   "method": "GET",
-  "multi_version": true,
+  "multi_version": false,
   "name": "TravelStandardListQuery",
   "operation": {
     "action": "TravelStandardListQuery",
@@ -21,8 +21,12 @@
   },
   "parameters": [
     {
+      "enum": [
+        "false",
+        "true"
+      ],
       "example": "false",
-      "help_en": "Applicable to parent-subsidiary enterprises. Set this parameter to true to query the unified group travel standards. If left empty, the system returns the travel rules that are currently in effect for the enterprise",
+      "help_en": "Specifies whether to use the unified travel standards of the group. This parameter applies to parent and child enterprises. If you want to query the unified travel standards of the group, set this parameter to true. If this parameter is left empty, the list of travel rules that actually take effect for the current enterprise is returned",
       "help_zh": "主子企业适用：若需查询集团统一差旅标准，则在此指定为true，为空则返回当前企业实际生效的差旅规则列表",
       "location": "query",
       "name": "from_group",
@@ -48,7 +52,7 @@
     },
     {
       "example": "1",
-      "help_en": "The page number, starting from 1",
+      "help_en": "The page number. Pages start from 1",
       "help_zh": "分页页数（从1开始）",
       "location": "query",
       "minimum": "1",
@@ -62,7 +66,7 @@
     },
     {
       "example": "10",
-      "help_en": "The number of entries per page. Maximum value: 50",
+      "help_en": "The number of entries to return on each page. Maximum value: 50",
       "help_zh": "每页返回数量，最多50",
       "location": "query",
       "maximum": "50",
@@ -77,7 +81,7 @@
     },
     {
       "example": "feth00jqwls",
-      "help_en": "A header parameter obtained from the \"Enterprise Access Credential\" operation. Add it to the request header. In HTTP mode, you can use corp_token=value in the URL as an alternative",
+      "help_en": "The header parameter. You can obtain this parameter by calling the enterprise access credential operation and add it to the request header. In HTTP mode, you can use corp_token=value in the URL instead",
       "help_zh": "header参数,由“企业访问凭证”接口获取（添加在header里）,http模式可以在链接中使用corp_token=value来替代",
       "location": "header",
       "name": "x_acs_btrip_corp_token",
@@ -90,7 +94,7 @@
     },
     {
       "example": "user_1234",
-      "help_en": "The user ID. Specify this parameter when querying the travel standard bound to an employee",
+      "help_en": "The ID of the user. This parameter is used when you query the travel standards bound to an employee",
       "help_zh": "查询员工绑定差标时使用",
       "location": "query",
       "name": "user_id",
@@ -113,7 +117,7 @@
         "properties": {
           "code": {
             "backendName": "resultCode",
-            "description_en": "The response code",
+            "description_en": "The return code",
             "description_zh": "返回码",
             "example": "0",
             "format": "int32",
@@ -128,7 +132,7 @@
           },
           "module": {
             "backendName": "module",
-            "description_en": "The response data. Returned by the server. Returns null if no results are found or an exception occurs",
+            "description_en": "The return value. This value is returned by the server. If no result is found or an exception occurs, an empty value is returned",
             "description_zh": "返回值，服务端返回，没有结果或发生异常都返回空",
             "properties": {
               "items": {
@@ -145,12 +149,19 @@
                       "properties": {
                         "open_service_type_list": {
                           "backendName": "openServiceTypeList",
-                          "description_en": "The list of enabled service categories",
+                          "description_en": "The enabled service categories",
                           "description_zh": "开启的服务类目",
                           "itemName": "open_service_type_list",
                           "items": {
-                            "description_en": "The list of enabled service categories",
+                            "description_en": "The enabled service categories",
                             "description_zh": "开启的服务类目",
+                            "enumValueTitles": {
+                              "flight": "国内机票",
+                              "flightIntl": "国际/中国港澳台机票",
+                              "hotel": "国内酒店",
+                              "hotelIntl": "国际/中国港澳台酒店",
+                              "train": "火车票"
+                            },
                             "example": "flight",
                             "type": "string"
                           },
@@ -160,7 +171,7 @@
                         },
                         "rule_code": {
                           "backendName": "ruleCode",
-                          "description_en": "The personnel rule code",
+                          "description_en": "The code of the personnel rule",
                           "description_zh": "人员规则编码",
                           "example": "2006516571",
                           "format": "int64",
@@ -217,14 +228,14 @@
                               "properties": {
                                 "key": {
                                   "backendName": "key",
-                                  "description_en": "The travel standard description item",
+                                  "description_en": "The description item of the travel standard",
                                   "description_zh": "差标描述项",
                                   "example": "舱等",
                                   "type": "string"
                                 },
                                 "value": {
                                   "backendName": "value",
-                                  "description_en": "The travel standard description value",
+                                  "description_en": "The description value of the travel standard",
                                   "description_zh": "差标描述值",
                                   "example": "经济舱,超级经济舱,公务舱,头等舱",
                                   "type": "string"
@@ -247,6 +258,13 @@
                             "backendName": "type",
                             "description_en": "The category of the travel standard detail",
                             "description_zh": "差标明细类目",
+                            "enumValueTitles": {
+                              "flight": "国内机票",
+                              "flightIntl": "国际/中国港澳台机票",
+                              "hotel": "国内酒店",
+                              "hotelIntl": "国际/中国港澳台酒店",
+                              "train": "火车票"
+                            },
                             "example": "flight",
                             "title_en": "差标明细类目",
                             "title_zh": "差标明细类目",
@@ -261,8 +279,12 @@
                     },
                     "scope": {
                       "backendName": "scope",
-                      "description_en": "The applicable personnel scope of the travel standard",
+                      "description_en": "The scope of personnel to which the travel standard applies",
                       "description_zh": "差旅标准适用人员范围",
+                      "enumValueTitles": {
+                        "1": "全部人员",
+                        "2": "指定员工（指定员工需要在后台配置）"
+                      },
                       "example": "1",
                       "format": "int32",
                       "title_en": "ruleCode对应的选人组件选择范围， 1 全选，2 选人组件——用于差标列表展示",
@@ -298,7 +320,7 @@
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful",
+            "description_en": "Indicates whether the request is successful",
             "description_zh": "是否成功",
             "example": "true",
             "type": "boolean"

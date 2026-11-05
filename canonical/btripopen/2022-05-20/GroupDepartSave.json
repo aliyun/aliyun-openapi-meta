@@ -1,13 +1,13 @@
 {
-  "camel_example": "aliyun btripopen POST /sub_corps/v1/departs --region cn-hangzhou --header \"Content-Type=application/x-www-form-urlencoded\" --body dept_name=测试部门&outer_dept_id=1001&status=0 --version 2022-05-20 --force",
+  "camel_example": "aliyun btripopen POST /sub_corps/v1/departs --region cn-hangzhou --header \"Content-Type=application/x-www-form-urlencoded\" --body 'dept_name=测试部门&outer_dept_id=1001&status=0' --version 2022-05-20 --force",
   "cmd_full_name": "btripopen group-depart-save",
   "cmd_name": "group-depart-save",
   "deprecated": false,
-  "description_en": "Synchronizes department information to a group enterprise (parent/subsidiary enterprises)",
+  "description_en": "Synchronizes department information to a group enterprise, including parent and subsidiary enterprises",
   "description_zh": "调用本接口，可实现向集团企业（主/子企业）中同步部门信息",
   "kebab_example": "aliyun btripopen group-depart-save --outer-dept-id 1001 --dept-name '测试部门' --status 0 --api-version 2022-05-20 --region cn-hangzhou",
   "method": "POST",
-  "multi_version": true,
+  "multi_version": false,
   "name": "GroupDepartSave",
   "operation": {
     "action": "GroupDepartSave",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "1001",
-      "help_en": "The department ID. The default root department ID in Alibaba Business Travel is 1. Do not use this value when passing parameters to avoid call failures",
+      "help_en": "The department ID. The default root department ID of an enterprise in Alibaba Cloud Business Travel is 1. Do not use this value when you pass the parameter to prevent call failures",
       "help_zh": "部门 ID，阿里商旅默认企业根部门 ID 为 1，在传入时请勿使用，以避免调用失败",
       "location": "formData",
       "name": "outer_dept_id",
@@ -48,7 +48,7 @@
     },
     {
       "example": "1000",
-      "help_en": "The parent department ID. The default root department ID in Alibaba Business Travel is 1. Do not use this value when passing parameters to avoid call failures",
+      "help_en": "The parent department ID. The default root department ID of an enterprise in Alibaba Cloud Business Travel is 1. Do not use this value when you pass the parameter to prevent call failures",
       "help_zh": "父部门 ID，阿里商旅默认企业根部门 ID 为 1，在传入时请勿使用，以避免调用失败",
       "location": "formData",
       "name": "outer_dept_pid",
@@ -60,8 +60,12 @@
       "type": "string"
     },
     {
+      "enum": [
+        "0",
+        "1"
+      ],
       "example": "0",
-      "help_en": "Specifies whether the department is active. Valid values:\n0: Active.\n1: Inactive",
+      "help_en": "Specifies whether the department is active",
       "help_zh": "部门是否生效",
       "location": "formData",
       "name": "status",
@@ -74,7 +78,7 @@
     },
     {
       "example": "001|002|003",
-      "help_en": "The department manager ID.\nIf the department has multiple managers, pass the values in the format `[manager1|manager2|manager3]`",
+      "help_en": "The IDs of the department managers.\nIf a department has multiple managers, pass the values in the [Manager 1|Manager 2|Manager 3] format",
       "help_zh": "部门主管 ID。\n当部门存在多位主管时，请参照 `[主管1|主管2|主管3]` 的格式进行传值",
       "location": "formData",
       "name": "manager_ids",
@@ -89,7 +93,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The list of enterprise IDs to which the department belongs. Required parameter",
+      "help_en": "The IDs of the enterprises to which the department belongs. This parameter is required",
       "help_zh": "部门归属企业 ID 列表，必填参数",
       "location": "formData",
       "name": "sub_corp_id_list",
@@ -103,7 +107,7 @@
     },
     {
       "example": "-",
-      "help_en": "Deprecated. No input required",
+      "help_en": "[Deprecated] You do not need to specify this parameter",
       "help_zh": "已废弃，无需填写",
       "location": "formData",
       "name": "sync_group",
@@ -116,7 +120,7 @@
     },
     {
       "example": "feth00jqwls",
-      "help_en": "The enterprise access token.\nWhen calling this operation over HTTP, include this as a required parameter in the request URL. For information about how to obtain the token, refer to Enterprise access token (https://openapi.alibtrip.com/doc/toDocDetail?docId=3769985).\nWhen appending this parameter, use `crop_token=value` instead",
+      "help_en": "The enterprise access credential.\nWhen you call this operation over HTTP, you must append this parameter as a required parameter to the request URL. For more information about how to obtain the credential, see Enterprise access credential (https://openapi.alibtrip.com/doc/toDocDetail?docId=3769985).\nWhen you append the parameter, we recommend that you use crop_token=value instead",
       "help_zh": "企业访问凭证。\n通过 HTTP 方式调用本接口时，需要作为必填参数拼接在请求地址中。获取方式请参见：企业访问凭证 (https://openapi.alibtrip.com/doc/toDocDetail?docId=3769985)。\n在拼接时，推荐使用 `crop_token=value` 代替",
       "location": "header",
       "name": "x_acs_btrip_corp_token",
@@ -139,14 +143,14 @@
         "properties": {
           "code": {
             "backendName": "resultCode",
-            "description_en": "The error code. A non-zero value indicates a failed request",
+            "description_en": "The error code. A value other than 0 indicates that the request failed",
             "description_zh": "错误码，非 0 表示请求失败",
             "example": "0",
             "type": "string"
           },
           "message": {
             "backendName": "resultMsg",
-            "description_en": "The failure reason. This parameter is returned only when the request fails",
+            "description_en": "The cause of the request failure. This parameter is returned only when the request fails",
             "description_zh": "请求失败原因，仅请求失败时显示",
             "example": "企业Token不正确！",
             "type": "string"
@@ -160,14 +164,18 @@
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful. Valid values:\ntrue: Successful.\nfalse: Failed",
+            "description_en": "Indicates whether the request is successful",
             "description_zh": "请求是否成功",
+            "enumValueTitles": {
+              "false": "失败",
+              "true": "成功"
+            },
             "example": "true",
             "type": "boolean"
           },
           "traceId": {
             "backendName": "traceId",
-            "description_en": "The global trace identifier for the request, typically used for troubleshooting and diagnostics",
+            "description_en": "The global trace ID of the request, which is typically used for troubleshooting and locating issues",
             "description_zh": "跟踪请求全局的标识符，通常用于问题的排查与定位",
             "example": "210e847f16611516748613869de4f6",
             "type": "string"

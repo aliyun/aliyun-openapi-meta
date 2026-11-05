@@ -1,5 +1,5 @@
 {
-  "camel_example": "aliyun btripopen POST /user/v1/rule --region cn-hangzhou --header \"Content-Type=application/x-www-form-urlencoded\" --body book_type=authorizedPerson&user_id=user_1234&status=1 --version 2022-05-20 --force",
+  "camel_example": "aliyun btripopen POST /user/v1/rule --region cn-hangzhou --header \"Content-Type=application/x-www-form-urlencoded\" --body 'book_type=authorizedPerson&user_id=user_1234&status=1' --version 2022-05-20 --force",
   "cmd_full_name": "btripopen isv-rule-save",
   "cmd_name": "isv-rule-save",
   "deprecated": false,
@@ -7,7 +7,7 @@
   "description_zh": "调用本接口，可实现为企业员工授予特殊差旅权限",
   "kebab_example": "aliyun btripopen isv-rule-save --user-id user_1234 --book-type authorizedPerson --status 1 --api-version 2022-05-20 --region cn-hangzhou",
   "method": "POST",
-  "multi_version": true,
+  "multi_version": false,
   "name": "IsvRuleSave",
   "operation": {
     "action": "IsvRuleSave",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "feth****wls",
-      "help_en": "The enterprise access token.\nWhen calling this operation over HTTP, include this as a required parameter in the request URL. For information about how to obtain the token, refer to Enterprise Access Token (https://openapi.alibtrip.com/doc/toDocDetail?docId=3769985).\nWhen appending this parameter, you can use `crop_token=value` as a substitute",
+      "help_en": "The enterprise access credential.\nWhen you call the operation over HTTP, you must append this parameter as a required parameter to the request URL. For information about how to obtain the credential, see Enterprise access credential (https://openapi.alibtrip.com/doc/toDocDetail?docId=3769985).\nWhen you append the parameter, you can use `crop_token=value` instead",
       "help_zh": "企业访问凭证。\n通过 HTTP 方式进行接口调用时，需要作为必填参数拼接在请求地址中。获取方式请参见：企业访问凭证 (https://openapi.alibtrip.com/doc/toDocDetail?docId=3769985)。\n在拼接时，可以使用`crop_token=value`替代",
       "location": "header",
       "name": "x_acs_btrip_so_corp_token",
@@ -47,6 +47,11 @@
       "type": "string"
     },
     {
+      "enum": [
+        "authorizedPerson",
+        "bookPerson",
+        "noApprovalRequired"
+      ],
       "example": "authorizedPerson",
       "help_en": "The type of role permission granted to the employee",
       "help_zh": "为员工授予的角色权限类型",
@@ -60,6 +65,10 @@
       "type": "string"
     },
     {
+      "enum": [
+        "0",
+        "1"
+      ],
       "example": "1",
       "help_en": "Specifies whether the authorization takes effect",
       "help_zh": "授权是否生效",
@@ -77,7 +86,7 @@
         "fields": [
           {
             "example": "123",
-            "help_en": "The ID of the employee who can be booked for.\nYou can specify up to 300 employee IDs.\nIf the number exceeds the limit of 300, you can use `entity_type=4` to pass values at the department level",
+            "help_en": "The ID of the employee who can be booked for.\nYou can specify the IDs of up to 300 employees.\nIf the number of employees exceeds 300, you can set `entitp_type` to `4` and pass values by department",
             "help_zh": "可被代订人员 ID。\n最多传入300位员工的 ID。\n若人数超出 300 的限制，可以使 `entitp_type=4` ，按部门维度传值",
             "name": "entity_id",
             "options": [
@@ -88,8 +97,13 @@
             "type": "string"
           },
           {
+            "enum": [
+              "1",
+              "3",
+              "4"
+            ],
             "example": "1",
-            "help_en": "The scope in which the booking agent permission takes effect.\nTakes effect only when `book_type = bookPerson`.\nIf this scope is not set, the permission takes effect for all employees by default",
+            "help_en": "The effective scope of the booking permission.\nThis parameter takes effect only when `book_type` is set to `bookPerson`.\nIf this parameter is not specified, the permission takes effect for all employees by default",
             "help_zh": "代订权限生效范围。\n仅 `book_type = bookPerson` 时生效。\n本范围不设置默认为全员生效",
             "name": "entity_type",
             "options": [
@@ -102,7 +116,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The list of users for whom the booking agent permission takes effect",
+      "help_en": "The list of effective scopes for the booking agent permission",
       "help_zh": "代订人权限生效范围列表",
       "location": "formData",
       "name": "bookuser_list",
@@ -115,8 +129,12 @@
       "type": "array"
     },
     {
+      "enum": [
+        "false",
+        "true"
+      ],
       "example": "false",
-      "help_en": "Specifies whether the current employee needs to submit a travel approval request when making a booking",
+      "help_en": "Specifies whether the current employee needs to submit a travel approval form when making a booking",
       "help_zh": "当前人员预订是否需要提交出差审批单",
       "location": "formData",
       "name": "apply_need",
@@ -128,8 +146,12 @@
       "type": "bool"
     },
     {
+      "enum": [
+        "false",
+        "true"
+      ],
       "example": "false",
-      "help_en": "Specifies whether the current employee is subject to travel policy restrictions when making a booking",
+      "help_en": "Specifies whether the current employee's booking is subject to travel standards",
       "help_zh": "当前人员预订是否受差标影响",
       "location": "formData",
       "name": "rule_need",
@@ -147,7 +169,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response",
+        "description_en": "The response result",
         "description_zh": "返回结果",
         "properties": {
           "code": {
@@ -159,35 +181,39 @@
           },
           "message": {
             "backendName": "resultMsg",
-            "description_en": "The response message",
+            "description_en": "The returned message",
             "description_zh": "返回信息",
             "example": "角色更新成功",
             "type": "string"
           },
           "module": {
             "backendName": "module",
-            "description_en": "The response message. Deprecated. Use the `message` parameter instead",
+            "description_en": "The returned message. [Deprecated] Use the `message` parameter instead",
             "description_zh": "返回信息。已废弃，请使用 `message` 参数",
             "example": "-",
             "type": "string"
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The unique identifier of this request",
+            "description_en": "The unique identifier of the request",
             "description_zh": "本次请求的唯一标识",
             "example": "C61ECFF6-****-****-****-D77369043A5F",
             "type": "string"
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful",
+            "description_en": "Indicates whether the request is successful",
             "description_zh": "本次请求是否成功",
+            "enumValueTitles": {
+              "false": "失败",
+              "true": "成功"
+            },
             "example": "true",
             "type": "boolean"
           },
           "traceId": {
             "backendName": "traceId",
-            "description_en": "The global trace identifier of the request, typically used for troubleshooting",
+            "description_en": "The global identifier for tracking the request, which is typically used for troubleshooting",
             "description_zh": "跟踪请求全局的标识符，通常用于问题排查定位",
             "example": "210f079********31635d866a",
             "type": "string"

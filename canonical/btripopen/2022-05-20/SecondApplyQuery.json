@@ -7,7 +7,7 @@
   "description_zh": "超预算审批详情",
   "kebab_example": "aliyun btripopen second-apply-query --apply-id 175634 --thirdpart-apply-id 202605280091 --business-instance-id 2024060710160003300008684 --corp-id open12ne52qsbqn87v10KUEJspla00 --x-acs-btrip-so-corp-token feth00jqwls --api-version 2022-05-20 --region cn-hangzhou",
   "method": "GET",
-  "multi_version": true,
+  "multi_version": false,
   "name": "SecondApplyQuery",
   "operation": {
     "action": "SecondApplyQuery",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "175634",
-      "help_en": "The ID of the category II business travel application. This parameter is mutually exclusive with thirdpartApplyId",
+      "help_en": "The category II business travel application ID. This parameter is mutually exclusive with thirdpartApplyId",
       "help_zh": "商旅二类申请单 ID（与 thirdpartApplyId 二选一）",
       "location": "query",
       "name": "apply_id",
@@ -37,7 +37,7 @@
     },
     {
       "example": "202605280091",
-      "help_en": "The ID of the third-party OA application. This parameter is mutually exclusive with applyId",
+      "help_en": "The third-party OA application ID. This parameter is mutually exclusive with applyId",
       "help_zh": "三方OA申请单号（与 applyId 二选一）",
       "location": "formData",
       "name": "thirdpart_apply_id",
@@ -50,7 +50,7 @@
     },
     {
       "example": "2024060710160003300008684",
-      "help_en": "The third-party OA flow instance ID. This parameter is optional and used to associate on the third-party OA side",
+      "help_en": "The third-party OA process instance ID. This parameter is optional and used for association on the third-party OA side",
       "help_zh": "三方OA流程实例ID（可选，用于三方OA侧关联）",
       "location": "query",
       "name": "business_instance_id",
@@ -63,7 +63,7 @@
     },
     {
       "example": "open12ne52qsbqn87v10KUEJspla00",
-      "help_en": "The ID of the primary enterprise",
+      "help_en": "The primary enterprise ID",
       "help_zh": "主企业Id",
       "location": "query",
       "name": "corp_id",
@@ -76,7 +76,7 @@
     },
     {
       "example": "feth00jqwls",
-      "help_en": "The enterprise access token.\n\nThis is a required header parameter for HTTP calls. For more information about how to obtain the token, see Enterprise access token (https://openapi.alibtrip.com/doc/toDocDetail?docId=3769985).\nYou can use `corp_token=value` in the request URL as an alternative",
+      "help_en": "The enterprise access credential.\n\nThis is a required header parameter for HTTP calls. For more information about how to obtain the credential, see Enterprise access credential (https://openapi.alibtrip.com/doc/toDocDetail?docId=3769985).\nYou can use `corp_token=value` in the request URL instead",
       "help_zh": "企业访问凭证。\n\n是 HTTP 调用方式的 header 必填参数之一，获取方式请参见：企业访问凭证 (https://openapi.alibtrip.com/doc/toDocDetail?docId=3769985)。\n可以在请求地址中使用 `corp_token=value` 替代",
       "location": "header",
       "name": "x_acs_btrip_so_corp_token",
@@ -138,15 +138,21 @@
               },
               "budget_items": {
                 "backendName": "budgetItems",
-                "description_en": "The budget increase detail list. Multiple items can be submitted at a time for categorized budgets",
+                "description_en": "The list of budget increase details. Multiple entries can be returned at a time for category-based budgets",
                 "description_zh": "提预算明细列表（分类目预算时一次可有多条）",
                 "itemName": "budget_item",
                 "items": {
                   "properties": {
                     "budget_dimension": {
                       "backendName": "budgetDimension",
-                      "description_en": "The budget dimension. Valid values:\n1: Application form level.\n2: Application form category.\n3: Itinerary level.\n4: Shared by associated forms",
+                      "description_en": "The budget dimension. Valid values:\n1: Application level.\n2: Application category level.\n3: Itinerary level.\n4: Shared by associated applications",
                       "description_zh": "预算维度：1=申请单级,2=申请单类目,3=行程级,4=关联单共享",
+                      "enumValueTitles": {
+                        "1": "申请单级",
+                        "2": "申请单类目",
+                        "3": "行程级",
+                        "4": "关联单共享"
+                      },
                       "example": "1",
                       "format": "int32",
                       "title_en": "预算维度：1=申请单级,2=申请单类目,3=行程级,4=关联单共享",
@@ -155,8 +161,12 @@
                     },
                     "budget_type": {
                       "backendName": "budgetType",
-                      "description_en": "The budget type. Valid values:\n1: Total budget.\n2: Categorized budget",
+                      "description_en": "The budget type. Valid values:\n1: Total budget.\n2: Category-based budget",
                       "description_zh": "预算类型：1=总预算, 2=分类预算",
+                      "enumValueTitles": {
+                        "1": "总预算",
+                        "2": "分类预算"
+                      },
                       "example": "1",
                       "format": "int32",
                       "title_en": "预算类型：1=总预算, 2=分类预算",
@@ -165,8 +175,17 @@
                     },
                     "category": {
                       "backendName": "category",
-                      "description_en": "The categorized budget category. This parameter is valid when budgetType is set to 2",
+                      "description_en": "The category of the category-based budget. This parameter is returned when budgetType is set to 2",
                       "description_zh": "分类预算类目（budgetType=2 时）",
+                      "enumValueTitles": {
+                        "FLIGHT": "机票类目预算",
+                        "HOTEL": "酒店类目预算",
+                        "IEFLIGHT": "国际机票类目预算",
+                        "IEHOTEL": "国际酒店类目预算",
+                        "IEVEHICLE": "国际用车类目预算",
+                        "TRAIN": "火车类目预算",
+                        "VEHICLE": "用车类目预算"
+                      },
                       "example": "TRAIN",
                       "title_en": "分类预算类目（budgetType=2 时）",
                       "title_zh": "分类预算类目（budgetType=2 时）",
@@ -193,7 +212,7 @@
                     },
                     "target_budget": {
                       "backendName": "targetBudget",
-                      "description_en": "The target budget after the quota increase in cents. The value is calculated by using the following formula: originBudget + increaseBudget",
+                      "description_en": "The target budget after the increase in cents. The value equals originBudget + increaseBudget",
                       "description_zh": "提额后目标预算（分）= originBudget + increaseBudget",
                       "example": "500000",
                       "format": "int64",
@@ -321,7 +340,7 @@
               },
               "union_no": {
                 "backendName": "unionNo",
-                "description_en": "The associated form number",
+                "description_en": "The associated application number",
                 "description_zh": "关联单号",
                 "example": "abd123",
                 "title_en": "关联单号",
