@@ -331,12 +331,10 @@
             "backendName": "escalations",
             "description_en": "The multi-condition configuration list for cloud service monitoring composite triggers, which includes multiple sub-trigger conditions combined by logical operators (AND/OR) to determine whether to trigger an alert",
             "description_zh": "云产品监控复合触发的多条件配置列表，包含多个子触发条件，通过逻辑运算符（AND/OR）组合判断是否触发告警",
-            "example": "[{\"metricName\":\"cpuUsage\",\"comparisonOperator\":\"GT\",\"threshold\":\"80\",\"period\":60}]",
             "items": {
               "$ref": "#/components/schemas/CloudMonitoringCompositeEscalationEntry",
               "description_en": "The single cloud service monitoring composite trigger condition, which includes the metric, comparison operator, and threshold",
-              "description_zh": "单个云产品监控复合触发条件，包含指标、比较操作符和阈值",
-              "example": "{\"metricName\":\"cpuUsage\",\"comparisonOperator\":\"GT\",\"threshold\":\"80\",\"period\":60}"
+              "description_zh": "单个云产品监控复合触发条件，包含指标、比较操作符和阈值"
             },
             "title": "多条件配置列表",
             "type": "array"
@@ -555,12 +553,10 @@
             "backendName": "escalations",
             "description_en": "The configuration list for multi-level triggers in cloud service monitoring. Each item defines a trigger level (such as Warning or Critical) and includes parameters such as the threshold, duration period, and notification method",
             "description_zh": "云产品监控多档触发的配置列表，每一项定义一个触发档位（如 Warning、Critical），包含阈值、持续周期和通知方式等参数",
-            "example": "[{\"severity\":\"CRITICAL\",\"comparisonOperator\":\"GT\",\"threshold\":\"80\",\"times\":3}]",
             "items": {
               "$ref": "#/components/schemas/CloudMonitoringSimpleEscalationEntry",
               "description_en": "The single cloud service monitoring trigger level, which includes the severity level, comparison operator, threshold, and consecutive trigger count",
-              "description_zh": "单个云产品监控触发档位，包含严重等级、比较操作符、阈值和连续触发次数",
-              "example": "{\"severity\":\"CRITICAL\",\"comparisonOperator\":\"GT\",\"threshold\":\"80\",\"times\":3}"
+              "description_zh": "单个云产品监控触发档位，包含严重等级、比较操作符、阈值和连续触发次数"
             },
             "title": "多档触发列表",
             "type": "array"
@@ -1327,6 +1323,18 @@
               "EBPF",
               "RUM"
             ],
+            "enumValueTitles": {
+              "APM": "应用性能监控",
+              "CLOUD_MONITORING": "云监控",
+              "EBPF": "eBPF",
+              "PROMETHEUS": "Prometheus",
+              "RUM": "用户体验监控",
+              "SLS": "日志服务",
+              "UMODEL": "UModel",
+              "UNKNOWN": "未知类型",
+              "VIRTUAL_PROMETHEUS": "虚拟 Prometheus",
+              "XTRACE": "链路追踪"
+            },
             "example": "PROMETHEUS",
             "required": true,
             "title": "数据源类型。合法枚举与配套字段：PROMETHEUS（必填 instanceId；可选 regionId）；VIRTUAL_PROMETHEUS（必填 instanceId；可选 regionId、namespace、tenantId）；UMODEL（可选 regionId，其它均在 queryConfig/conditionConfig 中承载）；APM（可选 regionId）；XTRACE（可选 regionId）；EBPF（可选 regionId）；RUM（可选 regionId）；CLOUD_MONITORING（可选 regionId、productCategory）；SLS（必填 project、stores）；UNKNOWN（只读兜底，写路径请勿使用）。禁止使用非枚举值（如 CMS_BASIC_DS/SLS_DS 等），后端会返回 Invalidtype 400",
@@ -1432,6 +1440,76 @@
           }
         },
         "title": "极简模式通知对象（按 P 级配置时使用）",
+        "type": "object"
+      },
+      "DryRunResult": {
+        "description_en": "The validation result returned when manageAlertRules is called with dryRun=true. This call does not write to the database, trigger template synchronization, or produce any other side effects",
+        "description_zh": "manageAlertRules 携带 dryRun=true 时，对本次请求执行校验后给出的结论。该调用不写库、不触发模板同步等任何副作用",
+        "properties": {
+          "exitCode": {
+            "backendName": "exitCode",
+            "description_en": "The exit code. A value of 0 indicates that the validation passed. A value of 1 indicates that the request was rejected by business rules. For specific reasons, see violations. A value of 2 indicates that the request structure cannot be parsed and rule validation cannot be performed",
+            "description_zh": "结论码：0 表示通过；1 表示被业务规则拒绝，具体原因见 violations；2 表示请求结构无法解析，无法进入规则校验",
+            "example": "1",
+            "format": "int32",
+            "title": "退出码：0 通过 / 1 业务拒绝 / 2 请求结构无法解析",
+            "type": "integer"
+          },
+          "result": {
+            "backendName": "result",
+            "description_en": "The text representation of the result. A value of ok indicates that the validation passed, and rejected indicates that the request was rejected by business rules. This field is empty when the exit code is 2, which means the request structure cannot be parsed",
+            "description_zh": "结论的文字形式：ok 表示通过、rejected 表示被业务规则拒绝；退出码为 2（请求结构无法解析）时该字段为空",
+            "example": "rejected",
+            "title": "结论字面值：ok 表示通过、rejected 表示被业务规则拒绝；请求结构无法解析时为空",
+            "type": "string"
+          },
+          "violations": {
+            "backendName": "violations",
+            "description_en": "The list of violations. Each violation consists of three elements: field, message, and suggestion, which represent the path of the violated field, the violation description, and the remediation suggestion, respectively. This array is empty when the exit code is 0 (passed). All violations are listed when the exit code is 1 (rejected by business rules). The location and cause of the unparseable fields are provided when the exit code is 2 (unparseable request structure)",
+            "description_zh": "每条违规由 field / message / suggestion 三要素组成，分别表示违规字段路径、违规说明与修复建议。退出码为 0（通过）时为空数组；退出码为 1（业务规则拒绝）时列出全部违规；退出码为 2（请求结构无法解析）时给出无法解析的字段位置与原因",
+            "example": "[{\"field\":\"schedule.intervalSecs\",\"message\":\"schedule interval must be a multiple of 15 seconds\",\"suggestion\":\"must satisfy: 15-86400 seconds and a multiple of 15\"}]",
+            "items": {
+              "$ref": "#/components/schemas/DryRunViolation",
+              "description_en": "The detailed description of a violation that caused the validation failure",
+              "description_zh": "导致校验失败的违规详细说明"
+            },
+            "title": "违规列表；退出码为 0 时为空",
+            "type": "array"
+          }
+        },
+        "title": "请求校验结论",
+        "type": "object"
+      },
+      "DryRunViolation": {
+        "description_en": "The three elements of a validation failure: the violation field path, the violation description, and the remediation suggestion",
+        "description_zh": "一条校验失败的三要素：违规字段路径、违规说明、修复建议",
+        "properties": {
+          "field": {
+            "backendName": "field",
+            "description_en": "The path of the violated field, such as schedule.intervalSecs",
+            "description_zh": "违规字段路径，如 schedule.intervalSecs",
+            "example": "schedule.intervalSecs",
+            "title": "违规字段路径，如 schedule.intervalSecs",
+            "type": "string"
+          },
+          "message": {
+            "backendName": "message",
+            "description_en": "The violation description",
+            "description_zh": "违规说明",
+            "example": "schedule interval must be a multiple of 15 seconds",
+            "title": "违规说明",
+            "type": "string"
+          },
+          "suggestion": {
+            "backendName": "suggestion",
+            "description_en": "The remediation suggestion",
+            "description_zh": "修复建议",
+            "example": "must satisfy: 15-86400 seconds and a multiple of 15",
+            "title": "修复建议",
+            "type": "string"
+          }
+        },
+        "title": "校验违规项",
         "type": "object"
       },
       "EntityFields": {
@@ -1578,12 +1656,10 @@
             "backendName": "conditions",
             "description_en": "The list of join conditions for query result sets, which defines the matching rules between multiple query result sets to merge query results from different data sources based on specified conditions",
             "description_zh": "查询结果集 Join 关联条件列表，定义多个查询结果集之间的关联匹配规则，用于将不同数据源的查询结果按指定条件进行合并",
-            "example": "[{\"lhsField\":\"$0.hostIp\",\"operator\":\"==\",\"rhsField\":\"$1.hostIp\"}]",
             "items": {
               "$ref": "#/components/schemas/JoinConditions",
               "description_en": "The single join condition for query results, which specifies the left field, comparison operator, and right field",
-              "description_zh": "单个查询结果关联条件，指定左字段、比较操作符和右字段",
-              "example": "{\"lhsField\":\"$0.hostIp\",\"operator\":\"==\",\"rhsField\":\"$1.hostIp\"}"
+              "description_zh": "单个查询结果关联条件，指定左字段、比较操作符和右字段"
             },
             "title": "Join 条件列表",
             "type": "array"
@@ -1675,11 +1751,19 @@
           },
           "drillUuid": {
             "backendName": "drillUuid",
-            "description_en": "The unique identifier of the current alert drill (returned only when action=DRILL_ALERT). The drill is an asynchronous operation. The drillUuid is returned immediately after the API accepts the request. The alert events generated by the drill are stored in the database and carry the labels _cms_alert_drill=true, _cms_alert_drill_uuid=drillUuid, and _cms_alert_drill_request_id=request ID of the current call for tracing. You can use the existing event query API to retrieve the OCCURRED, PERSISTENT, or RECOVERED events generated by the drill based on these labels",
+            "description_en": "The unique identifier of the current alert drill (returned only when action=DRILL_ALERT). The drill is an asynchronous operation. The API returns the drillUuid immediately after the request is accepted. Alert events generated by the drill are persisted to the database and carry the labels _cms_alert_drill=true, _cms_alert_drill_uuid=drillUuid, and _cms_alert_drill_request_id=request ID of the current call for tracing. You can query the OCCURRED, PERSISTENT, or RECOVERED events generated by the drill through existing event query APIs by using these labels",
             "description_zh": "本次告警演习的唯一标识（仅 action=DRILL_ALERT 返回）。演习为异步动作：接口受理后即返回 drillUuid，推演产生的告警事件真实入库并携带 label _cms_alert_drill=true、_cms_alert_drill_uuid=drillUuid 与 _cms_alert_drill_request_id=本次调用请求 ID（溯源），可通过现有事件查询接口按该 label 检索演习产生的 OCCURRED/PERSISTENT/RECOVERED 事件",
             "example": "7c27ee14-5f94-469f-912d-476f79c8a861",
             "title": "本次告警演习的唯一标识（仅 action=DRILL_ALERT 返回）。演习为异步动作：接口受理后即返回 drillUuid，推演产生的告警事件真实入库并携带 label _cms_alert_drill=true、_cms_alert_drill_uuid=drillUuid 与 _cms_alert_drill_request_id=本次调用请求 ID（溯源），可通过现有事件查询接口按该 label 检索演习产生的 OCCURRED/PERSISTENT/RECOVERED 事件",
             "type": "string"
+          },
+          "dryRunResult": {
+            "$ref": "#/components/schemas/DryRunResult",
+            "backendName": "dryRunResult",
+            "description_en": "The three fixed items: exitCode is the result code (0 for success, 1 for business rule rejection, and 2 for unparseable request structure), result is the result text (ok or rejected, and empty when the structure is unparseable), and violations is the list of violation details (an empty array when the exit code is 0). This field is returned only for calls with dryRun=true and is not returned for other calls",
+            "description_zh": "固定三项：exitCode 为结论码（0 通过 / 1 业务规则拒绝 / 2 请求结构无法解析），result 为结论文本（ok / rejected，结构无法解析时为空），violations 为违规明细列表（退出码为 0 时为空数组）。仅 dryRun=true 的调用返回该字段，其他调用不返回",
+            "example": "{\"exitCode\":1,\"result\":\"rejected\",\"violations\":[{\"field\":\"schedule.intervalSecs\",\"message\":\"schedule interval must be a multiple of 15 seconds\",\"suggestion\":\"must satisfy: 15-86400 seconds and a multiple of 15\"}]}",
+            "title": "本次请求的校验结论（仅 dryRun=true 返回）。exitCode=0 表示通过；1 表示未通过业务规则校验（violations 非空）；2 表示请求结构无法解析。dryRun 调用不写库、不触发模板同步等任何副作用"
           },
           "updatedCount": {
             "backendName": "updatedCount",
@@ -1694,7 +1778,7 @@
             "backendName": "updatedAlertRuleUuidList",
             "description_en": "The list of UUIDs of successfully enabled or disabled rules",
             "description_zh": "成功启用 / 禁用的规则 UUID 列表",
-            "example": "[\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\",\"b2c3d4e5-f6a7-8901-bcde-f12345678901\"]",
+            "example": "[\"cms_v2_81d01768-fee9-459f-af49-ab2704f1db2b\"]",
             "items": {
               "description_en": "The unique identifier of the updated alert rule",
               "description_zh": "已更新的告警规则唯一标识",
@@ -1716,7 +1800,6 @@
             "backendName": "groupBy",
             "description_en": "The list of grouping dimensions for measure data, specifying the dimension keys used for grouping and aggregation of measure results",
             "description_zh": "度量数据的分组维度列表，指定按哪些维度键对度量结果进行分组聚合计算",
-            "example": "[\"host.name\", \"region\"]",
             "items": {
               "description_en": "A single dimension key used for grouping and aggregation of measure results",
               "description_zh": "用于度量结果分组聚合的单个维度键",
@@ -1918,7 +2001,6 @@
             "backendName": "resources",
             "description_en": "The resource list. This field can be left empty when relationType is set to ALL, which indicates all resources. When relationType is set to TAG, this field is a list of tags in the key=value format, such as [\"env=prod\", \"app=foo\"]. Only the APM data source and APM_MULTI_QUERY are supported",
             "description_zh": "资源列表；当 relationType=ALL 时可空，表示所有资源；当 relationType=TAG 时为 key=value 形式的标签列表（如 [\"env=prod\", \"app=foo\"]），仅支持 APM 数据源 + APM_MULTI_QUERY",
-            "example": "[\"i-bp1a2b3c4d5e6f7g8h9i\",\"i-bp9h8g7f6e5d4c3b2a1\"]",
             "items": {
               "description_en": "The filter value for a single resource. When relationType is set to TAG, use a tag in the key=value format",
               "description_zh": "单个资源过滤值；当 relationType 为 TAG 时使用 key=value 格式的标签",
@@ -2013,12 +2095,10 @@
             "backendName": "labelFilters",
             "description_en": "The label filter conditions for UMODEL_METRICSET_MULTI_QUERY (optional and independent per query)",
             "description_zh": "UMODEL_METRICSET_MULTI_QUERY：标签过滤条件（可选，每查询独立）",
-            "example": "[{\"name\":\"env\",\"operator\":\"=\",\"value\":\"prod\"}]",
             "items": {
               "$ref": "#/components/schemas/LabelFilters",
               "description_en": "The label filter conditions for a single metric set subquery, including the label name, operator, and value",
-              "description_zh": "单个指标集子查询的标签过滤条件，包含标签名、操作符和值",
-              "example": "{\"name\":\"env\",\"operator\":\"=\",\"value\":\"prod\"}"
+              "description_zh": "单个指标集子查询的标签过滤条件，包含标签名、操作符和值"
             },
             "title": "UMODEL_METRICSET_MULTI_QUERY：标签过滤条件（可选，每查询独立）",
             "type": "array"
@@ -2515,8 +2595,7 @@
             "$ref": "#/components/schemas/ManageAlertRulesResult",
             "backendName": "data",
             "description_en": "The business data returned by the API, which contains the execution result details of alert rule management operations such as batch enabling or disabling",
-            "description_zh": "接口响应的业务数据，包含告警规则管理操作（如批量启用/禁用）的执行结果详情",
-            "example": "{\"updatedUuidList\":[\"a1b2c3d4-e5f6-7890-abcd-ef1234567890\"]}"
+            "description_zh": "接口响应的业务数据，包含告警规则管理操作（如批量启用/禁用）的执行结果详情"
           },
           "message": {
             "backendName": "message",
@@ -3085,7 +3164,7 @@
   "deprecated": false,
   "description_en": "Manages alert rules",
   "description_zh": "管理告警规则",
-  "kebab_example": "aliyun cms manage-alert-rules --call-source bailian --biz-body '{\"workspace\":\"workspace-test\",\"displayName\":\"test\",\"annotations\":{\"summary\":\"CPU usage exceeds 90%\"},\"uuid\":\"xxx-xxx-xxx\",\"uuidList\":[\"cms_v2_81d01768-fee9-459f-af49-ab2704f1db2b\"],\"enabled\":true,\"drillMode\":\"ONE_SHOT\",\"queryConfig\":{\"filterValues\":[{\"opt\":\"=\",\"dim\":\"host\",\"value\":\"web-01\"}],\"relationType\":\"INSTANCE\",\"groupType\":\"default\",\"promQl\":\"avg(rate(node_cpu_seconds_total{mode=\\\"idle\\\"}[5m])) * 100\",\"entityFields\":[{\"field\":\"region\",\"value\":\"cn-hangzhou\"}],\"groupId\":\"og-845e0a26455f437c\",\"joinings\":[{\"conditions\":[{\"lhsField\":\"$0.hostIp\",\"rhsField\":\"$1.hostIp\",\"operator\":\"==\"}],\"type\":\"INNER\"}],\"type\":\"PROMETHEUS_SINGLE_QUERY\",\"enableDataCompleteCheck\":true,\"aggregate\":\"AVG\",\"offsetSecs\":100,\"windowSecs\":100,\"checkAfterDataComplete\":true,\"durationSecs\":100,\"legacyRaw\":\"示例值\",\"entityFilters\":[{\"field\":\"region\",\"value\":\"cn-hangzhou\",\"operator\":\"=\"}],\"labelFilters\":[{\"name\":\"env\",\"value\":\"prod\",\"operator\":\"=\"}],\"metricSet\":\"cms.acs_ecs_dashboard.CPUUtilization\",\"expr\":\"up > 0\",\"filterList\":[{\"type\":\"ALL\",\"value\":\"prod\",\"key\":\"env\"}],\"entityDomain\":\"k8s\",\"groupFieldList\":[\"hostName\"],\"metricIds\":[\"upper_normal\"],\"entityType\":\"k8s.pod\",\"logSet\":\"示例名称\",\"queries\":[{\"metric\":\"示例名称\",\"name\":\"示例名称\",\"start\":100,\"labelFilters\":[{\"name\":\"env\",\"value\":\"prod\",\"operator\":\"=\"}],\"metricSet\":\"示例名称\",\"end\":100,\"expr\":\"示例值\",\"window\":100,\"timeUnit\":\"second\"}],\"paramValues\":[{\"name\":\"threshold\",\"value\":\"80\"}],\"legacyType\":\"default\",\"metricId\":\"example-id-001\",\"metric\":\"node_cpu_seconds_total\",\"namespace\":\"示例名称\",\"serviceIdList\":[\"xxx-xxx-xxx\"],\"metricGroupId\":\"example-id-001\",\"dimensions\":[{\"key\":\"i-abc123\"}],\"measureGroupKey\":\"示例值\",\"measureList\":[{\"windowSecs\":60,\"measureCode\":\"cpu_usage\",\"groupBy\":[\"host.name\",\"region\"]}]},\"action\":\"CREATE\",\"scheduleConfig\":{\"intervalSecs\":60,\"type\":\"FIXED\"},\"rcaConfig\":{\"digitalEmployeeName\":\"运维小助手\",\"enableRca\":true},\"observeResourceInstanceId\":\"example-id-001\",\"contentTemplate\":\"实例 {{instance}} CPU 使用率超过 {{threshold}}%\",\"drillTimeRange\":{\"startTime\":1783728000000,\"endTime\":1783814400000},\"drillEvalTime\":1783728000000,\"conditionConfig\":{\"noDataAlertSeverity\":\"INFO\",\"simpleEscalation\":{\"escalations\":[{\"severity\":\"CRITICAL\",\"times\":3,\"baselinePeriod\":\"AUTO\",\"comparisonOperator\":\"GT\",\"absDeviation\":0.0,\"threshold\":\"80\",\"sensitivity\":\"MEDIUM\",\"preCondition\":\"连续3次\",\"statistics\":\"Average\"}],\"period\":60,\"metricName\":\"cpuUsage\"},\"matchValue\":\"示例值\",\"threshold\":30.0,\"compareList\":[{\"yoyTimeValue\":1,\"yoyTimeUnit\":\"day\",\"baselinePeriod\":\"AUTO\",\"absDeviation\":0.0,\"threshold\":100.0,\"sensitivity\":\"MEDIUM\",\"operator\":\"OUT_OF_BAND\",\"aggregate\":\"AVG\"}],\"compositeEscalation\":{\"severity\":\"CRITICAL\",\"escalations\":[{\"period\":60,\"metricName\":\"cpuUsage\",\"baselinePeriod\":\"AUTO\",\"comparisonOperator\":\"GT\",\"absDeviation\":0.0,\"threshold\":\"80\",\"sensitivity\":\"MEDIUM\",\"preCondition\":\"连续3次\",\"statistics\":\"Average\"}],\"times\":3,\"relation\":\"AND\"},\"noDataAlertLevel\":\"INFO\",\"type\":\"PROMETHEUS_SIMPLE_CONDITION\",\"operator\":\"GT\",\"aggregate\":\"AVG\",\"relation\":\"AND\",\"min\":1.0,\"durationSecs\":0,\"legacyRaw\":\"示例值\",\"absDeviation\":0.0,\"escalationType\":\"SIMPLE\",\"noDataPolicy\":\"示例值\",\"prometheus\":{\"severity\":\"CRITICAL\",\"promQl\":\"rate(http_errors_total[5m]) > 0.1\",\"times\":3},\"countOperator\":\"GTE\",\"noDataAppendValue\":1.0,\"severity\":\"CRITICAL\",\"max\":1.0,\"yoyTimeUnit\":\"minute\",\"baselinePeriod\":\"AUTO\",\"enableSeveritySuppression\":true,\"noDataDurationSecs\":600,\"triggers\":[{\"countCondition\":\"示例值\",\"severity\":\"INFO\",\"period\":1,\"metricName\":\"示例名称\",\"max\":1.0,\"comparisonOperator\":\"示例值\",\"matchValue\":\"示例值\",\"threshold\":\"90\",\"logicOperator\":\"AND\",\"operator\":\"GT\",\"condition\":\"示例值\",\"times\":1,\"min\":1.0,\"durationSecs\":1,\"countThreshold\":100,\"queryName\":\"示例名称\",\"expressionType\":\"default\",\"matchOperator\":\"PRESENT\",\"conditions\":[{\"min\":0.0,\"max\":100.0,\"baselinePeriod\":\"AUTO\",\"absDeviation\":0.0,\"queryName\":\"cpuQuery\",\"expressionType\":\"SIMPLE\",\"threshold\":80.0,\"sensitivity\":\"MEDIUM\",\"operator\":\"GT\"}],\"matchField\":\"示例值\",\"preCondition\":\"示例值\",\"countOperator\":\"GTE\",\"statistics\":\"示例值\"}],\"yoyTimeValue\":1,\"expressEscalation\":{\"severity\":\"CRITICAL\",\"times\":3,\"rawExpression\":\"cpu_usage > 90\"},\"legacyType\":\"default\",\"alertCount\":1,\"countThreshold\":100,\"matchOperator\":\"PRESENT\",\"sensitivity\":\"MEDIUM\",\"matchField\":\"示例值\",\"thresholdList\":[{\"severity\":\"CRITICAL\",\"min\":0.0,\"max\":100.0,\"threshold\":80.0}]},\"notifyConfig\":{\"activeDays\":[1],\"utcOffset\":\"+08:00\",\"activeEndTime\":\"20:00\",\"channels\":[{\"identifiers\":[\"<contact-group-id>\"],\"type\":\"GROUP\"}],\"activeStartTime\":\"08:00\",\"severityChannels\":{\"key\":{\"receivers\":[{\"channels\":[\"SMS\"],\"identifiers\":[\"TEST\"],\"targetType\":\"CONTACT\"}],\"sendRecoverNotification\":true}},\"sendRecoverNotification\":true,\"silenceTimeSecs\":60,\"type\":\"DIRECT_NOTIFY\",\"notifyStrategies\":[\"example-id-001\"]},\"labels\":{\"env\":\"production\"},\"armsIntegrationConfig\":{\"enabled\":false},\"actionIntegrationConfig\":{\"actions\":[],\"enabled\":true},\"bizSource\":\"示例值\",\"regionId\":\"example-id-001\",\"datasourceConfig\":{\"legacyType\":\"SLS\",\"instanceId\":\"prom-cn-hangzhou-xxxxx\",\"regionId\":\"cn-hangzhou\",\"stores\":[{\"storeType\":\"LOG\",\"regionId\":\"cn-hangzhou\",\"project\":\"my-sls-project\",\"store\":\"cms-alert-log\"}],\"legacyRaw\":\"{\\\"type\\\":\\\"SLS\\\"}\",\"namespace\":\"selectdb\",\"tenantId\":\"t-xxxxxxx\",\"project\":\"my-project\",\"type\":\"PROMETHEUS\",\"productCategory\":\"ecs\"},\"observeResourceConfig\":{\"relationType\":\"CLOUD_INSTANCE\",\"entityDomain\":\"cloud_monitor\",\"entityType\":\"ACS::ECS::Instance\",\"namespace\":\"acs_ecs_dashboard\",\"resources\":[],\"productCategory\":\"ecs\"},\"observeResourceType\":\"default\"}' --api-version 2024-03-30 --region cn-hangzhou",
+  "kebab_example": "aliyun cms manage-alert-rules --call-source bailian --biz-body '{\"workspace\":\"workspace-test\",\"displayName\":\"test\",\"annotations\":{\"summary\":\"CPU usage exceeds 90%\"},\"uuid\":\"xxx-xxx-xxx\",\"uuidList\":[\"xxx-xxx-xxx\"],\"enabled\":true,\"drillMode\":\"ONE_SHOT\",\"queryConfig\":{\"filterValues\":[{\"opt\":\"=\",\"dim\":\"host\",\"value\":\"web-01\"}],\"relationType\":\"INSTANCE\",\"groupType\":\"default\",\"promQl\":\"avg(rate(node_cpu_seconds_total{mode=\\\"idle\\\"}[5m])) * 100\",\"entityFields\":[{\"field\":\"region\",\"value\":\"cn-hangzhou\"}],\"groupId\":\"og-845e0a26455f437c\",\"joinings\":[{\"conditions\":[{\"lhsField\":\"request_id\",\"rhsField\":\"trace_id\",\"operator\":\"=\"}],\"type\":\"INNER\"}],\"type\":\"PROMETHEUS_SINGLE_QUERY\",\"enableDataCompleteCheck\":true,\"aggregate\":\"AVG\",\"offsetSecs\":100,\"windowSecs\":100,\"checkAfterDataComplete\":true,\"durationSecs\":100,\"legacyRaw\":\"示例值\",\"entityFilters\":[{\"field\":\"region\",\"value\":\"cn-hangzhou\",\"operator\":\"=\"}],\"labelFilters\":[{\"name\":\"env\",\"value\":\"prod\",\"operator\":\"=\"}],\"metricSet\":\"cms.acs_ecs_dashboard.CPUUtilization\",\"expr\":\"示例值\",\"filterList\":[{\"type\":\"ALL\",\"value\":\"prod\",\"key\":\"env\"}],\"entityDomain\":\"k8s\",\"groupFieldList\":[\"hostName\"],\"metricIds\":[\"upper_normal\"],\"entityType\":\"k8s.pod\",\"logSet\":\"示例名称\",\"queries\":[{\"metric\":\"示例名称\",\"name\":\"示例名称\",\"start\":100,\"labelFilters\":[{\"name\":\"env\",\"value\":\"prod\",\"operator\":\"=\"}],\"metricSet\":\"示例名称\",\"end\":100,\"expr\":\"示例值\",\"window\":100,\"timeUnit\":\"second\"}],\"paramValues\":[{\"name\":\"threshold\",\"value\":\"80\"}],\"legacyType\":\"default\",\"metricId\":\"example-id-001\",\"metric\":\"node_cpu_seconds_total\",\"namespace\":\"示例名称\",\"serviceIdList\":[\"xxx-xxx-xxx\"],\"metricGroupId\":\"example-id-001\",\"dimensions\":[{\"key\":\"i-abc123\"}],\"measureGroupKey\":\"示例值\",\"measureList\":[{\"windowSecs\":60,\"measureCode\":\"cpu_usage\",\"groupBy\":[\"host.name\"]}]},\"action\":\"CREATE\",\"scheduleConfig\":{\"intervalSecs\":30,\"type\":\"FIXED\"},\"rcaConfig\":{\"digitalEmployeeName\":\"运维小助手\",\"enableRca\":true},\"observeResourceInstanceId\":\"example-id-001\",\"contentTemplate\":\"实例 {{instance}} CPU 使用率超过 {{threshold}}%\",\"drillTimeRange\":{\"startTime\":1783728000000,\"endTime\":1783731600000},\"drillEvalTime\":1783728000000,\"conditionConfig\":{\"noDataAlertSeverity\":\"INFO\",\"simpleEscalation\":{\"escalations\":[{\"severity\":\"CRITICAL\",\"times\":3,\"baselinePeriod\":\"AUTO\",\"comparisonOperator\":\"GT\",\"absDeviation\":0.0,\"threshold\":\"80\",\"sensitivity\":\"MEDIUM\",\"preCondition\":\"连续3次\",\"statistics\":\"Average\"}],\"period\":60,\"metricName\":\"cpuUsage\"},\"matchValue\":\"示例值\",\"threshold\":30.0,\"compareList\":[{\"yoyTimeValue\":1,\"yoyTimeUnit\":\"day\",\"baselinePeriod\":\"AUTO\",\"absDeviation\":0.0,\"threshold\":100.0,\"sensitivity\":\"MEDIUM\",\"operator\":\"OUT_OF_BAND\",\"aggregate\":\"AVG\"}],\"compositeEscalation\":{\"severity\":\"CRITICAL\",\"escalations\":[{\"period\":60,\"metricName\":\"cpuUsage\",\"baselinePeriod\":\"AUTO\",\"comparisonOperator\":\"GT\",\"absDeviation\":0.0,\"threshold\":\"80\",\"sensitivity\":\"MEDIUM\",\"preCondition\":\"连续3次\",\"statistics\":\"Average\"}],\"times\":3,\"relation\":\"AND\"},\"noDataAlertLevel\":\"INFO\",\"type\":\"PROMETHEUS_SIMPLE_CONDITION\",\"operator\":\"GT\",\"aggregate\":\"AVG\",\"relation\":\"AND\",\"min\":1.0,\"durationSecs\":60,\"legacyRaw\":\"示例值\",\"absDeviation\":0.0,\"escalationType\":\"SIMPLE\",\"noDataPolicy\":\"示例值\",\"prometheus\":{\"severity\":\"CRITICAL\",\"promQl\":\"rate(http_errors_total[5m]) > 0.1\",\"times\":3},\"countOperator\":\"GTE\",\"noDataAppendValue\":1.0,\"severity\":\"INFO\",\"max\":1.0,\"yoyTimeUnit\":\"minute\",\"baselinePeriod\":\"AUTO\",\"enableSeveritySuppression\":true,\"noDataDurationSecs\":600,\"triggers\":[{\"countCondition\":\"示例值\",\"severity\":\"INFO\",\"period\":1,\"metricName\":\"示例名称\",\"max\":1.0,\"comparisonOperator\":\"示例值\",\"matchValue\":\"示例值\",\"threshold\":\"90\",\"logicOperator\":\"AND\",\"operator\":\"GT\",\"condition\":\"示例值\",\"times\":1,\"min\":1.0,\"durationSecs\":1,\"countThreshold\":100,\"queryName\":\"示例名称\",\"expressionType\":\"default\",\"matchOperator\":\"PRESENT\",\"conditions\":[{\"min\":0.0,\"max\":100.0,\"baselinePeriod\":\"AUTO\",\"absDeviation\":0.0,\"queryName\":\"cpuQuery\",\"expressionType\":\"SIMPLE\",\"threshold\":80.0,\"sensitivity\":\"MEDIUM\",\"operator\":\"GT\"}],\"matchField\":\"示例值\",\"preCondition\":\"示例值\",\"countOperator\":\"GTE\",\"statistics\":\"示例值\"}],\"yoyTimeValue\":1,\"expressEscalation\":{\"severity\":\"CRITICAL\",\"times\":3,\"rawExpression\":\"cpu_usage > 90\"},\"legacyType\":\"default\",\"alertCount\":1,\"countThreshold\":100,\"matchOperator\":\"PRESENT\",\"sensitivity\":\"MEDIUM\",\"matchField\":\"示例值\",\"thresholdList\":[{\"severity\":\"CRITICAL\",\"min\":0.0,\"max\":100.0,\"threshold\":80.0}]},\"notifyConfig\":{\"activeDays\":[1],\"utcOffset\":\"+08:00\",\"activeEndTime\":\"20:00\",\"channels\":[{\"identifiers\":[\"TEST\"],\"type\":\"CONTACT\"}],\"activeStartTime\":\"08:00\",\"severityChannels\":{\"key\":{\"receivers\":[{\"channels\":[\"SMS\"],\"identifiers\":[\"TEST\"],\"targetType\":\"CONTACT\"}],\"sendRecoverNotification\":true}},\"sendRecoverNotification\":true,\"silenceTimeSecs\":60,\"type\":\"DIRECT_NOTIFY\",\"notifyStrategies\":[\"example-id-001\"]},\"labels\":{\"env\":\"production\"},\"armsIntegrationConfig\":{\"enabled\":true},\"actionIntegrationConfig\":{\"actions\":[\"xxxx-xxxx-xxxx\"],\"enabled\":false},\"bizSource\":\"示例值\",\"regionId\":\"example-id-001\",\"datasourceConfig\":{\"legacyType\":\"SLS\",\"instanceId\":\"rw-xxx\",\"regionId\":\"cn-hangzhou\",\"stores\":[{\"storeType\":\"LOG\",\"regionId\":\"cn-hangzhou\",\"project\":\"my-sls-project\",\"store\":\"my-log-store\"}],\"legacyRaw\":\"{\\\"type\\\":\\\"SLS\\\"}\",\"namespace\":\"selectdb\",\"tenantId\":\"t-xxxxxxx\",\"project\":\"my-project\",\"type\":\"PROMETHEUS\",\"productCategory\":\"ecs\"},\"observeResourceConfig\":{\"relationType\":\"ALL\",\"entityDomain\":\"cloud_monitor\",\"entityType\":\"ACS::ECS::Instance\",\"namespace\":\"acs_ecs_dashboard\",\"resources\":[\"env=prod\"],\"productCategory\":\"ecs\"},\"observeResourceType\":\"default\"}' --api-version 2024-03-30 --region cn-hangzhou",
   "method": "POST",
   "multi_version": true,
   "name": "ManageAlertRules",
@@ -3104,7 +3183,7 @@
   "parameters": [
     {
       "example": "bailian",
-      "help_en": "The call source identifier, which identifies the internal integration channel to which the caller belongs (such as bailian, integrationCenter, or managed_service_for_prometheus). This parameter is used to isolate traffic from different sources. You do not need to specify this parameter for common OpenAPI calls",
+      "help_en": "The call source identifier. It identifies the internal integration channel to which the caller belongs, such as bailian, integrationCenter, or managed_service_for_prometheus, and is used to isolate traffic from different sources. Leave this parameter empty for regular OpenAPI calls",
       "help_zh": "调用来源标识，标识调用方所属的内部集成渠道（如 bailian、integrationCenter、managed_service_for_prometheus），用于不同来源调用流量的隔离；普通 OpenAPI 调用无需填写",
       "location": "query",
       "name": "call_source",
@@ -3114,6 +3193,18 @@
       "raw_name": "callSource",
       "required": false,
       "type": "string"
+    },
+    {
+      "help_en": "Specifies whether to perform a dry run. A dry run only validates the request and returns the validation result in dryRunResult without writing to the database, triggering template synchronization, or causing other side effects. Default value: false",
+      "help_zh": "为 true 时只对本次请求做校验并返回 dryRunResult 校验结论，不写库、不触发模板同步等任何副作用；默认 false",
+      "location": "query",
+      "name": "dry_run",
+      "options": [
+        "--dry-run"
+      ],
+      "raw_name": "DryRun",
+      "required": false,
+      "type": "bool"
     },
     {
       "fields": [
@@ -3222,7 +3313,7 @@
         },
         {
           "example": "示例值",
-          "help_en": "The business source. Valid values include managed_service_for_prometheus, umodel, application_insights, cloud_monitoring, and sls. Pass this field as needed for CREATE, UPDATE, and PATCH actions",
+          "help_en": "The business source. Valid values include managed_service_for_prometheus, umodel, application_insights, cloud_monitoring, and sls. Optional. Pass as needed for CREATE, UPDATE, and PATCH actions",
           "help_zh": "业务来源（可选）。如 managed_service_for_prometheus / umodel / application_insights / cloud_monitoring / sls；CREATE/UPDATE/PATCH 均按需传入",
           "name": "biz_source",
           "options": [
@@ -3582,7 +3673,6 @@
                     ],
                     "type": "object"
                   },
-                  "example": "[{\"metricName\":\"cpuUsage\",\"comparisonOperator\":\"GT\",\"threshold\":\"80\",\"period\":60}]",
                   "help_en": "The multi-condition configuration list for cloud service monitoring composite triggers, which includes multiple sub-trigger conditions combined by logical operators (AND/OR) to determine whether to trigger an alert",
                   "help_zh": "云产品监控复合触发的多条件配置列表，包含多个子触发条件，通过逻辑运算符（AND/OR）组合判断是否触发告警",
                   "name": "escalations",
@@ -4214,7 +4304,6 @@
                     ],
                     "type": "object"
                   },
-                  "example": "[{\"severity\":\"CRITICAL\",\"comparisonOperator\":\"GT\",\"threshold\":\"80\",\"times\":3}]",
                   "help_en": "The configuration list for multi-level triggers in cloud service monitoring. Each item defines a trigger level (such as Warning or Critical) and includes parameters such as the threshold, duration period, and notification method",
                   "help_zh": "云产品监控多档触发的配置列表，每一项定义一个触发档位（如 Warning、Critical），包含阈值、持续周期和通知方式等参数",
                   "name": "escalations",
@@ -5123,7 +5212,7 @@
         },
         {
           "example": "1783728000000",
-          "help_en": "The alert drill evaluation time in Unix milliseconds. This field is required by the backend when drillMode is ONE_SHOT. The time cannot be later than the current time or earlier than 90 days ago",
+          "help_en": "The alert drill evaluation time in Unix milliseconds. Required by the backend when drillMode is ONE_SHOT. The time cannot be later than the current time and cannot be more than 90 days in the past",
           "help_zh": "告警演习时刻，Unix 毫秒时间戳。drillMode=ONE_SHOT 时后端必填；不可晚于当前时间，最早不超过 90 天前",
           "name": "drill_eval_time",
           "options": [
@@ -5139,7 +5228,7 @@
             "TIME_TRAVEL"
           ],
           "example": "ONE_SHOT",
-          "help_en": "The alert drill mode. This field is required by the backend when the action is DRILL_ALERT. Valid values: ONE_SHOT specifies a single point in time to simulate a complete lifecycle consisting of three events: OCCURRED, PERSISTENT, and RECOVERED. TIME_TRAVEL specifies a time range to simulate the lifecycle in multiple rounds based on the rule scheduling interval",
+          "help_en": "The alert drill mode. Required by the backend when the action is DRILL_ALERT. Valid values: ONE_SHOT: specifies a single point in time to simulate a complete lifecycle consisting of three events (OCCURRED, PERSISTENT, and RECOVERED). TIME_TRAVEL: specifies a time range to simulate the lifecycle round by round based on the rule scheduling interval (OCCURRED, PERSISTENT, ..., RECOVERED)",
           "help_zh": "告警演习模式。action=DRILL_ALERT 时后端必填：ONE_SHOT 指定一个时刻推演一轮完整生命周期（OCCURRED→PERSISTENT→RECOVERED 三条事件）；TIME_TRAVEL 指定一段时间按规则调度间隔逐轮推演（OCCURRED→PERSISTENT→…→RECOVERED）",
           "name": "drill_mode",
           "options": [
@@ -5150,12 +5239,12 @@
           "type": "string"
         },
         {
-          "example": "{\"startTime\":1783728000000,\"endTime\":1783814400000}",
+          "example": "{\"startTime\":1783728000000,\"endTime\":1783731600000}",
           "fields": [
             {
-              "example": "1783814400000",
-              "help_en": "The drill end time in Unix milliseconds. The end time must be later than the start time",
-              "help_zh": "演习结束时间，Unix 毫秒时间戳，必须晚于开始时间",
+              "example": "1783731600000",
+              "help_en": "The drill end time in Unix milliseconds. It must be later than the start time, and the span between the start time and end time cannot exceed 1 hour",
+              "help_zh": "演习结束时间，Unix 毫秒时间戳，必须晚于开始时间，且与开始时间跨度不超过 1 小时",
               "name": "end_time",
               "options": [
                 "--end-time"
@@ -5177,8 +5266,8 @@
               "type": "int"
             }
           ],
-          "help_en": "The alert drill time range in Unix milliseconds. This field is required by the backend when drillMode is TIME_TRAVEL. The endTime must be later than the startTime and cannot be later than the current time. The lifecycle is simulated in multiple rounds based on the rule scheduling interval. The maximum number of rounds is 500. If the limit is exceeded, the backend returns a 400 error",
-          "help_zh": "告警演习时间范围，Unix 毫秒时间戳。drillMode=TIME_TRAVEL 时后端必填；endTime 必须晚于 startTime 且不可晚于当前时间；按规则调度间隔逐轮推演，轮数上限 500，超出后端返回 400",
+          "help_en": "The alert drill time range in Unix milliseconds. Required by the backend when drillMode is TIME_TRAVEL. The endTime must be later than the startTime and cannot be later than the current time. The span between endTime and startTime cannot exceed 1 hour; otherwise, the backend returns a 400 error. The simulation runs round by round based on the rule scheduling interval, with a maximum of 500 rounds; otherwise, the backend returns a 400 error",
+          "help_zh": "告警演习时间范围，Unix 毫秒时间戳。drillMode=TIME_TRAVEL 时后端必填；endTime 必须晚于 startTime 且不可晚于当前时间；endTime 与 startTime 的跨度不可超过 1 小时（超出后端返回 400）；按规则调度间隔逐轮推演，轮数上限 500，超出后端返回 400",
           "name": "drill_time_range",
           "options": [
             "--drill-time-range"
@@ -5556,7 +5645,6 @@
               "element": {
                 "type": "string"
               },
-              "example": "[\"i-bp1a2b3c4d5e6f7g8h9i\",\"i-bp9h8g7f6e5d4c3b2a1\"]",
               "help_en": "The resource list. This field can be left empty when relationType is set to ALL, which indicates all resources. When relationType is set to TAG, this field is a list of tags in the key=value format, such as [\"env=prod\", \"app=foo\"]. Only the APM data source and APM_MULTI_QUERY are supported",
               "help_zh": "资源列表；当 relationType=ALL 时可空，表示所有资源；当 relationType=TAG 时为 key=value 形式的标签列表（如 [\"env=prod\", \"app=foo\"]），仅支持 APM 数据源 + APM_MULTI_QUERY",
               "name": "resources",
@@ -6005,7 +6093,6 @@
                       ],
                       "type": "object"
                     },
-                    "example": "[{\"lhsField\":\"$0.hostIp\",\"operator\":\"==\",\"rhsField\":\"$1.hostIp\"}]",
                     "help_en": "The list of join conditions for query result sets, which defines the matching rules between multiple query result sets to merge query results from different data sources based on specified conditions",
                     "help_zh": "查询结果集 Join 关联条件列表，定义多个查询结果集之间的关联匹配规则，用于将不同数据源的查询结果按指定条件进行合并",
                     "name": "conditions",
@@ -6154,7 +6241,6 @@
                     "element": {
                       "type": "string"
                     },
-                    "example": "[\"host.name\", \"region\"]",
                     "help_en": "The list of grouping dimensions for measure data, specifying the dimension keys used for grouping and aggregation of measure results",
                     "help_zh": "度量数据的分组维度列表，指定按哪些维度键对度量结果进行分组聚合计算",
                     "name": "group_by",
@@ -6415,7 +6501,6 @@
                       ],
                       "type": "object"
                     },
-                    "example": "[{\"name\":\"env\",\"operator\":\"=\",\"value\":\"prod\"}]",
                     "help_en": "The label filter conditions for UMODEL_METRICSET_MULTI_QUERY (optional and independent per query)",
                     "help_zh": "UMODEL_METRICSET_MULTI_QUERY：标签过滤条件（可选，每查询独立）",
                     "name": "label_filters",
@@ -6686,7 +6771,7 @@
         },
         {
           "example": "xxx-xxx-xxx",
-          "help_en": "The UUID of the rule. This field is required for UPDATE and PATCH actions",
+          "help_en": "The UUID of the rule. Required for UPDATE and PATCH actions",
           "help_zh": "规则 UUID（UPDATE/PATCH 必填）",
           "name": "uuid",
           "options": [
@@ -6701,7 +6786,7 @@
             "type": "string"
           },
           "example": "[\"cms_v2_81d01768-fee9-459f-af49-ab2704f1db2b\"]",
-          "help_en": "The list of UUIDs for the rules to be deleted. This is used for the BATCH_DELETE action",
+          "help_en": "The list of UUIDs of the rules to be deleted in a BATCH_DELETE action",
           "help_zh": "待删除规则 UUID 列表（BATCH_DELETE）",
           "name": "uuid_list",
           "options": [
@@ -6713,7 +6798,7 @@
         },
         {
           "example": "workspace-test",
-          "help_en": "The workspace ID. This field is required for CREATE, UPDATE, PATCH, DELETE, ENABLE, DISABLE, BATCH_DELETE, BATCH_ENABLE, and BATCH_DISABLE actions. It identifies the CloudMonitor workspace to which the rule belongs",
+          "help_en": "The workspace ID. Required for CREATE, UPDATE, PATCH, DELETE, ENABLE, DISABLE, BATCH_DELETE, BATCH_ENABLE, and BATCH_DISABLE actions. It identifies the CloudMonitor workspace to which the rule belongs",
           "help_zh": "工作空间（CREATE/UPDATE 等）",
           "name": "workspace",
           "options": [
@@ -6724,7 +6809,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The aggregated request body for managing alert rules. This body is shared by the CREATE, UPDATE, PATCH, and BATCH_DELETE operations. Specify fields based on the action",
+      "help_en": "The aggregated request body for managing alert rules. This body is shared by the CREATE, UPDATE, PATCH, and BATCH_DELETE operations. Specify the fields based on the action",
       "help_zh": "管理告警规则请求体聚合（CREATE/UPDATE/PATCH/BATCH_DELETE 共用，按 action 选填字段）",
       "location": "formData",
       "name": "body",
