@@ -3,7 +3,7 @@
   "cmd_full_name": "aidge general-rephotography-detection",
   "cmd_name": "general-rephotography-detection",
   "deprecated": false,
-  "description_en": "Provides a general-purpose image review service built on recapture recognition and multimodal large model element localization. The service determines whether an image is a recaptured photo and locates primary physical products, screen display areas, printed photos, and visible recapture clues. It is applicable to risk screening and manual review of inspection photos across multiple store categories",
+  "description_en": "Detects whether an image is recaptured and localizes main physical products, screen display areas, printed photos, and visible recapture clues based on recapture recognition and multimodal large model element localization. It is suitable for risk screening and manual review of store inspection photos across multiple categories",
   "description_zh": "基于翻拍识别能力与多模态大模型元素定位构建的通用图片审核产品。产品判断图片是否翻拍，并定位主要实物商品、屏幕显示区、打印照片及可见翻拍线索，适用于多品类门店巡检照片的风险筛查与人工审核",
   "kebab_example": "aliyun aidge general-rephotography-detection --image-url https://example.com/image.jpg --region cn-hangzhou",
   "method": "POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "https://example.com/image.jpg",
-      "help_en": "The HTTPS URL of the original image to recognize. The URL must be accessible and must not contain whitespace or URL-embedded usernames or passwords",
+      "help_en": "The HTTPS URL of the original image to be recognized. The URL must be accessible and cannot contain spaces or URL usernames and passwords",
       "help_zh": "待识别原图的 HTTPS 地址；须可访问，不含空白或 URL 用户名密码",
       "location": "query",
       "name": "image_url",
@@ -59,7 +59,7 @@
             "properties": {
               "Result": {
                 "backendName": "result",
-                "description_en": "The business result. This value is an empty object if the request fails",
+                "description_en": "The business result. This is an empty object if the call fails",
                 "description_zh": "业务结果；失败时为空对象",
                 "properties": {
                   "Grounding": {
@@ -69,7 +69,7 @@
                     "properties": {
                       "Coverage": {
                         "backendName": "coverage",
-                        "description_en": "The coverage of the localization. Valid values:\ncomplete: All relevant visible targets are fully covered.\npartial: Only some targets are valid or recognizable",
+                        "description_en": "The coverage. Valid values:\n`complete`: The relevant visible targets are complete.\n`partial`: Only some targets are valid or recognizable",
                         "description_zh": "`complete`：相关可见目标完整；`partial`：仅部分目标有效或可辨认",
                         "example": "complete",
                         "title_en": "覆盖度",
@@ -78,7 +78,7 @@
                       },
                       "Regions": {
                         "backendName": "regions",
-                        "description_en": "The array of targets. A maximum of 12 items are returned. This value can be empty if no relevant targets exist",
+                        "description_en": "The target array. It contains up to 12 items and can be empty if no relevant targets are found",
                         "description_zh": "目标数组，最多 12 项；没有相关目标时可为空",
                         "itemName": "区域",
                         "items": {
@@ -101,8 +101,14 @@
                             },
                             "Label": {
                               "backendName": "label",
-                              "description_en": "The target category. For valid values, see the table below",
+                              "description_en": "The target category. For enumerations, see the following table",
                               "description_zh": "目标类别，枚举见下表",
+                              "enum": [
+                                "product",
+                                "screen",
+                                "printed_photo",
+                                "recapture_cue"
+                              ],
                               "example": "product",
                               "title_en": "标签",
                               "title_zh": "标签",
@@ -110,7 +116,7 @@
                             },
                             "Text": {
                               "backendName": "text",
-                              "description_en": "The confirmed short name or text of up to 24 characters. This value is an empty string if the text is unreadable",
+                              "description_en": "The confirmed short name or text of up to 24 characters. This is an empty string if the text is unclear",
                               "description_zh": "最多 24 字的可确认短名称或文字；看不清时为空字符串",
                               "example": "商品",
                               "title_en": "识别文本",
@@ -131,7 +137,7 @@
                   },
                   "IsFake": {
                     "backendName": "isFake",
-                    "description_en": "Indicates whether the image is a recaptured photo",
+                    "description_en": "Indicates whether the image is recaptured",
                     "description_zh": "是否翻拍",
                     "example": "true",
                     "title_en": "是否翻拍",
@@ -140,7 +146,7 @@
                   },
                   "Type": {
                     "backendName": "type",
-                    "description_en": "The detection type. The value is fixed as general",
+                    "description_en": "The detection type. The value is fixed to general",
                     "description_zh": "固定为 general",
                     "example": "general",
                     "title_en": "检测类型",
@@ -154,14 +160,14 @@
               },
               "UsageMap": {
                 "additionalProperties": {
-                  "description_en": "The billing count",
+                  "description_en": "The number of billable calls",
                   "description_zh": "计费次数",
                   "example": "1",
                   "format": "int64",
                   "type": "integer"
                 },
                 "backendName": "usageMap",
-                "description_en": "The usage information. The value is `{\"ProcessingCount\":1}` on success, or an empty object on failure",
+                "description_en": "The usage information. The value is `{\"ProcessingCount\":1}` if the call is successful, or an empty object if the call fails",
                 "description_zh": "成功为 `{\"ProcessingCount\":1}`；失败为空对象",
                 "example": "{\"ProcessingCount\":1}",
                 "title_en": "用量信息",
@@ -175,7 +181,7 @@
           },
           "Message": {
             "backendName": "message",
-            "description_en": "The response message or failure description",
+            "description_en": "The return message or failure description",
             "description_zh": "返回信息或失败说明",
             "example": "Success",
             "title_en": "返回信息或失败说明",
