@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun winnexo POST /openapi/createWorkflowTemplate --region cn-hangzhou --header \"Content-Type=application/x-www-form-urlencoded\" --body 'collaborationGroupId=group_example&definition={}' --version 2026-05-12 --force",
+  "camel_example": "aliyun winnexo POST /openapi/createWorkflowTemplate --region cn-hangzhou --header \"Content-Type=application/x-www-form-urlencoded\" --body 'collaborationGroupId=cg_9401&definition={schemaVersion=2, name=客户投诉处理流程, steps=[{sortOrder=1, stepId=collect, name=收集客户信息}]}' --version 2026-05-12 --force",
   "cmd_full_name": "winnexo create-workflow-template",
   "cmd_name": "create-workflow-template",
   "deprecated": false,
   "description_en": "Creates a new workflow template. Templates with the same name are not overwritten",
   "description_zh": "有效成员保存全新工作流模板；同名模板不会覆盖",
-  "kebab_example": "aliyun winnexo create-workflow-template --collaboration-group-id group_example --definition '{}' --region cn-hangzhou",
+  "kebab_example": "aliyun winnexo create-workflow-template --collaboration-group-id cg_9401 --definition '{\"schemaVersion\":2,\"name\":\"客户投诉处理流程\",\"steps\":[{\"sortOrder\":1,\"stepId\":\"collect\",\"name\":\"收集客户信息\"}]}' --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "CreateWorkflowTemplate",
@@ -114,6 +114,22 @@
             "example": "处理客户投诉的标准流程",
             "type": "string"
           },
+          "edges": {
+            "backendName": "edges",
+            "description_en": "节点依赖边；每项包含from/to，引用稳定stepId；显式空数组表示没有依赖",
+            "description_zh": "节点依赖边；每项包含from/to，引用稳定stepId；显式空数组表示没有依赖",
+            "example": "[{\"from\":\"collect\",\"to\":\"deliver\"}]",
+            "itemName": "edges",
+            "items": {
+              "description_en": "一条节点依赖边，from为前置节点stepId，to为后置节点stepId",
+              "description_zh": "一条节点依赖边，from为前置节点stepId，to为后置节点stepId",
+              "example": "{\"from\":\"collect\",\"to\":\"deliver\"}",
+              "type": "object"
+            },
+            "parseType": "struct",
+            "required": false,
+            "type": "array"
+          },
           "effectiveVersion": {
             "backendName": "effectiveVersion",
             "description_en": "The current effective version number of the template. An empty value indicates that only a draft exists and the template cannot be used for work items",
@@ -134,6 +150,14 @@
             "description_zh": "修改时间(ISO8601)",
             "example": "2026-11-05T08:00:00Z",
             "type": "string"
+          },
+          "layout": {
+            "backendName": "layout",
+            "description_en": "可选画布布局，按stepId索引；只影响展示，不决定依赖",
+            "description_zh": "可选画布布局，按stepId索引；只影响展示，不决定依赖",
+            "example": "{\"collect\":{\"x\":0,\"y\":0},\"review\":{\"x\":240,\"y\":0}}",
+            "required": false,
+            "type": "object"
           },
           "message": {
             "backendName": "Message",
@@ -156,16 +180,24 @@
             "example": "019FF406-1B10-0065-A97D-2D1920C2A03D",
             "type": "string"
           },
+          "schemaVersion": {
+            "backendName": "schemaVersion",
+            "description_en": "模板结构版本，当前为2，与业务版本vN独立",
+            "description_zh": "模板结构版本，当前为2，与业务版本vN独立",
+            "example": "2",
+            "format": "int64",
+            "type": "integer"
+          },
           "steps": {
             "backendName": "steps",
             "description_en": "The ordered steps",
             "description_zh": "有序步骤",
-            "example": "example",
+            "example": "[{\"stepId\":\"collect\",\"sortOrder\":1,\"name\":\"收集客户信息\"}]",
             "itemName": "steps",
             "items": {
               "description_en": "The ordered steps",
               "description_zh": "有序步骤",
-              "example": "示例流程步骤",
+              "example": "{\"stepId\":\"collect\",\"sortOrder\":1,\"name\":\"收集客户信息\"}",
               "properties": {
                 "modelMode": {
                   "backendName": "modelMode",
@@ -182,32 +214,39 @@
                   "type": "string"
                 },
                 "ownerAgentName": {
-                  "backendName": "ownerAgentName",
+                  "backendName": "executorAgentName",
                   "description_en": "The name of the agent in charge",
                   "description_zh": "智能体负责人名称",
                   "example": "example",
                   "type": "string"
                 },
                 "ownerType": {
-                  "backendName": "ownerType",
+                  "backendName": "executorType",
                   "description_en": "The type of the person in charge. Valid values:\nMEMBER: Human.\nAGENT: Agent",
                   "description_zh": "负责人类型：MEMBER 人工 / AGENT 智能体",
                   "example": "MEMBER",
                   "type": "string"
                 },
                 "ownerUserId": {
-                  "backendName": "ownerUserId",
+                  "backendName": "executorUserId",
                   "description_en": "The user ID of the human person in charge",
                   "description_zh": "人工负责人用户ID",
                   "example": "1",
                   "format": "int64",
                   "type": "integer"
                 },
+                "reviewOutput": {
+                  "backendName": "reviewOutput",
+                  "description_en": "是否人工审核产出物，默认关闭；仅数字员工可开启，审核待办自动发负责人",
+                  "description_zh": "是否人工审核产出物，默认关闭；仅数字员工可开启，审核待办自动发负责人",
+                  "example": "false",
+                  "type": "boolean"
+                },
                 "reviewerUserIds": {
-                  "backendName": "reviewerUserIds",
+                  "backendName": "ownerUserIds",
                   "description_en": "The list of user IDs of the reviewers",
                   "description_zh": "审核人用户ID列表",
-                  "example": "example",
+                  "example": "[10001]",
                   "itemName": "reviewerUserIds",
                   "items": {
                     "description_en": "The list of user IDs of the reviewers",
@@ -239,8 +278,7 @@
                   "backendName": "specificationJson",
                   "description_en": "The ordered array of fragments. Supported types include text, mention, skill, app, files, and web_search. The referenced identities and order are preserved",
                   "description_zh": "有序片段数组，支持text/mention/skill/app/files/web_search；保留引用身份和顺序",
-                  "example": "[{\"type\":\"text\",\"content\":\"整理输入资料\"}]",
-                  "itemName": "specificationJson",
+                  "example": "[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"收集客户信息\\\"}]",
                   "items": {
                     "description_en": "The ordered array of fragments. Supported types include text, mention, skill, app, files, and web_search. The referenced identities and order are preserved",
                     "description_zh": "有序片段数组，支持text/mention/skill/app/files/web_search；保留引用身份和顺序",
