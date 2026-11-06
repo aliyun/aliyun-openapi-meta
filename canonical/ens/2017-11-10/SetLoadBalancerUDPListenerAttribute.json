@@ -35,7 +35,7 @@
     },
     {
       "example": "80",
-      "help_en": "The frontend port of the listener whose attributes you want to modify. Valid values: 1 to 65535",
+      "help_en": "The listener port whose attributes you want to modify. Valid values: 1 to 65535",
       "help_zh": "需要修改属性的监听端口。取值：1~65535",
       "location": "query",
       "maximum": "65535",
@@ -74,7 +74,7 @@
         "tch"
       ],
       "example": "wrr",
-      "help_en": "The scheduling algorithm. Valid values:\nwrr: Backend servers with higher weights receive more requests.\nwlc: Requests are distributed based on the weights and actual loads (connections) of backend servers. If two backend servers have the same weight, the backend server with fewer connections receives more requests.\nrr: Requests are evenly and sequentially distributed to backend servers.\nsch: Consistent hashing based on source IP addresses. Requests from the same source IP address are distributed to the same backend server.\ntch: Consistent hashing based on quadruples (source IP address, destination IP address, source port, and destination port). Requests from the same stream are distributed to the same backend server.\nqch: Consistent hashing based on QUIC connection IDs. Requests with the same QUIC connection ID are distributed to the same backend server.\niqch: Consistent hashing based on specific three bytes of the iQUIC CID. Requests with the same second to fourth bytes are distributed to the same backend server",
+      "help_en": "The scheduling algorithm. Valid values:\nwrr: Backend servers with higher weights receive more requests.\nwlc: Requests are distributed based on the weights and actual loads (connections) of backend servers. If weights are the same, backend servers with fewer connections receive more requests.\nrr: Requests are distributed to backend servers in sequence.\nsch: Consistent hashing based on source IP addresses. Requests from the same source IP address are distributed to the same backend server.\ntch: Consistent hashing based on quadruples (source IP address + destination IP address + source port + destination port). Requests from the same stream are distributed to the same backend server.\nqch: Consistent hashing based on QUIC Connection IDs. Requests with the same QUIC Connection ID are distributed to the same backend server.\niqch: Consistent hashing based on specific three bytes of iQUIC CIDs. Requests with the same 2nd to 4th bytes are distributed to the same backend server",
       "help_zh": "调度算法。取值：\nwrr：权重值越高的后端服务器，被轮询到的次数（概率）也越高。\nwlc：除了根据每台后端服务器设定的权重值来进行轮询，同时还考虑后端服务器的实际负载（即连接数）。当权重值相同时，当前连接数越小的后端服务器被轮询到的次数（概率）也越高。\nrr：按照访问顺序依次将外部请求依序分发到后端服务器。\nsch：基于源IP地址的一致性Hash，相同的源地址会调度到相同的后端服务器。\ntch：基于四元组的一致性 hash（源 IP+目的 IP+源端口+目的端口），相同的流会调度到相同的后端服务器。\nqch：基于QUIC Connection ID一致性Hash，相同的QUIC Connection ID会调度到相同的后端服务器。\niqch：针对iQUIC CID的特定三个字节进行一致Hash，第2~第4三个字节相同的会调度到相同的后端服务器",
       "location": "query",
       "name": "scheduler",
@@ -117,7 +117,7 @@
     },
     {
       "example": "100",
-      "help_en": "The timeout period for a health check response. If a backend ENS instance does not respond within the specified timeout period, the health check fails.\nDefault value: 5.\nValid values: 1 to 300.\nUnit: seconds.\n\nIf the value of HealthCheckConnectTimeout is less than the value of HealthCheckInterval, HealthCheckConnectTimeout is invalid and the timeout period is the value of HealthCheckInterval",
+      "help_en": "The timeout period for a health check response. If a backend ENS instance does not respond within the specified timeout period, the health check fails.\nDefault value: 5.\nValid values: 1 to 300.\nUnit: seconds.\n\nIf the value of HealthCheckConnectTimeout is less than the value of HealthCheckInterval, HealthCheckConnectTimeout becomes invalid and the timeout period equals the value of HealthCheckInterval",
       "help_zh": "接收来自运行状况检查的响应需要等待的时间。如果后端ENS在指定的时间内没有响应，则判定为健康检查失败。\n默认值：5秒。\n取值：1~300。\n单位：秒。\n\n如果HealthCheckConnectTimeout的值小于HealthCheckInterval的值，则HealthCheckConnectTimeout无效，超时时间为HealthCheckInterval的值",
       "location": "query",
       "maximum": "300",
@@ -162,7 +162,7 @@
     },
     {
       "example": "hello",
-      "help_en": "The request string for UDP health checks. The string can contain only letters and digits and can be up to 64 characters in length",
+      "help_en": "The request string for UDP health checks. The string can contain only letters and digits, and can be up to 64 characters in length",
       "help_zh": "UDP监听健康检查的请求串，只允许包含字母、数字，最大长度限制为64个字符",
       "location": "query",
       "max_length": "64",
@@ -176,7 +176,7 @@
     },
     {
       "example": "ok",
-      "help_en": "The response string for UDP health checks. The string can contain only letters and digits and can be up to 64 characters in length",
+      "help_en": "The response string for UDP health checks. The string can contain only letters and digits, and can be up to 64 characters in length",
       "help_zh": "UDP监听健康检查的响应串，只允许包含字母、数字，最大长度限制为64个字符",
       "location": "query",
       "max_length": "64",
@@ -194,7 +194,7 @@
         "off"
       ],
       "example": "on",
-      "help_en": "Specifies whether to enable EIP pass-through. Valid values:\n\non: Enables EIP pass-through.\noff: Disables EIP pass-through. This is the default value",
+      "help_en": "Specifies whether to enable EIP pass-through. Valid values:\n\non: enables EIP pass-through.\noff: disables EIP pass-through. This is the default value",
       "help_zh": "是否开启EIP透传，取值：\n\non：开启。\noff（默认值）：关闭",
       "location": "query",
       "name": "eip_transmit",
@@ -217,6 +217,21 @@
         "--established-timeout"
       ],
       "raw_name": "EstablishedTimeout",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "8080",
+      "help_en": "The port used by the backend server of the load balancing instance. Valid values: 1 to 65535",
+      "help_zh": "负载均衡实例后端服务器使用的端口，取值：1~65535",
+      "location": "query",
+      "maximum": "65535",
+      "minimum": "1",
+      "name": "backend_server_port",
+      "options": [
+        "--backend-server-port"
+      ],
+      "raw_name": "BackendServerPort",
       "required": false,
       "type": "int"
     }
