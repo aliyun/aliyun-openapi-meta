@@ -47,7 +47,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The list of protocols supported by the agent. This parameter is required when type is set to Agent. You do not need to specify this parameter for other types",
+      "help_en": "The list of protocols supported by the agent. This parameter is required when type is set to Agent. It is not required for other types",
       "help_zh": "代理支持的协议列表。当 type 为 Agent 时必填，其余 type 无需传入此字段",
       "location": "body",
       "name": "agent_protocols",
@@ -63,7 +63,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The list of AI API protocols. This parameter is required when type is set to LLM, and only one protocol can be specified. This parameter is required when type is set to Ai, and multiple protocols can be specified. You do not need to specify this parameter for other types. Example protocol entry: OpenAI/v1",
+      "help_en": "The list of AI API protocols. This parameter is required and only one protocol can be passed when type is set to LLM. It is required and multiple protocols can be passed when type is set to Ai. It is not required for other types. Example: OpenAI/v1",
       "help_zh": "AI API 协议列表。当 type 为 LLM 时必填且只能传入 1 个协议；当 type 为 Ai 时必填且可传入多个；其他类型无需传入。协议项示例：OpenAI/v1",
       "location": "body",
       "name": "ai_protocols",
@@ -102,7 +102,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The authentication configuration. This parameter is required when enableAuth is set to true",
+      "help_en": "The permission authentication configuration. This parameter is required when enableAuth is set to true",
       "help_zh": "权限认证配置。当 enableAuth=true 时必填",
       "location": "body",
       "name": "auth_config",
@@ -116,7 +116,7 @@
     },
     {
       "example": "/v1",
-      "help_en": "The base path of the API. The path must start with a forward slash (/), cannot exceed 256 bytes in length, and cannot contain spaces. This parameter is required when type is set to Rest. When type is set to LLM, Ai, or Agent, this parameter is optional and defaults to /",
+      "help_en": "The base path of the API. It must start with a forward slash (/), be up to 256 bytes in length, and contain no spaces. This parameter is required when type is set to Rest. When type is set to LLM, Ai, or Agent, this parameter is optional and defaults to /",
       "help_zh": "API 基础路径。必须以正斜线（/）开头，长度不超过 256 字节，且不能包含空格。当 type=Rest 时必填；当 type=LLM、Ai 或 Agent 时可不传，默认值为 /",
       "location": "body",
       "name": "base_path",
@@ -147,7 +147,7 @@
         "fields": [
           {
             "example": "true",
-            "help_en": "Specifies whether to automatically deploy the API",
+            "help_en": "Specifies whether to enable automatic deployment",
             "help_zh": "是否自动部署",
             "name": "auto_deploy",
             "options": [
@@ -158,6 +158,9 @@
             "type": "bool"
           },
           {
+            "enum": [
+              "SingleService"
+            ],
             "example": "SingleService",
             "help_en": "The publishing scenario",
             "help_zh": "发布场景",
@@ -239,7 +242,7 @@
               ],
               "type": "object"
             },
-            "help_en": "The list of custom domain name information",
+            "help_en": "The list of custom domain name details",
             "help_zh": "用户自定义域名内容列表",
             "name": "custom_domain_infos",
             "options": [
@@ -250,8 +253,33 @@
             "type": "array"
           },
           {
+            "fields": [
+              {
+                "example": "svc-cr8k0udlhtgt80sh7png",
+                "help_en": "The imported ExtProc gRPC service ID. Required when creating a REST operation or ModelAPI. Must match the service currently bound to the resource during updates",
+                "help_zh": "已导入的 ExtProc gRPC 服务 ID。REST Operation 或 ModelAPI 创建时必填；更新时必须与当前资源已绑定服务一致",
+                "name": "service_id",
+                "options": [
+                  "--service-id"
+                ],
+                "raw_name": "serviceId",
+                "required": false,
+                "type": "string"
+              }
+            ],
+            "help_en": "The fixed dynamic forwarding and ExtProc combination. For REST APIs, submit in the deployConfigs of the operation. For ModelAPIs, submit in the deployConfigs of the API. When creating either, you must submit both gatewayId and dfpConfig.serviceId in the same configuration item. The server verifies that the gateway and service belong to the same entity and determines the default environment and backend. GetHttpApiOperation, ListHttpApiOperations, GetHttpApi, and ListHttpApis return the entire object only when the corresponding resource is precisely mounted with the current gateway-bound plugin. This field is not supported for API-level configurations of standard HTTP APIs",
+            "help_zh": "固定动态转发与 ExtProc 组合。REST API 在 Operation 的 deployConfigs 中提交，ModelAPI 在 API 的 deployConfigs 中提交；两者创建时都须在同一配置项提交 gatewayId 与 dfpConfig.serviceId。服务端校验网关与服务归属一致，并确定默认环境和后端。GetHttpApiOperation、ListHttpApiOperations、GetHttpApi 与 ListHttpApis 仅在对应资源精确挂载当前网关绑定插件时回显整个对象。普通 HTTP API 的 API 级配置不支持该字段",
+            "name": "dfp_config",
+            "options": [
+              "--dfp-config"
+            ],
+            "raw_name": "dfpConfig",
+            "required": false,
+            "type": "object"
+          },
+          {
             "example": "true",
-            "help_en": "Specifies whether to enable gateway system models. This parameter takes effect only when the publishing scenario is AiAutoRouter. Default value: false. This parameter is used for backward compatibility with earlier clients. If systemModelTiers is not submitted, true indicates that all three tiers of system models are enabled, and false indicates that all are disabled",
+            "help_en": "Specifies whether to enable gateway system models. This takes effect only when the publishing scenario is AiAutoRouter. The default value is false. This field is used for compatibility with legacy clients. If systemModelTiers is not submitted, true indicates that all three tiers of system models are enabled, and false indicates that none are enabled",
             "help_zh": "是否启用网关系统模型。仅当发布场景为 AiAutoRouter 时生效，默认值为 false。该字段用于兼容旧客户端；未提交 systemModelTiers 时，true 表示三档系统模型全部启用，false 表示全部不启用",
             "name": "enable_system_models",
             "options": [
@@ -317,7 +345,7 @@
               ],
               "type": "object"
             },
-            "help_en": "The list of environment domain name information",
+            "help_en": "The list of environment domain names",
             "help_zh": "环境域名内容列表",
             "name": "env_domain_infos",
             "options": [
@@ -3032,7 +3060,7 @@
               "compressed"
             ],
             "example": "ordinary",
-            "help_en": "The current online routing mode of the REST API. ordinary indicates per-operation routing, and compressed indicates single-prefix routing for the API. This parameter is not returned for non-REST APIs",
+            "help_en": "The current online routing mode for REST APIs. ordinary indicates per-operation routing, and compressed indicates single-prefix routing for the API. This field is not returned for non-REST APIs",
             "help_zh": "REST API当前线上路由模式。ordinary表示逐Operation路由，compressed表示API单条前缀路由。非REST API不返回该字段",
             "name": "rest_api_route_mode",
             "options": [
@@ -3046,7 +3074,7 @@
             "fields": [
               {
                 "example": "true",
-                "help_en": "Specifies whether to enable gateway system models. This field is used to display the AiAutoRouter built-in routes generated by Model API deployConfigs. The general Route create and update operations do not accept this field",
+                "help_en": "Specifies whether to enable gateway system models. This field is used to echo the built-in AiAutoRouter routes generated by Model API deployConfigs. General route creation and update operations do not accept this field",
                 "help_zh": "是否启用网关系统模型。该字段用于回显由 Model API deployConfigs 生成的 AiAutoRouter 内置路由；通用 Route 创建和更新接口不接受此字段",
                 "name": "enable_system_models",
                 "options": [
@@ -3057,8 +3085,15 @@
                 "type": "bool"
               },
               {
+                "enum": [
+                  "Mock",
+                  "MultiServiceByRatio",
+                  "MultiServiceByTag",
+                  "Redirect",
+                  "Single"
+                ],
                 "example": "Single",
-                "help_en": "The backend service scene. Valid values: Single, MultiServiceByRatio, MultiServiceByTag, Mock, Redirect",
+                "help_en": "The backend service scenario. Valid values: Single, MultiServiceByRatio, MultiServiceByTag, Mock, and Redirect",
                 "help_zh": "后端服务场景:取值范围[Single, MultiServiceByRatio, MultiServiceByTag, Mock, Redirect]",
                 "name": "scene",
                 "options": [
@@ -3073,7 +3108,7 @@
                   "fields": [
                     {
                       "example": "DEFAULT_GROUP",
-                      "help_en": "The service group. Used in HTTP-to-Dubbo conversion scenarios",
+                      "help_en": "The service group. This field is used in HTTP-to-Dubbo conversion scenarios",
                       "help_zh": "服务分组。HTTP 到 Dubbo 转换场景使用",
                       "name": "group_name",
                       "options": [
@@ -3264,7 +3299,7 @@
                     },
                     {
                       "example": "qwen-plus",
-                      "help_en": "The target model name. This field is shared by multiple existing model backend scenes. The specific routing or model rewrite semantics are determined by scene. This field is required for the SemanticRouter scene. If not configured in the AiAutoRouter scene, the default model of the AI service is used",
+                      "help_en": "The target model name. This field is shared by multiple existing model backend scenarios. The specific routing or model rewriting semantics are determined by the scene field. This field must be configured in the SemanticRouter scenario. If it is not configured in the AiAutoRouter scenario, the default model of the AI service is used",
                       "help_zh": "目标模型名称。该字段由多个既有模型后端场景共用，具体路由或模型改写语义由 scene 决定；SemanticRouter 场景必须配置，AiAutoRouter 场景未配置时使用 AI 服务的默认模型",
                       "name": "model_name",
                       "options": [
@@ -3288,7 +3323,7 @@
                     },
                     {
                       "example": "public",
-                      "help_en": "The service namespace. Used in HTTP-to-Dubbo conversion scenarios",
+                      "help_en": "The service namespace. This field is used in HTTP-to-Dubbo conversion scenarios",
                       "help_zh": "服务命名空间。HTTP 到 Dubbo 转换场景使用",
                       "name": "namespace",
                       "options": [
@@ -3300,7 +3335,7 @@
                     },
                     {
                       "example": "port",
-                      "help_en": "The service port. Leave this field empty for dynamic ports",
+                      "help_en": "The service port. Do not specify this field for dynamic ports",
                       "help_zh": "服务端口, 动态端口不传入",
                       "name": "port",
                       "options": [
@@ -3311,8 +3346,13 @@
                       "type": "int"
                     },
                     {
+                      "enum": [
+                        "DUBBO",
+                        "HTTP",
+                        "TCP"
+                      ],
                       "example": "HTTP",
-                      "help_en": "The service protocol. Valid values: HTTP, TCP, DUBBO",
+                      "help_en": "The service protocol. Valid values: HTTP, TCP, and DUBBO",
                       "help_zh": "服务协议,取值范围:[HTTP, TCP, DUBBO]",
                       "name": "protocol",
                       "options": [
@@ -3336,7 +3376,7 @@
                     },
                     {
                       "example": "MSE_NACOS",
-                      "help_en": "The service source type. Use MSE_NACOS for HTTP-to-Dubbo conversion scenarios",
+                      "help_en": "The service source type. Set this field to MSE_NACOS for HTTP-to-Dubbo conversion scenarios",
                       "help_zh": "服务来源类型。HTTP 到 Dubbo 转换场景使用 MSE_NACOS",
                       "name": "source_type",
                       "options": [
@@ -3360,7 +3400,7 @@
                     },
                     {
                       "example": "49",
-                      "help_en": "The traffic ratio percentage",
+                      "help_en": "The percentage value of the traffic ratio",
                       "help_zh": "流量比例的百分比值",
                       "name": "weight",
                       "options": [
@@ -3404,7 +3444,7 @@
                     "premium"
                   ],
                   "example": "standard",
-                  "help_en": "The capability tier of the intelligent routing candidate. Specify this parameter only when the publishing scenario is AiAutoRouter. Valid values: economy, standard, and premium",
+                  "help_en": "The capability tier for intelligent routing candidates. Fill in only when the publishing scenario is AiAutoRouter. Valid values: economy, standard, and premium",
                   "help_zh": "智能路由候选的能力档位。仅当发布场景为 AiAutoRouter 时填写，支持 economy、standard、premium",
                   "name": "capability_tier",
                   "options": [
@@ -3456,6 +3496,11 @@
                             "type": "string"
                           },
                           {
+                            "enum": [
+                              "equal",
+                              "prefix",
+                              "regex"
+                            ],
                             "example": "equal",
                             "help_en": "The operator. Three matching methods are supported: exact match, prefix match, and regular expression",
                             "help_zh": "操作符，支持精确匹配、前缀匹配、正则表达式三种方式",
@@ -3468,6 +3513,10 @@
                             "type": "string"
                           },
                           {
+                            "enum": [
+                              "Header",
+                              "Query"
+                            ],
                             "example": "Query",
                             "help_en": "The match type. Supports matching by query parameter or header parameter",
                             "help_zh": "匹配类型，支持Query参数或Header参数匹配",
@@ -3552,6 +3601,9 @@
                   "type": "string"
                 },
                 {
+                  "enum": [
+                    "ByWeight"
+                  ],
                   "example": "ByWeight",
                   "help_en": "The multi-service routing strategy type",
                   "help_zh": "多服务路由策略类型",
@@ -3565,7 +3617,7 @@
                 },
                 {
                   "example": "Qwen-Max-Service",
-                  "help_en": "The display name of the service",
+                  "help_en": "The service display name",
                   "help_zh": "服务显示名称",
                   "name": "name",
                   "options": [
@@ -3578,6 +3630,11 @@
                 {
                   "fields": [
                     {
+                      "enum": [
+                        "LeastBusy",
+                        "LeastFirstTokenLatency",
+                        "LeastTotalLatency"
+                      ],
                       "example": "LeastBusy",
                       "help_en": "The routing mode",
                       "help_zh": "路由模式",
@@ -3603,7 +3660,7 @@
                     },
                     {
                       "example": "0.8",
-                      "help_en": "The maximum traffic ratio for a single service",
+                      "help_en": "The maximum traffic proportion for a single service",
                       "help_zh": "单个服务最大流量占比",
                       "name": "rate_limit",
                       "options": [
@@ -3614,7 +3671,7 @@
                       "type": "float"
                     }
                   ],
-                  "help_en": "The observability metric-based routing configuration",
+                  "help_en": "The observability metric routing configuration",
                   "help_zh": "观测指标路由配置",
                   "name": "observability_route_config",
                   "options": [
@@ -3662,7 +3719,7 @@
                 },
                 {
                   "example": "V2",
-                  "help_en": "The service version label",
+                  "help_en": "The service version tag",
                   "help_zh": "服务版本标签",
                   "name": "version",
                   "options": [
@@ -3751,7 +3808,7 @@
               ],
               "type": "object"
             },
-            "help_en": "The list of second-level domain name content",
+            "help_en": "The list of subdomains",
             "help_zh": "二级域名内容列表",
             "name": "sub_domains",
             "options": [
@@ -3766,7 +3823,7 @@
               "type": "string"
             },
             "example": "[\"economy\",\"standard\",\"premium\"]",
-            "help_en": "The set of explicitly enabled gateway system model capability tiers. Takes effect only when the publishing scenario is AiAutoRouter. Valid values: economy, standard, and premium. An explicitly empty array indicates that no system models are enabled",
+            "help_en": "The set of explicitly enabled gateway system model capability tiers. This takes effect only when the publishing scenario is AiAutoRouter. Valid values: economy, standard, and premium. An explicit empty array indicates that no system models are enabled",
             "help_zh": "显式启用的网关系统模型能力档位集合。仅当发布场景为 AiAutoRouter 时生效；支持 economy、standard、premium，显式空数组表示不启用任何系统模型",
             "name": "system_model_tiers",
             "options": [
@@ -3779,7 +3836,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The list of deployment configurations for the HTTP API. This parameter is required when type is set to LLM or Ai, and only one deployment configuration can be specified. This parameter is not validated at the request level for other types",
+      "help_en": "The list of deployment configurations for the HTTP API. This parameter is required and only one deployment configuration can be passed when type is set to LLM or Ai. Request-layer validation is not performed for other types",
       "help_zh": "HTTP API 的部署配置列表。当 type 为 LLM 或 Ai 时必填且只能传入 1 个部署配置；其他类型无需在请求层校验",
       "location": "body",
       "name": "deploy_configs",
@@ -3821,7 +3878,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to enable authentication. This parameter is validated when type is set to LLM, Ai, or Agent. This parameter is not validated at the request level when type is set to Rest",
+      "help_en": "Specifies whether to enable permission authentication. This parameter is validated when type is set to LLM, Ai, or Agent. It is not validated at the request layer when type is set to Rest",
       "help_zh": "是否开启权限认证。当 type 为 LLM、Ai 或 Agent 时会被校验，当 type 为 Rest 时请求层不校验此字段",
       "location": "body",
       "name": "enable_auth",
@@ -3835,7 +3892,7 @@
     },
     {
       "example": "30",
-      "help_en": "The timeout period for waiting for the first byte from the backend",
+      "help_en": "The timeout period for waiting for the backend to return the first byte",
       "help_zh": "等待后端返回首个字节的超时时间",
       "location": "body",
       "name": "first_byte_timeout",
@@ -3911,7 +3968,7 @@
         },
         {
           "example": "default",
-          "help_en": "The namespace to listen on",
+          "help_en": "The namespace to watch",
           "help_zh": "监听的命名空间",
           "name": "watch_namespace",
           "options": [
@@ -3922,7 +3979,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The HTTP Ingress API configuration. This parameter is required and cannot be nil when type is set to HttpIngress. You do not need to specify this parameter for other types",
+      "help_en": "The configuration information of the HTTP Ingress API. This parameter is required and cannot be nil when type is set to HttpIngress. It is not required for other types",
       "help_zh": "HTTP Ingress API配置信息。当 type 为 HttpIngress 时必填，不能为 nil，其余 type 无需传入此字段",
       "location": "body",
       "name": "ingress_config",
@@ -3935,8 +3992,18 @@
       "type": "object"
     },
     {
+      "enum": [
+        "Audio",
+        "Embedding",
+        "Image",
+        "MultiModal",
+        "Others",
+        "Rerank",
+        "Text",
+        "Video"
+      ],
       "example": "Text",
-      "help_en": "The AI model category. This parameter is optional when type is set to LLM or Ai. You do not need to specify this parameter for other types. Valid values:\n\nText: text generation.\nImage: image generation.\nAudio: audio processing.\nVideo: AI video generation.\nMultiModal: multimodal.\nEmbedding: embedding.\nRerank: reranking.\nOthers: other",
+      "help_en": "The AI model category. This parameter is optional when type is set to LLM or Ai, and is not required for other types. Valid values: Text (text generation), Image (image generation), Audio (audio processing), Video (video generation), MultiModal (multimodal), Embedding (vector embedding), Rerank (reranking), and Others (others)",
       "help_zh": "AI 模型类别。当 type 为 LLM 或 Ai 时可选，其他类型无需传入。取值：Text（文本生成）、Image（图像生成）、Audio（音频处理）、Video（视频生成）、MultiModal（多模态）、Embedding（向量嵌入）、Rerank（重排序）、Others（其他）",
       "location": "body",
       "name": "model_category",
@@ -3950,7 +4017,7 @@
     },
     {
       "example": "test-api",
-      "help_en": "The name of the HTTP API, which is used to identify the API resource. Example: test-api",
+      "help_en": "The name of the HTTP API, which is used to identify the API resource, such as test-api",
       "help_zh": "HTTP API 的名称，用于标识当前 API 资源，例如 test-api",
       "location": "body",
       "name": "name",
@@ -4008,7 +4075,7 @@
     },
     {
       "example": "ExistFirst",
-      "help_en": "The conflict merge strategy for import",
+      "help_en": "The conflict merging strategy for import",
       "help_zh": "导入的冲突合并策略",
       "location": "body",
       "name": "strategy",
@@ -4022,8 +4089,16 @@
     },
     {
       "doc_required": true,
+      "enum": [
+        "Agent",
+        "Http",
+        "HttpIngress",
+        "LLM",
+        "Rest",
+        "WebSocket"
+      ],
       "example": "Http",
-      "help_en": "The type of the HTTP API. Valid values:\n\nHttp: standard HTTP API.\nRest: RESTful API.\nWebSocket: WebSocket API.\nHttpIngress: HTTP API connected through Ingress.\nLLM: large language model API.\nAgent: agent proxy API",
+      "help_en": "The type of the HTTP API. Valid values: Http (common HTTP API), Rest (RESTful API), WebSocket (WebSocket API), HttpIngress (HTTP API accessed through Ingress), LLM (large language model API), and Agent (agent API)",
       "help_zh": "HTTP API 类型。取值：Http（普通 HTTP API）、Rest（RESTful API）、WebSocket（WebSocket API）、HttpIngress（通过 Ingress 接入的 HTTP API）、LLM（大语言模型 API）、Agent（Agent 代理 API）",
       "location": "body",
       "name": "type",
@@ -4074,6 +4149,11 @@
           "type": "string"
         },
         {
+          "enum": [
+            "Header",
+            "Path",
+            "Query"
+          ],
           "example": "Query",
           "help_en": "The versioning scheme",
           "help_zh": "版本化方案",
@@ -4098,7 +4178,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The API versioning configuration",
+      "help_en": "The versioning configuration of the API",
       "help_zh": "API版本化配置",
       "location": "body",
       "name": "version_config",
@@ -4112,7 +4192,7 @@
     },
     {
       "example": "5f7a2c1e-9b3d-4e8f-a1c6-0d2b8e4f7a13",
-      "help_en": "The idempotency token, which is a globally unique value generated by the caller. We recommend that you use a UUID. The token cannot exceed 64 characters in length. Within approximately 24 hours after the first successful request, a duplicate request that carries the same ClientToken and identical request parameters directly returns the httpApiId created by the first request without creating a duplicate HTTP API. If the same ClientToken is carried but the request parameters differ, an IdempotentParameterMismatch error is returned. If the first request is still being processed, an IdempotentProcessing error is returned. If this parameter is not specified, idempotency control is not enabled, and the behavior is consistent with the existing version",
+      "help_en": "The idempotency token. It is a globally unique value generated by the caller. Use a UUID. The token can be up to 64 characters in length. Within about 24 hours after the first request succeeds, a repeated request with the same ClientToken and identical request parameters directly returns the httpApiId created by the first request without creating the HTTP API again. If the request parameters are different, the IdempotentParameterMismatch error is returned. If the first request is still being processed, the IdempotentProcessing error is returned. If this parameter is not specified, idempotency control is disabled, and the behavior is consistent with the existing version",
       "help_zh": "幂等标识，由调用方生成全局唯一值（推荐 UUID），长度不超过 64 个字符。首次请求成功后约 24 小时内，携带相同 ClientToken 且请求参数一致的重复请求直接返回首次创建的 httpApiId，不重复创建 HTTP API；携带相同 ClientToken 但请求参数不一致时返回 IdempotentParameterMismatch；首次请求仍在处理中时返回 IdempotentProcessing；缺省时不启用幂等控制，行为与现有版本一致",
       "location": "query",
       "name": "client_token",
@@ -4145,7 +4225,7 @@
             "description_zh": "API信息",
             "properties": {
               "httpApiId": {
-                "description_en": "HTTP API ID",
+                "description_en": "The HTTP API ID",
                 "description_zh": "HTTP API ID",
                 "example": "api-xxx",
                 "mappingResourcePropertyName": "$.HttpApiId",

@@ -3,7 +3,7 @@
   "cmd_full_name": "apig deploy-http-api",
   "cmd_name": "deploy-http-api",
   "deprecated": false,
-  "description_en": "Publishes an HTTP API. This includes REST APIs and routes within HTTP APIs",
+  "description_en": "Publishes an HTTP API, including routes in REST APIs and HTTP APIs",
   "description_zh": "发布HTTP API。包括Rest API 和HTTP API里的路由",
   "kebab_example": "aliyun apig deploy-http-api --http-api-id api-cr68g1dlhtgm31fb000 --route-id 'hr-cr82undlhtgrl***' --rest-api-config '{\"revisionId\":\"apr-xxx\\n\",\"environment\":{\"environmentId\":\"env-cpqnr6tlhtgubc***\",\"serviceConfigs\":[{\"protocol\":\"HTTP\",\"port\":8080,\"match\":{\"default\":true,\"conditions\":[{\"type\":\"Query\",\"value\":\"gray\",\"key\":\"color\",\"operator\":\"equal\"}]},\"weight\":49,\"serviceId\":\"svc-cr6pk4tlhtgm58e***\",\"version\":\"v1\"}],\"customDomainIds\":[\"d-cr62ts5lhtgln***\"],\"backendScene\":\"SingleService\"},\"description\":\"用户服务API发布。\",\"operationIds\":[\"op-b5eff20853f942a1\"],\"enableRouteCompression\":true,\"operationDeployments\":[{\"operationId\":\"op-xxx\",\"action\":\"Publish\"}],\"gatewayId\":\"gw-cvn2u46m1hkun04oll8g\"}' --http-api-config '{\"routeIds\":[\"route-c4a9d317e6b24f88\"],\"gatewayId\":\"gw-csrhgfmm1hknf0hu6o3g\"}' --region cn-hangzhou",
   "method": "POST",
@@ -85,7 +85,7 @@
       "fields": [
         {
           "example": "用户服务API发布。",
-          "help_en": "The description of the publish operation",
+          "help_en": "The publish description",
           "help_zh": "发布描述",
           "name": "description",
           "options": [
@@ -97,7 +97,7 @@
         },
         {
           "example": "true",
-          "help_en": "Specifies whether to enable REST API route compression. If this parameter is omitted or set to false, operations are published individually. If this parameter is set to true, the API is published as a single prefix route. This parameter is ignored for historical revision publishing, which uses the route mode saved in the historical revision. When this parameter is set to true, operationDeployments must not be specified because prefix route publishing supports only full publishing",
+          "help_en": "Specifies whether to enable REST API route compression. If this parameter is omitted or set to false, routes are published one by one by operation. If this parameter is set to true, routes are published as a single prefix route for the API. This field is ignored during historical version publishing, and the route mode saved in the historical version is used. If this parameter is set to true, do not specify operationDeployments because prefix route publishing supports only full publishing",
           "help_zh": "是否开启REST API路由压缩。省略或设置为false时按Operation逐条发布；设置为true时发布为API单条前缀路由。历史版本发布忽略该字段并使用历史版本保存的路由模式。设置为 true 时不得传入 operationDeployments（前缀路由发布仅支持全量发布）",
           "name": "enable_route_compression",
           "options": [
@@ -110,8 +110,14 @@
         {
           "fields": [
             {
+              "enum": [
+                "Mock",
+                "MultiServiceByContent",
+                "MultiServiceByRatio",
+                "SingleService"
+              ],
               "example": "SingleService",
-              "help_en": "The API publish scenario. Backend configurations cannot be specified during publish. Configure them in advance by calling UpdateHttpApi or UpdateHttpApiOperation before publishing",
+              "help_en": "The API publish scenario. Backend configurations cannot be specified during publishing. You must preconfigure them by using UpdateHttpApi or UpdateHttpApiOperation before publishing",
               "help_zh": "API发布场景。发布时不允许指定后端配置，须通过 UpdateHttpApi 或 UpdateHttpApiOperation 预先配置后再发布",
               "name": "backend_scene",
               "options": [
@@ -125,7 +131,7 @@
               "element": {
                 "type": "string"
               },
-              "help_en": "The list of custom domain names",
+              "help_en": "The list of user domain names",
               "help_zh": "用户域名列表",
               "name": "custom_domain_ids",
               "options": [
@@ -168,6 +174,11 @@
                               "type": "string"
                             },
                             {
+                              "enum": [
+                                "equal",
+                                "prefix",
+                                "regex"
+                              ],
                               "example": "equal",
                               "help_en": "The operator. Three matching methods are supported: exact match, prefix match, and regular expression",
                               "help_zh": "操作符，支持精确匹配、前缀匹配、正则表达式三种方式",
@@ -180,6 +191,10 @@
                               "type": "string"
                             },
                             {
+                              "enum": [
+                                "Header",
+                                "Query"
+                              ],
                               "example": "Query",
                               "help_en": "The match type. Supports matching by query parameter or header parameter",
                               "help_zh": "匹配类型，支持Query参数或Header参数匹配",
@@ -252,8 +267,12 @@
                     "type": "int"
                   },
                   {
+                    "enum": [
+                      "HTTP",
+                      "HTTPS"
+                    ],
                     "example": "HTTP",
-                    "help_en": "The Terms of Service. Valid values:\nHTTP.\nHTTPS",
+                    "help_en": "The service protocol:\nHTTP.\nHTTPS",
                     "help_zh": "服务协议:\nHTTP。\nHTTPS",
                     "name": "protocol",
                     "options": [
@@ -289,7 +308,7 @@
                   },
                   {
                     "example": "49",
-                    "help_en": "The weight. Valid values: 1 to 100. This parameter takes effect only in ratio-based scenarios",
+                    "help_en": "The weight. Valid values: 1 to 100. This parameter is valid only in the ratio-based scenario",
                     "help_zh": "权重，范围[1,100]，仅在按比例场景下有效",
                     "name": "weight",
                     "options": [
@@ -302,7 +321,7 @@
                 ],
                 "type": "object"
               },
-              "help_en": "The existing service configurations. In a single-service scenario, only one entry is allowed. In ratio-based or content-based scenarios, multiple entries are allowed. Backend configurations cannot be specified during publish. Configure them in advance by calling UpdateHttpApi or UpdateHttpApiOperation before publishing",
+              "help_en": "The existing service configurations. Only one entry can be configured in the single service scenario, while multiple entries are allowed in scenarios such as ratio-based or content-based. Backend configurations cannot be specified during publishing. You must preconfigure them by using UpdateHttpApi or UpdateHttpApiOperation before publishing",
               "help_zh": "已有服务配置，单服务场景下仅允许配置一个条目，按比例、按内容等场景下允许配置多个条目。发布时不允许指定后端配置，须通过 UpdateHttpApi 或 UpdateHttpApiOperation 预先配置后再发布",
               "name": "service_configs",
               "options": [
@@ -344,7 +363,7 @@
                   "Unpublish"
                 ],
                 "example": "Publish",
-                "help_en": "The action type",
+                "help_en": "The operation type",
                 "help_zh": "操作类型",
                 "name": "action",
                 "options": [
@@ -369,7 +388,7 @@
             ],
             "type": "object"
           },
-          "help_en": "The operation-level deployment control list. This parameter takes effect only when enableRouteCompression is omitted or set to false. Do not specify this parameter when enableRouteCompression is set to true",
+          "help_en": "The operation-level publish control list. This list is valid only when enableRouteCompression is omitted or set to false. If enableRouteCompression is set to true, do not specify this field",
           "help_zh": "Operation级别的发布控制列表仅在 enableRouteCompression 省略或为 false 时有效；enableRouteCompression 为 true 时不得传入本字段",
           "name": "operation_deployments",
           "options": [
@@ -395,7 +414,7 @@
         },
         {
           "example": "apr-xxx\n",
-          "help_en": "The historical revision ID. If this parameter is specified, the deployment uses the information from the historical revision",
+          "help_en": "The historical version number. If this field is specified, the publish information is subject to the historical version information",
           "help_zh": "历史版本号，若指定该字段，发布信息以历史版本信息为准",
           "name": "revision_id",
           "options": [
@@ -406,7 +425,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The deployment configuration for a REST API. This parameter is required when the HTTP API to be published is a REST API. At least one of revisionId, environment, or gatewayId must be specified to identify the deployment target",
+      "help_en": "The REST API deployment configuration. This parameter is required when you publish an HTTP API as a REST API. You must provide at least one of revisionId, environment, and gatewayId to locate the deployment target",
       "help_zh": "Rest API部署配置。当发布HTTP API为Rest API必填。revisionId、environment、gatewayId 三者须至少提供其一，用于定位发布目标",
       "location": "body",
       "name": "rest_api_config",
@@ -420,7 +439,7 @@
     },
     {
       "example": "hr-cr82undlhtgrl***",
-      "help_en": "The route ID. This parameter is required when you publish a route of an HTTP API. Before deploying with routeId, make sure the target route is associated with a publishable domain name. If the domain name was not configured when the route was created, call UpdateHttpApiRoute to add domainIds.\n\nA publishable domain name refers to the default subdomain of the environment and does not include custom Dedicated domain names. If the route is associated only with a Dedicated domain name, call UpdateHttpApiRoute to add the domainIds corresponding to the default subdomain of the environment before deployment",
+      "help_en": "The route ID. This parameter is required when you publish a route of an HTTP API. Before you deploy by using routeId, make sure that the target route is associated with a publishable domain name. If no domain name is configured when the route is created, you can call UpdateHttpApiRoute to add domainIds. A publishable domain name refers to the default subdomain of the environment and does not include custom dedicated domain names. If the route is associated only with dedicated domain names, you must first call UpdateHttpApiRoute to add the domainIds corresponding to the default subdomain of the environment before deployment",
       "help_zh": "路由 ID。发布 HTTP API 的路由时必须传入。使用 routeId 部署前，应确保目标路由已关联可发布域名；若创建路由时未配置，可调用 UpdateHttpApiRoute 补充 domainIds。\n「可发布域名」指环境的默认子域名，不包含自定义 Dedicated 域名；若路由仅关联 Dedicated 域名，需先通过 UpdateHttpApiRoute 补充环境默认子域名对应的 domainIds 后再部署",
       "location": "body",
       "name": "route_id",

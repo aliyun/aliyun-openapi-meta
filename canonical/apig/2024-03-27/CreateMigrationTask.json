@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun apig POST /v1/migration-tasks --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"httpApiId\":\"api-xxxx\",\"environmentId\":\"env-xxxx\",\"watchNamespace\":\"default\",\"description\":\"migration from Nginx\",\"ingressClass\":\"nginx\",\"clusterId\":\"c-xxxxxx\",\"migrationType\":\"Nginx Ingress\",\"gatewayId\":\"gw-xxxx\"}'",
+  "camel_example": "aliyun apig POST /v1/migration-tasks --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"httpApiId\":\"api-xxxx\",\"environmentId\":\"env-xxxx\",\"watchNamespace\":\"default\",\"ingressClass\":\"nginx\",\"description\":\"migration from Nginx\",\"migrationType\":\"Nginx Ingress\",\"clusterId\":\"c-xxxxxx\",\"gatewayId\":\"gw-xxxx\"}'",
   "cmd_full_name": "apig create-migration-task",
   "cmd_name": "create-migration-task",
   "deprecated": false,
   "description_en": "Creates a migration task",
   "description_zh": "创建迁移任务",
-  "kebab_example": "aliyun apig create-migration-task --cluster-id c-xxxxxx --description 'migration from Nginx' --environment-id env-xxxx --gateway-id gw-xxxx --http-api-id api-xxxx --ingress-class nginx --migration-type 'Nginx Ingress' --watch-namespace default --region cn-hangzhou",
+  "kebab_example": "aliyun apig create-migration-task --gateway-id gw-xxxx --environment-id env-xxxx --http-api-id api-xxxx --migration-type 'Nginx Ingress' --cluster-id c-xxxxxx --ingress-class nginx --description 'migration from Nginx' --watch-namespace default --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "CreateMigrationTask",
@@ -34,7 +34,7 @@
   "parameters": [
     {
       "example": "c-xxxxxx",
-      "help_en": "The ID of the source ACK cluster. The value must be the same as the cluster specified in the IngressInfo of the API. Note: This parameter is actually required. If this parameter is not specified, the API returns 400 InvalidParameter.IsEmpty",
+      "help_en": "The ID of the source ACK cluster. It must match the cluster in the IngressInfo of the API. Note: This parameter is required. If it is not provided, the API returns a 400 InvalidParameter.IsEmpty error",
       "help_zh": "源 ACK 集群 ID，须与 API 的 IngressInfo 中集群一致\n注意：本参数实际为必填项；未提供时，API 返回 400 InvalidParameter.IsEmpty",
       "location": "body",
       "name": "cluster_id",
@@ -48,7 +48,7 @@
     },
     {
       "example": "migration from Nginx",
-      "help_en": "The description of the task. The description is stored only when the task is created",
+      "help_en": "The task description. It is stored in the database only when the task is created",
       "help_zh": "任务描述，仅在创建时落库",
       "location": "body",
       "name": "description",
@@ -62,7 +62,7 @@
     },
     {
       "example": "env-xxxx",
-      "help_en": "The ID of the destination environment. The value must be the same as the Ingress import environment of the API. Note: This parameter is actually required. If this parameter is not specified, the API returns 400 InvalidParameter.IsEmpty. You can call ListEnvironments to query existing environment IDs. CreateEnvironment has been deprecated",
+      "help_en": "The ID of the destination environment. It must match the Ingress import environment of the API. Note: This parameter is required. If it is not provided, the API returns a 400 InvalidParameter.IsEmpty error. You can call ListEnvironments to query existing environment IDs. CreateEnvironment is deprecated",
       "help_zh": "目标环境 ID，必须与 API 的 Ingress 导入环境一致。注意：本参数实际为必填项；未提供时，API 返回 400 InvalidParameter.IsEmpty。可调用 ListEnvironments 查询已有环境 ID；CreateEnvironment 已标记为废弃",
       "location": "body",
       "name": "environment_id",
@@ -76,7 +76,7 @@
     },
     {
       "example": "gw-xxxx",
-      "help_en": "The ID of the destination gateway to which traffic is migrated",
+      "help_en": "The ID of the destination gateway to which migration traffic is switched",
       "help_zh": "目标网关 ID（迁移流量切到该网关）",
       "location": "body",
       "name": "gateway_id",
@@ -90,7 +90,7 @@
     },
     {
       "example": "api-xxxx",
-      "help_en": "The HTTP API ID. The API must have been imported as an Ingress type (HttpIngress) API. Note: This parameter is actually required. If this parameter is not specified, the API returns 400 InvalidParameter.IsEmpty",
+      "help_en": "The ID of the HTTP API. The API must be imported as an Ingress type (HttpIngress) API. Note: This parameter is required. If it is not provided, the API returns a 400 InvalidParameter.IsEmpty error",
       "help_zh": "HTTP API ID，必须已导入为 Ingress 类型（HttpIngress）的 API。注意：本参数实际为必填项；未提供时，API 返回 400 InvalidParameter.IsEmpty",
       "location": "body",
       "name": "http_api_id",
@@ -104,7 +104,7 @@
     },
     {
       "example": "nginx",
-      "help_en": "The Ingress class. If specified, the value must be the same as the API import configuration. Otherwise, an ingress class conflict error is returned",
+      "help_en": "The Ingress class. It must match the API import configuration. Otherwise, an ingress class conflict error is reported",
       "help_zh": "Ingress Class，传入时须与 API 导入配置一致，否则报 ingress class conflict",
       "location": "body",
       "name": "ingress_class",
@@ -117,8 +117,11 @@
       "type": "string"
     },
     {
+      "enum": [
+        "Nginx Ingress"
+      ],
       "example": "Nginx Ingress",
-      "help_en": "The migration type.\n[_single.params.body.props.migrationType.enum.Nginx Ingress]Nginx Ingress migration",
+      "help_en": "The migration type",
       "help_zh": "迁移类型",
       "location": "body",
       "name": "migration_type",
@@ -132,7 +135,7 @@
     },
     {
       "example": "default",
-      "help_en": "The watched namespace. If specified, the value must be the same as the API import configuration. Otherwise, a watchNamespace conflict error is returned",
+      "help_en": "The watched namespace. It must match the API import configuration. Otherwise, a watchNamespace conflict error is reported",
       "help_zh": "监听的命名空间，传入时须与 API 导入配置一致，否则报 watchNamespace conflict",
       "location": "body",
       "name": "watch_namespace",

@@ -60,7 +60,7 @@
     },
     {
       "example": "f8f44dc6cf369a017d56b7197eb4fb5ac4bbb6b09a92b9b41999541fxxxxxxxx",
-      "help_en": "The conflict snapshot hash, used to prevent concurrent dirty overwrites during confirmation. Obtain this value from the response data of a previous dryRun=true call.\n\nThis parameter is not required in the following cases: no conflicts exist, the request is a dry run (dryRun=true), or overwrite is set to false.\n\nWhen dryRun is set to false and overwrite is set to true, if this parameter is not provided or the value has expired and does not match, the backend returns accepted=false with a new conflict preview. Perform the dry run again to confirm the new conflicts",
+      "help_en": "The conflict snapshot hash, which is used to prevent concurrent dirty overwrites when overwriting is confirmed. You can obtain this value by first executing a request with dryRun=true and extracting it from the returned data.\n\nThis parameter is not required in the following scenarios: no conflicts exist; the request is only a dry run with dryRun=true; overwrite=false, meaning overwriting is not confirmed.\n\nIf dryRun=false and overwrite=true but this parameter is not provided or has expired and does not match, the backend returns accepted=false along with a new conflict preview. You must perform a dry run again to confirm the new conflicts",
       "help_zh": "冲突快照哈希，用于“确认覆盖时防并发脏覆盖”。通过先执行 dryRun=true 在返回数据提取。\n\n当以下情况不需要填写：没有冲突；只是 dryRun=true 预检；overwrite=false，即不确认覆盖。\n\n当当 dryRun = false 且 overwrite=true 时不带改参数或者该参数过期不匹配，后端会返回：accepted=false 并带新的冲突预览，需要重新执行 dryrun 确认新的冲突",
       "location": "body",
       "name": "conflict_hash",
@@ -74,7 +74,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to perform only a dry run without persisting or applying the configuration. A dry run checks whether conflicting rules exist on the bound subjects. The same subject cannot have two calendar-period quotas with the same period. For example, a subject that already has a daily calendar quota cannot have another daily calendar quota rule added",
+      "help_en": "Specifies whether to perform a dry run only without saving to the database or delivering actual configurations. This is used to check whether conflicting rules exist on the bound subjects. A single subject cannot be configured with two natural period quotas of the same period. For example, a subject that already has a natural daily quota cannot be added with another natural daily quota rule",
       "help_zh": "是否仅预检（预检不下发实际配置），用于检查绑定的主体上是否存在冲突的规则（同一主体不能配置两个相同周期的自然周期配额，例如已有自然日配额的主体不能再新增一个自然日配额规则）",
       "location": "body",
       "name": "dry_run",
@@ -88,7 +88,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to allow overwriting when conflicts exist. If overwriting is allowed, conflicting subjects (consumers or consumer groups) are unbound from the old rule and bound to the new rule",
+      "help_en": "Specifies whether to allow overwriting when a conflict occurs. Note that if overwriting is allowed, the conflicting subjects (consumers or consumer groups) are unbound from the old rule and bound to the new rule",
       "help_zh": "冲突时是否允许覆盖。注意如果选择允许覆盖，冲突主体（消费者或消费者组）会从旧规则解绑并绑定到新规则",
       "location": "body",
       "name": "overwrite",
@@ -116,7 +116,7 @@
     },
     {
       "example": "week",
-      "help_en": "The period type. Calendar periods support daily, weekly, and monthly statistics. Valid values: day, week, and month. Custom periods support only daily statistics. The value is fixed to day",
+      "help_en": "The period type. Natural periods support daily, weekly, and monthly statistics, and valid values are day, week, and month. Custom periods support only daily statistics, and the fixed value is day",
       "help_zh": "周期类型。自然周期支持按日、周、月统计，取值为 day、week 或 month；自定义周期仅支持按日统计，固定取值为 day",
       "location": "body",
       "name": "period_type",
@@ -144,7 +144,7 @@
     },
     {
       "example": "UTC+8",
-      "help_en": "The time zone for the calendar period, in UTC+x format",
+      "help_en": "The time zone corresponding to the natural period, in UTC+x format",
       "help_zh": "自然周期对应的时区(UTC+x格式)",
       "location": "body",
       "name": "timezone",
@@ -158,7 +158,7 @@
     },
     {
       "example": "calendar",
-      "help_en": "The period alignment type after the reset. Valid values:\ncalendar: calendar period.\nepoch: custom period",
+      "help_en": "The period type for the reset. Natural periods (windowAlignment=calendar) and custom periods (windowAlignment=epoch) are supported",
       "help_zh": "重置周期类型。支持自然周期（windowAlignment=calendar）和自定义周期（windowAlignment=epoch）",
       "location": "body",
       "name": "window_alignment",
@@ -191,13 +191,13 @@
           },
           "data": {
             "backendName": "data",
-            "description_en": "The response data",
+            "description_en": "The request data content",
             "description_zh": "请求数据内容",
             "example": "{'key': 'value'}",
             "properties": {
               "accepted": {
                 "backendName": "accepted",
-                "description_en": "Indicates whether the write request is accepted by the system. A value of false typically indicates a retryable scenario, such as an unconfirmed conflict overwrite",
+                "description_en": "Indicates whether the semantics of the current write request can be accepted by the system. A value of false is common in retryable scenarios such as unconfirmed conflict overwrites",
                 "description_zh": "本次写请求语义是否可被系统接收，false 常见于冲突未确认覆盖等可重试场景",
                 "example": "true",
                 "title_en": "本次写请求语义是否可被系统接收",
@@ -211,7 +211,7 @@
                 "properties": {
                   "conflictHash": {
                     "backendName": "conflictHash",
-                    "description_en": "The hash of the conflict snapshot",
+                    "description_en": "The hash of the conflict",
                     "description_zh": "冲突的hash",
                     "example": "f8f44dc6cf369a017d56b7197eb4fb5ac4bbb6b09a92b9b41999541fxxxxxxxx",
                     "title_en": "冲突的hash",
@@ -224,12 +224,12 @@
                     "description_zh": "冲突的主体列表",
                     "itemName": "items",
                     "items": {
-                      "description_en": "The details of a conflicting subject",
+                      "description_en": "The details of the conflicting subject",
                       "description_zh": "冲突的主体详情",
                       "properties": {
                         "conflictPeriodType": {
                           "backendName": "conflictPeriodType",
-                          "description_en": "The period type of the existing conflicting rule on the subject. Valid values:\nday: daily.\nweek: weekly.\nmonth: monthly",
+                          "description_en": "The period type of the existing conflicting rule on the subject. A value of day, week, or month indicates that the period of the existing conflicting rule on the subject is daily, weekly, or monthly",
                           "description_zh": "主体上已有冲突规则的周期类型。conflictPeriodType  = \"day\"/\"week\"/\"month\"分别表示主体已有冲突规则的周期为日/周/月",
                           "example": "week",
                           "title_en": "消费者上已有冲突规则的周期类型。conflictPeriodType  = \"day\"/\"week\"/\"month\"分别表示消费者已有冲突规则的周期为日/周/月",
@@ -238,7 +238,7 @@
                         },
                         "conflictType": {
                           "backendName": "conflictType",
-                          "description_en": "The type of the existing conflicting rule on the subject. Valid values:\ncalendar: The existing conflicting rule uses a calendar period.\nepoch: The existing conflicting rule uses a custom period",
+                          "description_en": "The type of the existing conflicting rule on the subject. A value of calendar indicates that the existing conflicting rule on the subject uses a natural period. A value of epoch indicates that the existing conflicting rule uses a custom period",
                           "description_zh": "主体上已有冲突规则的类型。conflictType  = \"calendar\"表示主体已有冲突规则为自然周期；conflictType = \"epoch\"表示已有冲突规则为自定义周期",
                           "example": "calendar",
                           "title_en": "消费者上已有冲突规则的类型。conflictType  = \"calendar\"表示消费者已有冲突规则为自然周期；conflictType = \"epoch\"表示已有冲突规则为自定义周期。",
@@ -247,14 +247,14 @@
                         },
                         "consumerId": {
                           "backendName": "consumerId",
-                          "description_en": "The consumer ID. You can use subjectId instead",
+                          "description_en": "The consumer ID. This parameter can now be uniformly replaced by subjectId",
                           "description_zh": "消费者ID（现可统一使用 subjectId 替代）",
                           "example": "cs-d82n1g6m1hkm3xxxxxxx",
                           "type": "string"
                         },
                         "consumerName": {
                           "backendName": "consumerName",
-                          "description_en": "The consumer name. You can use subjectName instead",
+                          "description_en": "The consumer name. This parameter can now be uniformly replaced by subjectName",
                           "description_zh": "消费者名称（现可统一使用 subjectName 替代）",
                           "example": "consumer-a",
                           "type": "string"
@@ -279,7 +279,7 @@
                         },
                         "subjectType": {
                           "backendName": "subjectType",
-                          "description_en": "The type of the conflicting subject. Valid values:\nconsumer: consumer.\nconsumer_group: consumer group",
+                          "description_en": "The type of the conflicting subject. Valid values: consumer and consumer_group",
                           "description_zh": "冲突主体类型，取值为consumer或consumer_group",
                           "example": "consumer",
                           "title_en": "冲突主体类型，取值为consumer或consumer_group。",
@@ -308,7 +308,7 @@
               },
               "dryRun": {
                 "backendName": "dryRun",
-                "description_en": "Indicates whether the request is a dry run",
+                "description_en": "Indicates whether it is a dry run",
                 "description_zh": "是否预检",
                 "example": "false",
                 "title_en": "是否预检",
@@ -356,7 +356,7 @@
   },
   "v1_body_parameters": [
     {
-      "help_en": "The request body",
+      "help_en": "The request body content",
       "help_zh": "请求体内容",
       "name": "body",
       "param_style": "json",
@@ -367,7 +367,7 @@
   ],
   "v1_parameters": [
     {
-      "help_en": "The request body",
+      "help_en": "The request body content",
       "help_zh": "请求体内容",
       "name": "body",
       "param_style": "json",
