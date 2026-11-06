@@ -3,8 +3,8 @@
   "cmd_full_name": "agentcore list-sandboxes",
   "cmd_name": "list-sandboxes",
   "deprecated": false,
-  "description_en": "Queries the list of sandboxes for a managed agent in a specified workspace. You can filter results by sandbox ID and active session ID fragments",
-  "description_zh": "查询指定工作空间中托管智能体的 Sandbox 列表，支持按 Sandbox ID 和当前有效 Session ID 的片段组合筛选",
+  "description_en": "Performs a paging query on the running instances of an agent, and supports filtering by Sandbox ID and current valid session ID fragments",
+  "description_zh": "分页查询智能体的运行实例，支持按 Sandbox ID 和当前有效 Session ID 片段筛选",
   "kebab_example": "aliyun agentcore list-sandboxes --workspace-id ws-1 --agent-id agent-1 --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
@@ -35,8 +35,8 @@
     },
     {
       "example": "agent-1",
-      "help_en": "The managed agent ID",
-      "help_zh": "托管智能体 ID",
+      "help_en": "The ID of the managed Harness agent",
+      "help_zh": "托管 Harness Agent ID",
       "location": "path",
       "name": "agent_id",
       "options": [
@@ -47,8 +47,21 @@
       "type": "string"
     },
     {
+      "example": "se-7f3a92c1",
+      "help_en": "省略或传空白时查询智能体 latest 运行单元；传入时该服务端点必须属于本智能体且目标类型为 AGENT_VERSION，否则返回 Resource.NotFound。独立运行的服务端点只返回其自身运行单元的 Sandbox；DEFAULT 服务端点尚未接管独立运行时回落到 latest 运行单元；非 DEFAULT 且未独立运行时返回 ServiceEndpointTargetNotReady。运行单元尚未创建时返回空列表且 totalCount 为 0，不报错",
+      "help_zh": "省略或传空白时查询智能体 latest 运行单元；传入时该服务端点必须属于本智能体且目标类型为 AGENT_VERSION，否则返回 Resource.NotFound。独立运行的服务端点只返回其自身运行单元的 Sandbox；DEFAULT 服务端点尚未接管独立运行时回落到 latest 运行单元；非 DEFAULT 且未独立运行时返回 ServiceEndpointTargetNotReady。运行单元尚未创建时返回空列表且 totalCount 为 0，不报错",
+      "location": "query",
+      "name": "service_endpoint_id",
+      "options": [
+        "--service-endpoint-id"
+      ],
+      "raw_name": "serviceEndpointId",
+      "required": false,
+      "type": "string"
+    },
+    {
       "example": "2f360",
-      "help_en": "Performs a case-insensitive fuzzy search by sandbox ID fragment",
+      "help_en": "The fragment of the Sandbox ID for a case-insensitive fuzzy search",
       "help_zh": "按 Sandbox ID 片段模糊搜索，不区分大小写",
       "location": "query",
       "name": "search_text",
@@ -61,7 +74,7 @@
     },
     {
       "example": "session-a",
-      "help_en": "Performs a case-insensitive fuzzy search by active session ID fragment",
+      "help_en": "The fragment of the current valid session ID for a case-insensitive fuzzy search",
       "help_zh": "按当前有效 Session ID 片段模糊搜索，不区分大小写",
       "location": "query",
       "name": "session_id",
@@ -74,8 +87,8 @@
     },
     {
       "example": "20",
-      "help_en": "The maximum number of records per page. Default value: 20",
-      "help_zh": "单页最大记录数，默认 20",
+      "help_en": "The maximum number of entries to return per page. Default value: 20. Valid values: 1 to 100",
+      "help_zh": "单页最大返回条数，默认 20，取值为 1～100",
       "location": "query",
       "maximum": "100",
       "minimum": "1",
@@ -89,7 +102,7 @@
     },
     {
       "example": "next-token-1",
-      "help_en": "The pagination token for querying the next page. When paginating, keep workspaceId, agentId, searchText, sessionId, and maxResults unchanged",
+      "help_en": "The cursor for querying the next page. When paginating, keep `workspaceId`, `agentId`, `searchText`, `sessionId`, and `maxResults` unchanged",
       "help_zh": "查询下一页的游标；翻页时须保持 workspaceId、agentId、searchText、sessionId 和 maxResults 不变",
       "location": "query",
       "name": "next_token",
@@ -110,14 +123,14 @@
         "properties": {
           "code": {
             "backendName": "code",
-            "description_en": "The business status code. The value SUCCESS is returned if the request was successful",
+            "description_en": "The business status code. The value is SUCCESS when the request is successful",
             "description_zh": "业务状态码，成功时为 SUCCESS",
             "example": "SUCCESS",
             "type": "string"
           },
           "httpStatusCode": {
             "backendName": "httpStatusCode",
-            "description_en": "The HTTP status code. The value 200 is returned if the request was successful",
+            "description_en": "The HTTP status code. The value is 200 when the request is successful",
             "description_zh": "HTTP 状态码，成功时为 200",
             "example": "200",
             "format": "int32",
@@ -125,14 +138,14 @@
           },
           "items": {
             "backendName": "items",
-            "description_en": "The list of sandboxes that match the filter conditions",
+            "description_en": "The list of sandboxes that meet the filter conditions",
             "description_zh": "符合筛选条件的 Sandbox 列表",
             "itemName": "items",
             "items": {
               "properties": {
                 "activeSessionCount": {
                   "backendName": "activeSessionCount",
-                  "description_en": "The number of active sessions for this sandbox",
+                  "description_en": "The number of active sessions in the sandbox",
                   "description_zh": "该 Sandbox 当前的活动 Session 数量",
                   "example": "1",
                   "format": "int32",
@@ -140,28 +153,28 @@
                 },
                 "createdAt": {
                   "backendName": "createdAt",
-                  "description_en": "The time when the sandbox was created, in RFC 3339 UTC format",
+                  "description_en": "The time when the sandbox was created. The time is in the RFC 3339 UTC format",
                   "description_zh": "Sandbox 创建时间，采用 RFC 3339 UTC 格式",
                   "example": "2026-08-29T00:00:00Z",
                   "type": "string"
                 },
                 "lastActiveAt": {
                   "backendName": "lastActiveAt",
-                  "description_en": "The time of the last activity on the sandbox, in RFC 3339 UTC format",
+                  "description_en": "The time of the last activity of the sandbox. The time is in the RFC 3339 UTC format",
                   "description_zh": "Sandbox 最近一次活动时间，采用 RFC 3339 UTC 格式",
                   "example": "2026-08-29T00:02:00Z",
                   "type": "string"
                 },
                 "lastHeartbeatAt": {
                   "backendName": "lastHeartbeatAt",
-                  "description_en": "The time of the last heartbeat from the sandbox, in RFC 3339 UTC format",
+                  "description_en": "The time of the last heartbeat of the sandbox. The time is in the RFC 3339 UTC format",
                   "description_zh": "Sandbox 最近一次心跳时间，采用 RFC 3339 UTC 格式",
                   "example": "2026-08-29T00:01:00Z",
                   "type": "string"
                 },
                 "maxConcurrentSessions": {
                   "backendName": "maxConcurrentSessions",
-                  "description_en": "The maximum number of concurrent sessions allowed for this sandbox, derived from the auto scaling configuration in effect at runtime. This value is empty if auto scaling is not enabled or the configuration is unavailable",
+                  "description_en": "The maximum number of concurrent sessions allowed for the sandbox. This value is obtained from the auto-scaling configuration that takes effect at runtime. If auto-scaling is disabled or the configuration is unavailable, this value is empty",
                   "description_zh": "该 Sandbox 允许的最大并发 Session 数，取自运行时生效的自动扩缩容配置；自动扩缩容未启用或配置不可用时为空",
                   "example": "7",
                   "format": "int32",
@@ -180,12 +193,21 @@
                     "TERMINATING",
                     "FAILED"
                   ],
+                  "enumValueTitles": {
+                    "FAILED": "运行失败",
+                    "HIBERNATED": "已休眠",
+                    "HIBERNATING": "休眠中",
+                    "PENDING": "创建或初始化中",
+                    "RESUMING": "恢复中",
+                    "RUNNING": "运行中",
+                    "TERMINATING": "销毁中"
+                  },
                   "example": "RUNNING",
                   "type": "string"
                 },
                 "sandboxId": {
                   "backendName": "sandboxId",
-                  "description_en": "The sandbox ID. You can call the ListSandboxes operation to query sandbox IDs",
+                  "description_en": "The sandbox ID, which can be queried by calling ListSandboxes",
                   "description_zh": "Sandbox ID，可通过 ListSandboxes 查询",
                   "example": "sbx-2",
                   "type": "string"
@@ -205,7 +227,7 @@
           },
           "message": {
             "backendName": "message",
-            "description_en": "The response message. The value success is returned if the request was successful",
+            "description_en": "The response message. The value is success when the request is successful",
             "description_zh": "响应消息，成功时为 success",
             "example": "success",
             "type": "string"
@@ -226,13 +248,13 @@
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful. Valid values:\ntrue: The request was successful.\nfalse: The request failed",
+            "description_en": "Indicates whether the request is successful. A value of true indicates success, and a value of false indicates failure",
             "description_zh": "请求是否成功。true 表示成功，false 表示失败",
             "type": "boolean"
           },
           "totalCount": {
             "backendName": "totalCount",
-            "description_en": "The total number of records that match the query conditions",
+            "description_en": "The total number of records that meet the query conditions",
             "description_zh": "符合本次查询条件的记录总数",
             "example": "27",
             "format": "int64",

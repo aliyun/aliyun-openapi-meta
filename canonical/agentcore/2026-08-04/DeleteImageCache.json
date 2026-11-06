@@ -3,8 +3,8 @@
   "cmd_full_name": "agentcore delete-image-cache",
   "cmd_name": "delete-image-cache",
   "deprecated": false,
-  "description_en": "Deletes an image cache",
-  "description_zh": "删除镜像缓存",
+  "description_en": "Deletes the image cache association in a workspace and checks for agent references and instance usage before submission",
+  "description_zh": "删除工作空间中的镜像缓存关联，提交前检查 Agent 引用和实例占用",
   "kebab_example": "aliyun agentcore delete-image-cache --biz-region-id cn-hangzhou --workspace-id ws-example --image-id img-example --region cn-hangzhou",
   "method": "DELETE",
   "multi_version": false,
@@ -22,8 +22,8 @@
   "parameters": [
     {
       "example": "cn-hangzhou",
-      "help_en": "The region ID of the service endpoint, which is determined by the selected regional endpoint",
-      "help_zh": "产品入口地域，由所选地域端点确定",
+      "help_en": "The region ID. It is passed as a query parameter and must match the selected region endpoint and the workspace region",
+      "help_zh": "产品入口地域，以 query 参数传入；必须与所选地域端点及 Workspace 地域一致",
       "location": "query",
       "name": "region_id",
       "options": [
@@ -35,8 +35,8 @@
     },
     {
       "example": "ws-example",
-      "help_en": "The ID of the current workspace. The server verifies the account, region, and resource ownership. This parameter cannot be omitted or used to access other workspaces",
-      "help_zh": "当前路由的 Workspace，服务端校验账号、地域及资源归属；不允许省略或访问其他 Workspace",
+      "help_en": "The workspace ID",
+      "help_zh": "工作空间 ID",
       "location": "query",
       "name": "workspace_id",
       "options": [
@@ -48,7 +48,7 @@
     },
     {
       "example": "img-example",
-      "help_en": "The ID of the image cache record",
+      "help_en": "The image cache ID",
       "help_zh": "缓存记录标识",
       "location": "path",
       "name": "image_id",
@@ -66,8 +66,8 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The request processing result",
-        "description_zh": "请求处理结果",
+        "description_en": "The delete image cache response",
+        "description_zh": "删除镜像缓存响应",
         "properties": {
           "code": {
             "backendName": "code",
@@ -86,9 +86,9 @@
             "properties": {
               "deletionPending": {
                 "backendName": "deletionPending",
-                "description_en": "Indicates whether the deletion is still in progress. A value of true indicates that the deletion is accepted but not yet complete, and a Get request returns DELETING until ImageCacheNotFound is explicitly returned. A value of false indicates that the current workspace is deleted or no longer exists",
-                "description_zh": "true 表示删除受理但尚未完成，Get 返回 DELETING，直至明确 ImageCacheNotFound；false 表示当前 Workspace 已删除或已不存在",
-                "example": "true",
+                "description_en": "Indicates whether the deletion is in progress. The current implementation always returns false. To confirm the visibility of the cache, call GetImageCache or ListImageCaches",
+                "description_zh": "删除进行中标志；当前实现固定返回 false，需要确认缓存可见性时通过 GetImageCache 或 ListImageCaches 查询",
+                "example": "false",
                 "required": true,
                 "title_en": "删除是否仍在进行",
                 "title_zh": "删除是否仍在进行",
@@ -96,8 +96,8 @@
               },
               "imageId": {
                 "backendName": "imageId",
-                "description_en": "The image cache ID, which matches the request. This ID is still returned even if the current workspace no longer exists",
-                "description_zh": "与请求一致，当前 Workspace 已不存在时仍回传请求 ID",
+                "description_en": "The image cache ID",
+                "description_zh": "镜像缓存 ID",
                 "example": "img-example",
                 "required": true,
                 "title_en": "镜像缓存 ID",
@@ -143,7 +143,7 @@
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request is successful. This does not indicate that the cache creation is complete",
+            "description_en": "Indicates whether the request is successful. A successful request does not mean that the cache creation is complete",
             "description_zh": "请求是否成功，不代表缓存制作完成",
             "example": "true",
             "required": true,

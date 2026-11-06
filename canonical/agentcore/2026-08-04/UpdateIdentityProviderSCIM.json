@@ -3,7 +3,7 @@
   "cmd_full_name": "agentcore update-identity-provider-scim",
   "cmd_name": "update-identity-provider-scim",
   "deprecated": false,
-  "description_en": "Enables or disables SCIM user synchronization independently. When enabled, the initial full import is asynchronously executed. You can query the results by calling GetIdentityProviderSCIM. The SAML logon configuration is retained",
+  "description_en": "Enables or disables SCIM user synchronization independently. When enabled, an initial full import is executed asynchronously, and the result can be queried by calling GetIdentityProviderSCIM. The SAML logon configuration is retained",
   "description_zh": "独立启用或关闭 SCIM 用户同步。开启时异步执行首次全量导入，结果通过 GetIdentityProviderSCIM 查询，保留 SAML 登录配置",
   "kebab_example": "aliyun agentcore update-identity-provider-scim --workspace-id ws-example --biz-body syncEnabled=true --region cn-hangzhou",
   "method": "PUT",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "ws-example",
-      "help_en": "Required. The ID of the target workspace. The request region must be the same as the region of the target workspace",
+      "help_en": "Required. The ID of the destination workspace. The region of the request must be the same as the region of the destination workspace",
       "help_zh": "必填，目标 Workspace 的标识；请求地域需与目标 Workspace 一致",
       "location": "path",
       "name": "workspace_id",
@@ -38,7 +38,7 @@
     {
       "fields": [
         {
-          "help_en": "Do not set this parameter to true during CustomSSO initialization. You can only update this parameter by calling UpdateIdentityProviderSCIM later. Determine the result based on operationStatus",
+          "help_en": "Specifies whether to enable SCIM synchronization. Do not set this parameter to true during CustomSSO initialization. You can update this parameter only by calling UpdateIdentityProviderSCIM. Check the operationStatus field to determine the result",
           "help_zh": "CustomSSO 初始化时不传 true；后续只能通过 UpdateIdentityProviderSCIM 更新，结果结合 operationStatus 判断",
           "name": "sync_enabled",
           "options": [
@@ -49,7 +49,7 @@
           "type": "bool"
         }
       ],
-      "help_en": "Submit business parameters as described in this API document. The body parameters of the public API are mapped to the backend wrapper by the gateway. Do not mix them with the body wrapper of the backend direct connection API",
+      "help_en": "The business parameters submitted in the request body. The body parameters of public APIs are mapped to backend wrappers by the gateway and must not be mixed with direct backend body wrappers",
       "help_zh": "按本接口说明提交业务参数；公开 API 的 body 参数由网关映射到后端包装，不混用后端直连 body 包装",
       "location": "formData",
       "name": "body",
@@ -71,7 +71,7 @@
         "properties": {
           "code": {
             "backendName": "code",
-            "description_en": "The business result code. If a failure occurs, handle the error based on the HTTP status code and the message",
+            "description_en": "If the call fails, troubleshoot the issue based on the HTTP status code and the message",
             "description_zh": "失败时结合 HTTP 状态及 message 处理",
             "example": "SUCCESS",
             "title_en": "业务结果代码",
@@ -80,17 +80,17 @@
           },
           "data": {
             "backendName": "data",
-            "description_en": "The original fields and the meaning of status are retained. The new scimStatus parameter corresponds to data.status in the query API, and operationStatus retains the status of the most recent SCIM task",
+            "description_en": "The original fields and the meaning of the status field are retained. The new scimStatus field corresponds to the data.status field in the query operation. The operationStatus field retains the status of the most recent SCIM task",
             "description_zh": "保留旧字段和 status 含义；新增 scimStatus 与查询接口 data.status 对应，operationStatus 保留最近 SCIM 任务状态",
             "properties": {
               "configuration": {
                 "backendName": "configuration",
-                "description_en": "The actual SAML configuration is read back on demand only by GetIdentityProvider. The SCIM query and prepare operations return the actual receiving status and URL",
+                "description_en": "The actual SAML configuration is read back on demand only by GetIdentityProvider. The SCIM query and preparation operations return the actual receiving status and URL",
                 "description_zh": "SAML 实际配置只在 GetIdentityProvider 按需回读；SCIM 查询和准备返回实际接收状态及 URL",
                 "properties": {
                   "bindingType": {
                     "backendName": "bindingType",
-                    "description_en": "HTTP-Redirect or HTTP-POST. Required when manually filled in. The query returns the short name",
+                    "description_en": "The SAML binding type. Valid values: HTTP-Redirect and HTTP-POST. Required when manually specified. The query returns the short name",
                     "description_zh": "HTTP-Redirect 或 HTTP-POST；手填时必填，查询返回短名称",
                     "example": "HTTP-Redirect",
                     "title_en": "SAML 绑定类型",
@@ -99,7 +99,7 @@
                   },
                   "entityId": {
                     "backendName": "entityId",
-                    "description_en": "Required when manually filled in. The value must be non-empty and cannot exceed 2,048 characters. Existing configurations cannot be replaced. This ID is different from the local entity ID queried by the SP",
+                    "description_en": "Required when manually specified. The value must be non-empty and up to 2,048 characters in length. You cannot change this value after it is configured. This value is different from the local entity ID queried by the SP",
                     "description_zh": "手填时必填，非空且不超过 2048 字符；已有配置不支持更换。与 SP 查询的我方 Entity ID 不同",
                     "example": "https://idp.example.com/entity",
                     "title_en": "IdP 实体标识",
@@ -108,7 +108,7 @@
                   },
                   "loginUrl": {
                     "backendName": "loginUrl",
-                    "description_en": "Required when manually filled in. The value must be an absolute HTTPS URL and cannot contain user credentials or fragments",
+                    "description_en": "Required when manually specified. The value must be an absolute HTTPS URL and must not contain user credentials or fragments",
                     "description_zh": "手填时必填，为绝对 HTTPS URL，不含用户凭据和片段",
                     "example": "https://idp.example.com/sso",
                     "title_en": "IdP 登录地址",
@@ -117,7 +117,7 @@
                   },
                   "ssoStatus": {
                     "backendName": "ssoStatus",
-                    "description_en": "The actual switch value, which is Enabled or Disabled. This value is not equivalent to the expected value of loginEnabled saved in AC",
+                    "description_en": "The actual switch value, which is Enabled or Disabled. This value is not equivalent to the expected value of loginEnabled saved by AgentCore",
                     "description_zh": "实际开关值 Enabled 或 Disabled，不等同 AC 保存的 loginEnabled 期望值",
                     "example": "Enabled",
                     "title_en": "AgentIdentity 实际 SSO 登录状态",
@@ -140,7 +140,7 @@
               },
               "eventSubscriptionCallbackUrl": {
                 "backendName": "eventSubscriptionCallbackUrl",
-                "description_en": "CustomSSO returns an empty string. The SCIM receiving URL must be obtained by using the SCIM query or prepare API. The example shows a JSON empty string \"\". The actual value does not contain double quotation marks",
+                "description_en": "For CustomSSO, an empty string is returned. You must obtain the SCIM receiving URL by calling the SCIM query or preparation operation. The example shows an empty JSON string. The actual value does not contain double quotation marks",
                 "description_zh": "CustomSSO 返回空字符串；SCIM 接收地址通过 SCIM 查询或准备接口取得。示例以 JSON 空字符串 \"\" 展示，实际值不包含双引号",
                 "example": "\"\"",
                 "title_en": "SAML 不使用厂商事件回调地址",
@@ -149,7 +149,7 @@
               },
               "identityProviderType": {
                 "backendName": "identityProviderType",
-                "description_en": "General CRUD operations support DingTalk, Feishu, and CustomSSO. SP queries support only CustomSSO. The SCIM path uses the CustomSSO shared pool",
+                "description_en": "The type of the identity provider. General CRUD operations support DingTalk, Feishu, and CustomSSO. Service provider (SP) queries support only CustomSSO. The SCIM path uses the CustomSSO shared pool",
                 "description_zh": "通用 CRUD 支持 DingTalk、Feishu、CustomSSO；SP 查询仅支持 CustomSSO。SCIM 路径固定使用 CustomSSO 共享池",
                 "example": "CustomSSO",
                 "title_en": "身份源类型 CustomSSO",
@@ -158,7 +158,7 @@
               },
               "loginCallbackUrl": {
                 "backendName": "loginCallbackUrl",
-                "description_en": "CustomSSO returns an empty string. The ACS URL for SAML must be obtained by using the SP query API. The example shows a JSON empty string \"\". The actual value does not contain double quotation marks",
+                "description_en": "For CustomSSO, an empty string is returned. You must obtain the Assertion Consumer Service (ACS) URL for SAML by calling the SP query operation. The example shows an empty JSON string. The actual value does not contain double quotation marks",
                 "description_zh": "CustomSSO 返回空字符串；SAML 的 ACS 地址应通过 SP 查询接口取得。示例以 JSON 空字符串 \"\" 展示，实际值不包含双引号",
                 "example": "\"\"",
                 "title_en": "SAML 不使用厂商回调地址",
@@ -167,7 +167,7 @@
               },
               "loginEnabled": {
                 "backendName": "loginEnabled",
-                "description_en": "Do not set this parameter to true during CustomSSO initialization. A valid SAML configuration must be saved before enabling. Disabling the feature does not delete the configuration. If an asynchronous failure occurs, this expected value does not indicate that the upstream configuration has taken effect",
+                "description_en": "Specifies whether logon is enabled. Do not set this parameter to true during CustomSSO initialization. You must save a valid SAML configuration before enabling logon. Disabling logon does not delete the configuration. If an asynchronous task fails, this expected value does not indicate that the change has taken effect on the upstream side",
                 "description_zh": "CustomSSO 初始化时不传 true；启用前须保存有效 SAML 配置。关闭不删除配置。异步失败时该期望值不代表上游已生效",
                 "title_en": "登录开关",
                 "title_zh": "登录开关",
@@ -175,12 +175,12 @@
               },
               "metadata": {
                 "backendName": "metadata",
-                "description_en": "Vendor parameters are used for DingTalk and Feishu. CustomSSO updates use protocol and saml, and do not accept this field. The return value does not contain vendor keys",
+                "description_en": "Vendor parameters are used for DingTalk and Feishu. CustomSSO updates use the protocol and saml fields and do not accept this field. The return value does not contain vendor keys",
                 "description_zh": "厂商参数用于 DingTalk、Feishu；CustomSSO 更新使用 protocol、saml，不接受此字段。返回值不含厂商密钥",
                 "properties": {
                   "binding": {
                     "backendName": "binding",
-                    "description_en": "The SAML binding URI in the historical metadata snapshot. For CustomSSO updates, use saml.bindingType",
+                    "description_en": "The SAML binding URI in the historical metadata snapshot. For CustomSSO updates, use the saml.bindingType field",
                     "description_zh": "历史 metadata 快照中的 SAML Binding URI；CustomSSO 更新请使用 saml.bindingType",
                     "example": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect",
                     "title_en": "规范化 SAML 绑定标识",
@@ -189,7 +189,7 @@
                   },
                   "certificates": {
                     "backendName": "certificates",
-                    "description_en": "The certificate string in the historical metadata snapshot. To edit the configuration, use saml.x509Certificates and do not submit the old metadata",
+                    "description_en": "The certificate string in the historical metadata snapshot. To edit the configuration, use the saml.x509Certificates field and do not submit the old metadata",
                     "description_zh": "历史 metadata 快照中的证书串；编辑配置使用 saml.x509Certificates，不提交旧 metadata",
                     "example": "MIICwDCCAaigAwIBAgIULlsHLfcADyBax5ZtFlj+YGzZVo0wDQYJKoZIhvcNAQELBQAwGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMB4XDTI2MDEwMTAwMDAwMFoXDTM2MDEwMTAwMDAwMFowGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAto0DN0W1CrPRzK9QZ9A1aApb4Lg8oGlp2c0PbN3LokXe/HzwxCMXx65IDnrenttxzTwp9BgUnUN/3LRzWaOL2UQ/vNYNW9LFLkI1T64UPyI7eyi28YlALhb41xkYhEp7rz+MjqifBzVZeTDUxBYtbK2hAhbYEL1+udwsXEx0KB7xuQ/rbI2OKeqAEAD1tfYg7T/SM2wrXNYhx+o1HtchM4/0I8Okkk27JQ4y3ofzC5sTySmFF1Y7XcpSd+5WSyazedhkAieo8AB01DkJV6nnKfH8sH0EBsnH3FP8FhqCLrIeEkjX9B9OcIRLGjiZqx4u/ryW1QhMldnv+pFfNjWy/wIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQC1hSQG8AwtGOoX2gKBK4Hi5XBrBreij8WlLTUWld0FINQ0Rg84f/27CjDthywj6wgxCesCuOVFhpxQa1UacsP/Gcai1aKABtLWImcaWECRYK5gDkwhTMFKM9mXA26hH1l4v/UR2iTpEK9H78egC4W7bs2LDTpPryuaNKTqP2O0tMbNkAHB8yecz5LxHXnxadL9Egow25g2RClvpifWqDnuS9TSbKkIWLcPLjocJj2K9ILpBwhXiXi/BiSgyYTLiYvVvih9vX4s+hKGZNJc0j92YLiOHDF0XH1oxgdVjfTmRiedeb2VZJZElptD92z0AqFR7z2d5B+OqpPA2gjuMLV5",
                     "title_en": "规范化 SAML 证书内容",
@@ -198,7 +198,7 @@
                   },
                   "entityId": {
                     "backendName": "entityId",
-                    "description_en": "Required when manually filled in. The value must be non-empty and cannot exceed 2,048 characters. Existing configurations cannot be replaced. This ID is different from the local entity ID queried by the SP",
+                    "description_en": "Required when manually specified. The value must be non-empty and up to 2,048 characters in length. You cannot change this value after it is configured. This value is different from the local entity ID queried by the SP",
                     "description_zh": "手填时必填，非空且不超过 2048 字符；已有配置不支持更换。与 SP 查询的我方 Entity ID 不同",
                     "example": "https://idp.example.com/entity",
                     "title_en": "IdP 实体标识",
@@ -207,7 +207,7 @@
                   },
                   "loginUrl": {
                     "backendName": "loginUrl",
-                    "description_en": "Required when manually filled in. The value must be an absolute HTTPS URL and cannot contain user credentials or fragments",
+                    "description_en": "Required when manually specified. The value must be an absolute HTTPS URL and must not contain user credentials or fragments",
                     "description_zh": "手填时必填，为绝对 HTTPS URL，不含用户凭据和片段",
                     "example": "https://idp.example.com/sso",
                     "title_en": "IdP SSO 登录地址",
@@ -221,8 +221,8 @@
               },
               "operationStatus": {
                 "backendName": "operationStatus",
-                "description_en": "When the status is PENDING or RUNNING, poll GetIdentityProviderSCIM. The facts of failure, pause, and cancellation are retained. This status does not indicate the SAML status",
-                "description_zh": "PENDING/RUNNING 时轮询 GetIdentityProviderSCIM；保留失败、暂停和取消事实，不表示 SAML 状态",
+                "description_en": "The original status of the most recent independent SCIM operation task. An empty string (\"\") is returned if no historical tasks exist",
+                "description_zh": "最近一次独立 SCIM 操作任务的原始状态；没有历史任务时返回空字符串（\"\"）",
                 "enum": [
                   "PENDING",
                   "RUNNING",
@@ -238,7 +238,7 @@
               },
               "protocol": {
                 "backendName": "protocol",
-                "description_en": "Only SAML is supported. If no valid configuration is saved, this parameter may not be returned. OIDC placeholder initialization is not supported",
+                "description_en": "Only SAML is supported. This field may not be returned if no valid configuration is saved. Initialization with an OIDC placeholder is not supported",
                 "description_zh": "当前仅支持 SAML；未保存有效配置时可不返回。不支持用 OIDC 占位初始化",
                 "example": "SAML",
                 "title_en": "登录协议",
@@ -247,12 +247,12 @@
               },
               "saml": {
                 "backendName": "saml",
-                "description_en": "The input supports either XML or complete manual entry. The query returns the standardized configuration and does not echo the original XML. This parameter can be omitted if it is not configured",
+                "description_en": "You can specify either XML or manual fields for the input. The query returns a standardized configuration and does not return the original XML. This field can be omitted if it is not configured",
                 "description_zh": "输入支持 XML 与完整手填二选一。查询返回标准化配置，不回显原始 XML；未配置时可省略",
                 "properties": {
                   "bindingType": {
                     "backendName": "bindingType",
-                    "description_en": "HTTP-Redirect or HTTP-POST. Required when manually filled in. The query returns the short name",
+                    "description_en": "The SAML binding type. Valid values: HTTP-Redirect and HTTP-POST. Required when manually specified. The query returns the short name",
                     "description_zh": "HTTP-Redirect 或 HTTP-POST；手填时必填，查询返回短名称",
                     "example": "HTTP-Redirect",
                     "title_en": "SAML 绑定类型",
@@ -261,7 +261,7 @@
                   },
                   "entityId": {
                     "backendName": "entityId",
-                    "description_en": "Required when manually filled in. The value must be non-empty and cannot exceed 2,048 characters. Existing configurations cannot be replaced. This ID is different from the local entity ID queried by the SP",
+                    "description_en": "Required when manually specified. The value must be non-empty and up to 2,048 characters in length. You cannot change this value after it is configured. This value is different from the local entity ID queried by the SP",
                     "description_zh": "手填时必填，非空且不超过 2048 字符；已有配置不支持更换。与 SP 查询的我方 Entity ID 不同",
                     "example": "https://idp.example.com/entity",
                     "title_en": "IdP 实体标识",
@@ -270,7 +270,7 @@
                   },
                   "loginUrl": {
                     "backendName": "loginUrl",
-                    "description_en": "Required when manually filled in. The value must be an absolute HTTPS URL and cannot contain user credentials or fragments",
+                    "description_en": "Required when manually specified. The value must be an absolute HTTPS URL and must not contain user credentials or fragments",
                     "description_zh": "手填时必填，为绝对 HTTPS URL，不含用户凭据和片段",
                     "example": "https://idp.example.com/sso",
                     "title_en": "IdP SSO 登录地址",
@@ -279,7 +279,7 @@
                   },
                   "x509Certificates": {
                     "backendName": "x509Certificates",
-                    "description_en": "Required when manually filled in. The value must be a non-empty array and use PEM X.509 certificate text. The current validity period is verified. A maximum of two certificates are allowed after deduplication",
+                    "description_en": "Required when manually specified. The value must be a non-empty array of PEM X.509 certificate texts. The system verifies the current validity period. A maximum of two certificates are allowed after deduplication",
                     "description_zh": "手填时必填非空数组，使用 PEM X.509 证书文本；校验当前有效期，去重后最多 2 张",
                     "example": "[\"-----BEGIN CERTIFICATE-----\\\\nMIICwDCCAaigAwIBAgIULlsHLfcADyBax5ZtFlj+YGzZVo0wDQYJKoZIhvcNAQEL\\\\nBQAwGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMB4XDTI2MDEwMTAwMDAwMFoX\\\\nDTM2MDEwMTAwMDAwMFowGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMIIBIjAN\\\\nBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAto0DN0W1CrPRzK9QZ9A1aApb4Lg8\\\\noGlp2c0PbN3LokXe/HzwxCMXx65IDnrenttxzTwp9BgUnUN/3LRzWaOL2UQ/vNYN\\\\nW9LFLkI1T64UPyI7eyi28YlALhb41xkYhEp7rz+MjqifBzVZeTDUxBYtbK2hAhbY\\\\nEL1+udwsXEx0KB7xuQ/rbI2OKeqAEAD1tfYg7T/SM2wrXNYhx+o1HtchM4/0I8Ok\\\\nkk27JQ4y3ofzC5sTySmFF1Y7XcpSd+5WSyazedhkAieo8AB01DkJV6nnKfH8sH0E\\\\nBsnH3FP8FhqCLrIeEkjX9B9OcIRLGjiZqx4u/ryW1QhMldnv+pFfNjWy/wIDAQAB\\\\nMA0GCSqGSIb3DQEBCwUAA4IBAQC1hSQG8AwtGOoX2gKBK4Hi5XBrBreij8WlLTUW\\\\nld0FINQ0Rg84f/27CjDthywj6wgxCesCuOVFhpxQa1UacsP/Gcai1aKABtLWImca\\\\nWECRYK5gDkwhTMFKM9mXA26hH1l4v/UR2iTpEK9H78egC4W7bs2LDTpPryuaNKTq\\\\nP2O0tMbNkAHB8yecz5LxHXnxadL9Egow25g2RClvpifWqDnuS9TSbKkIWLcPLjoc\\\\nJj2K9ILpBwhXiXi/BiSgyYTLiYvVvih9vX4s+hKGZNJc0j92YLiOHDF0XH1oxgdV\\\\njfTmRiedeb2VZJZElptD92z0AqFR7z2d5B+OqpPA2gjuMLV5\\\\n-----END CERTIFICATE-----\"]",
                     "items": {
@@ -301,7 +301,7 @@
               },
               "scimStatus": {
                 "backendName": "scimStatus",
-                "description_en": "The independent SCIM status. This status does not change the meaning of the original status for shared resources and logon configurations. This parameter corresponds to data.status in the query API",
+                "description_en": "The independent SCIM status. This field does not change the meaning of shared resources and logon configurations in the original status field. This field corresponds to the data.status field in the query operation",
                 "description_zh": "独立 SCIM 状态；不改变原 status 的共享资源及登录配置含义。与查询接口的 data.status 对应",
                 "enum": [
                   "UNCONFIGURED",
@@ -318,7 +318,7 @@
               },
               "status": {
                 "backendName": "status",
-                "description_en": "The user pool lifecycle and logon configuration task status of CustomSSO. This status does not indicate the SCIM operation result. You can query the SCIM switch result by using GetIdentityProviderSCIM.operationStatus. You cannot use this status to determine whether all protocols are configured",
+                "description_en": "The lifecycle of the CustomSSO user pool and the task status of the logon configuration. This field does not indicate the SCIM operation result. You can query the SCIM switch result by checking the operationStatus field returned by GetIdentityProviderSCIM. You cannot use this field to determine whether all protocols are configured",
                 "description_zh": "CustomSSO 的用户池生命周期及登录配置任务状态，不表示 SCIM 操作结果。SCIM 开关结果通过 GetIdentityProviderSCIM.operationStatus 查询；不能据此判断各协议均已配置",
                 "example": "READY",
                 "title_en": "共享资源及登录配置操作状态",
@@ -327,7 +327,7 @@
               },
               "syncEnabled": {
                 "backendName": "syncEnabled",
-                "description_en": "Do not set this parameter to true during CustomSSO initialization. You can only update this parameter by calling UpdateIdentityProviderSCIM later. Determine the result based on operationStatus",
+                "description_en": "Specifies whether to enable SCIM synchronization. Do not set this parameter to true during CustomSSO initialization. You can update this parameter only by calling UpdateIdentityProviderSCIM. Check the operationStatus field to determine the result",
                 "description_zh": "CustomSSO 初始化时不传 true；后续只能通过 UpdateIdentityProviderSCIM 更新，结果结合 operationStatus 判断",
                 "title_en": "本地用户同步开关",
                 "title_zh": "本地用户同步开关",
@@ -344,7 +344,7 @@
               },
               "workspaceId": {
                 "backendName": "workspaceId",
-                "description_en": "Required. The ID of the target workspace. The request region must be the same as the region of the target workspace",
+                "description_en": "Required. The ID of the destination workspace. The region of the request must be the same as the region of the destination workspace",
                 "description_zh": "必填，目标 Workspace 的标识；请求地域需与目标 Workspace 一致",
                 "example": "ws-example",
                 "title_en": "工作空间 ID",
@@ -358,7 +358,7 @@
           },
           "httpStatusCode": {
             "backendName": "httpStatusCode",
-            "description_en": "The processing status of the current request. This status is not equivalent to the final result of the background node",
+            "description_en": "The processing status of the current request. This status is not equivalent to the final result of the background task",
             "description_zh": "本次请求的处理状态，不等同后台任务最终结果",
             "example": "200",
             "format": "int32",
@@ -368,7 +368,7 @@
           },
           "message": {
             "backendName": "message",
-            "description_en": "The message indicating that the request is accepted or a fault occurs. Check the result of the asynchronous task by calling the corresponding query API",
+            "description_en": "The message about request acceptance or errors. For an asynchronous task, verify the result by calling the corresponding query operation",
             "description_zh": "请求受理或错误消息；异步任务结果需按对应查询接口核对",
             "example": "success",
             "title_en": "结果消息",
@@ -377,7 +377,7 @@
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The ID of the request. You can use the ID to associate the call with troubleshooting. Retain the ID when a failure occurs",
+            "description_en": "The request ID. You can use this ID to associate the call with troubleshooting. Retain this ID if the call fails",
             "description_zh": "用于关联本次调用与排障，失败时请保留",
             "example": "request-example",
             "title_en": "请求 ID",
@@ -386,7 +386,7 @@
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the current request is processed successfully. A value of true indicates that the request is processed successfully. For asynchronous write operations, you must continue to query the task results",
+            "description_en": "Indicates whether the current request was processed successfully. A value of true indicates success. For asynchronous writes, you must continue to query the task result",
             "description_zh": "true 表示本次请求处理成功；异步写入仍需继续查询任务结果",
             "title_en": "本次请求是否成功",
             "title_zh": "本次请求是否成功",

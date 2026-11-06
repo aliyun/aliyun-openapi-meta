@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun agentcore PUT /workspaces/ws-123456/identity-providers/DingTalk --region cn-hangzhou --header \"Content-Type=application/json\" --version 2026-08-04 --force",
+  "camel_example": "aliyun agentcore PUT /workspaces/ws-example/identity-providers/CustomSSO --region cn-hangzhou --header \"Content-Type=application/json\" --version 2026-08-04 --force",
   "cmd_full_name": "agentcore update-identity-provider",
   "cmd_name": "update-identity-provider",
   "deprecated": false,
-  "description_en": "Modifies the logon configuration of a bound identity provider in a specified workspace. DingTalk and Feishu support the logon switch, incremental synchronization switch, application configuration, and synchronization scope. CustomSSO supports SAML configuration and the logon switch. Actual updates take effect asynchronously. Call GetIdentityProvider to query the status",
+  "description_en": "Modifies the logon configuration of a bound identity provider in a specified workspace. DingTalk and Feishu support the logon switch, incremental synchronization switch, application configuration, and synchronization scope. CustomSSO supports SAML configuration and the logon switch. Updates take effect asynchronously. Call GetIdentityProvider to query the status",
   "description_zh": "修改指定工作空间已绑定身份源的登录配置。DingTalk、Feishu 支持登录开关、增量同步开关、应用配置和同步范围；CustomSSO 支持 SAML 配置和登录开关。实际更新异步生效，请通过 GetIdentityProvider 查询状态",
-  "kebab_example": "aliyun agentcore update-identity-provider --workspace-id ws-123456 --identity-provider-type DingTalk --region cn-hangzhou",
+  "kebab_example": "aliyun agentcore update-identity-provider --workspace-id ws-example --identity-provider-type CustomSSO --region cn-hangzhou",
   "method": "PUT",
   "multi_version": false,
   "name": "UpdateIdentityProvider",
@@ -23,9 +23,9 @@
   },
   "parameters": [
     {
-      "example": "ws-123456",
-      "help_en": "The ID of the workspace to which the identity provider belongs. The request region must be the same as the region of the target workspace",
-      "help_zh": "身份源所属的工作空间 ID。请求地域应与目标工作空间一致",
+      "example": "ws-example",
+      "help_en": "Required. The ID of the destination workspace. The region of the request must be the same as the region of the destination workspace",
+      "help_zh": "必填，目标 Workspace 的标识；请求地域需与目标 Workspace 一致",
       "location": "path",
       "name": "workspace_id",
       "options": [
@@ -41,9 +41,9 @@
         "Feishu",
         "CustomSSO"
       ],
-      "example": "DingTalk",
-      "help_en": "The type of the identity provider. DingTalk indicates DingTalk. Feishu indicates Feishu. CustomSSO indicates a custom enterprise identity provider connected through SAML. The value must be the same as the type of the identity provider bound to the current workspace",
-      "help_zh": "身份源类型。DingTalk：钉钉；Feishu：飞书；CustomSSO：通过 SAML 接入的自定义企业身份源。应与当前工作空间已绑定的身份源类型一致",
+      "example": "CustomSSO",
+      "help_en": "General CRUD operations support DingTalk, Feishu, and CustomSSO. SP queries support only CustomSSO. The SCIM path uses the CustomSSO shared pool",
+      "help_zh": "通用 CRUD 支持 DingTalk、Feishu、CustomSSO；SP 查询仅支持 CustomSSO。SCIM 路径固定使用 CustomSSO 共享池",
       "location": "path",
       "name": "identity_provider_type",
       "options": [
@@ -56,8 +56,8 @@
     {
       "fields": [
         {
-          "help_en": "Specifies whether to allow logon by using this identity provider. If this field is omitted or set to null during an update, the original value is retained. For CustomSSO, a valid SAML configuration must exist before enabling logon. Disabling logon does not delete the saved SAML or SCIM configuration",
-          "help_zh": "是否允许使用该身份源登录。更新时省略或为 null 保留原值。CustomSSO 开启登录前须已有有效 SAML 配置；关闭登录不删除已保存的 SAML 或 SCIM 配置",
+          "help_en": "Do not set this parameter to true during CustomSSO initialization. A valid SAML configuration must be saved before you enable logon. Disabling logon does not delete the configuration. If an asynchronous failure occurs, this expected value does not mean that the change has taken effect upstream",
+          "help_zh": "CustomSSO 初始化时不传 true；启用前须保存有效 SAML 配置。关闭不删除配置。异步失败时该期望值不代表上游已生效",
           "name": "login_enabled",
           "options": [
             "--login-enabled"
@@ -71,8 +71,8 @@
           "fields": [
             {
               "example": "cli_exampleappid01",
-              "help_en": "The App ID of the Feishu application. If this field is omitted during an update, the existing value is retained. If explicitly submitted, the value must be non-empty. The merged configuration for Feishu must include this field",
-              "help_zh": "飞书应用的 App ID。更新时省略保留已有值；显式提交时须为非空值。飞书合并后的配置必须包含该字段",
+              "help_en": "The App ID of the Feishu application. You can omit this parameter during an update to retain the saved value. The merged Feishu configuration of the old and new values must include this parameter",
+              "help_zh": "飞书 App ID。更新时可省略并保留已保存值；新旧值合并后的飞书配置须包含此项",
               "name": "app_id",
               "options": [
                 "--app-id"
@@ -83,8 +83,8 @@
             },
             {
               "example": "dingexampleappkey01",
-              "help_en": "The AppKey of the DingTalk application. If this field is omitted during an update, the existing value is retained. If explicitly submitted, the value must be non-empty. The merged configuration for DingTalk must include this field",
-              "help_zh": "钉钉应用的 AppKey。更新时省略保留已有值；显式提交时须为非空值。钉钉合并后的配置必须包含该字段",
+              "help_en": "The AppKey of the DingTalk application. You can omit this parameter during an update to retain the saved value. The merged DingTalk configuration of the old and new values must include this parameter",
+              "help_zh": "钉钉 AppKey。更新时可省略并保留已保存值；新旧值合并后的钉钉配置须包含此项",
               "name": "app_key",
               "options": [
                 "--app-key"
@@ -95,8 +95,8 @@
             },
             {
               "example": "example-app-secret",
-              "help_en": "The AppSecret of the DingTalk or Feishu application. If this field is omitted during an update, the existing secret is retained and does not need to be retransmitted each time. If explicitly submitted, the value must be non-empty, and the merged configuration must include this field. This is a sensitive input and is not echoed in queries. The example is a fictitious value",
-              "help_zh": "钉钉或飞书应用的 AppSecret。更新时省略保留已有密钥，无需每次重传；显式提交时须为非空值，合并后的配置必须包含该字段。属于敏感输入，查询不回显。示例为虚构值",
+              "help_en": "The secret of the vendor application. If you omit this parameter during an update, the saved value is retained. You can submit only this field to update the secret. An explicit value cannot be empty. This is a sensitive input and is not echoed in the response",
+              "help_zh": "厂商应用密钥。更新时省略保留已保存值，可单独提交此字段更新密钥；显式值不能为空。敏感输入，响应不回显",
               "name": "app_secret",
               "options": [
                 "--app-secret"
@@ -107,8 +107,8 @@
             },
             {
               "example": "dingexamplecorpid01",
-              "help_en": "The CorpId of the organization to which the DingTalk application belongs. If this field is omitted during an update, the existing value is retained. If explicitly submitted, the value must be non-empty and consistent with the organization to which the application belongs. The merged configuration for DingTalk must include this field",
-              "help_zh": "钉钉应用所属组织的 CorpId。更新时省略保留已有值；显式提交时须为非空值，且须与应用所属组织一致。钉钉合并后的配置必须包含该字段",
+              "help_en": "The CorpId of the DingTalk enterprise. You can omit this parameter during an update to retain the saved value. The merged DingTalk configuration of the old and new values must include this parameter",
+              "help_zh": "钉钉企业 CorpId。更新时可省略并保留已保存值；新旧值合并后的钉钉配置须包含此项",
               "name": "corp_id",
               "options": [
                 "--corp-id"
@@ -119,8 +119,8 @@
             },
             {
               "example": "example-encrypt-key",
-              "help_en": "The encryption key for vendor event callbacks, which must be consistent with the vendor application configuration. If this field is omitted during an update, the existing value is retained. When incremental synchronization is enabled, the merged configuration must include this field. This is a sensitive input and is not echoed in queries",
-              "help_zh": "厂商事件回调的加密密钥，应与厂商应用配置一致。更新时省略保留已有值；启用增量同步时，合并后的配置必须包含该字段。属于敏感输入，查询不回显",
+              "help_en": "Required when you enable synchronization for DingTalk or Feishu. This is a sensitive input and is unrelated to the SCIM token",
+              "help_zh": "DingTalk、Feishu 开启同步时必填，敏感输入；与 SCIM Token 无关",
               "name": "encrypt_key",
               "options": [
                 "--encrypt-key"
@@ -131,8 +131,8 @@
             },
             {
               "example": "example-verification-token",
-              "help_en": "The verification token for vendor event callbacks, which must be consistent with the vendor application configuration. If this field is omitted during an update, the existing value is retained. When incremental synchronization is enabled, the merged configuration must include this field. This is a sensitive input and is not echoed in queries",
-              "help_zh": "厂商事件回调的校验令牌，应与厂商应用配置一致。更新时省略保留已有值；启用增量同步时，合并后的配置必须包含该字段。属于敏感输入，查询不回显",
+              "help_en": "Required when you enable synchronization for DingTalk or Feishu. This is a sensitive input and is unrelated to the SCIM token",
+              "help_zh": "DingTalk、Feishu 开启同步时必填，敏感输入；与 SCIM Token 无关",
               "name": "verification_token",
               "options": [
                 "--verification-token"
@@ -142,8 +142,8 @@
               "type": "string"
             }
           ],
-          "help_en": "Applies only to DingTalk and Feishu. The application configuration is merged by field. Omitted fields and existing keys retain their original values. Explicitly submitted fields must not be null, empty strings, or blank strings. The merged configuration must meet the complete configuration requirements of the vendor. This field is not accepted for CustomSSO",
-          "help_zh": "仅适用于 DingTalk、Feishu，按字段合并应用配置。省略字段及已有密钥保留原值；显式提交的字段不得为 null、空串或空白串，合并后须满足该厂商的完整配置要求。CustomSSO 不接受此字段",
+          "help_en": "The vendor configurations for DingTalk and Feishu support partial updates. Omitted fields retain their saved values. Submitted values cannot be null, empty strings, or blank strings. The complete configuration is verified after merging. CustomSSO updates use protocol and saml, and do not accept this field. The response does not contain vendor keys",
+          "help_zh": "DingTalk、Feishu 的厂商配置支持部分更新：省略字段保留已保存值，提交值不得为 null、空串或空白串，合并后校验完整配置。CustomSSO 更新使用 protocol、saml，不接受此字段；返回值不含厂商密钥",
           "name": "metadata",
           "options": [
             "--metadata"
@@ -157,8 +157,8 @@
             "SAML"
           ],
           "example": "SAML",
-          "help_en": "The logon protocol, which applies only to CustomSSO. Currently, only SAML is supported. This field is not accepted for DingTalk and Feishu. When submitted with a non-empty saml configuration, this field can be omitted and is processed as SAML by the server",
-          "help_zh": "仅适用于 CustomSSO 的登录协议，当前仅支持 SAML。DingTalk、Feishu 不接受此字段。与非空 saml 配置一同提交时，可省略，由服务端按 SAML 处理",
+          "help_en": "The logon protocol for CustomSSO. Currently, only SAML is supported. You can pass SAML when saving the SAML configuration. You can omit this parameter if you only modify loginEnabled. DingTalk and Feishu do not accept this field",
+          "help_zh": "CustomSSO 登录协议，当前仅支持 SAML。保存 SAML 配置时可传入 SAML；只修改 loginEnabled 时可省略。钉钉、飞书不接受此字段",
           "name": "protocol",
           "options": [
             "--protocol"
@@ -171,8 +171,8 @@
           "fields": [
             {
               "example": "HTTP-Redirect",
-              "help_en": "The binding type when manually entering the SAML configuration. Valid values: HTTP-Redirect and HTTP-POST. This field must be submitted together with entityId, loginUrl, and x509Certificates, and cannot be mixed with metadataXml",
-              "help_zh": "手填 SAML 配置时的绑定类型，支持 HTTP-Redirect 和 HTTP-POST；须与 entityId、loginUrl、x509Certificates 一同提交，不能与 metadataXml 混用",
+              "help_en": "HTTP-Redirect or HTTP-POST. Required for manual entry. The query returns the short name",
+              "help_zh": "HTTP-Redirect 或 HTTP-POST；手填时必填，查询返回短名称",
               "name": "binding_type",
               "options": [
                 "--binding-type"
@@ -183,8 +183,8 @@
             },
             {
               "example": "https://idp.example.com/entity",
-              "help_en": "The entity identifier of the enterprise IdP. This field is required when manually entering the configuration. The value must be non-empty and contain up to 2,048 characters, and cannot be changed after saving. This field must be submitted together with loginUrl, bindingType, and x509Certificates, and cannot be mixed with metadataXml",
-              "help_zh": "企业 IdP 的实体标识。手填时必填，须非空且不超过 2048 字符；保存后不支持更换。须与 loginUrl、bindingType、x509Certificates 一同提交，不能与 metadataXml 混用",
+              "help_en": "Required for manual entry. It must be non-empty and contain a maximum of 2,048 characters. The existing configuration does not support replacement. It is different from our Entity ID returned by the SP query",
+              "help_zh": "手填时必填，非空且不超过 2048 字符；已有配置不支持更换。与 SP 查询的我方 Entity ID 不同",
               "name": "entity_id",
               "options": [
                 "--entity-id"
@@ -195,8 +195,8 @@
             },
             {
               "example": "https://idp.example.com/sso",
-              "help_en": "The SSO logon URL of the enterprise IdP. This field is required when manually entering the configuration. The value must be an absolute HTTPS URL without user credentials and fragments. This field must be submitted together with entityId, bindingType, and x509Certificates, and cannot be mixed with metadataXml",
-              "help_zh": "企业 IdP 的 SSO 登录地址。手填时必填，须为不含用户凭据和片段的绝对 HTTPS URL；须与 entityId、bindingType、x509Certificates 一同提交，不能与 metadataXml 混用",
+              "help_en": "Required for manual entry. It must be an absolute HTTPS URL and cannot contain user credentials or fragments",
+              "help_zh": "手填时必填，为绝对 HTTPS URL，不含用户凭据和片段",
               "name": "login_url",
               "options": [
                 "--login-url"
@@ -207,8 +207,8 @@
             },
             {
               "example": "<EntityDescriptor xmlns=\"urn:oasis:names:tc:SAML:2.0:metadata\" entityID=\"https://idp.example.com/entity\"><IDPSSODescriptor protocolSupportEnumeration=\"urn:oasis:names:tc:SAML:2.0:protocol\"><KeyDescriptor use=\"signing\"><KeyInfo xmlns=\"http://www.w3.org/2000/09/xmldsig#\"><X509Data><X509Certificate>MIICwDCCAaigAwIBAgIULlsHLfcADyBax5ZtFlj+YGzZVo0wDQYJKoZIhvcNAQELBQAwGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMB4XDTI2MDEwMTAwMDAwMFoXDTM2MDEwMTAwMDAwMFowGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAto0DN0W1CrPRzK9QZ9A1aApb4Lg8oGlp2c0PbN3LokXe/HzwxCMXx65IDnrenttxzTwp9BgUnUN/3LRzWaOL2UQ/vNYNW9LFLkI1T64UPyI7eyi28YlALhb41xkYhEp7rz+MjqifBzVZeTDUxBYtbK2hAhbYEL1+udwsXEx0KB7xuQ/rbI2OKeqAEAD1tfYg7T/SM2wrXNYhx+o1HtchM4/0I8Okkk27JQ4y3ofzC5sTySmFF1Y7XcpSd+5WSyazedhkAieo8AB01DkJV6nnKfH8sH0EBsnH3FP8FhqCLrIeEkjX9B9OcIRLGjiZqx4u/ryW1QhMldnv+pFfNjWy/wIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQC1hSQG8AwtGOoX2gKBK4Hi5XBrBreij8WlLTUWld0FINQ0Rg84f/27CjDthywj6wgxCesCuOVFhpxQa1UacsP/Gcai1aKABtLWImcaWECRYK5gDkwhTMFKM9mXA26hH1l4v/UR2iTpEK9H78egC4W7bs2LDTpPryuaNKTqP2O0tMbNkAHB8yecz5LxHXnxadL9Egow25g2RClvpifWqDnuS9TSbKkIWLcPLjocJj2K9ILpBwhXiXi/BiSgyYTLiYvVvih9vX4s+hKGZNJc0j92YLiOHDF0XH1oxgdVjfTmRiedeb2VZJZElptD92z0AqFR7z2d5B+OqpPA2gjuMLV5</X509Certificate></X509Data></KeyInfo></KeyDescriptor><SingleSignOnService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect\" Location=\"https://idp.example.com/sso\"/></IDPSSODescriptor></EntityDescriptor>",
-              "help_en": "The original SAML metadata XML text of the enterprise IdP, not a URL or file path. The maximum size is 1 MiB. The text must contain a single EntityDescriptor. DTD and external entities are prohibited. This field cannot be mixed with the four manually entered configuration fields. After saving, queries return the standardized configuration and do not echo the original XML text",
-              "help_zh": "企业 IdP 的 SAML Metadata XML 原文，不是 URL 或文件路径。最多 1 MiB，须包含单个 EntityDescriptor，禁止 DTD 和外部实体。不能与四项手填配置混用。保存后查询返回标准化配置，不回显 XML 原文",
+              "help_en": "The input is the XML text of a single IdP EntityDescriptor, with a maximum size of 1 MiB. It cannot be a URL or file path. It is mutually exclusive with the four manually entered fields. DTDs and external entities are prohibited. If both SSO bindings are declared at the same time, HTTP-POST takes precedence",
+              "help_zh": "输入为单个 IdP EntityDescriptor 的 XML 文本，最大 1 MiB，不是 URL 或文件路径；与四个手填字段互斥，禁止 DTD 和外部实体；同时声明两种 SSO Binding 时优先 HTTP-POST",
               "name": "metadata_xml",
               "options": [
                 "--metadata-xml"
@@ -222,8 +222,8 @@
                 "type": "string"
               },
               "example": "[\"-----BEGIN CERTIFICATE-----\\\\nMIICwDCCAaigAwIBAgIULlsHLfcADyBax5ZtFlj+YGzZVo0wDQYJKoZIhvcNAQEL\\\\nBQAwGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMB4XDTI2MDEwMTAwMDAwMFoX\\\\nDTM2MDEwMTAwMDAwMFowGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMIIBIjAN\\\\nBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAto0DN0W1CrPRzK9QZ9A1aApb4Lg8\\\\noGlp2c0PbN3LokXe/HzwxCMXx65IDnrenttxzTwp9BgUnUN/3LRzWaOL2UQ/vNYN\\\\nW9LFLkI1T64UPyI7eyi28YlALhb41xkYhEp7rz+MjqifBzVZeTDUxBYtbK2hAhbY\\\\nEL1+udwsXEx0KB7xuQ/rbI2OKeqAEAD1tfYg7T/SM2wrXNYhx+o1HtchM4/0I8Ok\\\\nkk27JQ4y3ofzC5sTySmFF1Y7XcpSd+5WSyazedhkAieo8AB01DkJV6nnKfH8sH0E\\\\nBsnH3FP8FhqCLrIeEkjX9B9OcIRLGjiZqx4u/ryW1QhMldnv+pFfNjWy/wIDAQAB\\\\nMA0GCSqGSIb3DQEBCwUAA4IBAQC1hSQG8AwtGOoX2gKBK4Hi5XBrBreij8WlLTUW\\\\nld0FINQ0Rg84f/27CjDthywj6wgxCesCuOVFhpxQa1UacsP/Gcai1aKABtLWImca\\\\nWECRYK5gDkwhTMFKM9mXA26hH1l4v/UR2iTpEK9H78egC4W7bs2LDTpPryuaNKTq\\\\nP2O0tMbNkAHB8yecz5LxHXnxadL9Egow25g2RClvpifWqDnuS9TSbKkIWLcPLjoc\\\\nJj2K9ILpBwhXiXi/BiSgyYTLiYvVvih9vX4s+hKGZNJc0j92YLiOHDF0XH1oxgdV\\\\njfTmRiedeb2VZJZElptD92z0AqFR7z2d5B+OqpPA2gjuMLV5\\\\n-----END CERTIFICATE-----\"]",
-              "help_en": "The list of X.509 signing certificates of the enterprise IdP. When manually entering the configuration, you must provide a non-empty list of up to 10 certificates, and the certificates must be valid. This field must be submitted together with entityId, loginUrl, and bindingType, and cannot be mixed with metadataXml",
-              "help_zh": "企业 IdP 的 X.509 签名证书列表。手填时须提供非空列表，最多十张，证书须在有效期内；须与 entityId、loginUrl、bindingType 一同提交，不能与 metadataXml 混用",
+              "help_en": "Required for manual entry. It must be a non-empty array and use PEM X.509 certificate text. The current validity period is verified. A maximum of two certificates are allowed after deduplication",
+              "help_zh": "手填时必填非空数组，使用 PEM X.509 证书文本；校验当前有效期，去重后最多 2 张",
               "name": "x509_certificates",
               "options": [
                 "--x509-certificates"
@@ -233,8 +233,8 @@
               "type": "array"
             }
           ],
-          "help_en": "Applies only to CustomSSO. You must choose between providing metadataXml and providing the four complete manually entered configuration fields. The two methods cannot be mixed. If a valid configuration already exists, you can also modify only the JIT switches. Saving the configuration does not automatically enable logon",
-          "help_zh": "仅适用于 CustomSSO。提供 metadataXml 与提供四项完整手填配置二选一；两种方式不得混用。已有有效配置时，也可仅修改 JIT 开关。保存配置不会自动开启登录",
+          "help_en": "The SAML configuration for CustomSSO. Choose between metadataXml and the four manually entered fields: entityId, loginUrl, bindingType, and x509Certificates. If not submitted, the existing configuration is retained. DingTalk and Feishu do not accept this field",
+          "help_zh": "CustomSSO 的 SAML 配置。metadataXml 与 entityId、loginUrl、bindingType、x509Certificates 四个手填字段二选一；未提交时保留已有配置。钉钉、飞书不接受此字段",
           "name": "saml",
           "options": [
             "--saml"
@@ -244,8 +244,8 @@
           "type": "object"
         },
         {
-          "help_en": "Applies only to DingTalk and Feishu. This field controls the incremental synchronization of subsequent address book change events. If this field is omitted or set to null during an update, the original value is retained. This field does not control the initial synchronization or manual synchronization. When enabled, the merged metadata must include the encryptKey and verificationToken fields. For CustomSSO, use UpdateIdentityProviderSCIM to manage the synchronization switch",
-          "help_zh": "仅适用于 DingTalk、Feishu，控制后续通讯录变更事件的增量同步。更新时省略或为 null 保留原值；不控制首次同步或手动同步。启用时合并后的 metadata 须含 encryptKey 和 verificationToken。CustomSSO 请改用 UpdateIdentityProviderSCIM 管理同步开关",
+          "help_en": "Specifies whether to enable incremental synchronization for subsequent directory change events of DingTalk or Feishu. If not passed, the original value is retained. It does not control the initial synchronization or manual synchronization. CustomSSO does not accept this field. You must use UpdateIdentityProviderSCIM",
+          "help_zh": "是否开启钉钉或飞书后续通讯录变更事件的增量同步。未传保持原值，不控制首次同步或手动同步。CustomSSO 不接受此字段，须使用 UpdateIdentityProviderSCIM",
           "name": "sync_enabled",
           "options": [
             "--sync-enabled"
@@ -261,8 +261,8 @@
                 "type": "string"
               },
               "example": "[\"10001\"]",
-              "help_en": "The list of department IDs in the synchronization scope, which are obtained from ListIdentityProviderDepartments. In SelectedDepartments mode, you must provide at least one non-empty department ID. In AllAuthorized mode, this field should be omitted or an empty array should be passed",
-              "help_zh": "同步范围中的部门 ID 列表，取自 ListIdentityProviderDepartments。SelectedDepartments 模式至少提供一个非空部门 ID；AllAuthorized 模式应省略或传空数组",
+              "help_en": "When the mode is SelectedDepartments, it must contain at least one non-empty department ID, which should be obtained from ListIdentityProviderDepartments. When the mode is AllAuthorized, pass an empty array or omit this parameter",
+              "help_zh": "SelectedDepartments 时至少包含一个非空部门 ID，应取自 ListIdentityProviderDepartments；AllAuthorized 时传空数组或省略",
               "name": "department_ids",
               "options": [
                 "--department-ids"
@@ -277,8 +277,8 @@
                 "SelectedDepartments"
               ],
               "example": "SelectedDepartments",
-              "help_en": "The synchronization scope mode. Valid values: AllAuthorized and SelectedDepartments. AllAuthorized indicates all members within the authorization scope of the application address book. SelectedDepartments indicates the selected departments and all their sub-departments. When explicitly submitting syncScope, you must provide a valid mode",
-              "help_zh": "同步范围模式。AllAuthorized：应用通讯录授权范围内的全部成员；SelectedDepartments：选中部门及其所有子部门。显式提交 syncScope 时必须提供有效模式",
+              "help_en": "AllAuthorized: the full authorization scope, which is subject to the application directory authorization limits. SelectedDepartments: the selected departments and all their sub-departments. When explicitly submitting syncScope, you must provide a valid mode, which is verified by the backend",
+              "help_zh": "AllAuthorized：全部授权范围，受应用通讯录授权限制；SelectedDepartments：选中部门及所有子部门。显式提交 syncScope 时必须提供有效 mode，由后端校验",
               "name": "mode",
               "options": [
                 "--mode"
@@ -288,8 +288,8 @@
               "type": "string"
             }
           ],
-          "help_en": "The address book synchronization scope, which applies only to DingTalk and Feishu. If this field is omitted or set to null, the current scope is retained. Saving the scope does not automatically trigger a full synchronization. This field is not accepted for CustomSSO",
-          "help_zh": "仅适用于 DingTalk、Feishu 的通讯录同步范围。省略或为 null 保留当前范围；保存范围不会自动执行全量同步。CustomSSO 不接受此字段",
+          "help_en": "Uses the definition of the department-based synchronization scope. If omitted during creation, the default value is AllAuthorized. The initial vendor synchronization is determined by syncOnBind. If omitted or set to null during an update, the original value is retained. Updating and saving the scope does not automatically execute a full synchronization",
+          "help_zh": "沿用按部门同步范围定义；创建省略默认 AllAuthorized，首次厂商同步由 syncOnBind 决定；更新省略或 null 保留原值，更新保存范围不自动执行全量同步",
           "name": "sync_scope",
           "options": [
             "--sync-scope"
@@ -299,8 +299,8 @@
           "type": "object"
         }
       ],
-      "help_en": "The configuration fields to be modified. For DingTalk and Feishu, you must submit at least one of the following fields: loginEnabled, syncEnabled, metadata, and syncScope. For CustomSSO, use the protocol, saml, and loginEnabled fields. You cannot submit the vendor metadata, syncEnabled, or syncScope fields",
-      "help_zh": "要修改的配置字段。钉钉、飞书至少提交 loginEnabled、syncEnabled、metadata、syncScope 中的一项；CustomSSO 使用 protocol、saml、loginEnabled，不能提交厂商 metadata、syncEnabled 或 syncScope",
+      "help_en": "Submit business parameters as described in this operation. The body parameters of public APIs are mapped to backend wrappers by the gateway. Do not mix them with direct backend body wrappers",
+      "help_zh": "按本接口说明提交业务参数；公开 API 的 body 参数由网关映射到后端包装，不混用后端直连 body 包装",
       "location": "formData",
       "name": "body",
       "options": [
@@ -321,8 +321,8 @@
         "properties": {
           "code": {
             "backendName": "code",
-            "description_en": "The business status code for this API request. A value of SUCCESS indicates that the request succeeded, but does not indicate that the asynchronous configuration or synchronization task is complete",
-            "description_zh": "本次 API 请求的业务状态码。SUCCESS 表示请求成功，不代表异步配置或同步任务已经完成",
+            "description_en": "Handle failures by combining the HTTP status code and the message",
+            "description_zh": "失败时结合 HTTP 状态及 message 处理",
             "example": "SUCCESS",
             "title_en": "业务结果代码",
             "title_zh": "业务结果代码",
@@ -330,18 +330,18 @@
           },
           "data": {
             "backendName": "data",
-            "description_en": "The currently saved identity provider binding information, including the expected configuration and resource status. The actual update may still be executing in the background",
-            "description_zh": "当前保存的身份源绑定信息，包含期望配置和资源状态；实际更新可能仍在后台执行",
+            "description_en": "The result structure is described in the response fields of this operation. For asynchronous write operations, the response indicates that the request is accepted, but does not guarantee that the background task is completed",
+            "description_zh": "结果结构见本接口返回字段；异步写接口的返回表示受理，不保证后台任务已完成",
             "properties": {
               "configuration": {
                 "backendName": "configuration",
-                "description_en": "The actual SAML configuration read back from the upstream. This update API does not perform this read-back and usually does not return this field. Use GetIdentityProvider to obtain it",
-                "description_zh": "从上游回读的 SAML 实际配置。本更新接口不执行该回读，通常不返回此字段；请通过 GetIdentityProvider 获取",
+                "description_en": "The actual SAML configuration is read back on demand only in GetIdentityProvider. SCIM queries and preparations return the actual receiving status and URL",
+                "description_zh": "SAML 实际配置只在 GetIdentityProvider 按需回读；SCIM 查询和准备返回实际接收状态及 URL",
                 "properties": {
                   "bindingType": {
                     "backendName": "bindingType",
-                    "description_en": "The actual SAML binding type saved upstream, which is HTTP-Redirect or HTTP-POST",
-                    "description_zh": "上游实际保存的 SAML 绑定类型，HTTP-Redirect 或 HTTP-POST",
+                    "description_en": "HTTP-Redirect or HTTP-POST. Required for manual entry. The query returns the short name",
+                    "description_zh": "HTTP-Redirect 或 HTTP-POST；手填时必填，查询返回短名称",
                     "example": "HTTP-Redirect",
                     "title_en": "SAML 绑定类型",
                     "title_zh": "SAML 绑定类型",
@@ -349,8 +349,8 @@
                   },
                   "entityId": {
                     "backendName": "entityId",
-                    "description_en": "The actual enterprise IdP entity ID saved upstream",
-                    "description_zh": "上游实际保存的企业 IdP 实体标识",
+                    "description_en": "Required for manual entry. It must be non-empty and contain a maximum of 2,048 characters. The existing configuration does not support replacement. It is different from our Entity ID returned by the SP query",
+                    "description_zh": "手填时必填，非空且不超过 2048 字符；已有配置不支持更换。与 SP 查询的我方 Entity ID 不同",
                     "example": "https://idp.example.com/entity",
                     "title_en": "IdP 实体标识",
                     "title_zh": "IdP 实体标识",
@@ -358,8 +358,8 @@
                   },
                   "loginUrl": {
                     "backendName": "loginUrl",
-                    "description_en": "The actual enterprise IdP SSO logon URL saved upstream",
-                    "description_zh": "上游实际保存的企业 IdP SSO 登录地址",
+                    "description_en": "Required for manual entry. It must be an absolute HTTPS URL and cannot contain user credentials or fragments",
+                    "description_zh": "手填时必填，为绝对 HTTPS URL，不含用户凭据和片段",
                     "example": "https://idp.example.com/sso",
                     "title_en": "IdP 登录地址",
                     "title_zh": "IdP 登录地址",
@@ -367,8 +367,8 @@
                   },
                   "ssoStatus": {
                     "backendName": "ssoStatus",
-                    "description_en": "The actual SSO logon status upstream. Enabled indicates that it is turned on, and Disabled indicates that it is turned off. This should be evaluated separately from the expected value of loginEnabled",
-                    "description_zh": "上游实际的 SSO 登录状态。Enabled 表示开启，Disabled 表示关闭；应与 loginEnabled 期望值分别判断",
+                    "description_en": "The actual switch value is Enabled or Disabled, which is not equivalent to the expected loginEnabled value saved in AC",
+                    "description_zh": "实际开关值 Enabled 或 Disabled，不等同 AC 保存的 loginEnabled 期望值",
                     "example": "Enabled",
                     "title_en": "AgentIdentity 实际 SSO 登录状态",
                     "title_zh": "AgentIdentity 实际 SSO 登录状态",
@@ -381,30 +381,35 @@
               },
               "identityProviderType": {
                 "backendName": "identityProviderType",
-                "description_en": "The type of the identity provider. DingTalk indicates DingTalk. Feishu indicates Feishu. CustomSSO indicates a custom enterprise identity provider connected through SAML. The value must be the same as the type of the identity provider bound to the current workspace",
-                "description_zh": "身份源类型。DingTalk：钉钉；Feishu：飞书；CustomSSO：通过 SAML 接入的自定义企业身份源。应与当前工作空间已绑定的身份源类型一致",
+                "description_en": "General CRUD operations support DingTalk, Feishu, and CustomSSO. SP queries support only CustomSSO. The SCIM path uses the CustomSSO shared pool",
+                "description_zh": "通用 CRUD 支持 DingTalk、Feishu、CustomSSO；SP 查询仅支持 CustomSSO。SCIM 路径固定使用 CustomSSO 共享池",
                 "enum": [
                   "DingTalk",
                   "Feishu",
                   "CustomSSO"
                 ],
-                "example": "DingTalk",
+                "enumValueTitles": {
+                  "CustomSSO": "自定义单点登录",
+                  "DingTalk": "钉钉",
+                  "Feishu": "飞书"
+                },
+                "example": "CustomSSO",
                 "title_en": "外部身份源类型",
                 "title_zh": "外部身份源类型",
                 "type": "string"
               },
               "loginEnabled": {
                 "backendName": "loginEnabled",
-                "description_en": "The currently saved expected value for the logon switch. This alone does not prove that the upstream logon configuration has taken effect",
-                "description_zh": "当前保存的登录开关期望值，不单独证明上游登录配置已经生效",
+                "description_en": "Do not set this parameter to true during CustomSSO initialization. A valid SAML configuration must be saved before you enable logon. Disabling logon does not delete the configuration. If an asynchronous failure occurs, this expected value does not mean that the change has taken effect upstream",
+                "description_zh": "CustomSSO 初始化时不传 true；启用前须保存有效 SAML 配置。关闭不删除配置。异步失败时该期望值不代表上游已生效",
                 "title_en": "登录期望开关",
                 "title_zh": "登录期望开关",
                 "type": "boolean"
               },
               "protocol": {
                 "backendName": "protocol",
-                "description_en": "The currently saved logon protocol for CustomSSO. The value is SAML when configured. This field is not returned for DingTalk or Lark",
-                "description_zh": "CustomSSO 当前保存的登录协议；已配置时为 SAML。钉钉、飞书不返回此字段",
+                "description_en": "The logon protocol for CustomSSO. Currently, only SAML is supported. You can pass SAML when saving the SAML configuration. You can omit this parameter if you only modify loginEnabled. DingTalk and Feishu do not accept this field",
+                "description_zh": "CustomSSO 登录协议，当前仅支持 SAML。保存 SAML 配置时可传入 SAML；只修改 loginEnabled 时可省略。钉钉、飞书不接受此字段",
                 "example": "SAML",
                 "title_en": "登录协议",
                 "title_zh": "登录协议",
@@ -412,13 +417,13 @@
               },
               "saml": {
                 "backendName": "saml",
-                "description_en": "The saved standardized SAML configuration for CustomSSO. The original metadata XML is not echoed. This field is not returned if no valid configuration is saved or if the identity provider is DingTalk or Lark. This value is the locally saved configuration and is not equivalent to the actual upstream configuration",
-                "description_zh": "CustomSSO 已保存的标准化 SAML 配置，不回显原始 Metadata XML。尚未保存有效配置或身份源为钉钉、飞书时不返回。该值是本地保存配置，不等同于上游实际配置",
+                "description_en": "The SAML configuration for CustomSSO. Choose between metadataXml and the four manually entered fields: entityId, loginUrl, bindingType, and x509Certificates. If not submitted, the existing configuration is retained. DingTalk and Feishu do not accept this field",
+                "description_zh": "CustomSSO 的 SAML 配置。metadataXml 与 entityId、loginUrl、bindingType、x509Certificates 四个手填字段二选一；未提交时保留已有配置。钉钉、飞书不接受此字段",
                 "properties": {
                   "bindingType": {
                     "backendName": "bindingType",
-                    "description_en": "The saved SAML binding type, which is HTTP-Redirect or HTTP-POST",
-                    "description_zh": "已保存的 SAML 绑定类型，HTTP-Redirect 或 HTTP-POST",
+                    "description_en": "HTTP-Redirect or HTTP-POST. Required for manual entry. The query returns the short name",
+                    "description_zh": "HTTP-Redirect 或 HTTP-POST；手填时必填，查询返回短名称",
                     "example": "HTTP-Redirect",
                     "title_en": "SAML 绑定类型",
                     "title_zh": "SAML 绑定类型",
@@ -426,8 +431,8 @@
                   },
                   "entityId": {
                     "backendName": "entityId",
-                    "description_en": "The saved enterprise IdP entity ID, which is different from the entity ID of the service provider (SP)",
-                    "description_zh": "已保存的企业 IdP 实体标识，与服务提供方 SP 的 Entity ID 不同",
+                    "description_en": "Required for manual entry. It must be non-empty and contain a maximum of 2,048 characters. The existing configuration does not support replacement. It is different from our Entity ID returned by the SP query",
+                    "description_zh": "手填时必填，非空且不超过 2048 字符；已有配置不支持更换。与 SP 查询的我方 Entity ID 不同",
                     "example": "https://idp.example.com/entity",
                     "title_en": "IdP 实体标识",
                     "title_zh": "IdP 实体标识",
@@ -435,8 +440,8 @@
                   },
                   "loginUrl": {
                     "backendName": "loginUrl",
-                    "description_en": "The saved enterprise IdP SSO logon URL",
-                    "description_zh": "已保存的企业 IdP SSO 登录地址",
+                    "description_en": "Required for manual entry. It must be an absolute HTTPS URL and cannot contain user credentials or fragments",
+                    "description_zh": "手填时必填，为绝对 HTTPS URL，不含用户凭据和片段",
                     "example": "https://idp.example.com/sso",
                     "title_en": "IdP SSO 登录地址",
                     "title_zh": "IdP SSO 登录地址",
@@ -444,12 +449,12 @@
                   },
                   "x509Certificates": {
                     "backendName": "x509Certificates",
-                    "description_en": "The list of saved enterprise IdP X.509 signing certificates",
-                    "description_zh": "已保存的企业 IdP X.509 签名证书列表",
+                    "description_en": "Required for manual entry. It must be a non-empty array and use PEM X.509 certificate text. The current validity period is verified. A maximum of two certificates are allowed after deduplication",
+                    "description_zh": "手填时必填非空数组，使用 PEM X.509 证书文本；校验当前有效期，去重后最多 2 张",
                     "example": "[\"-----BEGIN CERTIFICATE-----\\\\nMIICwDCCAaigAwIBAgIULlsHLfcADyBax5ZtFlj+YGzZVo0wDQYJKoZIhvcNAQEL\\\\nBQAwGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMB4XDTI2MDEwMTAwMDAwMFoX\\\\nDTM2MDEwMTAwMDAwMFowGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMIIBIjAN\\\\nBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAto0DN0W1CrPRzK9QZ9A1aApb4Lg8\\\\noGlp2c0PbN3LokXe/HzwxCMXx65IDnrenttxzTwp9BgUnUN/3LRzWaOL2UQ/vNYN\\\\nW9LFLkI1T64UPyI7eyi28YlALhb41xkYhEp7rz+MjqifBzVZeTDUxBYtbK2hAhbY\\\\nEL1+udwsXEx0KB7xuQ/rbI2OKeqAEAD1tfYg7T/SM2wrXNYhx+o1HtchM4/0I8Ok\\\\nkk27JQ4y3ofzC5sTySmFF1Y7XcpSd+5WSyazedhkAieo8AB01DkJV6nnKfH8sH0E\\\\nBsnH3FP8FhqCLrIeEkjX9B9OcIRLGjiZqx4u/ryW1QhMldnv+pFfNjWy/wIDAQAB\\\\nMA0GCSqGSIb3DQEBCwUAA4IBAQC1hSQG8AwtGOoX2gKBK4Hi5XBrBreij8WlLTUW\\\\nld0FINQ0Rg84f/27CjDthywj6wgxCesCuOVFhpxQa1UacsP/Gcai1aKABtLWImca\\\\nWECRYK5gDkwhTMFKM9mXA26hH1l4v/UR2iTpEK9H78egC4W7bs2LDTpPryuaNKTq\\\\nP2O0tMbNkAHB8yecz5LxHXnxadL9Egow25g2RClvpifWqDnuS9TSbKkIWLcPLjoc\\\\nJj2K9ILpBwhXiXi/BiSgyYTLiYvVvih9vX4s+hKGZNJc0j92YLiOHDF0XH1oxgdV\\\\njfTmRiedeb2VZJZElptD92z0AqFR7z2d5B+OqpPA2gjuMLV5\\\\n-----END CERTIFICATE-----\"]",
                     "items": {
-                      "description_en": "A saved enterprise IdP X.509 signing certificate, returned in PEM format",
-                      "description_zh": "一张已保存的企业 IdP X.509 签名证书，使用 PEM 格式返回",
+                      "description_en": "A valid PEM X.509 signing certificate. The example is a public test certificate for idp.example.com. You must replace it with the certificate of the external IdP for actual access",
+                      "description_zh": "一张有效 PEM X.509 签名证书；示例为 idp.example.com 的公开测试证书，实际接入须替换为外部 IdP 的证书",
                       "example": "-----BEGIN CERTIFICATE-----\\nMIICwDCCAaigAwIBAgIULlsHLfcADyBax5ZtFlj+YGzZVo0wDQYJKoZIhvcNAQEL\\nBQAwGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMB4XDTI2MDEwMTAwMDAwMFoX\\nDTM2MDEwMTAwMDAwMFowGjEYMBYGA1UEAwwPaWRwLmV4YW1wbGUuY29tMIIBIjAN\\nBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAto0DN0W1CrPRzK9QZ9A1aApb4Lg8\\noGlp2c0PbN3LokXe/HzwxCMXx65IDnrenttxzTwp9BgUnUN/3LRzWaOL2UQ/vNYN\\nW9LFLkI1T64UPyI7eyi28YlALhb41xkYhEp7rz+MjqifBzVZeTDUxBYtbK2hAhbY\\nEL1+udwsXEx0KB7xuQ/rbI2OKeqAEAD1tfYg7T/SM2wrXNYhx+o1HtchM4/0I8Ok\\nkk27JQ4y3ofzC5sTySmFF1Y7XcpSd+5WSyazedhkAieo8AB01DkJV6nnKfH8sH0E\\nBsnH3FP8FhqCLrIeEkjX9B9OcIRLGjiZqx4u/ryW1QhMldnv+pFfNjWy/wIDAQAB\\nMA0GCSqGSIb3DQEBCwUAA4IBAQC1hSQG8AwtGOoX2gKBK4Hi5XBrBreij8WlLTUW\\nld0FINQ0Rg84f/27CjDthywj6wgxCesCuOVFhpxQa1UacsP/Gcai1aKABtLWImca\\nWECRYK5gDkwhTMFKM9mXA26hH1l4v/UR2iTpEK9H78egC4W7bs2LDTpPryuaNKTq\\nP2O0tMbNkAHB8yecz5LxHXnxadL9Egow25g2RClvpifWqDnuS9TSbKkIWLcPLjoc\\nJj2K9ILpBwhXiXi/BiSgyYTLiYvVvih9vX4s+hKGZNJc0j92YLiOHDF0XH1oxgdV\\njfTmRiedeb2VZJZElptD92z0AqFR7z2d5B+OqpPA2gjuMLV5\\n-----END CERTIFICATE-----",
                       "title_en": "IdP 签名证书",
                       "title_zh": "IdP 签名证书",
@@ -466,8 +471,8 @@
               },
               "status": {
                 "backendName": "status",
-                "description_en": "The status of the identity provider resource and logon configuration. Valid values:\nCONFIGURED: The configuration is accepted.\nUPDATING: The configuration is being updated.\nSYNCING: Synchronization is in progress.\nSYNCED: The synchronization phase is complete.\nREADY: The resource is ready.\nSYNC_FAILED: Synchronization failed.\nUPDATE_FAILED: The update failed.\nDISCONNECTING: Unbinding is in progress.\nDISCONNECT_FAILED: Unbinding failed.\nA value of READY does not alone indicate that users are imported. Query the SCIM operation results for CustomSSO separately",
-                "description_zh": "身份源资源及登录配置状态。CONFIGURED：配置已受理；UPDATING：更新中；SYNCING：同步中；SYNCED：同步阶段完成；READY：资源就绪；SYNC_FAILED：同步失败；UPDATE_FAILED：更新失败；DISCONNECTING：解绑中；DISCONNECT_FAILED：解绑失败。READY 不单独表示已导入用户，CustomSSO 的 SCIM 操作结果应另行查询",
+                "description_en": "For a CustomSSO shared pool, READY does not mean that SAML is configured. The SCIM operation result is queried independently through operationStatus",
+                "description_zh": "CustomSSO 共享池 READY 不等于已配置 SAML；SCIM 操作结果独立查询 operationStatus",
                 "enum": [
                   "WAITING_CONFIGURATION",
                   "CONFIGURED",
@@ -480,6 +485,17 @@
                   "DISCONNECTING",
                   "DISCONNECT_FAILED"
                 ],
+                "enumValueTitles": {
+                  "CONFIGURED": "绑定配置已受理",
+                  "DISCONNECTING": "绑定正在断开",
+                  "DISCONNECT_FAILED": "断开绑定失败",
+                  "READY": "绑定已就绪",
+                  "SYNCED": "成员同步完成",
+                  "SYNCING": "成员正在同步",
+                  "SYNC_FAILED": "成员同步失败",
+                  "UPDATE_FAILED": "配置更新失败",
+                  "UPDATING": "配置正在更新"
+                },
                 "example": "READY",
                 "title_en": "身份源资源及登录配置状态",
                 "title_zh": "身份源资源及登录配置状态",
@@ -487,21 +503,21 @@
               },
               "syncEnabled": {
                 "backendName": "syncEnabled",
-                "description_en": "The currently saved expected value for the synchronization switch. For DingTalk and Lark, this is used for subsequent address book change events. For CustomSSO, the SCIM switch is managed by using UpdateIdentityProviderSCIM, and the operation results are queried by using GetIdentityProviderSCIM",
-                "description_zh": "当前保存的同步开关期望值。钉钉、飞书用于后续通讯录变更事件；CustomSSO 的 SCIM 开关通过 UpdateIdentityProviderSCIM 管理，操作结果通过 GetIdentityProviderSCIM 查询",
+                "description_en": "Do not set this parameter to true during CustomSSO initialization. It can only be updated later by calling UpdateIdentityProviderSCIM, and the result is determined in combination with operationStatus",
+                "description_zh": "CustomSSO 初始化时不传 true；后续只能通过 UpdateIdentityProviderSCIM 更新，结果结合 operationStatus 判断",
                 "title_en": "用户同步期望开关",
                 "title_zh": "用户同步期望开关",
                 "type": "boolean"
               },
               "syncScope": {
                 "backendName": "syncScope",
-                "description_en": "The saved synchronization scope for DingTalk and Lark. The default value for valid historical configurations is AllAuthorized. This field may not be returned for corrupted historical configurations. This field is not returned for CustomSSO",
-                "description_zh": "钉钉、飞书已保存的同步范围。历史有效配置缺省为 AllAuthorized，损坏的历史配置可能不返回。CustomSSO 不返回此字段",
+                "description_en": "Uses the definition of the department-based synchronization scope. If omitted during creation, the default value is AllAuthorized. The initial vendor synchronization is determined by syncOnBind. If omitted or set to null during an update, the original value is retained. Updating and saving the scope does not automatically execute a full synchronization",
+                "description_zh": "沿用按部门同步范围定义；创建省略默认 AllAuthorized，首次厂商同步由 syncOnBind 决定；更新省略或 null 保留原值，更新保存范围不自动执行全量同步",
                 "properties": {
                   "departmentIds": {
                     "backendName": "departmentIds",
-                    "description_en": "The list of department IDs in the synchronization scope, which are obtained from ListIdentityProviderDepartments. In SelectedDepartments mode, you must provide at least one non-empty department ID. In AllAuthorized mode, this field should be omitted or an empty array should be passed",
-                    "description_zh": "同步范围中的部门 ID 列表，取自 ListIdentityProviderDepartments。SelectedDepartments 模式至少提供一个非空部门 ID；AllAuthorized 模式应省略或传空数组",
+                    "description_en": "When the mode is SelectedDepartments, it must contain at least one non-empty department ID, which should be obtained from ListIdentityProviderDepartments. When the mode is AllAuthorized, pass an empty array or omit this parameter",
+                    "description_zh": "SelectedDepartments 时至少包含一个非空部门 ID，应取自 ListIdentityProviderDepartments；AllAuthorized 时传空数组或省略",
                     "example": "[\"10001\"]",
                     "items": {
                       "description_en": "The unique identifier of the department returned by the identity provider, which is obtained from ListIdentityProviderDepartments",
@@ -517,12 +533,16 @@
                   },
                   "mode": {
                     "backendName": "mode",
-                    "description_en": "The synchronization scope mode. Valid values: AllAuthorized and SelectedDepartments. AllAuthorized indicates all members within the authorization scope of the application address book. SelectedDepartments indicates the selected departments and all their sub-departments. When explicitly submitting syncScope, you must provide a valid mode",
-                    "description_zh": "同步范围模式。AllAuthorized：应用通讯录授权范围内的全部成员；SelectedDepartments：选中部门及其所有子部门。显式提交 syncScope 时必须提供有效模式",
+                    "description_en": "AllAuthorized: the full authorization scope, which is subject to the application directory authorization limits. SelectedDepartments: the selected departments and all their sub-departments. When explicitly submitting syncScope, you must provide a valid mode, which is verified by the backend",
+                    "description_zh": "AllAuthorized：全部授权范围，受应用通讯录授权限制；SelectedDepartments：选中部门及所有子部门。显式提交 syncScope 时必须提供有效 mode，由后端校验",
                     "enum": [
                       "AllAuthorized",
                       "SelectedDepartments"
                     ],
+                    "enumValueTitles": {
+                      "AllAuthorized": "全部授权范围",
+                      "SelectedDepartments": "指定部门范围"
+                    },
                     "example": "SelectedDepartments",
                     "title_en": "范围模式",
                     "title_zh": "范围模式",
@@ -535,9 +555,9 @@
               },
               "workspaceId": {
                 "backendName": "workspaceId",
-                "description_en": "The ID of the workspace to which the identity provider belongs",
-                "description_zh": "身份源所属的工作空间 ID",
-                "example": "ws-123456",
+                "description_en": "Required. The ID of the destination workspace. The region of the request must be the same as the region of the destination workspace",
+                "description_zh": "必填，目标 Workspace 的标识；请求地域需与目标 Workspace 一致",
+                "example": "ws-example",
                 "title_en": "工作空间 ID",
                 "title_zh": "工作空间 ID",
                 "type": "string"
@@ -549,8 +569,8 @@
           },
           "httpStatusCode": {
             "backendName": "httpStatusCode",
-            "description_en": "The HTTP status code for this API request. This does not indicate the execution result of the background task",
-            "description_zh": "本次 API 请求的 HTTP 状态码，不代表后台任务的执行结果",
+            "description_en": "The processing status of the current request, which is not equivalent to the final result of the background task",
+            "description_zh": "本次请求的处理状态，不等同后台任务最终结果",
             "example": "200",
             "format": "int32",
             "title_en": "HTTP 状态码",
@@ -559,8 +579,8 @@
           },
           "message": {
             "backendName": "message",
-            "description_en": "The response message for this API request. An error description is returned if the request fails",
-            "description_zh": "本次 API 请求的响应消息；请求失败时返回错误说明",
+            "description_en": "The request acceptance or error message. You must verify the result of the asynchronous task by calling the corresponding query operation",
+            "description_zh": "请求受理或错误消息；异步任务结果需按对应查询接口核对",
             "example": "success",
             "title_en": "结果消息",
             "title_zh": "结果消息",
@@ -568,17 +588,17 @@
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The unique identifier for this request. Provide this value when you troubleshoot issues",
-            "description_zh": "本次请求的唯一标识。排查问题时请提供该值",
-            "example": "request-123456",
+            "description_en": "Used to associate the current call with troubleshooting. Keep it when a failure occurs",
+            "description_zh": "用于关联本次调用与排障，失败时请保留",
+            "example": "request-example",
             "title_en": "请求 ID",
             "title_zh": "请求 ID",
             "type": "string"
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether this API request succeeded. To check whether the background configuration has taken effect, you must query the identity provider status separately",
-            "description_zh": "本次 API 请求是否成功。后台配置是否生效须另行查询身份源状态",
+            "description_en": "A value of true indicates that the current request is processed successfully. For asynchronous write operations, you must continue to query the task result",
+            "description_zh": "true 表示本次请求处理成功；异步写入仍需继续查询任务结果",
             "title_en": "本次请求是否成功",
             "title_zh": "本次请求是否成功",
             "type": "boolean"

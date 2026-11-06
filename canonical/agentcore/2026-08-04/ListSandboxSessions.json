@@ -3,8 +3,8 @@
   "cmd_full_name": "agentcore list-sandbox-sessions",
   "cmd_name": "list-sandbox-sessions",
   "deprecated": false,
-  "description_en": "Queries the list of active sessions in the sandbox of a specified managed agent by paging, and returns the session source and external channel type",
-  "description_zh": "分页查询指定托管智能体的 Sandbox 中的活动 Session 列表，并返回会话来源及外部渠道类型",
+  "description_en": "Performs a paged query for the current active sessions and their sources in a specified agent instance, supporting paging",
+  "description_zh": "分页查询指定智能体实例中的当前活动会话及其来源",
   "kebab_example": "aliyun agentcore list-sandbox-sessions --workspace-id ws-1 --agent-id agent-1 --sandbox-id sbx-2 --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
@@ -35,8 +35,8 @@
     },
     {
       "example": "agent-1",
-      "help_en": "The managed agent ID",
-      "help_zh": "托管智能体 ID",
+      "help_en": "The ID of the managed Harness agent",
+      "help_zh": "托管 Harness Agent ID",
       "location": "path",
       "name": "agent_id",
       "options": [
@@ -48,7 +48,7 @@
     },
     {
       "example": "sbx-2",
-      "help_en": "The sandbox ID. You can call ListSandboxes to query the sandbox ID",
+      "help_en": "The sandbox ID. You can obtain the sandbox ID by calling ListSandboxes",
       "help_zh": "Sandbox ID，可通过 ListSandboxes 查询",
       "location": "path",
       "name": "sandbox_id",
@@ -60,9 +60,22 @@
       "type": "string"
     },
     {
+      "example": "se-7f3a92c1",
+      "help_en": "必须与查出该 sandboxId 时使用的 ListSandboxes 入参一致。省略或传空白时查询智能体 latest 运行单元；传入时该服务端点必须属于本智能体且目标类型为 AGENT_VERSION，否则返回 Resource.NotFound；非 DEFAULT 且未独立运行时返回 ServiceEndpointTargetNotReady。sandboxId 不属于所指运行单元时返回 Sandbox.NotFound，不返回空列表",
+      "help_zh": "必须与查出该 sandboxId 时使用的 ListSandboxes 入参一致。省略或传空白时查询智能体 latest 运行单元；传入时该服务端点必须属于本智能体且目标类型为 AGENT_VERSION，否则返回 Resource.NotFound；非 DEFAULT 且未独立运行时返回 ServiceEndpointTargetNotReady。sandboxId 不属于所指运行单元时返回 Sandbox.NotFound，不返回空列表",
+      "location": "query",
+      "name": "service_endpoint_id",
+      "options": [
+        "--service-endpoint-id"
+      ],
+      "raw_name": "serviceEndpointId",
+      "required": false,
+      "type": "string"
+    },
+    {
       "example": "20",
-      "help_en": "The maximum number of records per page. Default value: 20",
-      "help_zh": "单页最大记录数，默认 20",
+      "help_en": "The maximum number of entries to return per page. Default value: 20. Valid values: 1 to 100",
+      "help_zh": "单页最大返回条数，默认 20，取值为 1～100",
       "location": "query",
       "maximum": "100",
       "minimum": "1",
@@ -76,8 +89,8 @@
     },
     {
       "example": "next-token-1",
-      "help_en": "The pagination token for querying the next page",
-      "help_zh": "查询下一页的游标",
+      "help_en": "The token for the next page. Omit this parameter in the first request. For subsequent requests, use the returned token as is, and keep the workspace, agent, instance, and maxResults unchanged. An empty value indicates that no more pages are available",
+      "help_zh": "下一页令牌。首次省略，后续原样使用响应值，并保持工作空间、智能体、实例和 maxResults 不变；为空表示没有下一页",
       "location": "query",
       "name": "next_token",
       "options": [
@@ -97,14 +110,14 @@
         "properties": {
           "code": {
             "backendName": "code",
-            "description_en": "The business status code. The value SUCCESS is returned if the request was successful",
+            "description_en": "The business status code. The value is SUCCESS if the request is successful",
             "description_zh": "业务状态码，成功时为 SUCCESS",
             "example": "SUCCESS",
             "type": "string"
           },
           "httpStatusCode": {
             "backendName": "httpStatusCode",
-            "description_en": "The HTTP status code. The value 200 is returned if the request was successful",
+            "description_en": "The HTTP status code. The value is 200 if the request is successful",
             "description_zh": "HTTP 状态码，成功时为 200",
             "example": "200",
             "format": "int32",
@@ -119,7 +132,7 @@
               "properties": {
                 "channelType": {
                   "backendName": "channelType",
-                  "description_en": "The external channel type, such as DINGTALK, FEISHU, or WECOM. This parameter is empty for non-external channels",
+                  "description_en": "The type of the external channel, such as DINGTALK, FEISHU, or WECOM. This parameter is empty for non-external channels",
                   "description_zh": "外部渠道类型，例如 DINGTALK、FEISHU、WECOM；非外部渠道为空",
                   "example": "DINGTALK",
                   "title_en": "外部渠道类型，例如 DINGTALK、FEISHU、WECOM；非外部渠道为空",
@@ -135,7 +148,7 @@
                 },
                 "sourceType": {
                   "backendName": "sourceType",
-                  "description_en": "The session source type. Valid values:\nAPI: API call.\nCONSOLE_DEBUG: Console debugging.\nEXTERNAL_CHANNEL: External channel.\nUNKNOWN: Unknown source",
+                  "description_en": "The source type of the session. A value of API indicates an API call. A value of CONSOLE_DEBUG indicates console debugging. A value of EXTERNAL_CHANNEL indicates an external channel. A value of UNKNOWN indicates an unknown source",
                   "description_zh": "Session 来源类型。API 表示 API 调用，CONSOLE_DEBUG 表示控制台调试，EXTERNAL_CHANNEL 表示外部渠道，UNKNOWN 表示来源未知",
                   "enum": [
                     "API",
@@ -143,6 +156,12 @@
                     "EXTERNAL_CHANNEL",
                     "UNKNOWN"
                   ],
+                  "enumValueTitles": {
+                    "API": "API 调用",
+                    "CONSOLE_DEBUG": "控制台调试",
+                    "EXTERNAL_CHANNEL": "外部渠道",
+                    "UNKNOWN": "来源未知"
+                  },
                   "example": "EXTERNAL_CHANNEL",
                   "type": "string"
                 }
@@ -153,7 +172,7 @@
           },
           "maxResults": {
             "backendName": "maxResults",
-            "description_en": "The maximum number of records per page for this query",
+            "description_en": "The maximum number of records per page for the current query",
             "description_zh": "本次查询的单页最大记录数",
             "example": "20",
             "format": "int32",
@@ -161,7 +180,7 @@
           },
           "message": {
             "backendName": "message",
-            "description_en": "The response message. The value success is returned if the request was successful",
+            "description_en": "The response message. The value is success if the request is successful",
             "description_zh": "响应消息，成功时为 success",
             "example": "success",
             "type": "string"
@@ -182,13 +201,13 @@
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful. Valid values:\ntrue: The request was successful.\nfalse: The request failed",
+            "description_en": "Indicates whether the request is successful. A value of true indicates that the request is successful. A value of false indicates that the request fails",
             "description_zh": "请求是否成功。true 表示成功，false 表示失败",
             "type": "boolean"
           },
           "totalCount": {
             "backendName": "totalCount",
-            "description_en": "The total number of records that match the query conditions",
+            "description_en": "The total number of records that meet the query conditions",
             "description_zh": "符合本次查询条件的记录总数",
             "example": "27",
             "format": "int64",

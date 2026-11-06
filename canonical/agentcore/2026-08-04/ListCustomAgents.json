@@ -3,8 +3,8 @@
   "cmd_full_name": "agentcore list-custom-agents",
   "cmd_name": "list-custom-agents",
   "deprecated": false,
-  "description_en": "Performs a paging query to retrieve the summaries of custom agents in a specified workspace. To obtain the complete configuration and the execution results of the latest version, call GetCustomAgent",
-  "description_zh": "分页查询指定工作空间中的自定义智能体摘要。完整配置及最新版本的执行结果请通过 GetCustomAgent 查询",
+  "description_en": "Performs a paged query to retrieve the identity, deployment method, and status summary of custom code or image agents in a workspace, with paging support",
+  "description_zh": "分页查询工作空间内自定义代码 / 镜像 Agent的标识、部署方式和状态摘要",
   "kebab_example": "aliyun agentcore list-custom-agents --workspace-id ws-a1b2c3d4e5f6 --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
@@ -22,8 +22,8 @@
   "parameters": [
     {
       "example": "ws-a1b2c3d4e5f6",
-      "help_en": "The ID of the workspace to which the custom agent belongs",
-      "help_zh": "自定义智能体所属的工作空间 ID",
+      "help_en": "The ID of the workspace to which the custom code or image agents belong",
+      "help_zh": "自定义代码 / 镜像 Agent所属的工作空间 ID",
       "location": "path",
       "name": "workspace_id",
       "options": [
@@ -35,8 +35,8 @@
     },
     {
       "example": "20",
-      "help_en": "The maximum number of results to return per page. Valid values: 1 to 100. If this parameter is omitted or set to 0, the default value 20 is used",
-      "help_zh": "每页最大返回数量，取值为 1～100；省略或传入 0 时使用默认值 20",
+      "help_en": "The maximum number of entries to return per page. Valid values: 0 to 100. If this parameter is omitted or set to 0, the default value is 20",
+      "help_zh": "单页最大返回条数，取值 0～100；省略或为 0 时默认 20",
       "location": "query",
       "name": "max_results",
       "options": [
@@ -48,7 +48,7 @@
     },
     {
       "example": "djE6YWdlbnRjb3JlLmFnZW50Lmxpc3QuY3VzdG9tOjIw",
-      "help_en": "The opaque token used to query the next page. Omit this parameter for the first request. For subsequent requests, pass the nextToken value returned in the previous response as is and keep the same workspace. Do not construct this token yourself",
+      "help_en": "The opaque token used to query the next page. Omit this parameter in the first request. For subsequent requests, use the `nextToken` value returned in the previous response as is, and keep the same workspace. Do not construct this token manually",
       "help_zh": "查询下一页的不透明令牌。首次请求省略，后续原样使用上一次响应的 nextToken，并保持相同工作空间。请勿自行构造",
       "location": "query",
       "name": "next_token",
@@ -76,7 +76,7 @@
           },
           "httpStatusCode": {
             "backendName": "httpStatusCode",
-            "description_en": "The HTTP status code of the current request. The value is 200 if the request is successful",
+            "description_en": "The HTTP status code of the request. The value is 200 if the request is successful",
             "description_zh": "本次请求的 HTTP 状态码。成功时为 200",
             "example": "200",
             "format": "int32",
@@ -84,18 +84,22 @@
           },
           "items": {
             "backendName": "items",
-            "description_en": "The list of custom agent summaries on the current page. To query the complete configuration and the execution result of the latest version, call the GetCustomAgent operation",
-            "description_zh": "当前页的自定义智能体摘要列表。完整配置和最新版本执行结果请调用 GetCustomAgent 查询",
+            "description_en": "The list of summaries for custom code or image agents on the current page. To query the complete configuration and the execution results of the latest version, call the GetCustomAgent operation",
+            "description_zh": "当前页的自定义代码 / 镜像 Agent摘要列表。完整配置和最新版本执行结果请调用 GetCustomAgent 查询",
             "items": {
               "properties": {
                 "accessMode": {
                   "backendName": "accessMode",
-                  "description_en": "The inbound access mode",
+                  "description_en": "The inbound access method",
                   "description_zh": "入站访问方式",
                   "enum": [
                     "API_KEY",
                     "USER"
                   ],
+                  "enumValueTitles": {
+                    "API_KEY": "API 密钥鉴权",
+                    "USER": "用户身份"
+                  },
                   "example": "API_KEY",
                   "title_en": "入站访问方式",
                   "title_zh": "入站访问方式",
@@ -109,6 +113,10 @@
                     "ALL",
                     "SPECIFIED"
                   ],
+                  "enumValueTitles": {
+                    "ALL": "全部范围",
+                    "SPECIFIED": "指定范围"
+                  },
                   "example": "ALL",
                   "title_en": "用户访问范围",
                   "title_zh": "用户访问范围",
@@ -116,8 +124,8 @@
                 },
                 "agentId": {
                   "backendName": "agentId",
-                  "description_en": "The unique identifier of the custom agent. You can obtain this ID from the response of the CreateCustomAgent or ListCustomAgents operation",
-                  "description_zh": "自定义智能体的唯一标识，可从 CreateCustomAgent 或 ListCustomAgents 的响应中获取",
+                  "description_en": "The unique identifier of the custom code or image agent. You can obtain this ID from the response of the CreateCustomAgent or ListCustomAgents operation",
+                  "description_zh": "自定义代码 / 镜像 Agent的唯一标识，可从 CreateCustomAgent 或 ListCustomAgents 的响应中获取",
                   "example": "agent-550e8400e29b41d4a716446655440000",
                   "type": "string"
                 },
@@ -143,7 +151,7 @@
                         },
                         "languageRuntime": {
                           "backendName": "languageRuntime",
-                          "description_en": "The identifier of the code runtime environment in the currently saved configuration. The runtime image uses the saved snapshot. Adding a new version to the directory does not automatically change the existing configuration",
+                          "description_en": "The identifier of the code runtime environment in the currently saved configuration. The runtime image uses the saved snapshot. Adding a new version to the catalog does not automatically change the existing configuration",
                           "description_zh": "当前已保存配置的代码运行环境标识。运行镜像使用已保存的快照，目录增加新版本不会自动改变现有配置",
                           "example": "python3.12",
                           "required": true,
@@ -180,7 +188,7 @@
                         },
                         "instanceId": {
                           "backendName": "instanceId",
-                          "description_en": "The ID of the ACR Enterprise instance",
+                          "description_en": "The ID of the ACR Enterprise Edition instance",
                           "description_zh": "ACR 企业版实例 ID",
                           "example": "cri-example",
                           "title_en": "ACR 企业版实例 ID。ACR 来源时必填；custom 来源省略，由后端按来源类型校验。",
@@ -189,7 +197,7 @@
                         },
                         "namespace": {
                           "backendName": "namespace",
-                          "description_en": "The namespace of Container Registry",
+                          "description_en": "The Container Registry namespace",
                           "description_zh": "ACR 命名空间",
                           "example": "team",
                           "title_en": "ACR 命名空间。ACR 来源时必填；custom 来源省略，由后端按来源类型校验。",
@@ -216,12 +224,15 @@
                         },
                         "type": {
                           "backendName": "type",
-                          "description_en": "The source type of the container image",
-                          "description_zh": "容器镜像来源类型",
+                          "description_en": "The image source type. A value of acr indicates a Container Registry image. A value of custom indicates a custom image source. For the corresponding source configurations, refer to the descriptions of artifact.container and customImage",
+                          "description_zh": "镜像来源类型：acr 表示 ACR 镜像，custom 表示自定义镜像来源；相应来源配置见 artifact.container 与 customImage 的说明",
                           "enum": [
                             "acr",
                             "custom"
                           ],
+                          "enumValueTitles": {
+                            "acr": "阿里云容器镜像服务"
+                          },
                           "example": "acr",
                           "required": true,
                           "title_en": "容器镜像来源类型。",
@@ -299,6 +310,10 @@
                         "zip",
                         "tar.gz"
                       ],
+                      "enumValueTitles": {
+                        "tar.gz": "GZIP 压缩的 TAR 归档包",
+                        "zip": "ZIP 压缩包"
+                      },
                       "example": "zip",
                       "title_en": "代码包格式",
                       "title_zh": "代码包格式",
@@ -311,22 +326,22 @@
                 },
                 "createMode": {
                   "backendName": "createMode",
-                  "description_en": "The creation mode of the agent. The value is CUSTOM for custom agents",
-                  "description_zh": "智能体创建方式。自定义智能体返回 CUSTOM",
+                  "description_en": "The creation method of the agent. The value is CUSTOM for custom code or image agents",
+                  "description_zh": "智能体创建方式。自定义代码 / 镜像 Agent返回 CUSTOM",
                   "example": "CUSTOM",
                   "type": "string"
                 },
                 "createdAt": {
                   "backendName": "createdAt",
-                  "description_en": "The time when the agent was created. The time is in ISO 8601 format. A trailing Z indicates the UTC time zone. Fractional seconds may be included",
+                  "description_en": "The time when the agent was created. The time is in ISO 8601 format. The trailing Z indicates the UTC time zone. Fractional seconds may be included",
                   "description_zh": "智能体创建时间，采用 ISO 8601 格式，末尾 Z 表示 UTC 时区，可包含小数秒",
                   "example": "2026-10-10T06:00:00Z",
                   "type": "string"
                 },
                 "deployType": {
                   "backendName": "deployType",
-                  "description_en": "The deployment mode of the agent. Custom agents are deployed and managed by the platform. The value is MANAGED for custom agents",
-                  "description_zh": "智能体部署方式。自定义智能体由平台部署和管理，返回 MANAGED",
+                  "description_en": "The deployment method of the agent. Custom code or image agents are deployed and managed by the platform. The value is MANAGED",
+                  "description_zh": "智能体部署方式。自定义代码 / 镜像 Agent由平台部署和管理，返回 MANAGED",
                   "example": "MANAGED",
                   "type": "string"
                 },
@@ -347,8 +362,8 @@
                 },
                 "name": {
                   "backendName": "name",
-                  "description_en": "The name of the custom agent",
-                  "description_zh": "自定义智能体名称",
+                  "description_en": "The name of the custom code or image agent",
+                  "description_zh": "自定义代码 / 镜像 Agent名称",
                   "example": "my-custom-agent",
                   "type": "string"
                 },
@@ -388,7 +403,7 @@
                           "properties": {
                             "description": {
                               "backendName": "description",
-                              "description_en": "The description of the purpose for the current API path",
+                              "description_en": "The purpose description of the current API path",
                               "description_zh": "当前接口路径的用途说明",
                               "example": "AG-UI 对话接口",
                               "title_en": "路径描述",
@@ -414,13 +429,18 @@
                       },
                       "type": {
                         "backendName": "type",
-                        "description_en": "The invoke Protocol Type. Valid values:\nagui: AG-UI protocol.\nopenai-chat-completion: OpenAI Chat Completions compatible protocol.\ncustom: Custom protocol",
+                        "description_en": "The invocation protocol type. agui indicates the AG-UI protocol. openai-chat-completion indicates the OpenAI Chat Completions compatible protocol. custom indicates a custom protocol",
                         "description_zh": "调用协议类型。agui：AG-UI 协议；openai-chat-completion：OpenAI Chat Completions 兼容协议；custom：自定义协议",
                         "enum": [
                           "agui",
                           "openai-chat-completion",
                           "custom"
                         ],
+                        "enumValueTitles": {
+                          "agui": "AG-UI 协议",
+                          "custom": "自定义协议",
+                          "openai-chat-completion": "OpenAI 对话补全兼容协议"
+                        },
                         "example": "agui",
                         "required": true,
                         "title_en": "协议类型",
@@ -443,7 +463,7 @@
                 },
                 "status": {
                   "backendName": "status",
-                  "description_en": "The overall status of the agent. Valid values:\nCreating: The agent is being created.\nRunning: The agent is running.\nFailed: The agent failed.\nUpdating: The agent is being updated.\nDeleting: The agent is being deleted.\nDeleted: The agent is deleted.\nTo query the execution progress of the latest configuration, call the GetCustomAgent operation",
+                  "description_en": "The overall status of the agent. Valid values: Creating, Running, Failed, Updating, Deleting, and Deleted. To query the latest configuration execution progress, call GetCustomAgent",
                   "description_zh": "智能体整体状态。Creating：创建中；Running：运行中；Failed：失败；Updating：更新中；Deleting：删除中；Deleted：已删除。最新配置执行进度请调用 GetCustomAgent 查询",
                   "enum": [
                     "Creating",
@@ -453,20 +473,28 @@
                     "Deleting",
                     "Deleted"
                   ],
+                  "enumValueTitles": {
+                    "Creating": "创建中",
+                    "Deleted": "已删除",
+                    "Deleting": "删除中",
+                    "Failed": "失败",
+                    "Running": "运行中",
+                    "Updating": "更新中"
+                  },
                   "example": "Running",
                   "type": "string"
                 },
                 "updatedAt": {
                   "backendName": "updatedAt",
-                  "description_en": "The time when the agent was last updated. The time follows the ISO 8601 format. The trailing Z indicates the UTC time zone. Fractional seconds are supported",
+                  "description_en": "The time when the agent was last updated. The time is in the ISO 8601 format, with a trailing Z indicating the UTC time zone. Fractional seconds are supported",
                   "description_zh": "智能体最近更新时间，采用 ISO 8601 格式，末尾 Z 表示 UTC 时区，可包含小数秒",
                   "example": "2026-10-10T06:05:00Z",
                   "type": "string"
                 },
                 "workspaceId": {
                   "backendName": "workspaceId",
-                  "description_en": "The ID of the workspace to which the custom agent belongs",
-                  "description_zh": "自定义智能体所属的工作空间 ID",
+                  "description_en": "The ID of the workspace to which the custom code or image agents belong",
+                  "description_zh": "自定义代码 / 镜像 Agent所属的工作空间 ID",
                   "example": "ws-a1b2c3d4e5f6",
                   "type": "string"
                 }
@@ -477,7 +505,7 @@
           },
           "maxResults": {
             "backendName": "maxResults",
-            "description_en": "The maximum number of items to return per page in this query",
+            "description_en": "The maximum number of results to return per page for the current query",
             "description_zh": "本次查询使用的每页最大返回数量",
             "example": "20",
             "format": "int32",
@@ -485,35 +513,35 @@
           },
           "message": {
             "backendName": "message",
-            "description_en": "The processing result message for this request. The value is success if the request succeeds",
+            "description_en": "The message that describes the processing result of the request. The value is success if the request is successful",
             "description_zh": "本次请求的处理结果说明。成功时为 success",
             "example": "success",
             "type": "string"
           },
           "nextToken": {
             "backendName": "nextToken",
-            "description_en": "The opaque token used to query the next page. An empty value indicates that no more pages are available. Pass this token as is in subsequent requests",
+            "description_en": "The opaque token used to retrieve the next page of results. An empty value indicates that there are no more pages. Pass this token as-is in subsequent requests",
             "description_zh": "查询下一页使用的不透明令牌。为空时表示没有下一页。请原样传入后续请求",
             "example": "djE6YWdlbnRjb3JlLmFnZW50Lmxpc3QuY3VzdG9tOjIw",
             "type": "string"
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The unique identifier of the request, used to locate and troubleshoot issues",
+            "description_en": "The unique identifier of the request, which is used to locate and troubleshoot issues",
             "description_zh": "本次请求的唯一标识，用于定位和排查问题",
             "example": "550E8400-E29B-41D4-A716-446655440000",
             "type": "string"
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was processed successfully. A value of true indicates success. A successful creation, update, or deletion does not mean that the background operation is complete",
+            "description_en": "Indicates whether the request was processed successfully. true indicates that the request was successful. A successful creation, update, or deletion response does not mean that the background operation is complete",
             "description_zh": "请求是否处理成功。true 表示处理成功；创建、更新或删除成功不代表后台操作已经完成",
             "type": "boolean"
           },
           "totalCount": {
             "backendName": "totalCount",
-            "description_en": "The total number of custom agents that meet the query conditions in the specified workspace",
-            "description_zh": "指定工作空间内符合查询条件的自定义智能体总数",
+            "description_en": "The total number of custom code or image agents that match the query conditions in the specified workspace",
+            "description_zh": "指定工作空间内符合查询条件的自定义代码 / 镜像 Agent总数",
             "example": "40",
             "format": "int64",
             "type": "integer"

@@ -3,8 +3,8 @@
   "cmd_full_name": "agentcore create-managed-agent",
   "cmd_name": "create-managed-agent",
   "deprecated": false,
-  "description_en": "Creates a managed agent in a specified workspace",
-  "description_zh": "在指定工作空间下创建托管智能体",
+  "description_en": "Creates a managed Harness agent in a specified workspace, configures the harness, model, skills, and runtime resources, and deploys the agent asynchronously",
+  "description_zh": "在指定工作空间创建托管 Harness Agent，配置 Harness、模型、技能及运行资源，并异步部署",
   "kebab_example": "aliyun agentcore create-managed-agent --workspace-id ws-1 --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
@@ -74,8 +74,8 @@
             "fields": [
               {
                 "example": "/mnt/agenticfs/data",
-                "help_en": "The subdirectory under /mnt/agenticfs/ in the container. This parameter is required and validated by the backend for each mount item. Mount targets must not be duplicated or overlap in parent-child relationships",
-                "help_zh": "容器内 /mnt/agenticfs/ 下的子目录，每个挂载项由后端校验必填；挂载目标不得重复或父子覆盖",
+                "help_en": "The absolute mount path in the container, such as /data/train. Mount targets cannot be duplicated or form parent-child directory overwrites, and must avoid platform-reserved directories",
+                "help_zh": "容器内的绝对挂载路径，例如 /data/train；挂载目标不得重复或形成父子覆盖，并须避开平台保留目录",
                 "name": "mount_path",
                 "options": [
                   "--mount-path"
@@ -86,7 +86,7 @@
               },
               {
                 "example": "workspace/data",
-                "help_en": "The existing non-empty relative directory under the access point. This parameter is required and validated by the backend for each mount item. Root directories, absolute paths, and parent directory segments are not allowed",
+                "help_en": "The existing non-empty relative directory under the access point. This parameter is required for each mount item and validated by the backend. Root directories, absolute paths, and parent directory segments are not allowed",
                 "help_zh": "AccessPoint 下已存在的非空相对目录，每个挂载项由后端校验必填；不允许根目录、绝对路径或上级目录段",
                 "name": "path",
                 "options": [
@@ -98,7 +98,7 @@
               },
               {
                 "example": "false",
-                "help_en": "Specifies whether the mount is read-only. If omitted, the default value is false. This parameter does not represent a read-only policy for a RAM role",
+                "help_en": "Specifies whether to mount the directory in read-only mode. If omitted, the default value is false. This parameter does not represent a RAM role read-only policy",
                 "help_zh": "是否只读挂载，省略默认 false；不是 RAM 角色只读策略",
                 "name": "read_only",
                 "options": [
@@ -110,7 +110,7 @@
               },
               {
                 "example": "ap-0123456789abcdef0.0123456789-vlm36.cn-hangzhou.nas.aliyuncs.com",
-                "help_en": "The domain name of the access point. This parameter is required and validated by the backend for each mount item. Do not include the protocol, port, or path. Use the DomainName value from the NAS ListAccessPoints response",
+                "help_en": "The access point domain name. This parameter is required for each mount item and validated by the backend. The domain name cannot contain a protocol, port, or path. Use the DomainName value from the NAS ListAccessPoints response",
                 "help_zh": "AccessPoint 域名，每个挂载项由后端校验必填；不含协议、端口或路径，取 NAS ListAccessPoints 响应的 DomainName",
                 "name": "server",
                 "options": [
@@ -123,8 +123,8 @@
             ],
             "type": "object"
           },
-          "help_en": "The list of AgenticFS mounts. If omitted or set to an empty array during creation, no AgenticFS mounts are configured. A null value is rejected. The total number of AgenticFS and OSS mounts cannot exceed 10",
-          "help_zh": "创建时省略或 [] 表示无 AFS 挂载；null 拒绝；与 OSS 合计最多 10 项",
+          "help_en": "The NAS storage mount configurations. Currently, only the AgenticFS type is supported, which is used to mount file directories in access points to agent runtime instances. This is the list of AgenticFS directory mounts. The total number of AgenticFS mounts and OSS mounts cannot exceed 10. If you omit this parameter or set it to [] during creation, no mounts are configured. If you omit this parameter during an update, the existing mounts are retained. If you set it to [], the mounts are cleared. Null values are not accepted",
+          "help_zh": "NAS 存储挂载配置，当前支持 AgenticFS 类型，用于把接入点中的文件目录挂载到 Agent 运行实例。 AgenticFS 目录挂载列表，与 ossMounts 合计最多 10 项；创建时省略或 [] 表示无挂载，更新时省略保留、[] 清空，不接受 null",
           "name": "agentic_fs_mounts",
           "options": [
             "--agentic-fs-mounts"
@@ -135,8 +135,8 @@
         },
         {
           "example": "用于代码评审的智能体",
-          "help_en": "The description of the managed agent",
-          "help_zh": "托管智能体描述",
+          "help_en": "The description of the managed Harness agent",
+          "help_zh": "托管 Harness Agent描述",
           "name": "description",
           "options": [
             "--description"
@@ -216,7 +216,7 @@
               "type": "array"
             }
           ],
-          "help_en": "The environment configuration",
+          "help_en": "The environment configurations",
           "help_zh": "环境配置",
           "name": "environment",
           "options": [
@@ -231,9 +231,9 @@
             {
               "fields": [
                 {
-                  "example": "key-xxxx",
-                  "help_en": "The connector service account key",
-                  "help_zh": "连接器服务账号密钥（Connector Service Account Key）",
+                  "example": "key-example",
+                  "help_en": "The account key record ID in the qodercli connector. You can query this ID by using ListConnectors. This is not the original key. You can omit this parameter if only one record exists. If multiple records exist, you must specify this parameter. Do not specify this parameter for qwenpaw",
+                  "help_zh": "qodercli Connector 中的账号密钥记录 ID，通过 ListConnectors 查询，不是原始密钥；仅有一条记录时可省略，多条时必须指定。qwenpaw 不填写",
                   "name": "connector_service_account_key",
                   "options": [
                     "--connector-service-account-key"
@@ -244,8 +244,8 @@
                 },
                 {
                   "example": "my-connector-key",
-                  "help_en": "The connector service account name",
-                  "help_zh": "连接器服务账号名称（Connector Service Account Name）",
+                  "help_en": "The connector account name bound to qodercli. Do not specify this parameter for qwenpaw",
+                  "help_zh": "qodercli 绑定的连接器账号名称，qwenpaw 不填写",
                   "name": "connector_service_account_name",
                   "options": [
                     "--connector-service-account-name"
@@ -255,7 +255,7 @@
                   "type": "string"
                 }
               ],
-              "help_en": "The runtime framework configuration",
+              "help_en": "The runtime framework configurations",
               "help_zh": "运行框架配置",
               "name": "configuration",
               "options": [
@@ -271,8 +271,8 @@
                 "qodercli"
               ],
               "example": "qodercli",
-              "help_en": "The type of the runtime framework",
-              "help_zh": "运行框架类型",
+              "help_en": "The runtime framework type. This parameter is required when you provide the harness parameter. Valid values: qwenpaw and qodercli",
+              "help_zh": "运行框架类型，提供 harness 时必填，取值 qwenpaw 或 qodercli",
               "name": "type",
               "options": [
                 "--type"
@@ -282,8 +282,8 @@
               "type": "string"
             }
           ],
-          "help_en": "The agent runtime framework",
-          "help_zh": "智能体运行框架",
+          "help_en": "The runtime framework object. If omitted, the default value is qwenpaw. Supported values are qwenpaw and qodercli. The type cannot be changed after creation",
+          "help_zh": "运行框架对象，省略时默认 qwenpaw；支持 qwenpaw 和 qodercli。类型在创建后不可更改",
           "name": "harness",
           "options": [
             "--harness"
@@ -294,7 +294,7 @@
         },
         {
           "example": "你是一个代码评审助手",
-          "help_en": "The agent instruction used to guide the behavior of the agent",
+          "help_en": "The agent instructions, which are used to guide the behavior of the agent",
           "help_zh": "智能体指令，用于指导智能体的行为",
           "name": "instruction",
           "options": [
@@ -308,8 +308,8 @@
           "fields": [
             {
               "example": "mc-1",
-              "help_en": "The model connection ID",
-              "help_zh": "模型连接 ID",
+              "help_en": "For qwenpaw, use the workspace model connection ID. For qodercli, use the available model identifier returned by ListConnectorModels",
+              "help_zh": "qwenpaw 使用工作空间模型连接 ID；qodercli 使用 ListConnectorModels 返回的可用模型标识",
               "name": "model_connection_id",
               "options": [
                 "--model-connection-id"
@@ -320,8 +320,8 @@
             },
             {
               "example": "qwen-max",
-              "help_en": "The name of the upstream model",
-              "help_zh": "上游模型名称",
+              "help_en": "For qwenpaw, use the name of the upstream model created under the model connection. This parameter is required. For qodercli, you can omit this parameter",
+              "help_zh": "qwenpaw 使用模型连接下已创建的上游模型名称，必须提供；qodercli 可省略",
               "name": "model_name",
               "options": [
                 "--model-name"
@@ -334,7 +334,7 @@
               "fields": [
                 {
                   "example": "true",
-                  "help_en": "Specifies whether to enable the token quota. If not specified, the default value is true. A value of false disables the quota and deletes existing quota rules",
+                  "help_en": "Specifies whether to enable the token quota. If not specified, the default value is true. If you set this parameter to false, the quota is disabled and existing quota rules are deleted",
                   "help_zh": "是否启用 Token 配额；不填时默认为 true，传 false 表示关闭并删除已有配额规则",
                   "name": "enabled",
                   "options": [
@@ -365,7 +365,7 @@
                     "month"
                   ],
                   "example": "day",
-                  "help_en": "The statistical period for the quota. This parameter is required and validated by the backend when the quota is enabled. Valid values: day (daily) and month (monthly)",
+                  "help_en": "The quota statistical period. This parameter is required and validated by the backend when the quota is enabled. Valid values: day (daily) and month (monthly)",
                   "help_zh": "配额统计周期；开启配额时由后端校验必填，取值：day（按天）、month（按月）",
                   "name": "period_type",
                   "options": [
@@ -377,7 +377,7 @@
                 },
                 {
                   "example": "1000000",
-                  "help_en": "The maximum number of tokens allowed to be consumed in a single period. This parameter is required and validated by the backend when the quota is enabled. The value must be greater than 0",
+                  "help_en": "The maximum number of tokens that can be consumed in a single period. This parameter is required and validated by the backend when the quota is enabled. The value must be greater than 0",
                   "help_zh": "单个周期内允许消耗的 Token 上限；开启配额时由后端校验必填，必须大于 0",
                   "minimum": "1",
                   "name": "usage_limit",
@@ -389,7 +389,7 @@
                   "type": "int"
                 }
               ],
-              "help_en": "The model token quota configuration. If this parameter is not passed, no quota is configured",
+              "help_en": "The model token quota configurations. If you do not pass this parameter, no quota is configured",
               "help_zh": "模型 Token 配额配置；不传则不配置配额",
               "name": "quota",
               "options": [
@@ -400,7 +400,7 @@
               "type": "object"
             }
           ],
-          "help_en": "The model configuration",
+          "help_en": "The model configurations",
           "help_zh": "模型配置",
           "name": "model",
           "options": [
@@ -412,8 +412,8 @@
         },
         {
           "example": "my-agent",
-          "help_en": "The name of the managed agent",
-          "help_zh": "托管智能体名称",
+          "help_en": "The name of the managed Harness agent",
+          "help_zh": "托管 Harness Agent名称",
           "name": "name",
           "options": [
             "--name"
@@ -439,7 +439,7 @@
                   "type": "bool"
                 }
               ],
-              "help_en": "The public network access configuration",
+              "help_en": "The public network access configurations",
               "help_zh": "公网访问配置",
               "name": "access_internet",
               "options": [
@@ -464,7 +464,7 @@
                   "type": "bool"
                 }
               ],
-              "help_en": "The VPC access configuration",
+              "help_en": "The VPC access configurations",
               "help_zh": "VPC 访问配置",
               "name": "access_vpc",
               "options": [
@@ -475,8 +475,8 @@
               "type": "object"
             }
           ],
-          "help_en": "The network configuration",
-          "help_zh": "网络配置",
+          "help_en": "The runtime network configurations. If you provide this parameter, you must specify both accessInternet.enabled and accessVpc.enabled. Actual access is restricted by the workspace network",
+          "help_zh": "运行网络配置；提供时须同时包含 accessInternet.enabled 与 accessVpc.enabled，实际访问受工作空间网络限制",
           "name": "network",
           "options": [
             "--network"
@@ -490,7 +490,7 @@
             "fields": [
               {
                 "example": "bucket-001",
-                "help_en": "The name of the OSS bucket. This parameter is required and validated by the backend for each mount item",
+                "help_en": "The name of the OSS bucket. This parameter is required for each mount item and validated by the backend",
                 "help_zh": "OSS Bucket 名称；每个挂载项由后端校验必填",
                 "name": "bucket_name",
                 "options": [
@@ -502,8 +502,8 @@
               },
               {
                 "example": "/mnt/oss/datasets",
-                "help_en": "The absolute mount path in the container. This parameter is required and validated by the backend for each mount item",
-                "help_zh": "容器内的绝对挂载路径；每个挂载项由后端校验必填",
+                "help_en": "The absolute mount path in the container, such as /data/train. Mount targets cannot be duplicated or form parent-child directory overwrites, and must avoid platform-reserved directories",
+                "help_zh": "容器内的绝对挂载路径，例如 /data/train；挂载目标不得重复或形成父子覆盖，并须避开平台保留目录",
                 "name": "mount_path",
                 "options": [
                   "--mount-path"
@@ -514,8 +514,8 @@
               },
               {
                 "example": "datasets",
-                "help_en": "The relative object prefix in the bucket. If not specified, the entire bucket is mounted",
-                "help_zh": "Bucket 内的相对对象前缀；不填时挂载整个 Bucket",
+                "help_en": "The non-empty relative object directory prefix in the bucket. This parameter is required for each mount item",
+                "help_zh": "Bucket 内非空的相对对象目录前缀，每个挂载项必填",
                 "name": "path",
                 "options": [
                   "--path"
@@ -525,7 +525,7 @@
                 "type": "string"
               },
               {
-                "help_en": "Specifies whether the mount is read-only. If not specified, the default value is false",
+                "help_en": "Specifies whether to mount the directory in read-only mode. If not specified, the default value is false",
                 "help_zh": "是否只读挂载；不填时默认为 false",
                 "name": "read_only",
                 "options": [
@@ -538,8 +538,8 @@
             ],
             "type": "object"
           },
-          "help_en": "The list of OSS mounts. A maximum of 10 items are allowed",
-          "help_zh": "OSS 挂载列表，最多 10 项",
+          "help_en": "The list of OSS directory mounts. The total number of OSS mounts and AgenticFS mounts cannot exceed 10. During an update, this list is replaced entirely. Pass [] to clear the list",
+          "help_zh": "OSS 目录挂载列表，与 agenticFsMounts 合计最多 10 项；更新时整体替换本列表，传 [] 清空",
           "name": "oss_mounts",
           "options": [
             "--oss-mounts"
@@ -565,7 +565,7 @@
               },
               {
                 "example": "desc",
-                "help_en": "The description of the variable",
+                "help_en": "The variable description",
                 "help_zh": "变量说明",
                 "name": "description",
                 "options": [
@@ -577,7 +577,7 @@
               },
               {
                 "example": "brand",
-                "help_en": "The name of the variable",
+                "help_en": "The variable name",
                 "help_zh": "变量名",
                 "name": "name",
                 "options": [
@@ -611,7 +611,7 @@
                     "HEAVY"
                   ],
                   "example": "STANDARD",
-                  "help_en": "The compute class",
+                  "help_en": "The compute specifications",
                   "help_zh": "计算规格",
                   "name": "compute_class",
                   "options": [
@@ -635,8 +635,8 @@
             {
               "fields": [
                 {
-                  "help_en": "Specifies whether to enable auto-scaling. This parameter is required and validated by the backend when HPA is specified",
-                  "help_zh": "是否启用自动扩缩容；hpa 出现时由后端校验必填",
+                  "help_en": "Specifies whether to enable elastic scaling. Default value: false",
+                  "help_zh": "是否启用弹性扩缩容。省略时默认为 false",
                   "name": "enabled",
                   "options": [
                     "--enabled"
@@ -646,9 +646,9 @@
                   "type": "bool"
                 },
                 {
-                  "example": "5",
-                  "help_en": "The maximum number of active sessions per sandbox. This parameter is required and validated by the backend when HPA is specified",
-                  "help_zh": "单个 Sandbox 的活动 Session 上限；hpa 出现时由后端校验必填",
+                  "example": "20",
+                  "help_en": "The maximum number of concurrent sessions allowed per instance. Valid values: 1 to 20. Default value: 20",
+                  "help_zh": "单个实例允许的最大并发会话数，取值为 1～20，省略时默认为 20",
                   "maximum": "2147483647",
                   "minimum": "1",
                   "name": "max_concurrent_sessions_per_sandbox",
@@ -661,8 +661,8 @@
                 },
                 {
                   "example": "3",
-                  "help_en": "The maximum number of sandboxes. This parameter is required when HPA is enabled and must not be less than the minimum value",
-                  "help_zh": "最大 Sandbox 数；启用 HPA 时必填且不小于最小值",
+                  "help_en": "The maximum number of instances. Valid values: 0 to 100. Default value: 10. The value cannot be less than minSandboxCount",
+                  "help_zh": "实例数量上限，取值为 0～100，省略时默认为 10，不能小于 minSandboxCount",
                   "name": "max_sandbox_count",
                   "options": [
                     "--max-sandbox-count"
@@ -673,8 +673,8 @@
                 },
                 {
                   "example": "1",
-                  "help_en": "The minimum number of sandboxes. This parameter is required when HPA is enabled",
-                  "help_zh": "最小 Sandbox 数；启用 HPA 时必填",
+                  "help_en": "The minimum number of instances. Valid values: 0 to 100. Default value: 1. The value cannot be greater than maxSandboxCount",
+                  "help_zh": "实例数量下限，取值为 0～100，省略时默认为 1，不能大于 maxSandboxCount",
                   "name": "min_sandbox_count",
                   "options": [
                     "--min-sandbox-count"
@@ -685,8 +685,8 @@
                 },
                 {
                   "example": "3600",
-                  "help_en": "The idle timeout period for a session before it is reclaimed, in seconds. This parameter is required and validated by the backend when HPA is specified",
-                  "help_zh": "Session 无活动后的回收时长，单位为秒；hpa 出现时由后端校验必填",
+                  "help_en": "The maximum idle time for a session, in seconds. Valid values: 60 to 86400. Default value: 600",
+                  "help_zh": "会话空闲上限，单位为秒，取值为 60～86400，省略时默认为 600",
                   "maximum": "2147483647",
                   "minimum": "1",
                   "name": "session_ttl_seconds",
@@ -698,8 +698,8 @@
                   "type": "int"
                 }
               ],
-              "help_en": "The sandbox auto-scaling and session configuration",
-              "help_zh": "Sandbox 自动扩缩容及 Session 配置",
+              "help_en": "The elastic scaling and session configuration. Omitted fields use default values. To retain the original policy during an update, submit the complete hpa or omit the entire runtime",
+              "help_zh": "弹性与会话配置。省略的字段使用默认值；更新时如需保留原策略，提交完整 hpa，或省略整个 runtime",
               "name": "hpa",
               "options": [
                 "--hpa"
@@ -712,8 +712,8 @@
               "fields": [
                 {
                   "example": "X-Session-Id",
-                  "help_en": "The name of the HTTP header used for session affinity. This parameter takes effect when sessionPolicy.type is set to ISOLATED_HEADER_FIELD",
-                  "help_zh": "会话亲和性使用的 HTTP 头名称。当 sessionPolicy.type 为 ISOLATED_HEADER_FIELD 时生效",
+                  "help_en": "The name of the request header used for session identification. This parameter is required when type is set to ISOLATED_HEADER_FIELD and must be a valid HTTP request header name. Do not specify this parameter for other policy types",
+                  "help_zh": "会话标识请求头名称；type=ISOLATED_HEADER_FIELD 时必填，须为合法 HTTP 请求头名称；其他策略不填写",
                   "name": "header_name",
                   "options": [
                     "--header-name"
@@ -752,8 +752,8 @@
               "type": "object"
             }
           ],
-          "help_en": "The runtime configuration",
-          "help_zh": "运行时配置",
+          "help_en": "The runtime configuration. You must provide both compute and sessionPolicy. Omitted fields in hpa use default values",
+          "help_zh": "运行配置，必须同时提供 compute 与 sessionPolicy。 hpa 的省略项使用默认值",
           "name": "runtime",
           "options": [
             "--runtime"
@@ -783,7 +783,7 @@
                   "STATIC"
                 ],
                 "example": "REFERENCE",
-                "help_en": "The skill source type. Valid values:\nREFERENCE: references the AI Registry\nSTATIC: statically provided with the package",
+                "help_en": "The skill source type",
                 "help_zh": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
                 "name": "source_type",
                 "options": [
@@ -795,8 +795,8 @@
               },
               {
                 "example": "1.0.0",
-                "help_en": "The skill version",
-                "help_zh": "技能版本",
+                "help_en": "The skill version field for backward compatibility with legacy requests. For new requests, use sourceType and versionSelector. Do not submit this parameter together with sourceType",
+                "help_zh": "兼容旧请求的 Skill 版本字段。新请求使用 sourceType 与 versionSelector，不与 sourceType 组合提交",
                 "name": "version",
                 "options": [
                   "--version"
@@ -813,7 +813,7 @@
                       "VERSION"
                     ],
                     "example": "LABEL",
-                    "help_en": "The version selector type. Valid values:\nLABEL: selects by label\nVERSION: selects by specific version",
+                    "help_en": "The version selector type",
                     "help_zh": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
                     "name": "type",
                     "options": [
@@ -825,7 +825,7 @@
                   },
                   {
                     "example": "latest",
-                    "help_en": "The selector value. When the type is LABEL, this value is the label name, such as latest. When the type is VERSION, this value is the specific version number",
+                    "help_en": "The selector value. When the type is LABEL, this is the tag name, such as latest. When the type is VERSION, this is the specific version number",
                     "help_zh": "选择器取值：LABEL 时为标签名（如 latest），VERSION 时为具体版本号",
                     "name": "value",
                     "options": [
@@ -836,8 +836,8 @@
                     "type": "string"
                   }
                 ],
-                "help_en": "The referenced version selector. If omitted, the default value is LABEL/latest. Currently, only LABEL/latest is supported",
-                "help_zh": "引用的版本选择器，省略时为 LABEL/latest；本期支持 LABEL/latest",
+                "help_en": "The version selector for the skill reference. Supports LABEL for tags and VERSION for specific versions. If omitted, LABEL/latest is used. Selectors are not provided for STATIC sources",
+                "help_zh": "Skill 引用版本选择器，支持 LABEL 标签与 VERSION 具体版本；省略时使用 LABEL/latest。STATIC 来源不提供选择器",
                 "name": "version_selector",
                 "options": [
                   "--version-selector"
@@ -1047,8 +1047,8 @@
     },
     {
       "example": "client-token-1",
-      "help_en": "The reserved idempotency token. The backend does not provide idempotency guarantees in the current phase",
-      "help_zh": "预留幂等令牌，本期后端不提供幂等保证",
+      "help_en": "A reserved query parameter. The backend currently does not provide idempotency guarantees for deduplication or recovering original acceptance results based on this token",
+      "help_zh": "预留 Query 参数，当前后端不提供按该标识去重或恢复原受理结果的幂等保证",
       "location": "query",
       "name": "client_token",
       "options": [
@@ -1065,20 +1065,20 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The information about the managed agent after creation",
-        "description_zh": "创建后的托管智能体信息",
+        "description_en": "The information about the managed Harness agent after creation",
+        "description_zh": "创建后的托管 Harness Agent信息",
         "properties": {
           "code": {
             "backendName": "code",
-            "description_en": "The business status code. The value is SUCCESS when the operation succeeds",
+            "description_en": "The business status code. The value is SUCCESS when the operation is successful",
             "description_zh": "业务状态码。成功时为 SUCCESS",
             "example": "SUCCESS",
             "type": "string"
           },
           "data": {
             "backendName": "data",
-            "description_en": "The information about the managed agent after creation",
-            "description_zh": "创建后的托管智能体信息",
+            "description_en": "The information about the managed Harness agent after creation",
+            "description_zh": "创建后的托管 Harness Agent信息",
             "properties": {
               "accessMode": {
                 "backendName": "accessMode",
@@ -1088,6 +1088,10 @@
                   "API_KEY",
                   "USER"
                 ],
+                "enumValueTitles": {
+                  "API_KEY": "API 密钥鉴权",
+                  "USER": "用户身份"
+                },
                 "example": "API_KEY",
                 "title_en": "入站访问方式",
                 "title_zh": "入站访问方式",
@@ -1101,6 +1105,10 @@
                   "ALL",
                   "SPECIFIED"
                 ],
+                "enumValueTitles": {
+                  "ALL": "全部范围",
+                  "SPECIFIED": "指定范围"
+                },
                 "example": "ALL",
                 "title_en": "用户访问范围",
                 "title_zh": "用户访问范围",
@@ -1108,22 +1116,22 @@
               },
               "agentId": {
                 "backendName": "agentId",
-                "description_en": "The ID of the managed agent",
-                "description_zh": "托管智能体 ID",
+                "description_en": "The ID of the managed Harness agent",
+                "description_zh": "托管 Harness Agent ID",
                 "example": "agent-1",
                 "type": "string"
               },
               "agenticFsMounts": {
                 "backendName": "agenticFsMounts",
-                "description_en": "The list of additional AgenticFS mounts. The total number of AgenticFS mounts and OSS mounts cannot exceed 10",
-                "description_zh": "AgenticFS 额外挂载列表，与 ossMounts 合计最多 10 项",
+                "description_en": "The NAS storage mount configuration. Currently, only the AgenticFS type is supported, which is used to mount file directories in access points to agent runtime instances. The total number of NAS mounts and ossMounts cannot exceed 10",
+                "description_zh": "NAS 存储挂载配置，当前支持 AgenticFS 类型，用于把接入点中的文件目录挂载到 Agent 运行实例。 NAS 挂载，与 ossMounts 合计最多 10 项",
                 "itemName": "agenticFsMounts",
                 "items": {
                   "properties": {
                     "mountPath": {
                       "backendName": "mountPath",
-                      "description_en": "The subdirectory under /mnt/agenticfs/ in the container. This parameter is required and validated by the backend for each mount item. Mount targets must not be duplicated or overlap in parent-child relationships",
-                      "description_zh": "容器内 /mnt/agenticfs/ 下的子目录，每个挂载项由后端校验必填；挂载目标不得重复或父子覆盖",
+                      "description_en": "The absolute mount path in the container, such as /data/train. Mount targets cannot be duplicated or form parent-child directory overwrites, and must avoid platform-reserved directories",
+                      "description_zh": "容器内的绝对挂载路径，例如 /data/train；挂载目标不得重复或形成父子覆盖，并须避开平台保留目录",
                       "example": "/mnt/agenticfs/data",
                       "title_en": "容器内 /mnt/agenticfs/ 下的子目录，每个挂载项由后端校验必填；挂载目标不得重复或父子覆盖",
                       "title_zh": "容器内 /mnt/agenticfs/ 下的子目录，每个挂载项由后端校验必填；挂载目标不得重复或父子覆盖",
@@ -1131,7 +1139,7 @@
                     },
                     "path": {
                       "backendName": "path",
-                      "description_en": "The existing non-empty relative directory under the access point. This parameter is required and validated by the backend for each mount item. Root directories, absolute paths, and parent directory segments are not allowed",
+                      "description_en": "The existing non-empty relative directory under the access point. This parameter is required for each mount item and validated by the backend. Root directories, absolute paths, and parent directory segments are not allowed",
                       "description_zh": "AccessPoint 下已存在的非空相对目录，每个挂载项由后端校验必填；不允许根目录、绝对路径或上级目录段",
                       "example": "workspace/data",
                       "title_en": "AccessPoint 下已存在的非空相对目录，每个挂载项由后端校验必填；不允许根目录、绝对路径或上级目录段",
@@ -1140,7 +1148,7 @@
                     },
                     "readOnly": {
                       "backendName": "readOnly",
-                      "description_en": "Specifies whether the mount is read-only. If omitted, the default value is false. This parameter does not represent a read-only policy for a RAM role",
+                      "description_en": "Specifies whether to mount the directory in read-only mode. If omitted, the default value is false. This parameter does not represent a RAM role read-only policy",
                       "description_zh": "是否只读挂载，省略默认 false；不是 RAM 角色只读策略",
                       "example": "false",
                       "title_en": "是否只读挂载，省略默认 false；不是 RAM 角色只读策略",
@@ -1149,7 +1157,7 @@
                     },
                     "server": {
                       "backendName": "server",
-                      "description_en": "The domain name of the access point. This parameter is required and validated by the backend for each mount item. Do not include the protocol, port, or path. Use the DomainName value from the NAS ListAccessPoints response",
+                      "description_en": "The access point domain name. This parameter is required for each mount item and validated by the backend. The domain name cannot contain a protocol, port, or path. Use the DomainName value from the NAS ListAccessPoints response",
                       "description_zh": "AccessPoint 域名，每个挂载项由后端校验必填；不含协议、端口或路径，取 NAS ListAccessPoints 响应的 DomainName",
                       "example": "ap-0123456789abcdef0.0123456789-vlm36.cn-hangzhou.nas.aliyuncs.com",
                       "title_en": "AccessPoint 域名，每个挂载项由后端校验必填；不含协议、端口或路径，取 NAS ListAccessPoints 响应的 DomainName",
@@ -1183,12 +1191,16 @@
                     },
                     "sourceType": {
                       "backendName": "sourceType",
-                      "description_en": "The skill source type. Valid values:\nREFERENCE: references the AI Registry\nSTATIC: statically provided with the package",
+                      "description_en": "The skill source type",
                       "description_zh": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
                       "enum": [
                         "REFERENCE",
                         "STATIC"
                       ],
+                      "enumValueTitles": {
+                        "REFERENCE": "引用 AI Registry 资产",
+                        "STATIC": "随部署制品静态提供"
+                      },
                       "example": "REFERENCE",
                       "title_en": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
                       "title_zh": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
@@ -1205,17 +1217,21 @@
                     },
                     "versionSelector": {
                       "backendName": "versionSelector",
-                      "description_en": "The referenced version selector. If omitted, the default value is LABEL/latest. Currently, only LABEL/latest is supported",
-                      "description_zh": "引用的版本选择器，省略时为 LABEL/latest；本期支持 LABEL/latest",
+                      "description_en": "The version selector for the skill reference. Supports LABEL for tags and VERSION for specific versions. If omitted, LABEL/latest is used. Selectors are not provided for STATIC sources",
+                      "description_zh": "Skill 引用版本选择器，支持 LABEL 标签与 VERSION 具体版本；省略时使用 LABEL/latest。STATIC 来源不提供选择器",
                       "properties": {
                         "type": {
                           "backendName": "type",
-                          "description_en": "The version selector type. Valid values:\nLABEL: selects by label\nVERSION: selects by specific version",
+                          "description_en": "The version selector type",
                           "description_zh": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
                           "enum": [
                             "LABEL",
                             "VERSION"
                           ],
+                          "enumValueTitles": {
+                            "LABEL": "按标签选择版本",
+                            "VERSION": "按具体版本选择"
+                          },
                           "example": "LABEL",
                           "title_en": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
                           "title_zh": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
@@ -1223,7 +1239,7 @@
                         },
                         "value": {
                           "backendName": "value",
-                          "description_en": "The selector value. When the type is LABEL, this value is the label name, such as latest. When the type is VERSION, this value is the specific version number",
+                          "description_en": "The selector value. When the type is LABEL, this is the tag name, such as latest. When the type is VERSION, this is the specific version number",
                           "description_zh": "选择器取值：LABEL 时为标签名（如 latest），VERSION 时为具体版本号",
                           "example": "latest",
                           "title_en": "选择器取值：LABEL 时为标签名（如 latest），VERSION 时为具体版本号",
@@ -1265,8 +1281,8 @@
               },
               "description": {
                 "backendName": "description",
-                "description_en": "The description of the managed agent",
-                "description_zh": "托管智能体描述",
+                "description_en": "The description of the managed Harness agent",
+                "description_zh": "托管 Harness Agent描述",
                 "example": "用于代码评审的智能体",
                 "type": "string"
               },
@@ -1333,13 +1349,13 @@
                 "properties": {
                   "configuration": {
                     "backendName": "configuration",
-                    "description_en": "The runtime framework configuration",
+                    "description_en": "The runtime framework configurations",
                     "description_zh": "运行框架配置",
                     "properties": {
                       "connectorServiceAccountKey": {
                         "backendName": "connectorServiceAccountKey",
-                        "description_en": "The connector service account key",
-                        "description_zh": "连接器服务账号密钥（Connector Service Account Key）",
+                        "description_en": "The ID of the connector account key record bound to qodercli. This is not the original service account key",
+                        "description_zh": "qodercli 绑定的连接器账号密钥记录 ID，不是原始 Service Account Key",
                         "example": "key-xxxx",
                         "title_en": "Connector Service Account Key",
                         "title_zh": "Connector Service Account Key",
@@ -1347,8 +1363,8 @@
                       },
                       "connectorServiceAccountName": {
                         "backendName": "connectorServiceAccountName",
-                        "description_en": "The connector service account name",
-                        "description_zh": "连接器服务账号名称（Connector Service Account Name）",
+                        "description_en": "The name of the connector account bound to qodercli",
+                        "description_zh": "qodercli 绑定的连接器账号名称",
                         "example": "my-connector-key",
                         "title_en": "Connector Service Account Name",
                         "title_zh": "Connector Service Account Name",
@@ -1361,12 +1377,16 @@
                   },
                   "type": {
                     "backendName": "type",
-                    "description_en": "The type of the runtime framework",
+                    "description_en": "The runtime framework type",
                     "description_zh": "运行框架类型",
                     "enum": [
                       "qwenpaw",
                       "qodercli"
                     ],
+                    "enumValueTitles": {
+                      "qodercli": "qodercli 运行框架",
+                      "qwenpaw": "qwenpaw 运行框架"
+                    },
                     "example": "qodercli",
                     "title_en": "运行框架类型",
                     "title_zh": "运行框架类型",
@@ -1379,7 +1399,7 @@
               },
               "instruction": {
                 "backendName": "instruction",
-                "description_en": "The agent instruction used to guide the behavior of the agent",
+                "description_en": "The agent instructions, which are used to guide the behavior of the agent",
                 "description_zh": "智能体指令，用于指导智能体的行为",
                 "example": "你是一个代码评审助手",
                 "type": "string"
@@ -1394,7 +1414,7 @@
               },
               "latestVersionStatus": {
                 "backendName": "latestVersionStatus",
-                "description_en": "The status of the latest version",
+                "description_en": "The latest version status",
                 "description_zh": "最新版本状态",
                 "enum": [
                   "pending",
@@ -1404,6 +1424,14 @@
                   "failed",
                   "superseded"
                 ],
+                "enumValueTitles": {
+                  "failed": "处理失败",
+                  "pending": "等待处理",
+                  "processing": "处理中",
+                  "succeeded": "处理成功",
+                  "superseded": "已被新版本替代",
+                  "waiting_retry": "等待重试"
+                },
                 "example": "succeeded",
                 "type": "string"
               },
@@ -1421,14 +1449,14 @@
                   },
                   "modelName": {
                     "backendName": "modelName",
-                    "description_en": "The name of the upstream model",
+                    "description_en": "The upstream model name",
                     "description_zh": "上游模型名称",
                     "example": "qwen-max",
                     "type": "string"
                   },
                   "quota": {
                     "backendName": "quota",
-                    "description_en": "The model token quota configuration and usage status for the current period. This field is empty if no quota is configured",
+                    "description_en": "The model token quota configuration and the quota usage status for the current cycle. This field is empty if no quota is configured",
                     "description_zh": "模型 Token 配额配置及当前周期的配额使用状态；未配置配额时为空",
                     "properties": {
                       "enabled": {
@@ -1447,6 +1475,9 @@
                         "enum": [
                           "token"
                         ],
+                        "enumValueTitles": {
+                          "token": "按令牌数量限制"
+                        },
                         "example": "token",
                         "title_en": "配额限制类型；当前仅支持 token",
                         "title_zh": "配额限制类型；当前仅支持 token",
@@ -1454,7 +1485,7 @@
                       },
                       "overLimit": {
                         "backendName": "overLimit",
-                        "description_en": "Indicates whether the quota is exceeded in the current period. This is a read-only field returned by the backend",
+                        "description_en": "Indicates whether the quota is exceeded in the current cycle. This field is read-only and returned by the backend",
                         "description_zh": "当前周期是否已超出配额；只读，由后端返回",
                         "example": "false",
                         "title_en": "当前周期是否已超出配额；只读，由后端返回",
@@ -1463,12 +1494,16 @@
                       },
                       "periodType": {
                         "backendName": "periodType",
-                        "description_en": "The quota statistical period. A value of day indicates daily, and a value of month indicates monthly",
+                        "description_en": "The quota statistical epoch. Valid values: day (daily) and month (monthly)",
                         "description_zh": "配额统计周期；day 表示按天，month 表示按月",
                         "enum": [
                           "day",
                           "month"
                         ],
+                        "enumValueTitles": {
+                          "day": "按天统计",
+                          "month": "按月统计"
+                        },
                         "example": "day",
                         "title_en": "配额统计周期；day 表示按天，month 表示按月",
                         "title_zh": "配额统计周期；day 表示按天，month 表示按月",
@@ -1476,7 +1511,7 @@
                       },
                       "ruleStatus": {
                         "backendName": "ruleStatus",
-                        "description_en": "The status of the gateway quota rule. This is a read-only field returned by the backend",
+                        "description_en": "The status of the gateway quota rule. This field is read-only and returned by the backend",
                         "description_zh": "网关配额规则状态；只读，由后端返回",
                         "example": "ACTIVE",
                         "title_en": "网关配额规则状态；只读，由后端返回",
@@ -1485,7 +1520,7 @@
                       },
                       "usageLimit": {
                         "backendName": "usageLimit",
-                        "description_en": "The maximum number of tokens allowed to be consumed in a single period",
+                        "description_en": "The maximum number of tokens that can be consumed in a single period",
                         "description_zh": "单个周期内允许消耗的 Token 上限",
                         "example": "1000000",
                         "format": "int64",
@@ -1495,7 +1530,7 @@
                       },
                       "usedAmount": {
                         "backendName": "usedAmount",
-                        "description_en": "The number of tokens consumed in the current period. This is a read-only field returned by the backend",
+                        "description_en": "The number of tokens consumed in the current period. This field is read-only and returned by the backend",
                         "description_zh": "当前周期已消耗的 Token 数；只读，由后端返回",
                         "example": "12345",
                         "format": "int64",
@@ -1513,8 +1548,8 @@
               },
               "name": {
                 "backendName": "name",
-                "description_en": "The name of the managed agent",
-                "description_zh": "托管智能体名称",
+                "description_en": "The name of the managed Harness agent",
+                "description_zh": "托管 Harness Agent名称",
                 "example": "my-agent",
                 "type": "string"
               },
@@ -1540,7 +1575,7 @@
                   },
                   "accessVpc": {
                     "backendName": "accessVpc",
-                    "description_en": "The VPC access configuration",
+                    "description_en": "The VPC access configurations",
                     "description_zh": "VPC 访问配置",
                     "properties": {
                       "enabled": {
@@ -1558,14 +1593,14 @@
               },
               "ossMounts": {
                 "backendName": "ossMounts",
-                "description_en": "The list of OSS mounts. A maximum of 10 items are allowed",
+                "description_en": "The list of OSS mounts. A maximum of 10 items are supported",
                 "description_zh": "OSS 挂载列表，最多 10 项",
                 "itemName": "ossMounts",
                 "items": {
                   "properties": {
                     "bucketName": {
                       "backendName": "bucketName",
-                      "description_en": "The name of the OSS bucket. This parameter is required and validated by the backend for each mount item",
+                      "description_en": "The name of the OSS bucket. This parameter is required for each mount item and validated by the backend",
                       "description_zh": "OSS Bucket 名称；每个挂载项由后端校验必填",
                       "example": "bucket-001",
                       "title_en": "OSS Bucket 名称；每个挂载项由后端校验必填",
@@ -1574,8 +1609,8 @@
                     },
                     "mountPath": {
                       "backendName": "mountPath",
-                      "description_en": "The absolute mount path in the container. This parameter is required and validated by the backend for each mount item",
-                      "description_zh": "容器内的绝对挂载路径；每个挂载项由后端校验必填",
+                      "description_en": "The absolute mount path in the container, such as /data/train. Mount targets cannot be duplicated or form parent-child directory overwrites, and must avoid platform-reserved directories",
+                      "description_zh": "容器内的绝对挂载路径，例如 /data/train；挂载目标不得重复或形成父子覆盖，并须避开平台保留目录",
                       "example": "/mnt/oss/datasets",
                       "title_en": "容器内 /mnt/oss/ 下的子目录；每个挂载项必填",
                       "title_zh": "容器内 /mnt/oss/ 下的子目录；每个挂载项必填",
@@ -1583,8 +1618,8 @@
                     },
                     "path": {
                       "backendName": "path",
-                      "description_en": "The relative object prefix in the bucket. If not specified, the entire bucket is mounted",
-                      "description_zh": "Bucket 内的相对对象前缀；不填时挂载整个 Bucket",
+                      "description_en": "The non-empty relative directory prefix in the currently configured bucket",
+                      "description_zh": "当前配置的 Bucket 内非空相对目录前缀",
                       "example": "datasets",
                       "title_en": "Bucket 内非空相对对象前缀；不允许挂载整个 Bucket 或上级目录跳转",
                       "title_zh": "Bucket 内非空相对对象前缀；不允许挂载整个 Bucket 或上级目录跳转",
@@ -1592,7 +1627,7 @@
                     },
                     "readOnly": {
                       "backendName": "readOnly",
-                      "description_en": "Specifies whether the mount is read-only. If not specified, the default value is false",
+                      "description_en": "Specifies whether to mount the directory in read-only mode. If not specified, the default value is false",
                       "description_zh": "是否只读挂载；不填时默认为 false",
                       "title_en": "是否只读挂载；不填时默认为 false",
                       "title_zh": "是否只读挂载；不填时默认为 false",
@@ -1623,7 +1658,7 @@
                     },
                     "description": {
                       "backendName": "description",
-                      "description_en": "The description of the variable",
+                      "description_en": "The variable description",
                       "description_zh": "变量说明",
                       "example": "desc",
                       "title_en": "变量说明",
@@ -1632,7 +1667,7 @@
                     },
                     "name": {
                       "backendName": "name",
-                      "description_en": "The name of the variable",
+                      "description_en": "The variable name",
                       "description_zh": "变量名",
                       "example": "brand",
                       "title_en": "变量名",
@@ -1665,13 +1700,18 @@
                     "properties": {
                       "computeClass": {
                         "backendName": "computeClass",
-                        "description_en": "The compute class",
+                        "description_en": "The compute specifications",
                         "description_zh": "计算规格",
                         "enum": [
                           "INTERACTIVE",
                           "STANDARD",
                           "HEAVY"
                         ],
+                        "enumValueTitles": {
+                          "HEAVY": "高配规格（4 核、8 GiB）",
+                          "INTERACTIVE": "交互规格（1 核、2 GiB）",
+                          "STANDARD": "标准规格（2 核、4 GiB）"
+                        },
                         "example": "STANDARD",
                         "required": true,
                         "type": "string"
@@ -1687,16 +1727,16 @@
                     "properties": {
                       "enabled": {
                         "backendName": "enabled",
-                        "description_en": "Specifies whether to enable auto-scaling. This parameter is required and validated by the backend when HPA is specified",
-                        "description_zh": "是否启用自动扩缩容；hpa 出现时由后端校验必填",
+                        "description_en": "Specifies whether auto-scaling is enabled in the current configuration",
+                        "description_zh": "当前配置是否开启弹性扩缩容",
                         "title_en": "是否启用自动扩缩容；hpa 出现时由后端校验必填",
                         "title_zh": "是否启用自动扩缩容；hpa 出现时由后端校验必填",
                         "type": "boolean"
                       },
                       "maxConcurrentSessionsPerSandbox": {
                         "backendName": "maxConcurrentSessionsPerSandbox",
-                        "description_en": "The maximum number of active sessions per sandbox. This parameter is required and validated by the backend when HPA is specified",
-                        "description_zh": "单个 Sandbox 的活动 Session 上限；hpa 出现时由后端校验必填",
+                        "description_en": "The maximum number of concurrent sessions per instance in the current configuration",
+                        "description_zh": "当前配置的单实例最大并发会话数",
                         "example": "5",
                         "format": "int32",
                         "maximum": "2147483647",
@@ -1707,8 +1747,8 @@
                       },
                       "maxSandboxCount": {
                         "backendName": "maxSandboxCount",
-                        "description_en": "The maximum number of sandboxes. This parameter is required when HPA is enabled and must not be less than the minimum value",
-                        "description_zh": "最大 Sandbox 数；启用 HPA 时必填且不小于最小值",
+                        "description_en": "The maximum number of instances in the current configuration",
+                        "description_zh": "当前配置的实例数量上限",
                         "example": "3",
                         "format": "int32",
                         "title_en": "最大 Sandbox 数；启用 HPA 时必填且不小于最小值",
@@ -1717,8 +1757,8 @@
                       },
                       "minSandboxCount": {
                         "backendName": "minSandboxCount",
-                        "description_en": "The minimum number of sandboxes. This parameter is required when HPA is enabled",
-                        "description_zh": "最小 Sandbox 数；启用 HPA 时必填",
+                        "description_en": "The minimum number of instances in the current configuration",
+                        "description_zh": "当前配置的实例数量下限",
                         "example": "1",
                         "format": "int32",
                         "title_en": "最小 Sandbox 数；启用 HPA 时必填",
@@ -1727,8 +1767,8 @@
                       },
                       "sessionTtlSeconds": {
                         "backendName": "sessionTtlSeconds",
-                        "description_en": "The idle timeout period for a session before it is reclaimed, in seconds. This parameter is required and validated by the backend when HPA is specified",
-                        "description_zh": "Session 无活动后的回收时长，单位为秒；hpa 出现时由后端校验必填",
+                        "description_en": "The maximum idle time of a session in the current configuration, in seconds",
+                        "description_zh": "当前配置的会话空闲上限，单位为秒",
                         "example": "3600",
                         "format": "int32",
                         "maximum": "2147483647",
@@ -1764,6 +1804,12 @@
                           "ISOLATED_COOKIE",
                           "ISOLATED_HEADER_FIELD"
                         ],
+                        "enumValueTitles": {
+                          "AFFINITY": "会话亲和",
+                          "DISABLED": "关闭",
+                          "ISOLATED_COOKIE": "通过 Cookie 标识隔离会话",
+                          "ISOLATED_HEADER_FIELD": "通过指定请求头标识隔离会话"
+                        },
                         "example": "DISABLED",
                         "required": true,
                         "type": "string"
@@ -1777,15 +1823,15 @@
               },
               "sandboxPhaseCounts": {
                 "additionalProperties": {
-                  "description_en": "The number of instances for the corresponding sandbox phase",
+                  "description_en": "The number of instances in the corresponding sandbox phase",
                   "description_zh": "对应 Sandbox 运行阶段的实例数量",
                   "example": "1",
                   "format": "int64",
                   "type": "integer"
                 },
                 "backendName": "sandboxPhaseCounts",
-                "description_en": "The number of managed agent instances by sandbox phase. Current keys: PENDING (creating or initializing), RUNNING (running), HIBERNATING (hibernating), HIBERNATED (hibernated), RESUMING (resuming), TERMINATING (terminating), and FAILED (runtime failure). Only phases that actually occur are returned, and missing keys are treated as 0. This field is a dynamic mapping and new keys may be added in the future. The frontend can use FAILED > 0 to determine whether abnormal instances exist",
-                "description_zh": "按 Sandbox Phase 统计托管智能体的实例数量。当前 Key：PENDING（创建或初始化中）、RUNNING（运行中）、HIBERNATING（休眠中）、HIBERNATED（已休眠）、RESUMING（恢复中）、TERMINATING（销毁中）、FAILED（运行时失败）。仅返回实际出现的 Phase，缺失 Key 按 0 处理。该字段为动态映射，后续可能新增 Key，前端可用 FAILED > 0 判断是否存在异常实例",
+                "description_en": "The number of managed harness agent instances grouped by sandbox phase. Current keys: PENDING (creating or initializing), RUNNING (running), HIBERNATING (hibernating), HIBERNATED (hibernated), RESUMING (resuming), TERMINATING (terminating), and FAILED (failed during runtime). Only phases that actually occur are returned. Missing keys are treated as 0. This field is a dynamic map and new keys may be added in the future. The frontend can use FAILED > 0 to determine whether abnormal instances exist",
+                "description_zh": "按 Sandbox Phase 统计托管 Harness Agent的实例数量。当前 Key：PENDING（创建或初始化中）、RUNNING（运行中）、HIBERNATING（休眠中）、HIBERNATED（已休眠）、RESUMING（恢复中）、TERMINATING（销毁中）、FAILED（运行时失败）。仅返回实际出现的 Phase，缺失 Key 按 0 处理。该字段为动态映射，后续可能新增 Key，前端可用 FAILED > 0 判断是否存在异常实例",
                 "title_en": "按 Sandbox Phase 统计托管智能体的实例数量。当前 Key：PENDING（创建或初始化中）、RUNNING（运行中）、HIBERNATING（休眠中）、HIBERNATED（已休眠）、RESUMING（恢复中）、TERMINATING（销毁中）、FAILED（运行时失败）。仅返回实际出现的 Phase，缺失 Key 按 0 处理。该字段为动态映射，后续可能新增 Key，前端可用 FAILED > 0 判断是否存在异常实例。",
                 "title_zh": "按 Sandbox Phase 统计托管智能体的实例数量。当前 Key：PENDING（创建或初始化中）、RUNNING（运行中）、HIBERNATING（休眠中）、HIBERNATED（已休眠）、RESUMING（恢复中）、TERMINATING（销毁中）、FAILED（运行时失败）。仅返回实际出现的 Phase，缺失 Key 按 0 处理。该字段为动态映射，后续可能新增 Key，前端可用 FAILED > 0 判断是否存在异常实例。",
                 "type": "object"
@@ -1799,7 +1845,7 @@
                   "properties": {
                     "appliedVersion": {
                       "backendName": "appliedVersion",
-                      "description_en": "The applied version in the runtime. This field is read-only",
+                      "description_en": "The applied runtime version. This field is read-only",
                       "description_zh": "运行时已生效版本，只读",
                       "example": "1.0.0",
                       "title_en": "运行时已生效版本，只读",
@@ -1808,7 +1854,7 @@
                     },
                     "fromTemplate": {
                       "backendName": "fromTemplate",
-                      "description_en": "Specifies whether the skill is from a fixed template. This field is read-only. Template items cannot be removed",
+                      "description_en": "Indicates whether the item is sourced from a fixed template. This field is read-only. Items from templates cannot be removed",
                       "description_zh": "是否来自固定模板，只读；模板项不可移除",
                       "example": "false",
                       "title_en": "是否来自固定模板，只读；模板项不可移除",
@@ -1835,12 +1881,16 @@
                     },
                     "sourceType": {
                       "backendName": "sourceType",
-                      "description_en": "The skill source type. Valid values:\nREFERENCE: references the AI Registry\nSTATIC: statically provided with the package",
+                      "description_en": "The skill source type",
                       "description_zh": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
                       "enum": [
                         "REFERENCE",
                         "STATIC"
                       ],
+                      "enumValueTitles": {
+                        "REFERENCE": "引用 AI Registry 资产",
+                        "STATIC": "随部署制品静态提供"
+                      },
                       "example": "REFERENCE",
                       "title_en": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
                       "title_zh": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
@@ -1848,8 +1898,8 @@
                     },
                     "version": {
                       "backendName": "version",
-                      "description_en": "The skill version",
-                      "description_zh": "技能版本",
+                      "description_en": "The current target version compatible with legacy clients. New clients use resolvedVersion and determine the effective runtime version based on appliedVersion",
+                      "description_zh": "兼容旧客户端的当前目标版本；新客户端使用 resolvedVersion，并以 appliedVersion 判断运行时生效版本",
                       "example": "1.0.0",
                       "title_en": "旧版兼容的当前目标版本，新客户端使用 resolvedVersion",
                       "title_zh": "旧版兼容的当前目标版本，新客户端使用 resolvedVersion",
@@ -1857,17 +1907,21 @@
                     },
                     "versionSelector": {
                       "backendName": "versionSelector",
-                      "description_en": "The referenced version selector. If omitted, the default value is LABEL/latest",
-                      "description_zh": "引用的版本选择器，省略时为 LABEL/latest",
+                      "description_en": "The version selector for the skill reference. Supports LABEL for tags and VERSION for specific versions. If omitted, LABEL/latest is used. Selectors are not provided for STATIC sources",
+                      "description_zh": "Skill 引用版本选择器，支持 LABEL 标签与 VERSION 具体版本；省略时使用 LABEL/latest。STATIC 来源不提供选择器",
                       "properties": {
                         "type": {
                           "backendName": "type",
-                          "description_en": "The version selector type. Valid values:\nLABEL: selects by label\nVERSION: selects by specific version",
+                          "description_en": "The version selector type",
                           "description_zh": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
                           "enum": [
                             "LABEL",
                             "VERSION"
                           ],
+                          "enumValueTitles": {
+                            "LABEL": "按标签选择版本",
+                            "VERSION": "按具体版本选择"
+                          },
                           "example": "LABEL",
                           "title_en": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
                           "title_zh": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
@@ -1875,7 +1929,7 @@
                         },
                         "value": {
                           "backendName": "value",
-                          "description_en": "The selector value. When the type is LABEL, this value is the label name, such as latest. When the type is VERSION, this value is the specific version number",
+                          "description_en": "The selector value. When the type is LABEL, this is the tag name, such as latest. When the type is VERSION, this is the specific version number",
                           "description_zh": "选择器取值：LABEL 时为标签名（如 latest），VERSION 时为具体版本号",
                           "example": "latest",
                           "title_en": "选择器取值：LABEL 时为标签名（如 latest），VERSION 时为具体版本号",
@@ -1894,8 +1948,8 @@
               },
               "status": {
                 "backendName": "status",
-                "description_en": "The status of the managed agent",
-                "description_zh": "托管智能体状态",
+                "description_en": "The status of the managed Harness agent",
+                "description_zh": "托管 Harness Agent状态",
                 "enum": [
                   "Creating",
                   "Running",
@@ -1904,6 +1958,14 @@
                   "Deleting",
                   "Deleted"
                 ],
+                "enumValueTitles": {
+                  "Creating": "创建中",
+                  "Deleted": "已删除",
+                  "Deleting": "删除中",
+                  "Failed": "失败",
+                  "Running": "运行中",
+                  "Updating": "更新中"
+                },
                 "example": "Running",
                 "type": "string"
               },
@@ -2022,6 +2084,9 @@
                       "enum": [
                         "MCP"
                       ],
+                      "enumValueTitles": {
+                        "MCP": "MCP 服务"
+                      },
                       "example": "MCP",
                       "required": true,
                       "type": "string"
@@ -2050,7 +2115,7 @@
           },
           "httpStatusCode": {
             "backendName": "httpStatusCode",
-            "description_en": "The HTTP status code. 200 is returned if the request is successful",
+            "description_en": "The HTTP status code. The value is 200 if the request is successful",
             "description_zh": "HTTP 状态码。成功时为 200",
             "example": "200",
             "format": "int32",
@@ -2058,7 +2123,7 @@
           },
           "message": {
             "backendName": "message",
-            "description_en": "The message returned for the request",
+            "description_en": "The message that describes the request processing result",
             "description_zh": "请求处理结果消息",
             "example": "success",
             "type": "string"
@@ -2072,7 +2137,7 @@
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request is successful",
+            "description_en": "Indicates whether the request was successful",
             "description_zh": "请求是否成功",
             "example": "true",
             "type": "boolean"

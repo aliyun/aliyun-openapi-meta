@@ -3,8 +3,8 @@
   "cmd_full_name": "agentcore get-external-agent",
   "cmd_name": "get-external-agent",
   "deprecated": false,
-  "description_en": "Queries the details of a specified external agent",
-  "description_zh": "查询指定外部智能体的详细信息",
+  "description_en": "Queries the configuration, model source, version processing status, and external runtime status of a managed agent",
+  "description_zh": "查询纳管 Agent的配置、模型来源、版本处理状态及外部运行状态",
   "kebab_example": "aliyun agentcore get-external-agent --workspace-id ws-1 --agent-id agent-1 --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
@@ -35,8 +35,8 @@
     },
     {
       "example": "agent-1",
-      "help_en": "The external agent ID",
-      "help_zh": "外部智能体 ID",
+      "help_en": "The ID of the managed agent",
+      "help_zh": "纳管 Agent ID",
       "location": "path",
       "name": "agent_id",
       "options": [
@@ -53,32 +53,32 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The successful response for querying an external agent",
-        "description_zh": "查询外部智能体的成功响应",
+        "description_en": "The successful response for querying a managed agent",
+        "description_zh": "查询纳管 Agent的成功响应",
         "properties": {
           "code": {
             "backendName": "code",
-            "description_en": "The business status code. The value is SUCCESS if the request is successful",
+            "description_en": "The business status code. The value is SUCCESS if the operation is successful",
             "description_zh": "业务状态码。成功时为 SUCCESS",
             "example": "SUCCESS",
             "type": "string"
           },
           "data": {
             "backendName": "data",
-            "description_en": "The details of the external agent",
-            "description_zh": "外部智能体详情信息",
+            "description_en": "The details of the managed agent",
+            "description_zh": "纳管 Agent详情信息",
             "properties": {
               "agentId": {
                 "backendName": "agentId",
-                "description_en": "The external agent ID",
-                "description_zh": "外部智能体 ID",
+                "description_en": "The ID of the managed agent",
+                "description_zh": "纳管 Agent ID",
                 "example": "agent-1",
                 "type": "string"
               },
               "configuredSkills": {
                 "backendName": "configuredSkills",
-                "description_en": "Includes only the skills added or overridden by the user, excluding inherited items from templates. The resource model reads this field to preserve update semantics. Creation and update operations still use the skills in the request",
-                "description_zh": "仅包含用户追加或覆盖的 Skill，不包含模板继承项。资源模型读取此字段以保留更新语义；创建和更新仍使用请求中的 skills",
+                "description_en": "The explicitly configured skills",
+                "description_zh": "显式配置的 Skill",
                 "itemName": "Skill",
                 "items": {
                   "properties": {
@@ -94,12 +94,16 @@
                     },
                     "sourceType": {
                       "backendName": "sourceType",
-                      "description_en": "The source type of the skill. Valid values: REFERENCE (references the AI Registry) and STATIC (statically provided with the package)",
+                      "description_en": "The source type of the skill",
                       "description_zh": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
                       "enum": [
                         "REFERENCE",
                         "STATIC"
                       ],
+                      "enumValueTitles": {
+                        "REFERENCE": "引用 AI Registry 资产",
+                        "STATIC": "随部署制品静态提供"
+                      },
                       "example": "REFERENCE",
                       "title_en": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
                       "title_zh": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
@@ -116,17 +120,21 @@
                     },
                     "versionSelector": {
                       "backendName": "versionSelector",
-                      "description_en": "The referenced version selector. If omitted, the default value is LABEL/latest. Only LABEL/latest is supported in the current phase",
-                      "description_zh": "引用的版本选择器，省略时为 LABEL/latest；本期支持 LABEL/latest",
+                      "description_en": "The version selector for the skill reference. Supports LABEL for tags and VERSION for specific versions. If omitted, LABEL/latest is used. STATIC sources do not provide a selector",
+                      "description_zh": "Skill 引用版本选择器，支持 LABEL 标签与 VERSION 具体版本；省略时使用 LABEL/latest。STATIC 来源不提供选择器",
                       "properties": {
                         "type": {
                           "backendName": "type",
-                          "description_en": "The type of the version selector. Valid values: LABEL (selects by tag) and VERSION (selects by specific version)",
+                          "description_en": "The type of the version selector",
                           "description_zh": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
                           "enum": [
                             "LABEL",
                             "VERSION"
                           ],
+                          "enumValueTitles": {
+                            "LABEL": "按标签选择版本",
+                            "VERSION": "按具体版本选择"
+                          },
                           "example": "LABEL",
                           "title_en": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
                           "title_zh": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
@@ -134,7 +142,7 @@
                         },
                         "value": {
                           "backendName": "value",
-                          "description_en": "The value of the selector. If the type is LABEL, the value is a tag name such as latest. If the type is VERSION, the value is a specific version number",
+                          "description_en": "The value of the selector. For LABEL, it is the tag name, such as latest. For VERSION, it is the specific version number",
                           "description_zh": "选择器取值：LABEL 时为标签名（如 latest），VERSION 时为具体版本号",
                           "example": "latest",
                           "title_en": "选择器取值：LABEL 时为标签名（如 latest），VERSION 时为具体版本号",
@@ -176,53 +184,58 @@
               },
               "description": {
                 "backendName": "description",
-                "description_en": "The description of the external agent",
-                "description_zh": "外部智能体描述",
+                "description_en": "The description of the managed agent",
+                "description_zh": "纳管 Agent描述",
                 "example": "运行在用户环境中的代码评审智能体",
                 "type": "string"
               },
               "externalAgentStatus": {
                 "backendName": "externalAgentStatus",
-                "description_en": "The running status information reported by the external agent",
-                "description_zh": "外部智能体上报的运行状态信息",
+                "description_en": "The runtime status information reported by the managed agent",
+                "description_zh": "纳管 Agent上报的运行状态信息",
                 "properties": {
                   "heartbeatStatus": {
                     "backendName": "heartbeatStatus",
-                    "description_en": "The heartbeat status. ONLINE indicates that the most recent heartbeat did not exceed the configured timeout threshold. STALE indicates that the heartbeat has timed out. UNKNOWN indicates that the heartbeat is missing or the format is invalid. Valid values: ONLINE (online), STALE (heartbeat expired), and UNKNOWN (unknown)",
+                    "description_en": "The heartbeat status. ONLINE indicates that the latest heartbeat has not exceeded the configured timeout threshold. STALE indicates that the heartbeat has timed out. UNKNOWN indicates that the heartbeat is missing or has an invalid format. Valid values: ONLINE (online), STALE (heartbeat expired), and UNKNOWN (unknown)",
                     "description_zh": "心跳状态。ONLINE 表示最近心跳未超过配置的超时阈值；STALE 表示心跳已超时；UNKNOWN 表示心跳缺失或格式无效。枚举值：ONLINE（在线）、STALE（心跳过期）、UNKNOWN（未知）",
                     "enum": [
                       "ONLINE",
                       "STALE",
                       "UNKNOWN"
                     ],
+                    "enumValueTitles": {
+                      "ONLINE": "在线",
+                      "STALE": "心跳过期",
+                      "UNKNOWN": "未知"
+                    },
                     "example": "ONLINE",
                     "type": "string"
                   },
                   "lastActiveAt": {
                     "backendName": "lastActiveAt",
-                    "description_en": "The last active time of the external agent in RFC 3339 format",
-                    "description_zh": "外部智能体最近一次活跃时间，RFC 3339 格式",
+                    "description_en": "The last active time of the managed agent in RFC 3339 format",
+                    "description_zh": "纳管 Agent最近一次活跃时间，RFC 3339 格式",
                     "example": "2026-01-01T00:00:00Z",
                     "type": "string"
                   },
                   "lastHeartbeat": {
                     "backendName": "lastHeartbeat",
-                    "description_en": "The last heartbeat time of the external agent in RFC 3339 format",
-                    "description_zh": "外部智能体最近一次心跳时间，RFC 3339 格式",
+                    "description_en": "The last heartbeat time of the managed agent in RFC 3339 format",
+                    "description_zh": "纳管 Agent最近一次心跳时间，RFC 3339 格式",
                     "example": "2026-01-01T00:00:00Z",
                     "type": "string"
                   },
                   "localIP": {
                     "backendName": "localIP",
-                    "description_en": "The local IP address reported by the external agent",
-                    "description_zh": "外部智能体上报的本地 IP 地址",
+                    "description_en": "The local IP address reported by the managed agent",
+                    "description_zh": "纳管 Agent上报的本地 IP 地址",
                     "example": "10.0.0.42",
                     "type": "string"
                   },
                   "runtime": {
                     "backendName": "runtime",
-                    "description_en": "The runtime type reported by the external agent",
-                    "description_zh": "外部智能体上报的运行时类型",
+                    "description_en": "The runtime type reported by the managed agent",
+                    "description_zh": "纳管 Agent上报的运行时类型",
                     "example": "qwenpaw",
                     "type": "string"
                   }
@@ -231,7 +244,7 @@
               },
               "instruction": {
                 "backendName": "instruction",
-                "description_en": "The agent instruction used to guide the behavior of the agent",
+                "description_en": "The agent instruction that guides the behavior of the agent",
                 "description_zh": "智能体指令，用于指导智能体的行为",
                 "example": "你是一个代码评审助手",
                 "type": "string"
@@ -246,7 +259,7 @@
               },
               "latestVersionStatus": {
                 "backendName": "latestVersionStatus",
-                "description_en": "The processing status of the latest specification version. Valid values: pending (pending), processing (processing), waiting_retry (waiting for retry), succeeded (succeeded), failed (failed), and superseded (superseded by a new version)",
+                "description_en": "The processing status of the latest specification version. Valid values: pending, processing, waiting_retry, succeeded, failed, and superseded",
                 "description_zh": "最新规格版本的处理状态。枚举值：pending（待处理）、processing（处理中）、waiting_retry（等待重试）、succeeded（成功）、failed（失败）、superseded（已被新版本取代）",
                 "enum": [
                   "pending",
@@ -256,12 +269,20 @@
                   "failed",
                   "superseded"
                 ],
+                "enumValueTitles": {
+                  "failed": "失败",
+                  "pending": "待处理",
+                  "processing": "处理中",
+                  "succeeded": "成功",
+                  "superseded": "已被新版本取代",
+                  "waiting_retry": "等待重试"
+                },
                 "example": "pending",
                 "type": "string"
               },
               "model": {
                 "backendName": "model",
-                "description_en": "The model configuration. This field is available only when modelSource is set to PLATFORM",
+                "description_en": "The model configuration. Available only when modelSource is PLATFORM",
                 "description_zh": "模型配置。仅 modelSource 为 PLATFORM 时可用",
                 "properties": {
                   "modelConnectionId": {
@@ -273,19 +294,19 @@
                   },
                   "modelName": {
                     "backendName": "modelName",
-                    "description_en": "The name of the upstream model",
+                    "description_en": "The upstream model name",
                     "description_zh": "上游模型名称",
                     "example": "qwen-max",
                     "type": "string"
                   },
                   "quota": {
                     "backendName": "quota",
-                    "description_en": "The model token quota configuration and usage status for the current period. This field is empty if no quota is configured",
+                    "description_en": "The model token quota configuration and the quota usage status for the current period. Empty if no quota is configured",
                     "description_zh": "模型 Token 配额配置及当前周期的配额使用状态；未配置配额时为空",
                     "properties": {
                       "enabled": {
                         "backendName": "enabled",
-                        "description_en": "Specifies whether the quota is enabled. This field is not returned if no quota is configured",
+                        "description_en": "Indicates whether the quota is enabled. Not returned if no quota is configured",
                         "description_zh": "配额是否处于启用状态；未配置配额时不返回",
                         "example": "true",
                         "title_en": "配额是否处于启用状态；未配置配额时不返回",
@@ -294,11 +315,14 @@
                       },
                       "limitType": {
                         "backendName": "limitType",
-                        "description_en": "The quota limit type. Only token is supported",
+                        "description_en": "The quota limit type. Currently, only token is supported",
                         "description_zh": "配额限制类型；当前仅支持 token",
                         "enum": [
                           "token"
                         ],
+                        "enumValueTitles": {
+                          "token": "按令牌数量限制"
+                        },
                         "example": "token",
                         "title_en": "配额限制类型；当前仅支持 token",
                         "title_zh": "配额限制类型；当前仅支持 token",
@@ -306,7 +330,7 @@
                       },
                       "overLimit": {
                         "backendName": "overLimit",
-                        "description_en": "Specifies whether the quota is exceeded in the current period. This field is read-only and returned by the backend",
+                        "description_en": "Indicates whether the quota has been exceeded in the current period. Read-only and returned by the backend",
                         "description_zh": "当前周期是否已超出配额；只读，由后端返回",
                         "example": "false",
                         "title_en": "当前周期是否已超出配额；只读，由后端返回",
@@ -315,12 +339,16 @@
                       },
                       "periodType": {
                         "backendName": "periodType",
-                        "description_en": "The quota statistical period. Valid values: day (daily) and month (monthly)",
+                        "description_en": "The quota statistical period. day indicates daily statistics, and month indicates monthly statistics",
                         "description_zh": "配额统计周期；day 表示按天，month 表示按月",
                         "enum": [
                           "day",
                           "month"
                         ],
+                        "enumValueTitles": {
+                          "day": "按天统计",
+                          "month": "按月统计"
+                        },
                         "example": "day",
                         "title_en": "配额统计周期；day 表示按天，month 表示按月",
                         "title_zh": "配额统计周期；day 表示按天，month 表示按月",
@@ -328,7 +356,7 @@
                       },
                       "ruleStatus": {
                         "backendName": "ruleStatus",
-                        "description_en": "The gateway quota rule status. This field is read-only and returned by the backend",
+                        "description_en": "The gateway quota rule status. Read-only and returned by the backend",
                         "description_zh": "网关配额规则状态；只读，由后端返回",
                         "example": "ACTIVE",
                         "title_en": "网关配额规则状态；只读，由后端返回",
@@ -347,7 +375,7 @@
                       },
                       "usedAmount": {
                         "backendName": "usedAmount",
-                        "description_en": "The number of tokens consumed in the current period. This field is read-only and returned by the backend",
+                        "description_en": "The number of tokens consumed in the current period. Read-only and returned by the backend",
                         "description_zh": "当前周期已消耗的 Token 数；只读，由后端返回",
                         "example": "12345",
                         "format": "int64",
@@ -365,19 +393,23 @@
               },
               "modelSource": {
                 "backendName": "modelSource",
-                "description_en": "The source of the model configuration. PLATFORM indicates that the platform parses and delivers the model configuration. RUNTIME indicates that the external runtime manages the model itself, and the model field cannot be passed at the same time. Valid values: PLATFORM (platform model) and RUNTIME (runtime model)",
+                "description_en": "The source of the model configuration. PLATFORM indicates that the platform parses and delivers the model configuration. RUNTIME indicates that the external runtime manages the model independently, and the model parameter cannot be passed at the same time. Valid values: PLATFORM and RUNTIME",
                 "description_zh": "模型配置来源。PLATFORM 表示由平台解析并下发 model 配置；RUNTIME 表示由外部运行时自行管理模型，不能同时传入 model。枚举值：PLATFORM（平台模型）、RUNTIME（运行时模型）",
                 "enum": [
                   "PLATFORM",
                   "RUNTIME"
                 ],
+                "enumValueTitles": {
+                  "PLATFORM": "平台模型",
+                  "RUNTIME": "运行时模型"
+                },
                 "example": "PLATFORM",
                 "type": "string"
               },
               "name": {
                 "backendName": "name",
-                "description_en": "The name of the external agent",
-                "description_zh": "外部智能体名称",
+                "description_en": "The name of the managed agent",
+                "description_zh": "纳管 Agent名称",
                 "example": "my-external-agent",
                 "type": "string"
               },
@@ -390,8 +422,8 @@
               },
               "runtime": {
                 "backendName": "runtime",
-                "description_en": "The runtime type reported by the external agent",
-                "description_zh": "外部智能体上报的运行时类型",
+                "description_en": "The runtime type reported by the managed agent",
+                "description_zh": "纳管 Agent上报的运行时类型",
                 "example": "qwenpaw",
                 "type": "string"
               },
@@ -405,7 +437,7 @@
                   "properties": {
                     "appliedVersion": {
                       "backendName": "appliedVersion",
-                      "description_en": "The effective version at runtime. This field is read-only",
+                      "description_en": "The applied version in the runtime. Read-only",
                       "description_zh": "运行时已生效版本，只读",
                       "example": "1.0.0",
                       "title_en": "运行时已生效版本，只读",
@@ -414,7 +446,7 @@
                     },
                     "fromTemplate": {
                       "backendName": "fromTemplate",
-                      "description_en": "Specifies whether the skill is from a fixed template. This field is read-only. Template items cannot be removed",
+                      "description_en": "Indicates whether the skill is from a fixed template. Read-only. Template items cannot be removed",
                       "description_zh": "是否来自固定模板，只读；模板项不可移除",
                       "example": "false",
                       "title_en": "是否来自固定模板，只读；模板项不可移除",
@@ -423,7 +455,7 @@
                     },
                     "name": {
                       "backendName": "name",
-                      "description_en": "The name of the skill",
+                      "description_en": "The skill name",
                       "description_zh": "技能名称",
                       "example": "code-analysis",
                       "title_en": "Workspace AI Registry 中的 Skill 名称",
@@ -441,12 +473,16 @@
                     },
                     "sourceType": {
                       "backendName": "sourceType",
-                      "description_en": "The source type of the skill. Valid values: REFERENCE (references the AI Registry) and STATIC (statically provided with the package)",
+                      "description_en": "The source type of the skill",
                       "description_zh": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
                       "enum": [
                         "REFERENCE",
                         "STATIC"
                       ],
+                      "enumValueTitles": {
+                        "REFERENCE": "引用 AI Registry 资产",
+                        "STATIC": "随部署制品静态提供"
+                      },
                       "example": "REFERENCE",
                       "title_en": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
                       "title_zh": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
@@ -454,8 +490,8 @@
                     },
                     "version": {
                       "backendName": "version",
-                      "description_en": "The skill version",
-                      "description_zh": "技能版本",
+                      "description_en": "The current target version compatible with legacy clients. New clients use resolvedVersion and determine the effective runtime version based on appliedVersion",
+                      "description_zh": "兼容旧客户端的当前目标版本；新客户端使用 resolvedVersion，并以 appliedVersion 判断运行时生效版本",
                       "example": "1.0.0",
                       "title_en": "旧版兼容的当前目标版本，新客户端使用 resolvedVersion",
                       "title_zh": "旧版兼容的当前目标版本，新客户端使用 resolvedVersion",
@@ -463,17 +499,21 @@
                     },
                     "versionSelector": {
                       "backendName": "versionSelector",
-                      "description_en": "The referenced version selector. If omitted, the default value is LABEL/latest",
-                      "description_zh": "引用的版本选择器，省略时为 LABEL/latest",
+                      "description_en": "The version selector for the skill reference. Supports LABEL for tags and VERSION for specific versions. If omitted, LABEL/latest is used. STATIC sources do not provide a selector",
+                      "description_zh": "Skill 引用版本选择器，支持 LABEL 标签与 VERSION 具体版本；省略时使用 LABEL/latest。STATIC 来源不提供选择器",
                       "properties": {
                         "type": {
                           "backendName": "type",
-                          "description_en": "The type of the version selector. Valid values: LABEL (selects by tag) and VERSION (selects by specific version)",
+                          "description_en": "The type of the version selector",
                           "description_zh": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
                           "enum": [
                             "LABEL",
                             "VERSION"
                           ],
+                          "enumValueTitles": {
+                            "LABEL": "按标签选择版本",
+                            "VERSION": "按具体版本选择"
+                          },
                           "example": "LABEL",
                           "title_en": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
                           "title_zh": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
@@ -481,7 +521,7 @@
                         },
                         "value": {
                           "backendName": "value",
-                          "description_en": "The value of the selector. If the type is LABEL, the value is a tag name such as latest. If the type is VERSION, the value is a specific version number",
+                          "description_en": "The value of the selector. For LABEL, it is the tag name, such as latest. For VERSION, it is the specific version number",
                           "description_zh": "选择器取值：LABEL 时为标签名（如 latest），VERSION 时为具体版本号",
                           "example": "latest",
                           "title_en": "选择器取值：LABEL 时为标签名（如 latest），VERSION 时为具体版本号",
@@ -500,8 +540,8 @@
               },
               "status": {
                 "backendName": "status",
-                "description_en": "The status of the external agent. Valid values: Creating (creating), Running (running), Failed (failed), Updating (updating), Deleting (deleting), and Deleted (deleted)",
-                "description_zh": "外部智能体状态。枚举值：Creating（创建中）、Running（运行中）、Failed（失败）、Updating（更新中）、Deleting（删除中）、Deleted（已删除）",
+                "description_en": "The status of the managed agent. Valid values:\nCreating: The agent is being created.\nRunning: The agent is running.\nFailed: The agent failed.\nUpdating: The agent is being updated.\nDeleting: The agent is being deleted.\nDeleted: The agent is deleted",
+                "description_zh": "纳管 Agent状态。枚举值：Creating（创建中）、Running（运行中）、Failed（失败）、Updating（更新中）、Deleting（删除中）、Deleted（已删除）",
                 "enum": [
                   "Creating",
                   "Running",
@@ -510,6 +550,14 @@
                   "Deleting",
                   "Deleted"
                 ],
+                "enumValueTitles": {
+                  "Creating": "创建中",
+                  "Deleted": "已删除",
+                  "Deleting": "删除中",
+                  "Failed": "失败",
+                  "Running": "运行中",
+                  "Updating": "更新中"
+                },
                 "example": "Running",
                 "type": "string"
               },
@@ -563,11 +611,14 @@
                     },
                     "type": {
                       "backendName": "type",
-                      "description_en": "The tool type. Valid values: MCP",
+                      "description_en": "The tool type. Valid values:\nMCP: MCP tool",
                       "description_zh": "工具类型。枚举值：MCP（MCP 工具）",
                       "enum": [
                         "MCP"
                       ],
+                      "enumValueTitles": {
+                        "MCP": "MCP 工具"
+                      },
                       "example": "MCP",
                       "required": true,
                       "type": "string"
