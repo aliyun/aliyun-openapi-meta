@@ -3,7 +3,7 @@
   "cmd_full_name": "ice create-live-package-channel",
   "cmd_name": "create-live-package-channel",
   "deprecated": false,
-  "description_en": "Generates a real-time video stream processing channel that supports the HLS protocol and automatically assigns endpoints and keys",
+  "description_en": "Creates a live video streaming channel that supports the HLS protocol and automatically assigns endpoints and credentials",
   "description_zh": "生成实时视频流处理频道，支持HLS协议，自动分配端点和密钥",
   "kebab_example": "aliyun ice create-live-package-channel --group-name channel-group-1 --channel-name channel-1 --protocol HLS --region cn-hangzhou",
   "method": "POST",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "channel-group-1",
-      "help_en": "The channel group name. The name can contain only uppercase and lowercase letters, digits, hyphens, and underscores. The name must be 1 to 200 characters in length. Format: [A-Za-z0-9_-]+",
+      "help_en": "The name of the channel group. The name can contain only uppercase and lowercase letters, digits, hyphens, and underscores. It must be 1 to 200 characters in length. Format: [A-Za-z0-9_-]+",
       "help_zh": "频道组名称，字符必须为大小写英文字母、数字、短横线、下划线。1 ~ 200个字符。格式：[A-Za-z0-9_-]+",
       "location": "formData",
       "name": "group_name",
@@ -37,8 +37,8 @@
     },
     {
       "example": "3",
-      "help_en": "The number of m3u8 segments for the input stream. Valid values: 2 to 100",
-      "help_zh": "输入流m3u8切片个数，2～100",
+      "help_en": "The number of m3u8 segments for the ingest stream. Valid values: 2 to 100. This parameter is required when the ingest protocol is HLS or HLS_CMAF",
+      "help_zh": "输入流m3u8切片个数，2～100，输入协议为HLS/HLS_CMAF时必须",
       "location": "formData",
       "name": "segment_count",
       "options": [
@@ -49,8 +49,8 @@
       "type": "int"
     },
     {
-      "example": "This is a test channel.",
-      "help_en": "The description. The description can be up to 1000 characters in length",
+      "example": "这是一个测试频道",
+      "help_en": "The description of the channel. It can be up to 1,000 characters in length",
       "help_zh": "描述，最大1000个字符",
       "location": "formData",
       "name": "description",
@@ -63,8 +63,8 @@
     },
     {
       "example": "6",
-      "help_en": "The segment duration of the input stream, in seconds. Valid values: 1 to 30",
-      "help_zh": "输入流切片时长，1～30",
+      "help_en": "The segment duration for the ingest stream. Valid values: 1 to 30. This parameter is required when the ingest protocol is HLS or HLS_CMAF",
+      "help_zh": "输入流切片时长，1～30，输入协议为HLS/HLS_CMAF时必须",
       "location": "formData",
       "name": "segment_duration",
       "options": [
@@ -76,7 +76,7 @@
     },
     {
       "example": "channel-1",
-      "help_en": "The channel name. The name can contain only uppercase and lowercase letters, digits, hyphens, and underscores. The name must be 1 to 200 characters in length. Format: [A-Za-z0-9_-]+",
+      "help_en": "The name of the channel. The name can contain only uppercase and lowercase letters, digits, hyphens, and underscores. It must be 1 to 200 characters in length. Format: [A-Za-z0-9_-]+",
       "help_zh": "频道名称，字符必须为大小写英文字母、数字、短横线、下划线。1 ~ 200个字符。格式：[A-Za-z0-9_-]+",
       "location": "formData",
       "name": "channel_name",
@@ -89,7 +89,7 @@
     },
     {
       "example": "****12e8864746a0a398****",
-      "help_en": "The idempotency token",
+      "help_en": "The client token used to ensure request idempotence",
       "help_zh": "幂等参数",
       "location": "query",
       "name": "client_token",
@@ -101,9 +101,14 @@
       "type": "string"
     },
     {
+      "enum": [
+        "HLS",
+        "HLS_CMAF",
+        "SRT_RTMP"
+      ],
       "example": "HLS",
-      "help_en": "The input protocol. Currently, only HLS is supported",
-      "help_zh": "输入协议，目前仅支持HLS",
+      "help_en": "The ingest protocol. Valid values: HLS, HLS_CMAF, and SRT_RTMP. If you select SRT_RTMP, you must output the stream to this MediaPackage channel through MediaLive",
+      "help_zh": "输入协议，支持HLS/HLS_CMAF/SRT_RTMP。选择SRT_RTMP时，必须通过MediaLive输出到这个MediaPackage频道",
       "location": "formData",
       "name": "protocol",
       "options": [
@@ -130,7 +135,7 @@
             "properties": {
               "ChannelName": {
                 "backendName": "channelName",
-                "description_en": "The channel name",
+                "description_en": "The name of the channel",
                 "description_zh": "频道名称",
                 "example": "example-channel",
                 "sensitive": false,
@@ -140,7 +145,7 @@
               },
               "CreateTime": {
                 "backendName": "createTime",
-                "description_en": "The creation time. Format: yyyy-MM-ddTHH:mm:ssZ (UTC)",
+                "description_en": "The time when the channel was created. Format: yyyy-MM-ddTHH:mm:ssZ (UTC time)",
                 "description_zh": "格式：yyyy-MM-ddTHH:mm:ssZ（UTC时间）",
                 "example": "2023-04-01T12:00:00Z",
                 "title_en": "创建时间",
@@ -149,9 +154,9 @@
               },
               "Description": {
                 "backendName": "description",
-                "description_en": "The description",
+                "description_en": "The description of the channel",
                 "description_zh": "描述",
-                "example": "This is a test channel.",
+                "example": "这是一个测试频道",
                 "sensitive": false,
                 "title_en": "频道描述",
                 "title_zh": "频道描述",
@@ -159,7 +164,7 @@
               },
               "GroupName": {
                 "backendName": "groupName",
-                "description_en": "The channel group name",
+                "description_en": "The name of the channel group",
                 "description_zh": "频道组名称",
                 "example": "channel-group-1",
                 "sensitive": false,
@@ -173,12 +178,12 @@
                 "description_zh": "输入端点",
                 "itemName": "ingestEndpoint",
                 "items": {
-                  "description_en": "The ingest endpoint URL",
+                  "description_en": "The URL of the ingest endpoint",
                   "description_zh": "输入端点URL",
                   "properties": {
                     "Id": {
                       "backendName": "id",
-                      "description_en": "The ingest endpoint ID",
+                      "description_en": "The ID of the ingest endpoint",
                       "description_zh": "输入端点ID",
                       "example": "ingest1",
                       "type": "string"
@@ -193,7 +198,7 @@
                     },
                     "Url": {
                       "backendName": "url",
-                      "description_en": "The ingest endpoint URL",
+                      "description_en": "The URL of the ingest endpoint",
                       "description_zh": "输入端点URL",
                       "example": "http://xxx-1.packagepush-abcxxx.ap-southeast-1.aliyuncsiceintl.com/v1/group01/1/ch01/manifest",
                       "type": "string"
@@ -213,7 +218,7 @@
               },
               "LastModified": {
                 "backendName": "lastModified",
-                "description_en": "The creation time. Format: yyyy-MM-ddTHH:mm:ssZ (UTC)",
+                "description_en": "The time when the channel was created. Format: yyyy-MM-ddTHH:mm:ssZ (UTC time)",
                 "description_zh": "格式：yyyy-MM-ddTHH:mm:ssZ（UTC时间）",
                 "example": "2023-04-01T12:00:00Z",
                 "title_en": "最后修改时间",
@@ -222,8 +227,8 @@
               },
               "Protocol": {
                 "backendName": "protocol",
-                "description_en": "The input protocol. Valid value: HLS",
-                "description_zh": "输入协议，HLS",
+                "description_en": "The ingest protocol. Valid values: HLS, HLS_CMAF, and SRT_RTMP",
+                "description_zh": "输入协议，HLS/HLS_CMAF/SRT_RTMP",
                 "example": "HLS",
                 "title_en": "协议",
                 "title_zh": "协议",
@@ -231,7 +236,7 @@
               },
               "SegmentCount": {
                 "backendName": "segmentCount",
-                "description_en": "The number of m3u8 segments for the input stream",
+                "description_en": "The number of m3u8 segments for the ingest stream",
                 "description_zh": "输入流m3u8切片个数",
                 "example": "3",
                 "format": "int32",
@@ -241,7 +246,7 @@
               },
               "SegmentDuration": {
                 "backendName": "segmentDuration",
-                "description_en": "The segment duration of the input stream",
+                "description_en": "The segment duration for the ingest stream",
                 "description_zh": "输入流切片时长",
                 "example": "5",
                 "format": "int32",
@@ -254,7 +259,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID",
+            "description_en": "The ID of the request",
             "description_zh": "请求ID",
             "example": "******3B-0E1A-586A-AC29-742247******",
             "type": "string"

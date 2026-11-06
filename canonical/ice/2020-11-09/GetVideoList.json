@@ -3,8 +3,8 @@
   "cmd_full_name": "ice get-video-list",
   "cmd_name": "get-video-list",
   "deprecated": false,
-  "description_en": "Retrieves a list of video information",
-  "description_zh": "获取视频信息列表",
+  "description_en": "Queries a list of audio and video media assets based on conditions such as creation time, category, and video status, and supports sorting and paging",
+  "description_zh": "根据创建时间、分类和视频状态等条件查询音视频媒资列表，支持排序和分页查询",
   "kebab_example": "aliyun ice get-video-list --cate-id 781111 --status Uploading,Normal --start-time 2017-01-11T12:00:00Z --end-time 2017-01-11T12:59:00Z --sort-by CreationTime:Asc --page-no 1 --page-size 20 --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": false,
@@ -34,8 +34,21 @@
       "type": "int"
     },
     {
+      "enum": [
+        "Blocked",
+        "Checking",
+        "Normal",
+        "PrepareFail",
+        "Preparing",
+        "ProduceFail",
+        "TranscodeFail",
+        "Transcoding",
+        "UploadFail",
+        "UploadSucc",
+        "Uploading"
+      ],
       "example": "Uploading,Normal",
-      "help_en": "The video status. Separate multiple statuses with commas (,)",
+      "help_en": "The video status. You can specify multiple statuses separated by commas (,)",
       "help_zh": "视频状态。支持获取多个状态的视频，多个状态之间使用半角逗号（,）分隔",
       "location": "query",
       "name": "status",
@@ -48,7 +61,7 @@
     },
     {
       "example": "2017-01-11T12:00:00Z",
-      "help_en": "The start time of the creation time. The time is in the yyyy-MM-ddTHH:mm:ssZ format and must be in UTC",
+      "help_en": "The start time for the creation time filter. Format: yyyy-MM-ddTHH:mm:ssZ (UTC time)",
       "help_zh": "CreationTime（创建时间）的开始时间。格式为：yyyy-MM-ddTHH:mm:ssZ（UTC时间）",
       "location": "query",
       "name": "start_time",
@@ -61,7 +74,7 @@
     },
     {
       "example": "2017-01-11T12:59:00Z",
-      "help_en": "The end time of the creation time. The end time must be later than the start time. The time is in the yyyy-MM-ddTHH:mm:ssZ format and must be in UTC",
+      "help_en": "The end time for the creation time filter. The end time must be later than the start time. Format: yyyy-MM-ddTHH:mm:ssZ (UTC time)",
       "help_zh": "CreationTime的结束时间，需晚于开始时间。格式为：yyyy-MM-ddTHH:mm:ssZ（UTC时间）",
       "location": "query",
       "name": "end_time",
@@ -74,7 +87,7 @@
     },
     {
       "example": "CreationTime:Asc",
-      "help_en": "The sort order of the query results. Valid values:\n\nCreationTime:Desc: Sorts the results by creation time in descending order. This is the default value.\nCreationTime:Asc: Sorts the results by creation time in ascending order",
+      "help_en": "The sorting method for query results. Valid values:\n\nCreationTime:Desc: Sorts query results by creation time in descending order. This is the default value.\nCreationTime:Asc: Sorts query results by creation time in ascending order",
       "help_zh": "查询结果排序。取值：\n\nCreationTime:Desc（默认值）：按创建时间倒序。\nCreationTime:Asc：按创建时间升序",
       "location": "query",
       "name": "sort_by",
@@ -100,7 +113,7 @@
     },
     {
       "example": "20",
-      "help_en": "The number of entries per page. Default value: 10. Maximum value: 50",
+      "help_en": "The number of entries to return on each page. Default value: 10. Maximum value: 50",
       "help_zh": "列表页大小。默认值为10，最大值为50",
       "location": "query",
       "name": "page_size",
@@ -130,11 +143,11 @@
           },
           "MediaList": {
             "backendName": "data.mediaList",
-            "description_en": "The list of media assets",
+            "description_en": "The list of media asset information",
             "description_zh": "媒资信息列表",
             "itemName": "MediaList",
             "items": {
-              "description_en": "The list of media assets",
+              "description_en": "The list of media asset information",
               "description_zh": "媒资信息列表",
               "properties": {
                 "AppId": {
@@ -168,7 +181,7 @@
                 },
                 "CreationTime": {
                   "backendName": "creationTime",
-                  "description_en": "The creation time. The time is in the yyyy-MM-ddTHH:mm:ssZ format and must be in UTC",
+                  "description_en": "The creation time. Format: yyyy-MM-ddTHH:mm:ssZ (UTC time)",
                   "description_zh": "创建时间。格式为：yyyy-MM-ddTHH:mm:ssZ（UTC时间）",
                   "example": "2017-11-14T09:15:50Z",
                   "type": "string"
@@ -197,7 +210,7 @@
                 },
                 "ModificationTime": {
                   "backendName": "modificationTime",
-                  "description_en": "The update time. The time is in the yyyy-MM-ddTHH:mm:ssZ format and must be in UTC",
+                  "description_en": "The update time. Format: yyyy-MM-ddTHH:mm:ssZ (UTC time)",
                   "description_zh": "更新时间。格式为：yyyy-MM-ddTHH:mm:ssZ（UTC时间）",
                   "example": "2017-11-14T09:16:50Z",
                   "type": "string"
@@ -227,6 +240,19 @@
                   "backendName": "status",
                   "description_en": "The video status",
                   "description_zh": "视频状态",
+                  "enumValueTitles": {
+                    "Blocked": "屏蔽",
+                    "Checking": "审核",
+                    "Normal": "正常",
+                    "PrepareFail": "文件异常",
+                    "Preparing": "文件生成中",
+                    "ProduceFail": "合成失败",
+                    "TranscodeFail": "转码失败",
+                    "Transcoding": "转码",
+                    "UploadFail": "上传失败",
+                    "UploadSucc": "上传成功",
+                    "Uploading": "上传中"
+                  },
                   "example": "Normal",
                   "type": "string"
                 },
