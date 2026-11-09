@@ -3,7 +3,7 @@
   "cmd_full_name": "maxcompute sum-bills",
   "cmd_name": "sum-bills",
   "deprecated": false,
-  "description_en": "Summarizes cost information by instance or billable item",
+  "description_en": "Aggregates the billing information by instance or billable item",
   "description_zh": "按实例或者计费项统计费用信息",
   "kebab_example": "aliyun maxcompute sum-bills --project-names projectName --start-date 1715393576201 --end-date 1776232895313 --stats-type PROJECT --topn 5 --region cn-hangzhou",
   "method": "POST",
@@ -31,8 +31,8 @@
   "parameters": [
     {
       "example": "1776232895313",
-      "help_en": "The end time of the billing cycle",
-      "help_zh": "费用统计周期的结束时间",
+      "help_en": "The end time of the billing statistical epoch. Specify a UNIX timestamp in milliseconds. This parameter is required",
+      "help_zh": "费用统计周期的结束时间；毫秒级别时间戳，必填参数",
       "location": "body",
       "name": "end_date",
       "options": [
@@ -47,7 +47,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "A list of instance names. This parameter is not required if `statsType` is set to `FEE_ITEM`",
+      "help_en": "The list of instance names. If statsType is set to FEE_ITEM, you do not need to specify this parameter",
       "help_zh": "实例名称列表，如果statsType是FEE_ITEM的时候，则projectNames列表不用传",
       "location": "body",
       "name": "project_names",
@@ -61,8 +61,8 @@
     },
     {
       "example": "1715393576201",
-      "help_en": "The start time of the billing cycle",
-      "help_zh": "费用统计周期开始时间",
+      "help_en": "The start time of the billing statistical epoch. Specify a UNIX timestamp in milliseconds. This parameter is required",
+      "help_zh": "费用统计周期的开始时间；毫秒级别时间戳，必填参数",
       "location": "body",
       "name": "start_date",
       "options": [
@@ -75,7 +75,7 @@
     },
     {
       "example": "PROJECT",
-      "help_en": "The dimension by which to summarize costs. Valid values: `PROJECT` (by instance) and `FEE_ITEM` (by billable item)",
+      "help_en": "The aggregation type. Valid values: PROJECT (instance) and FEE_ITEM (billable item)",
       "help_zh": "统计类型，枚举值：PROJECT(实例)或者FEE_ITEM(费用项)",
       "location": "body",
       "name": "stats_type",
@@ -89,7 +89,7 @@
     },
     {
       "example": "5",
-      "help_en": "The number of top results to return after sorting by cost",
+      "help_en": "The number of top items to return after sorting by cost",
       "help_zh": "费用排序之后前多少项",
       "location": "body",
       "name": "topn",
@@ -108,7 +108,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response object",
+        "description_en": "PopResult<SummaryBillDTO>",
         "description_zh": "PopResult<SummaryBillDTO>",
         "properties": {
           "data": {
@@ -118,18 +118,18 @@
             "properties": {
               "currency": {
                 "backendName": "currency",
-                "description_en": "The currency used for all cost values",
+                "description_en": "The currency. This is a fixed value",
                 "description_zh": "币种，固定值",
-                "example": "CNY",
+                "example": "RMB",
                 "type": "string"
               },
               "itemBills": {
                 "backendName": "itemBills",
-                "description_en": "A list of billable items",
+                "description_en": "The list of billable items",
                 "description_zh": "费用项列表",
                 "itemName": "itemBill",
                 "items": {
-                  "description_en": "A billable item object",
+                  "description_en": "The billable item object",
                   "description_zh": "费用项对象",
                   "properties": {
                     "cost": {
@@ -143,19 +143,19 @@
                       "backendName": "currency",
                       "description_en": "The currency",
                       "description_zh": "币种",
-                      "example": "CNY",
+                      "example": "RMB",
                       "type": "string"
                     },
                     "itemName": {
                       "backendName": "itemName",
-                      "description_en": "The item name. When the request's `statsType` is `PROJECT`, this is the instance name. When `statsType` is `FEE_ITEM`, this is the billable item type (for example, `DRStorage`, `ComputationSql`, or `Storage`)",
+                      "description_en": "The name of the billable item. If the billable item type is PROJECT, this parameter indicates the instance name. If the billable item type is FEE_ITEM, the value can be DRStorage, ComputationSql, or Storage",
                       "description_zh": "当费用项类型为PROJECT时，表示实例名称；当费用项类型为FEE_ITEM时，itemName可能是DRStorage，ComputationSql，Storage等等",
                       "example": "projectName",
                       "type": "string"
                     },
                     "percentage": {
                       "backendName": "percentage",
-                      "description_en": "The percentage of the total cost that this item represents. The value does not include a percent sign (%)",
+                      "description_en": "The percentage of the cost in the total cost. The value does not include the percent sign",
                       "description_zh": "费用占当前总费用的百分比，不带百分号",
                       "example": "56.12",
                       "format": "double",
@@ -168,7 +168,7 @@
               },
               "totalCost": {
                 "backendName": "totalCost",
-                "description_en": "The total cost of all returned billable items",
+                "description_en": "The total cost of the billable items",
                 "description_zh": "下面费用项的费用的总和",
                 "example": "123.56",
                 "type": "string"
@@ -201,7 +201,7 @@
   "timeout_ms": 17000,
   "v1_body_parameters": [
     {
-      "help_en": "The request parameters for summarizing cost information by instance or billable item. Example: {\"startDate\":1775714495313,\"endDate\":1776232895313,\"statsType\":\"FEE_ITEM\",\"topN\":8}",
+      "help_en": "The request parameters for aggregating billing information by instance or billable item. Example: {\"startDate\":1775714495313,\"endDate\":1776232895313,\"statsType\":\"FEE_ITEM\",\"topN\":8}",
       "help_zh": "按照实例或者计费项统计费用信息的入参，eg. {\"startDate\":1775714495313,\"endDate\":1776232895313,\"statsType\":\"FEE_ITEM\",\"topN\":8}",
       "name": "body",
       "param_style": "json",
