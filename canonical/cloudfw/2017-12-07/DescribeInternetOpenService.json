@@ -3,7 +3,7 @@
   "cmd_full_name": "cloudfw describe-internet-open-service",
   "cmd_name": "describe-internet-open-service",
   "deprecated": false,
-  "description_en": "Queries services exposed to the Internet",
+  "description_en": "Queries Internet-facing open services",
   "description_zh": "获取互联网开放服务",
   "kebab_example": "aliyun cloudfw describe-internet-open-service --source-ip 122.200.64.XXX --lang zh --service-name SMB --service-name-fuzzy SMB --risk-level 2 --suggest-level 10 --port 3389 --start-time 1755742107 --end-time 1753804800 --current-page 1 --page-size 10 --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "122.200.64.XXX",
-      "help_en": "The source IP address of the visitor",
+      "help_en": "The originating IP address of the requester",
       "help_zh": "访问者源IP地址",
       "location": "query",
       "name": "source_ip",
@@ -34,8 +34,12 @@
       "type": "string"
     },
     {
+      "enum": [
+        "en",
+        "zh"
+      ],
       "example": "zh",
-      "help_en": "The language of the response",
+      "help_en": "The language type",
       "help_zh": "语言类型",
       "location": "query",
       "name": "lang",
@@ -48,7 +52,7 @@
     },
     {
       "example": "SMB",
-      "help_en": "The name of the application for an exact match. If you do not specify this parameter, all applications are queried",
+      "help_en": "The application name for exact match. If you do not specify this parameter, all applications are queried",
       "help_zh": "应用名称, 精确匹配, 不带表示查找所有应用",
       "location": "query",
       "name": "service_name",
@@ -61,7 +65,7 @@
     },
     {
       "example": "SMB",
-      "help_en": "The name of the application for a fuzzy match. If you do not specify this parameter, all applications are queried",
+      "help_en": "The application name for fuzzy match. If you do not specify this parameter, all applications are queried",
       "help_zh": "应用名称, 模糊匹配, 不带表示查找所有应用",
       "location": "query",
       "name": "service_name_fuzzy",
@@ -73,6 +77,13 @@
       "type": "string"
     },
     {
+      "enum": [
+        "-1",
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
       "example": "2",
       "help_en": "The risk level",
       "help_zh": "风险级别",
@@ -86,6 +97,13 @@
       "type": "string"
     },
     {
+      "enum": [
+        " -1",
+        "0",
+        "10",
+        "20",
+        "30"
+      ],
       "example": "10",
       "help_en": "The recommended policy level",
       "help_zh": "建议策略级别",
@@ -113,7 +131,7 @@
     },
     {
       "example": "1755742107",
-      "help_en": "The start of the time range to query. The value is a UNIX timestamp in seconds",
+      "help_en": "The start time of the query. The value is a UNIX timestamp in seconds",
       "help_zh": "查询开始时间。使用秒级时间戳格式表示",
       "location": "query",
       "name": "start_time",
@@ -126,7 +144,7 @@
     },
     {
       "example": "1753804800",
-      "help_en": "The end of the time range to query. The value is a UNIX timestamp in seconds",
+      "help_en": "The end time of the query. The value is a UNIX timestamp in seconds",
       "help_zh": "查询结束时间。使用秒级时间戳格式表示",
       "location": "query",
       "name": "end_time",
@@ -173,11 +191,11 @@
         "properties": {
           "DataList": {
             "backendName": "result.dataList",
-            "description_en": "The list of data",
+            "description_en": "The data list",
             "description_zh": "数据列表",
             "itemName": "Data",
             "items": {
-              "description_en": "The list of data",
+              "description_en": "The data list",
               "description_zh": "数据列表",
               "properties": {
                 "DetailNum": {
@@ -223,14 +241,14 @@
                 },
                 "ProbRisk": {
                   "backendName": "probRisk",
-                  "description_en": "The security threat",
+                  "description_en": "The security risk",
                   "description_zh": "安全隐患",
                   "example": "test",
                   "type": "string"
                 },
                 "ProbRiskDesc": {
                   "backendName": "probRiskDesc",
-                  "description_en": "The description of the security threat",
+                  "description_en": "The description of the security risk",
                   "description_zh": "安全隐患描述",
                   "example": "test",
                   "type": "string"
@@ -239,12 +257,16 @@
                   "backendName": "protocol",
                   "description_en": "The protocol type",
                   "description_zh": "协议类型",
+                  "enumValueTitles": {
+                    "tcp": "tcp",
+                    "udp": "udp"
+                  },
                   "example": "tcp",
                   "type": "string"
                 },
                 "PublicIpNum": {
                   "backendName": "publicIpNum",
-                  "description_en": "The number of exposed public IP addresses",
+                  "description_en": "The number of open public IP addresses",
                   "description_zh": "开放公网IP数量",
                   "example": "3",
                   "format": "int32",
@@ -252,15 +274,22 @@
                 },
                 "RiskLevel": {
                   "backendName": "riskLevel",
-                  "description_en": "The risk level",
+                  "description_en": "The risk level. Valid values: -1: Evaluating. 0: None. 1: Low. 2: Medium. 3: High. If you do not specify this parameter, all risk levels are queried",
                   "description_zh": "风险级别 -1:评估中 0:无 1: 低危 2: 中危 3: 高危. 不选代表所有风险",
+                  "enumValueTitles": {
+                    " -1": "评估中",
+                    "0": "无",
+                    "1": "低危",
+                    "2": "中危",
+                    "3": "高危"
+                  },
                   "example": "3",
                   "format": "int32",
                   "type": "integer"
                 },
                 "RiskReason": {
                   "backendName": "riskReason",
-                  "description_en": "The description of the risk",
+                  "description_en": "The risk description",
                   "description_zh": "风险描述",
                   "example": "test",
                   "type": "string"
@@ -277,6 +306,13 @@
                   "backendName": "suggestLevel",
                   "description_en": "The recommended policy level",
                   "description_zh": "建议策略级别",
+                  "enumValueTitles": {
+                    "-1": "评估中",
+                    "0": "未知",
+                    "10": "放行 ",
+                    "20": "检查",
+                    "30": "拒绝"
+                  },
                   "example": "20",
                   "format": "int32",
                   "type": "integer"
@@ -291,32 +327,32 @@
                 },
                 "TrafficPercent1Day": {
                   "backendName": "trafficPercent1Day",
-                  "description_en": "The traffic percentage over the last 24 hours",
+                  "description_en": "The traffic proportion in the last 1 day",
                   "description_zh": "1日流量占比",
                   "example": "0",
                   "type": "string"
                 },
                 "TrafficPercent30Day": {
                   "backendName": "trafficPercent30Day",
-                  "description_en": "The traffic percentage over the last 30 days",
+                  "description_en": "The traffic proportion in the last 30 days",
                   "description_zh": "30日流量占比",
                   "example": " 0",
                   "type": "string"
                 },
                 "TrafficPercent7Day": {
                   "backendName": "trafficPercent7Day",
-                  "description_en": "The traffic percentage over the last 7 days",
+                  "description_en": "The traffic proportion in the last 7 days",
                   "description_zh": "7日流量占比",
                   "example": "77",
                   "type": "string"
                 },
                 "UnknownReason": {
                   "backendName": "unknownReason",
-                  "description_en": "The reason why the protocol is not identified if the detected protocol is \\`Unknown\\`",
+                  "description_en": "The reason why the protocol is not identified when the protocol is recognized as Unknown",
                   "description_zh": "识别协议为Unknown情况下，未分析到协议的原因",
                   "itemName": "unknownReason",
                   "items": {
-                    "description_en": "The reason why the protocol is not identified if the detected protocol is \\`Unknown\\`",
+                    "description_en": "The reason why the protocol is not identified when the protocol is recognized as Unknown",
                     "description_zh": "识别协议为Unknown情况下，未分析到协议的原因",
                     "example": "no_payload",
                     "type": "string"
@@ -331,7 +367,7 @@
           },
           "PageInfo": {
             "backendName": "result.pageInfo",
-            "description_en": "The paging information",
+            "description_en": "The pagination information",
             "description_zh": "分页信息",
             "properties": {
               "CurrentPage": {
@@ -344,7 +380,7 @@
               },
               "PageSize": {
                 "backendName": "pageSize",
-                "description_en": "The number of entries per page",
+                "description_en": "The score",
                 "description_zh": "分数",
                 "example": "20",
                 "format": "int32",
