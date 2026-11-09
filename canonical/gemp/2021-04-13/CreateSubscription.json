@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun gemp POST /notify/subscription/create --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"period\":\"20天\",\"expiredType\":1,\"notifyObjectType\":1,\"notifyObjectList\":[2],\"clientToken\":\"601FA6A2-AC5C-4B59-BE11-378FTOKENA11\",\"scope\":1,\"startTime\":\"2021-02-03_10:10:10\",\"endTime\":\"2021-11-03_10:10:10\",\"subscriptionTitle\":\"testSubscription\",\"scopeObjectList\":[1],\"notifyStrategyList\":[{\"channels\":\"SMS,PHONE\",\"strategies\":[[{\"effection\":\"HIGH\",\"level\":\"P1\",\"action\":\"INCIDENT_TRIGGER\",\"problemNotifyType\":\"PROBLEM_UPDATE\"}]],\"instanceType\":1,\"periodChannel\":{\"nonWorkday\":\"SMS,PHONE\",\"workday\":\"SMS,PHONE\"}}]}' --version 2021-04-13 --force",
+  "camel_example": "aliyun gemp POST /notify/subscription/create --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"expiredType\":1,\"notifyObjectType\":1,\"notifyObjectList\":[{\"notifyObjectId\":2}],\"scope\":1,\"subscriptionTitle\":\"testSubscription\",\"scopeObjectList\":[{\"scopeObjectId\":1}],\"notifyStrategyList\":[{\"channels\":\"SMS,PHONE\",\"strategies\":[{\"conditions\":[{\"effection\":\"HIGH\",\"level\":\"P1\",\"action\":\"INCIDENT_TRIGGER\",\"problemNotifyType\":\"PROBLEM_UPDATE\"}]}],\"instanceType\":1}]}' --version 2021-04-13 --force",
   "cmd_full_name": "gemp create-subscription",
   "cmd_name": "create-subscription",
   "deprecated": false,
   "description_en": "Creates a notification subscription",
   "description_zh": "创建通知订阅",
-  "kebab_example": "aliyun gemp create-subscription --subscription-title testSubscription --scope 1 --notify-object-type 1 --expired-type 1 --period '20天' --scope-object-list 1 --notify-object-list 2 --notify-strategy-list '[{\"channels\":\"SMS,PHONE\",\"strategies\":[[{\"effection\":\"HIGH\",\"level\":\"P1\",\"action\":\"INCIDENT_TRIGGER\",\"problemNotifyType\":\"PROBLEM_UPDATE\"}]],\"instanceType\":1,\"periodChannel\":{\"nonWorkday\":\"SMS,PHONE\",\"workday\":\"SMS,PHONE\"}}]' --client-token 601FA6A2-AC5C-4B59-BE11-378FTOKENA11 --start-time 2021-02-03_10:10:10 --end-time 2021-11-03_10:10:10 --region cn-hangzhou",
+  "kebab_example": "aliyun gemp create-subscription --subscription-title testSubscription --scope 1 --notify-object-type 1 --expired-type 1 --scope-object-list scopeObjectId=1 --notify-object-list notifyObjectId=2 --notify-strategy-list '[{\"channels\":\"SMS,PHONE\",\"strategies\":[{\"conditions\":[{\"effection\":\"HIGH\",\"level\":\"P1\",\"action\":\"INCIDENT_TRIGGER\",\"problemNotifyType\":\"PROBLEM_UPDATE\"}]}],\"instanceType\":1}]' --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "CreateSubscription",
@@ -51,7 +51,7 @@
     },
     {
       "example": "2021-11-03 10:10:10",
-      "help_en": "The expiration time. Format: YYYY-MM-DD HH:mm:ss",
+      "help_en": "The expiration time, in the YYYY-MM-DD HH:mm:ss format",
       "help_zh": "失效时间，格式为 YYYY-MM-DD HH:mm:ss",
       "location": "body",
       "name": "end_time",
@@ -64,9 +64,9 @@
       "type": "string"
     },
     {
-      "example": "LONG_TERM",
-      "help_en": "The subscription validity period",
-      "help_zh": "订阅时效",
+      "example": "0",
+      "help_en": "The subscription validity period. Valid values:\n0: Long-term.\n1: Specified start and end time",
+      "help_zh": "订阅时效：\n0：长期。\n1：指定开始和结束时间",
       "location": "body",
       "name": "expired_type",
       "options": [
@@ -108,9 +108,9 @@
       "type": "array"
     },
     {
-      "example": "USER",
-      "help_en": "The notification recipient type",
-      "help_zh": "通知对象类型",
+      "example": "1",
+      "help_en": "The notification recipient type. Valid values:\n0: Service group.\n1: Individual",
+      "help_zh": "通知对象类型：\n0：服务组。\n1：个人",
       "location": "body",
       "name": "notify_object_type",
       "options": [
@@ -126,7 +126,7 @@
         "fields": [
           {
             "example": "SMS,PHONE",
-            "help_en": "The channels. Separate multiple channels with commas",
+            "help_en": "The channels, separated by commas",
             "help_zh": "渠道，多个逗号分隔",
             "name": "channels",
             "options": [
@@ -137,9 +137,9 @@
             "type": "string"
           },
           {
-            "example": "INCIDENT",
-            "help_en": "The subscription instance type. Valid values:\nINCIDENT: Event.\nALERT: Alert.\nPROBLEM: Fault",
-            "help_zh": "订阅实例类型：\nINCIDENT：事件。\nALERT：报警。\nPROBLEM：故障",
+            "example": "0",
+            "help_en": "The subscription instance type. Valid values:\n0: Event.\n1: Alert.\n2: Fault",
+            "help_zh": "订阅实例类型：\n0：事件。\n1：报警。\n2：故障",
             "name": "instance_type",
             "options": [
               "--instance-type"
@@ -164,7 +164,7 @@
               },
               {
                 "example": "SMS,PHONE",
-                "help_en": "The notification subscription channels for working days",
+                "help_en": "The notification subscription channels for workdays",
                 "help_zh": "工作日通知订阅渠道",
                 "name": "workday",
                 "options": [
@@ -255,7 +255,7 @@
               ],
               "type": "object"
             },
-            "help_en": "The conditions in JSON format. This parameter contains multiple conditions in key-value format, such as level and impact degree",
+            "help_en": "The conditions in JSON format, including multiple conditions such as level and impact degree in key-value format",
             "help_zh": "条件。json格式，包含多个条件，如级别、影响程度、kv格式",
             "name": "strategies",
             "options": [
@@ -295,9 +295,9 @@
       "type": "string"
     },
     {
-      "example": "SERVICE",
-      "help_en": "The subscription scope type",
-      "help_zh": "订阅范围类型",
+      "example": "1",
+      "help_en": "The subscription scope type. Valid values:\n0: All.\n1: Service.\n2: Routing rule",
+      "help_zh": "订阅范围类型：\n0：全部。\n1：服务。\n2：流转规则",
       "location": "body",
       "name": "scope",
       "options": [
@@ -340,7 +340,7 @@
     },
     {
       "example": "2021-02-03 10:10:10",
-      "help_en": "The effective start time. Format: YYYY-MM-DD HH:mm:ss",
+      "help_en": "The effective start time, in the YYYY-MM-DD HH:mm:ss format",
       "help_zh": "生效开始时间，格式为 YYYY-MM-DD HH:mm:ss",
       "location": "body",
       "name": "start_time",
