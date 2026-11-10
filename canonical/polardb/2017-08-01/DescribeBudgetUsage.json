@@ -3,7 +3,7 @@
   "cmd_full_name": "polardb describe-budget-usage",
   "cmd_name": "describe-budget-usage",
   "deprecated": false,
-  "description_en": "Queries the used quota, statistical window, and associated budget policies for a PolarDB gateway instance by budget dimension",
+  "description_en": "Queries the used quota, statistical window, and associated budget policies of a PolarDB gateway instance by budget dimension",
   "description_zh": "按预算维度查询 PolarDB 网关实例的已用额度、统计窗口和关联预算策略",
   "kebab_example": "aliyun polardb describe-budget-usage --gw-cluster-id pc-123 --budget-dimension-type cluster --budget-dimension-ref-id ref-001 --biz-region-id cn-hangzhou --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,8 +22,8 @@
   "parameters": [
     {
       "example": "pc-123",
-      "help_en": "The ID of the gateway instance",
-      "help_zh": "要查询的网关实例 ID",
+      "help_en": "The ID of the gateway instance to query. This parameter is required. If this parameter is not specified, the API returns InvalidPolarGatewayInstanceId.NotFound (404)",
+      "help_zh": "要查询的网关实例 ID。此参数为必填项，未提供时 API 返回 InvalidPolarGatewayInstanceId.NotFound(404)",
       "location": "query",
       "name": "gw_cluster_id",
       "options": [
@@ -34,9 +34,9 @@
       "type": "string"
     },
     {
-      "example": "cluster",
-      "help_en": "The budget dimension type",
-      "help_zh": "预算维度类型",
+      "example": "Global",
+      "help_en": "The budget dimension type. Valid values: Global (global budget), Consumer (consumer budget), and ConsumerGroup (consumer group budget)",
+      "help_zh": "预算维度类型。允许值：Global（全局预算）| Consumer（消费者预算）| ConsumerGroup（消费者组预算）",
       "location": "query",
       "name": "budget_dimension_type",
       "options": [
@@ -47,9 +47,9 @@
       "type": "string"
     },
     {
-      "example": "ref-001",
-      "help_en": "The budget dimension reference ID",
-      "help_zh": "预算维度引用 ID",
+      "example": "Global",
+      "help_en": "The reference ID of the budget dimension. If BudgetDimensionType is set to Global, set this parameter to Global. If BudgetDimensionType is set to Consumer, set this parameter to the consumer ID returned by DescribeBudgetPolicies, such as consumer-xxx. If BudgetDimensionType is set to ConsumerGroup, set this parameter to the consumer group ID, such as cg-xxx",
+      "help_zh": "预算维度引用 ID。当 BudgetDimensionType 为 Global 时填 Global；为 Consumer 时填 DescribeBudgetPolicies 返回的 consumer ID（如 consumer-xxx）；为 ConsumerGroup 时填 consumer group ID（如 cg-xxx）",
       "location": "query",
       "name": "budget_dimension_ref_id",
       "options": [
@@ -61,7 +61,7 @@
     },
     {
       "example": "cn-hangzhou",
-      "help_en": "The region ID of the gateway instance",
+      "help_en": "The ID of the region where the gateway instance resides",
       "help_zh": "网关实例所在的地域 ID",
       "location": "query",
       "name": "region_id",
@@ -81,6 +81,7 @@
       "schema": {
         "description_en": "Schema of Response",
         "description_zh": "Schema of Response",
+        "example": "{}",
         "properties": {
           "AlertTriggered": {
             "backendName": "data.alertTriggered",
@@ -112,21 +113,21 @@
           },
           "GmtCreated": {
             "backendName": "data.gmtCreated",
-            "description_en": "The creation time of the budget usage record in RFC 3339 UTC format",
+            "description_en": "The creation time of the budget usage record, in RFC 3339 UTC format",
             "description_zh": "预算使用记录的创建时间，采用 RFC 3339 UTC 格式",
             "example": "2025-01-01T00:00:00Z",
             "type": "string"
           },
           "GmtModified": {
             "backendName": "data.gmtModified",
-            "description_en": "The last modification time of the budget usage record in RFC 3339 UTC format",
+            "description_en": "The time when the budget usage record was last modified, in RFC 3339 UTC format",
             "description_zh": "预算使用记录的最后修改时间，采用 RFC 3339 UTC 格式",
             "example": "2025-01-15T12:00:00Z",
             "type": "string"
           },
           "GwClusterId": {
             "backendName": "data.gwClusterId",
-            "description_en": "The gateway instance ID",
+            "description_en": "The ID of the gateway instance",
             "description_zh": "网关实例 ID",
             "example": "pc-123",
             "type": "string"
@@ -135,8 +136,10 @@
             "backendName": "data.policies",
             "description_en": "The list of associated budget policies",
             "description_zh": "关联的预算策略列表",
+            "example": "[]",
             "itemName": "PoliciyItem",
             "items": {
+              "example": "{}",
               "properties": {
                 "AlertThresholdPct": {
                   "backendName": "alertThresholdPct",
@@ -147,7 +150,7 @@
                 },
                 "BudgetDimensionRefId": {
                   "backendName": "budgetDimensionRefId",
-                  "description_en": "The budget dimension reference ID to which the policy applies",
+                  "description_en": "The reference ID of the budget dimension to which the policy applies",
                   "description_zh": "策略适用的预算维度引用 ID",
                   "example": "ref-001",
                   "type": "string"
@@ -161,14 +164,14 @@
                 },
                 "BudgetPoints": {
                   "backendName": "budgetPoints",
-                  "description_en": "The number of budget points set by the policy",
+                  "description_en": "The number of budget points configured in the policy",
                   "description_zh": "策略设置的预算点数",
                   "example": "10000",
                   "type": "string"
                 },
                 "BudgetPolicyId": {
                   "backendName": "budgetPolicyId",
-                  "description_en": "The budget policy ID",
+                  "description_en": "The ID of the budget policy",
                   "description_zh": "预算策略 ID",
                   "example": "bp-001",
                   "type": "string"
@@ -182,14 +185,14 @@
                 },
                 "ResetDayOfMonth": {
                   "backendName": "resetDayOfMonth",
-                  "description_en": "The day of the month when the budget is reset. For example, 1 indicates the first day of each month",
+                  "description_en": "The day of the month on which the budget is reset. For example, 1 indicates the first day of each month",
                   "description_zh": "每月重置预算的日序号，例如 1 表示每月 1 日",
                   "example": "1",
                   "type": "string"
                 },
                 "Status": {
                   "backendName": "status",
-                  "description_en": "The budget policy status",
+                  "description_en": "The status of the budget policy",
                   "description_zh": "预算策略状态",
                   "example": "Active",
                   "type": "string"
@@ -217,14 +220,14 @@
           },
           "WindowEndTime": {
             "backendName": "data.windowEndTime",
-            "description_en": "The end time of the budget statistical window in RFC 3339 UTC format",
+            "description_en": "The end time of the budget statistical window, in RFC 3339 UTC format",
             "description_zh": "预算统计窗口的结束时间，采用 RFC 3339 UTC 格式",
             "example": "2025-01-31T23:59:59Z",
             "type": "string"
           },
           "WindowStartTime": {
             "backendName": "data.windowStartTime",
-            "description_en": "The start time of the budget statistical window in RFC 3339 UTC format",
+            "description_en": "The start time of the budget statistical window, in RFC 3339 UTC format",
             "description_zh": "预算统计窗口的开始时间，采用 RFC 3339 UTC 格式",
             "example": "2025-01-01T00:00:00Z",
             "type": "string"
