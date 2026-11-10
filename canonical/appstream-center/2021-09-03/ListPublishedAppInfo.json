@@ -3,7 +3,7 @@
   "cmd_full_name": "appstream-center list-published-app-info",
   "cmd_name": "list-published-app-info",
   "deprecated": false,
-  "description_en": "Retrieves a list of published application information",
+  "description_en": "Retrieves a list of published applications",
   "description_zh": "获取已经发布的应用信息列表",
   "kebab_example": "aliyun appstream-center list-published-app-info --client-id 17b38aaa-761f-44c5-9862-2ad0f5025d15 --login-token v189fa78c1aff77a0483b16497517322299131027b85bb84bbdc0871988ce8296d8fd891e2fdeaded3bd75f81f639acee8 --end-user-id test.test --session-id c261a6a1-e242-4f4b-813c-5fe807e49f03 --client-os 'windows_\\\"Windows 10 Enterprise\\\" 10.0 (Build 14393)' --client-version '2.0.1-D-20211008.101607\n' --client-ip 125.80.132.13 --product-type CloudApp --biz-region-id cn-hangzhou --login-region-id cn-shanghai --category-type 1 --category-id 1 --app-name 'Microsoft Word' --order-param APP_NAME --sort-type DESC --api-version 2021-09-03 --region cn-hangzhou",
   "method": "GET|POST",
@@ -34,9 +34,9 @@
       "type": "string"
     },
     {
-      "example": "v189fa78c1aff77a0483b16497517322299131027b85bb84bbdc0871988ce8296d8fd891e2fdeaded3bd75f81f639acee8",
-      "help_en": "The logon credential.\nObtained by calling the GetLoginToken operation to log on, or by calling the RefreshLoginToken operation after logon. Response parameter: LoginToken",
-      "help_zh": "登录凭证。\n通过GetLoginToken接口登录获取，或登录后通过更新接口RefreshLoginToken获取。返回参数：LoginToken",
+      "example": "v2c4e2ef03d62******",
+      "help_en": "The logon credential.\nThe LoginToken is an encrypted string in v2 format that uses Base64 encoding and must be obtained through a user authentication session. After the client completes the user authentication flow, the authentication service returns the LoginToken, which must be used together with the SessionId returned in the same authentication.\nRefreshLoginToken belongs to the appstream-center 2021-02-20 version. The current version (2021-09-03) does not provide this operation.\nNote: This parameter is actually required. If it is not provided, the API returns InvalidParameter.loginToken (400)",
+      "help_zh": "登录凭证。\nLoginToken为v2格式的base64编码加密串，须通过用户认证会话获取：客户端完成用户认证流程后，由认证服务返回LoginToken，并与同一次认证返回的SessionId配套使用。\nRefreshLoginToken属于appstream-center 2021-02-20版本，当前版本（2021-09-03）不提供该接口。\n注意：本参数实际为必填项，未提供时API返回InvalidParameter.loginToken(400)",
       "location": "query",
       "name": "login_token",
       "options": [
@@ -61,8 +61,8 @@
     },
     {
       "example": "c261a6a1-e242-4f4b-813c-5fe807e49f03",
-      "help_en": "The session ID.\nObtained by calling the GetLoginToken operation. Response parameter: SessionId",
-      "help_zh": "会话ID。\n通过登录接口GetLoginToken获取，返回参数：SessionId",
+      "help_en": "The session ID.\nYou can obtain this parameter from the SessionId response parameter of the GetLoginToken logon operation.\n\nNote: This parameter is actually required and must be provided together with LoginToken. If it is not provided, the API returns InvalidParameter.sessionId (400)",
+      "help_zh": "会话ID。\n通过登录接口GetLoginToken获取，返回参数：SessionId。\n\n注意：本参数实际为必填项，须与LoginToken配套提供，未提供时API返回InvalidParameter.sessionId(400)",
       "location": "query",
       "name": "session_id",
       "options": [
@@ -113,7 +113,7 @@
     },
     {
       "example": "CloudApp",
-      "help_en": "The product type. The value can only be `CloudApp`, which indicates WUYING CloudApp",
+      "help_en": "The product type. Set the value to CloudApp, which indicates WUYING Cloud App",
       "help_zh": "产品类型，取值仅可为`CloudApp`，表示无影云应用",
       "location": "query",
       "name": "product_type",
@@ -152,7 +152,7 @@
     },
     {
       "example": "1",
-      "help_en": "The primary category of the application. Valid values:\n\n0: cloud application\n1: cloud game",
+      "help_en": "The primary category of the application. Valid values:\n\n0: Cloud application\n1: Cloud game",
       "help_zh": "应用一级分类。取值范围：\n\n0：云应用\n1：云游戏",
       "location": "query",
       "name": "category_type",
@@ -165,7 +165,7 @@
     },
     {
       "example": "1",
-      "help_en": "The secondary category of the application.\nValid values:\n1: all applications\n2: design software\n3: programming and development\n4: office essentials\n5: input methods\n6: photos and videos\n7: system tools\n8: browsers",
+      "help_en": "The specific category information of the application, which is the secondary category.\nValid values:\n1: All applications\n2: Design software\n3: Programming and development\n4: Office essentials\n5: Input methods\n6: Image and video\n7: System tools\n8: Browsers",
       "help_zh": "应用具体类目信息，二级分类。\n取值范围：\n1 ： 所有应用\n2 ： 设计软件\n3 ： 编程开发\n4 ： 办公必备\n5 ： 输入法\n6 ： 图片视频\n7 ： 系统工具\n8 ： 浏览器",
       "location": "query",
       "name": "category_id",
@@ -178,7 +178,7 @@
     },
     {
       "example": "Microsoft Word",
-      "help_en": "The application name.\nUsed for fuzzy match based on the application name",
+      "help_en": "The application name.\nThis parameter is used for fuzzy search based on the application name",
       "help_zh": "应用名称。\n用于根据应用名称进行模糊搜索",
       "location": "query",
       "name": "app_name",
@@ -227,8 +227,8 @@
         "properties": {
           "AppModels": {
             "backendName": "data",
-            "description_en": "appModels",
-            "description_zh": "appModels",
+            "description_en": "The list of published applications",
+            "description_zh": "已发布的应用信息列表",
             "itemName": "data",
             "items": {
               "description_en": "The application information",
@@ -236,7 +236,7 @@
               "properties": {
                 "AppCenterImageId": {
                   "backendName": "appCenterImageId",
-                  "description_en": "The application image ID, which can be obtained from the Image Management page in the WUYING CloudApp console",
+                  "description_en": "The application image ID. You can obtain the ID from the Image Management page in the WUYING Cloud App console",
                   "description_zh": "应用镜像ID，可从无影云应用控制台的镜像管理页面获取",
                   "example": "img-f37nddbjc1lje14st",
                   "type": "string"
@@ -278,14 +278,14 @@
                 },
                 "AuthTime": {
                   "backendName": "authTime",
-                  "description_en": "The authorization time of the application",
-                  "description_zh": "应用授权时间",
+                  "description_en": "The authorization time of the application.\nThe return value is a serialized datetime string from the server in the format of `EEE MMM dd HH:mm:ss zzz yyyy`, which represents the day of the week, month, day, hour:minute:second, time zone abbreviation, and year in sequence. For example, `Wed Jan 14 20:47:02 CST 2026`, where `CST` is the time zone abbreviation of the server's time zone (China Standard Time, UTC+08:00)",
+                  "description_zh": "应用授权时间。\n返回值为服务端序列化的日期时间字符串，格式为`EEE MMM dd HH:mm:ss zzz yyyy`，依次表示星期、月份、日、时:分:秒、时区缩写和年份，例如`Wed Jan 14 20:47:02 CST 2026`，其中`CST`为服务端所在时区（中国标准时间，UTC+08:00）的时区缩写",
                   "example": "Wed Jan 14 20:47:02 CST 2026",
                   "type": "string"
                 },
                 "CategoryId": {
                   "backendName": "categoryId",
-                  "description_en": "The secondary category of the application.\nValid values:\n\n1: all applications\n2: design software\n3: programming and development\n4: office essentials\n5: input methods\n6: photos and videos\n7: system tools\n8: browsers",
+                  "description_en": "The specific category information of the application, which is the secondary category.\nValid values:\n\n1: All applications\n2: Design software\n3: Programming and development\n4: Office essentials\n5: Input methods\n6: Image and video\n7: System tools\n8: Browsers",
                   "description_zh": "应用具体类目信息，二级分类。\n取值范围：\n\n1 ： 所有应用\n2 ： 设计软件\n3 ： 编程开发\n4 ： 办公必备\n5 ： 输入法\n6 ： 图片视频\n7 ： 系统工具\n8 ： 浏览器",
                   "example": "2",
                   "format": "int64",
@@ -293,7 +293,7 @@
                 },
                 "CategoryType": {
                   "backendName": "categoryType",
-                  "description_en": "The primary category of the application. Valid values:\n\n0: cloud application\n1: cloud game",
+                  "description_en": "The primary category of the application. Valid values:\n\n0: Cloud application\n1: Cloud game",
                   "description_zh": "应用一级分类。取值范围\n\n0：云应用\n1：云游戏",
                   "example": "1",
                   "format": "int64",
@@ -315,7 +315,7 @@
                 },
                 "UsedInSession": {
                   "backendName": "usedInSession",
-                  "description_en": "Indicates whether the application is currently in use",
+                  "description_en": "Indicates whether the application is in use",
                   "description_zh": "应用是否正在使用中",
                   "example": "True",
                   "type": "boolean"
@@ -329,15 +329,15 @@
           },
           "NextToken": {
             "backendName": "nextToken",
-            "description_en": "The token for the next query",
+            "description_en": "The starting token for the next query",
             "description_zh": "下一次查询的开始 token",
             "example": "2NVfhLfgy5b3J5iJyoLQ6x4EULMg1hbhgB9NfnvdK9oj5zwxd17j4TuQkZze3RvhEvBinZYjknujF3Q1M",
             "type": "string"
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "Id of the request",
-            "description_zh": "Id of the request",
+            "description_en": "The request ID",
+            "description_zh": "请求ID",
             "example": "DB70F8FE-63A3-587B-8560-CEC258E8B944",
             "title_en": "Id of the request",
             "title_zh": "Id of the request",
