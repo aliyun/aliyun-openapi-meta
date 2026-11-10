@@ -3,7 +3,7 @@
   "cmd_full_name": "winnexo import-workflow-template",
   "cmd_name": "import-workflow-template",
   "deprecated": false,
-  "description_en": "Imports a portable template in JSON format and creates a new template regardless of the template name",
+  "description_en": "Imports a portable template in JSON format and creates a new template, regardless of whether a template with the same name exists",
   "description_zh": "有效成员导入可移植模板 JSON 并创建新模板；无论名称是否相同都新建",
   "kebab_example": "aliyun winnexo import-workflow-template --collaboration-group-id cg_9401 --template '{}' --region cn-hangzhou",
   "method": "POST",
@@ -97,12 +97,12 @@
           },
           "edges": {
             "backendName": "edges",
-            "description_en": "节点依赖边；每项包含from/to，引用稳定stepId；显式空数组表示没有依赖",
+            "description_en": "The node dependency edges. Each item contains from and to fields that reference stable step IDs. An explicit empty array indicates no dependencies",
             "description_zh": "节点依赖边；每项包含from/to，引用稳定stepId；显式空数组表示没有依赖",
             "example": "[{\"from\":\"collect\",\"to\":\"deliver\"}]",
             "itemName": "edges",
             "items": {
-              "description_en": "一条节点依赖边，from为前置节点stepId，to为后置节点stepId",
+              "description_en": "A node dependency edge. The from field is the step ID of the predecessor node, and the to field is the step ID of the successor node",
               "description_zh": "一条节点依赖边，from为前置节点stepId，to为后置节点stepId",
               "example": "{\"from\":\"collect\",\"to\":\"deliver\"}",
               "type": "object"
@@ -113,7 +113,7 @@
           },
           "effectiveVersion": {
             "backendName": "effectiveVersion",
-            "description_en": "The current effective version number of the template. An empty value indicates that only a draft exists and it cannot be used for work items. For imported templates, a v1 draft is created and this field is empty",
+            "description_en": "The current effective version number of the template. An empty value indicates that only a draft exists and it cannot be used for work items. The import operation always creates a v1 draft, so this field is empty",
             "description_zh": "模板当前生效版本号；为空表示仅有草稿、不可用于工作项（导入固定创建 v1 草稿，本字段为空）",
             "example": "v1",
             "type": "string"
@@ -134,7 +134,7 @@
           },
           "layout": {
             "backendName": "layout",
-            "description_en": "可选画布布局，按stepId索引；只影响展示，不决定依赖",
+            "description_en": "The optional canvas layout, indexed by step ID. This only affects the display and does not determine dependencies",
             "description_zh": "可选画布布局，按stepId索引；只影响展示，不决定依赖",
             "example": "{\"collect\":{\"x\":0,\"y\":0},\"review\":{\"x\":240,\"y\":0}}",
             "required": false,
@@ -163,7 +163,7 @@
           },
           "schemaVersion": {
             "backendName": "schemaVersion",
-            "description_en": "模板结构版本，当前为2，与业务版本vN独立",
+            "description_en": "The schema version of the template. The current value is 2, which is independent of the business version vN",
             "description_zh": "模板结构版本，当前为2，与业务版本vN独立",
             "example": "2",
             "format": "int64",
@@ -196,21 +196,21 @@
                 },
                 "ownerAgentName": {
                   "backendName": "executorAgentName",
-                  "description_en": "The name of the digital employee executor",
+                  "description_en": "The name of the digital worker executor. This can be empty when importing a draft, but is required when an AGENT submits the task. The field name is retained for backward compatibility, and its meaning aligns with the current semantics of executor and person in charge",
                   "description_zh": "数字员工执行人名称；导入草稿可为空，AGENT 提交时必填；字段名保留用于兼容，含义按当前执行人与负责人语义",
                   "example": "example",
                   "type": "string"
                 },
                 "ownerType": {
                   "backendName": "executorType",
-                  "description_en": "The executor type. Valid values:\nMEMBER: workspace member.\nAGENT: digital employee",
+                  "description_en": "The type of the executor. Valid values: MEMBER (workspace member) and AGENT (digital worker). The field name is retained for backward compatibility, and its meaning aligns with the current semantics of executor and person in charge",
                   "description_zh": "执行人类型：MEMBER 空间成员 / AGENT 数字员工；字段名保留用于兼容，含义按当前执行人与负责人语义",
                   "example": "MEMBER",
                   "type": "string"
                 },
                 "ownerUserId": {
                   "backendName": "executorUserId",
-                  "description_en": "The user ID of the employee executor",
+                  "description_en": "The user ID of the member executor. This can be empty when importing a draft, but is required when a MEMBER submits the task. The field name is retained for backward compatibility, and its meaning aligns with the current semantics of executor and person in charge",
                   "description_zh": "成员执行人用户ID；导入草稿可为空，MEMBER 提交时必填；字段名保留用于兼容，含义按当前执行人与负责人语义",
                   "example": "1",
                   "format": "int64",
@@ -218,19 +218,19 @@
                 },
                 "reviewOutput": {
                   "backendName": "reviewOutput",
-                  "description_en": "是否人工审核产出物，默认关闭；仅数字员工可开启，审核待办自动发负责人",
+                  "description_en": "Specifies whether to manually review the output. Default value: false. This feature can only be enabled for digital workers, and review tasks are automatically sent to the persons in charge",
                   "description_zh": "是否人工审核产出物，默认关闭；仅数字员工可开启，审核待办自动发负责人",
                   "example": "false",
                   "type": "boolean"
                 },
                 "reviewerUserIds": {
                   "backendName": "ownerUserIds",
-                  "description_en": "The list of user IDs of the persons in charge. This field is valid only for steps with a digital employee executor and is always empty for steps with a member executor",
+                  "description_en": "The list of user IDs for the persons in charge. Only members are supported. Persons in charge can be configured when the task is executed by either a member or a digital worker. The field name is retained for backward compatibility, and its meaning aligns with the current semantics of executor and person in charge",
                   "description_zh": "负责人用户ID列表；仅支持成员；成员或数字员工执行时均可配置负责人；字段名保留用于兼容，含义按当前执行人与负责人语义",
                   "example": "example",
                   "itemName": "reviewerUserIds",
                   "items": {
-                    "description_en": "The list of user IDs of the persons in charge. This field is valid only for steps with a digital employee executor and is always empty for steps with a member executor",
+                    "description_en": "The list of user IDs for the persons in charge. Only members are supported. Persons in charge can be configured when the task is executed by either a member or a digital worker. The field name is retained for backward compatibility, and its meaning aligns with the current semantics of executor and person in charge",
                     "description_zh": "负责人用户ID列表；仅支持成员；成员或数字员工执行时均可配置负责人；字段名保留用于兼容，含义按当前执行人与负责人语义",
                     "example": "10086",
                     "format": "int64",
@@ -257,11 +257,11 @@
                 },
                 "specificationJson": {
                   "backendName": "specificationJson",
-                  "description_en": "The ordered array of fragments, which supports text, mention, skill, app, files, and web_search. The referenced identities and order are retained",
+                  "description_en": "The ordered array of fragments. Supports text, mention, skill, app, files, and web_search. Preserves reference identities and order",
                   "description_zh": "有序片段数组，支持text/mention/skill/app/files/web_search；保留引用身份和顺序",
                   "example": "[{\\\"type\\\":\\\"text\\\",\\\"text\\\":\\\"收集客户信息\\\"}]",
                   "items": {
-                    "description_en": "The ordered array of fragments, which supports text, mention, skill, app, files, and web_search. The referenced identities and order are retained",
+                    "description_en": "The ordered array of fragments. Supports text, mention, skill, app, files, and web_search. Preserves reference identities and order",
                     "description_zh": "有序片段数组，支持text/mention/skill/app/files/web_search；保留引用身份和顺序",
                     "example": "{\"type\":\"text\",\"content\":\"汇总销售数据\"}",
                     "type": "object"
@@ -293,14 +293,14 @@
           },
           "version": {
             "backendName": "version",
-            "description_en": "The version number generated for this import",
+            "description_en": "The version number generated by this import",
             "description_zh": "本次导入生成的版本号",
             "example": "v1",
             "type": "string"
           },
           "versionStatus": {
             "backendName": "versionStatus",
-            "description_en": "The version status. Valid values:\nDRAFT: draft.\nSUBMITTED: submitted.\nThe value is fixed to DRAFT for imported templates",
+            "description_en": "The version status. Valid values: DRAFT (draft) and SUBMITTED (submitted). The status is fixed to DRAFT for imports",
             "description_zh": "版本状态：DRAFT 草稿 / SUBMITTED 已提交；导入固定为 DRAFT",
             "example": "DRAFT",
             "type": "string"
