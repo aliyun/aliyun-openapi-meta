@@ -3,7 +3,7 @@
   "cmd_full_name": "dds describe-db-instance-switch-log",
   "cmd_name": "describe-db-instance-switch-log",
   "deprecated": false,
-  "description_en": "Queries the primary/secondary switching logs of an ApsaraDB for MongoDB instance",
+  "description_en": "Queries the primary/secondary switchover logs of an instance",
   "description_zh": "查询实例的主备切换日志",
   "kebab_example": "aliyun dds describe-db-instance-switch-log --start-time 2023-05-27T02:46Z --end-time 2023-05-28T02:00Z --page-number 1 --page-size 30 --db-instance-id dds-uf68f1b5a57exxxx --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "2023-05-27T02:46Z",
-      "help_en": "The beginning of the time range to query. Specify the time in the ISO 8601 standard in the yyyy-mm-ddThh:mmZ format. The time must be in UTC",
+      "help_en": "The start time of the query. The time is in the <i>yyyy-mm-dd</i>T<i>hh:mm</i>Z format (UTC)",
       "help_zh": "查询开始时间，格式为<i>yyyy-mm-dd</i>T<i>hh:mm</i>Z（UTC时间）",
       "location": "query",
       "name": "start_time",
@@ -35,7 +35,7 @@
     },
     {
       "example": "2023-05-28T02:00Z",
-      "help_en": "The end of the time range to query. Specify the time in the ISO 8601 standard in the yyyy-mm-ddThh:mmZ format. The time must be in UTC. The end time must be later than the start time",
+      "help_en": "The end time of the query. The end time must be later than the start time. The time is in the <i>yyyy-mm-dd</i>T<i>hh:mm</i>Z format (UTC)",
       "help_zh": "查询结束时间，必须晚于查询开始时间，格式为<i>yyyy-mm-dd</i>T<i>hh:mm</i>Z（UTC时间）",
       "location": "query",
       "name": "end_time",
@@ -48,7 +48,7 @@
     },
     {
       "example": "1",
-      "help_en": "The number of the page to return. The value must be an integer that is greater than 0 and less than or equal to the maximum value supported by the integer data type. Default value: 1",
+      "help_en": "The page number. Valid values: an integer greater than 0 and less than or equal to the maximum value of the INTEGER data type. Default value: 1",
       "help_zh": "页码，取值为大于0且不超过integer数据类型的最大值，默认值为1",
       "location": "query",
       "name": "page_number",
@@ -66,7 +66,7 @@
         "100"
       ],
       "example": "30",
-      "help_en": "The number of entries to return on each page. Valid values: 30, 50, and 100. Default value: 30",
+      "help_en": "The number of entries per page. Valid values: 30, 50, and 100. Default value: 30",
       "help_zh": "每页记录数，取值：30、50、100，默认值为30",
       "location": "query",
       "name": "page_size",
@@ -109,36 +109,37 @@
           },
           "LogItems": {
             "backendName": "data.logItems",
-            "description_en": "The primary/secondary switchover logs",
+            "description_en": "The list of primary/secondary switchover logs",
             "description_zh": "主备切换日志列表",
             "itemName": "LogItems",
             "items": {
+              "description_en": "The switchover record",
               "description_zh": "切换记录对象",
               "properties": {
                 "NodeId": {
                   "backendName": "dBInstanceName",
-                  "description_en": "The ID of the replica set instance or the ID of the node on which a primary/secondary switchover is performed",
+                  "description_en": "Instance ID of the instance if the instance is a replica set instance, or instance ID of the switched node if the instance is a sharded cluster instance",
                   "description_zh": "当实例为副本集实例，展示实例ID；当实例为分片集实例，展示切换的节点ID",
-                  "example": "NodeId-example-id-****",
+                  "example": "当实例为副本集实例：dds-uf68f1b5a57exxxx。\n当实例为分片集实例：d-uf652b73f554xxxx",
                   "type": "string"
                 },
                 "SwitchCode": {
                   "backendName": "switchCode",
-                  "description_en": "The code that indicates the reason of a primary/secondary switchover. Valid values:\n\nUSER_CONSOLE_OPERATION: The switchover is manually performed.\n\nOPERATION_AND_MAINTENANCE: Potential risks exist.\n\nMACHINE_DOWNTIME: The host is offline.\n\nPRIMARY_UNHEALTHY: An exception occurs on the primary node of the instance.\n\nSECONDARY_UNHEALTHY: An exception occurs on the secondary node of the instance.\n\nMULTIPLE_NODE_FAILURES: An exception occurs on multiple nodes of the instance",
+                  "description_en": "The cause code of the switchover. Valid values:\nUSER_CONSOLE_OPERATION: manual operation\nOPERATION_AND_MAINTENANCE: potential risk\nMACHINE_DOWNTIME: host offline\nPRIMARY_UNHEALTHY: instance failures\nSECONDARY_UNHEALTHY: instance failures\nMULTIPLE_NODE_FAILURES: instance failures",
                   "description_zh": "切换原因代码：\nUSER_CONSOLE_OPERATION：人工操作\nOPERATION_AND_MAINTENANCE：风险隐患\nMACHINE_DOWNTIME：宿主机下线\nPRIMARY_UNHEALTHY：实例异常\nSECONDARY_UNHEALTHY：实例异常\nMULTIPLE_NODE_FAILURES：实例异常",
                   "example": "USER_CONSOLE_OPERATION",
                   "type": "string"
                 },
                 "SwitchStatus": {
                   "backendName": "switchStatus",
-                  "description_en": "The switchover status. Valid values: 1 and 0. The value 1 indicates a successful primary/secondary switchover and the value 0 indicates a failed primary/secondary switchover",
+                  "description_en": "The switchover status. Valid values:\n1: The switchover is successful.\n0: The switchover failed",
                   "description_zh": "切换状态。\n返回值为：\n1：切换成功。\n0：切换失败",
                   "example": "1",
                   "type": "string"
                 },
                 "SwitchTime": {
                   "backendName": "switchTime",
-                  "description_en": "The point in time when a primary/secondary switchover was performed. The time follows the ISO 8601 standard in the yyyy-mm-ddThh:mm:ssZ format. The time is displayed in UTC",
+                  "description_en": "The switchover time. The time is in the <i>yyyy-mm-dd</i>T<i>hh:mm:ss</i>Z format (UTC)",
                   "description_zh": "切换时间，格式为<i>yyyy-mm-dd</i>T<i>hh:mm:ss</i>Z（UTC时间）",
                   "example": "2023-02-07T18:00:00Z",
                   "type": "string"
@@ -150,7 +151,7 @@
           },
           "PageNumber": {
             "backendName": "data.pageNumbers",
-            "description_en": "The page number returned",
+            "description_en": "The current page number",
             "description_zh": "当前页码",
             "example": "1",
             "format": "int64",
@@ -158,7 +159,7 @@
           },
           "PageSize": {
             "backendName": "data.maxRecordsPerPage",
-            "description_en": "The number of entries returned on each page",
+            "description_en": "The number of entries per page",
             "description_zh": "每页记录数",
             "example": "30",
             "format": "int64",
@@ -166,14 +167,14 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID",
+            "description_en": "The ID of the request",
             "description_zh": "请求ID",
             "example": "ECBCA991-XXXX-XXXX-834C-B3E8007F33AA",
             "type": "string"
           },
           "TotalCount": {
             "backendName": "data.totalRecords",
-            "description_en": "The number of primary/secondary switching entries",
+            "description_en": "The total number of primary/secondary switchover records returned in the query",
             "description_zh": "查询结果中主备切换记录的数量",
             "example": "1",
             "format": "int64",
