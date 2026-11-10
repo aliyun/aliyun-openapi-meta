@@ -53,6 +53,11 @@
             "backendName": "resultType",
             "description_en": "The evaluation result type. Required for inline evaluators. When referencing an existing evaluator, defaults to score if not specified",
             "description_zh": "评估结果类型。内联评估器场景必填；引用已有评估器时未传默认为 score",
+            "enumValueTitles": {
+              "binary": "binary",
+              "score": "score",
+              "text": "text"
+            },
             "example": "score",
             "title": "结果类型：score / binary / text",
             "type": "string"
@@ -61,6 +66,11 @@
             "backendName": "type",
             "description_en": "The evaluator type. Defaults to LLM if not specified. Inline CODE evaluators are not currently supported. For the CODE type, reference a previously created evaluator by using evaluatorRef",
             "description_zh": "评估器类型。未传时默认 LLM；内联 CODE 评估器当前不支持，CODE 类型请通过 evaluatorRef 引用已创建评估器",
+            "enumValueTitles": {
+              "AGENT": "AGENT",
+              "CODE": "CODE",
+              "LLM": "LLM"
+            },
             "example": "AGENT",
             "title": "评估器类型：LLM / CODE",
             "type": "string"
@@ -211,17 +221,50 @@
         "type": "object"
       },
       "ModelParameters": {
-        "description_en": "The model generation parameters that control the output length, randomness, sampling range, repetition penalty, and stop sequences",
+        "description_en": "The model generation parameters used to control the output length, randomness, sampling range, repetition penalty, and stop sequences",
         "description_zh": "模型生成参数，用于控制输出长度、随机性、采样范围、重复惩罚和停止序列",
         "properties": {
+          "enableCacheControl": {
+            "backendName": "enableCacheControl",
+            "description_en": "Specifies whether to enable explicit caching for system messages",
+            "description_zh": "是否对system消息启用显式缓存",
+            "example": "true",
+            "title": "是否对system消息启用显式缓存",
+            "type": "boolean"
+          },
+          "enableThinking": {
+            "backendName": "enableThinking",
+            "description_en": "Specifies whether to enable thinking mode. This takes effect only for hybrid thinking models and defaults to false if not specified",
+            "description_zh": "是否开启思考模式，仅混合思考模型生效，不传时默认false",
+            "example": "true",
+            "title": "是否开启思考模式，仅混合思考模型生效，不传时默认false",
+            "type": "boolean"
+          },
+          "extraBody": {
+            "backendName": "extraBody",
+            "description_en": "The extended parameters, which are a serialized string of a JSON object. These are merged into the top level of the model request body to pass through other Model Studio parameters",
+            "description_zh": "扩展参数，JSON对象序列化后的字符串，合并到模型请求体顶层，用于透传百炼其他参数",
+            "example": "{\"enable_search\":false}",
+            "title": "扩展参数，JSON对象序列化后的字符串，合并到模型请求体顶层，用于透传百炼其他参数",
+            "type": "string"
+          },
           "frequencyPenalty": {
             "backendName": "frequencyPenalty",
-            "description_en": "The frequency penalty. Positive values reduce repetition. Valid values: -2.0 to 2.0",
+            "description_en": "The frequency penalty where positive values reduce repetition, with a range of -2.0 to 2.0",
             "description_zh": "频率惩罚，正值减少重复，范围-2.0到2.0",
             "example": "0.2",
             "format": "float",
             "title": "频率惩罚，正值减少重复，范围-2.0到2.0",
             "type": "number"
+          },
+          "maxCompletionTokens": {
+            "backendName": "maxCompletionTokens",
+            "description_en": "The maximum number of output tokens, including the chain-of-thought and the response. This is recommended for thinking models",
+            "description_zh": "最大输出Token数，包含思维链与回答，思考模型推荐使用",
+            "example": "4096",
+            "format": "int32",
+            "title": "最大输出Token数，包含思维链与回答，思考模型推荐使用",
+            "type": "integer"
           },
           "maxTokens": {
             "backendName": "maxTokens",
@@ -234,20 +277,98 @@
           },
           "presencePenalty": {
             "backendName": "presencePenalty",
-            "description_en": "The presence penalty. Positive values encourage new topics. Valid values: -2.0 to 2.0",
+            "description_en": "The presence penalty where positive values encourage new topics, with a range of -2.0 to 2.0",
             "description_zh": "存在惩罚，正值鼓励新话题，范围-2.0到2.0",
             "example": "0.1",
             "format": "float",
             "title": "存在惩罚，正值鼓励新话题，范围-2.0到2.0",
             "type": "number"
           },
+          "reasoningEffort": {
+            "backendName": "reasoningEffort",
+            "description_en": "The reasoning effort level. This takes effect only when thinking mode is enabled. For the Qwen3.8 series, valid values are low, medium, and xhigh. This cannot be set simultaneously with thinkingBudget",
+            "description_zh": "推理力度，仅开启思考时生效，qwen3.8系列可选low、medium、xhigh，不可与thinkingBudget同时设置",
+            "example": "low",
+            "title": "推理力度，仅开启思考时生效，qwen3.8系列可选low、medium、xhigh，不可与thinkingBudget同时设置",
+            "type": "string"
+          },
+          "repetitionPenalty": {
+            "backendName": "repetitionPenalty",
+            "description_en": "The repetition penalty that controls the repetition of consecutive sequences. The value must be greater than 0. A value of 1.0 indicates no penalty, and a larger value results in less repetition",
+            "description_zh": "重复惩罚，控制连续序列重复度，取值大于0，1.0表示不惩罚，值越大重复越少",
+            "example": "1.05",
+            "format": "double",
+            "title": "重复惩罚，控制连续序列重复度，取值大于0，1.0表示不惩罚，值越大重复越少",
+            "type": "number"
+          },
+          "responseFormat": {
+            "backendName": "responseFormat",
+            "description_en": "The response content format, which defaults to text if not specified",
+            "description_zh": "返回内容格式，不传时默认为text",
+            "example": "{\"type\":\"json_schema\",\"jsonSchema\":{\"name\":\"answer\",\"strict\":true,\"schema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"answer\\\":{\\\"type\\\":\\\"string\\\"}},\\\"required\\\":[\\\"answer\\\"]}\"}}",
+            "properties": {
+              "jsonSchema": {
+                "backendName": "jsonSchema",
+                "description_en": "The JSON Schema constraint, which is required when the type is json_schema",
+                "description_zh": "JSON Schema约束，type为json_schema时必填",
+                "example": "{\"name\":\"answer\",\"strict\":true,\"schema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"answer\\\":{\\\"type\\\":\\\"string\\\"}},\\\"required\\\":[\\\"answer\\\"]}\"}",
+                "properties": {
+                  "name": {
+                    "backendName": "name",
+                    "description_en": "The schema name",
+                    "description_zh": "Schema名称",
+                    "example": "answer",
+                    "title": "Schema名称",
+                    "type": "string"
+                  },
+                  "schema": {
+                    "backendName": "schema",
+                    "description_en": "The JSON Schema definition, which is a serialized string of a JSON object",
+                    "description_zh": "JSON Schema定义，JSON对象序列化后的字符串",
+                    "example": "{\"type\":\"object\",\"properties\":{\"answer\":{\"type\":\"string\"}},\"required\":[\"answer\"]}",
+                    "title": "JSON Schema定义，JSON对象序列化后的字符串",
+                    "type": "string"
+                  },
+                  "strict": {
+                    "backendName": "strict",
+                    "description_en": "Specifies whether to strictly adhere to the schema structure. Set this to true",
+                    "description_zh": "是否严格遵循Schema结构，推荐true",
+                    "example": "true",
+                    "title": "是否严格遵循Schema结构，推荐true",
+                    "type": "boolean"
+                  }
+                },
+                "title": "JSON Schema约束，type为json_schema时必填",
+                "type": "object"
+              },
+              "type": {
+                "backendName": "type",
+                "description_en": "The format type. Valid values: text, json_object, and json_schema. When using json_object, the prompt must explicitly request JSON output",
+                "description_zh": "格式类型：text、json_object、json_schema；使用json_object时提示词中须明确要求输出JSON",
+                "example": "json_object",
+                "title": "格式类型：text、json_object、json_schema；使用json_object时提示词中须明确要求输出JSON",
+                "type": "string"
+              }
+            },
+            "title": "返回内容格式，不传时默认为text",
+            "type": "object"
+          },
+          "seed": {
+            "backendName": "seed",
+            "description_en": "The random seed, with a range of 0 to 2147483647, which attempts to return the same result for the same input and parameters",
+            "description_zh": "随机数种子，范围0-2147483647，相同输入与参数下尽量返回相同结果",
+            "example": "1234",
+            "format": "int32",
+            "title": "随机数种子，范围0-2147483647，相同输入与参数下尽量返回相同结果",
+            "type": "integer"
+          },
           "stopSequences": {
             "backendName": "stop",
-            "description_en": "The stop sequences. Generation stops immediately when any of these sequences is encountered",
+            "description_en": "The stop sequences that immediately halt generation when encountered",
             "description_zh": "停止序列，遇到时立即停止生成",
             "example": "[\"END\"]",
             "items": {
-              "description_en": "A single stop sequence",
+              "description_en": "The individual stop sequence",
               "description_zh": "单个停止序列",
               "example": "END",
               "type": "string"
@@ -257,16 +378,25 @@
           },
           "temperature": {
             "backendName": "temperature",
-            "description_en": "The temperature parameter that controls the randomness of the output. Valid values: 0 to 2",
+            "description_en": "The temperature parameter that controls the randomness of the output, with a range of 0 to 2",
             "description_zh": "温度参数，控制输出随机性，范围0-2",
             "example": "0.7",
             "format": "float",
             "title": "温度参数，控制输出随机性，范围0-2",
             "type": "number"
           },
+          "thinkingBudget": {
+            "backendName": "thinkingBudget",
+            "description_en": "The maximum number of tokens for the thinking process. This takes effect only when thinking mode is enabled and cannot be set simultaneously with reasoningEffort",
+            "description_zh": "思考过程最大Token数，仅开启思考时生效，不可与reasoningEffort同时设置",
+            "example": "2048",
+            "format": "int32",
+            "title": "思考过程最大Token数，仅开启思考时生效，不可与reasoningEffort同时设置",
+            "type": "integer"
+          },
           "topK": {
             "backendName": "topK",
-            "description_en": "The top-k sampling parameter. Valid values: 1 to 100",
+            "description_en": "The Top K sampling parameter, with a range of 1 to 100",
             "description_zh": "Top K 采样参数，范围1-100",
             "example": "50",
             "format": "int32",
@@ -275,7 +405,7 @@
           },
           "topP": {
             "backendName": "topP",
-            "description_en": "The top-p sampling parameter. Valid values: 0 to 1",
+            "description_en": "The Top P sampling parameter, with a range of 0 to 1",
             "description_zh": "Top P 采样参数，范围0-1",
             "example": "0.9",
             "format": "float",
@@ -344,7 +474,7 @@
     },
     {
       "example": "exp-plan-0242d983f5d340fd8479cf2c19eb279e",
-      "help_en": "The experiment plan ID",
+      "help_en": "The ID of the experiment plan",
       "help_zh": "实验计划 ID",
       "location": "path",
       "name": "plan_id",
@@ -366,7 +496,7 @@
         "description_zh": "实验计划详情响应",
         "properties": {
           "createdAt": {
-            "description_en": "The creation time. The value is a millisecond-level UNIX timestamp",
+            "description_en": "The creation time. The value is a UNIX timestamp in milliseconds",
             "description_zh": "创建时间，毫秒级 Unix 时间戳",
             "example": "1782816000000",
             "format": "int64",
@@ -375,7 +505,7 @@
             "type": "integer"
           },
           "datasetId": {
-            "description_en": "The associated dataset ID",
+            "description_en": "The ID of the associated dataset",
             "description_zh": "关联的数据集 ID",
             "example": "arms_customer_agent_level1",
             "title_en": "关联的数据集ID",
@@ -406,8 +536,12 @@
             "type": "array"
           },
           "experimentType": {
-            "description_en": "The experiment type",
+            "description_en": "The type of the experiment",
             "description_zh": "实验类型",
+            "enumValueTitles": {
+              "offline": "offline",
+              "online": "online"
+            },
             "example": "online",
             "title_en": "实验类型：offline（离线实验）/ online（在线实验）",
             "title_zh": "实验类型：offline（离线实验）/ online（在线实验）",
@@ -436,14 +570,14 @@
             "type": "object"
           },
           "pipelineName": {
-            "description_en": "The name of the associated data processing pipeline. This value is empty if no pipeline is associated",
+            "description_en": "The name of the associated data processing pipeline. This field is empty if no pipeline is associated",
             "description_zh": "关联的数据处理Pipeline名称（未关联时为空）",
             "title_en": "关联的数据处理Pipeline名称（未关联时为空）",
             "title_zh": "关联的数据处理Pipeline名称（未关联时为空）",
             "type": "string"
           },
           "planId": {
-            "description_en": "The experiment plan ID",
+            "description_en": "The ID of the experiment plan",
             "description_zh": "实验计划 ID",
             "example": "exp-plan-0242d983f5d340fd8479cf2c19eb279e",
             "title_en": "实验计划ID",
@@ -451,7 +585,7 @@
             "type": "string"
           },
           "planName": {
-            "description_en": "The experiment plan name",
+            "description_en": "The name of the experiment plan",
             "description_zh": "实验计划名称",
             "example": "arms_agent_experiment",
             "title_en": "实验计划名称",
@@ -490,15 +624,20 @@
             "type": "array"
           },
           "status": {
-            "description_en": "The plan status",
+            "description_en": "The status of the plan",
             "description_zh": "计划状态",
+            "enumValueTitles": {
+              "pending": "pending",
+              "running": "running",
+              "stopped": "stopped"
+            },
             "example": "stopped",
             "title_en": "状态：pending/running/stopped",
             "title_zh": "状态：pending/running/stopped",
             "type": "string"
           },
           "updatedAt": {
-            "description_en": "The update time. The value is a millisecond-level UNIX timestamp",
+            "description_en": "The update time. The value is a UNIX timestamp in milliseconds",
             "description_zh": "更新时间，毫秒级 Unix 时间戳",
             "example": "1782816600000",
             "format": "int64",
@@ -523,7 +662,7 @@
       "type": "string"
     },
     {
-      "help_en": "The experiment plan ID",
+      "help_en": "The ID of the experiment plan",
       "help_zh": "实验计划 ID",
       "name": "planId",
       "position": "path",

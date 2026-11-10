@@ -36,7 +36,7 @@
   "parameters": [
     {
       "example": "al-playground-cn-hongkong",
-      "help_en": "The AgentSpace name",
+      "help_en": "The name of the AgentSpace",
       "help_zh": "AgentSpace 名称",
       "location": "path",
       "name": "agent_space",
@@ -49,7 +49,7 @@
     },
     {
       "example": "rca_benckmark_eval",
-      "help_en": "The ID of the associated dataset. If not specified, the execution phase processes in simple mode",
+      "help_en": "The ID of the associated dataset. If you do not specify this parameter, the execution phase is processed in simple mode",
       "help_zh": "关联的数据集 ID。不传时执行阶段按 simple 模式处理",
       "location": "body",
       "name": "dataset_id",
@@ -145,6 +145,11 @@
             "type": "string"
           },
           {
+            "enum": [
+              "binary",
+              "score",
+              "text"
+            ],
             "example": "score",
             "help_en": "The evaluation result type. Required for inline evaluators. When referencing an existing evaluator, defaults to score if not specified",
             "help_zh": "评估结果类型。内联评估器场景必填；引用已有评估器时未传默认为 score",
@@ -157,6 +162,11 @@
             "type": "string"
           },
           {
+            "enum": [
+              "AGENT",
+              "CODE",
+              "LLM"
+            ],
             "example": "AGENT",
             "help_en": "The evaluator type. Defaults to LLM if not specified. Inline CODE evaluators are not currently supported. For the CODE type, reference a previously created evaluator by using evaluatorRef",
             "help_zh": "评估器类型。未传时默认 LLM；内联 CODE 评估器当前不支持，CODE 类型请通过 evaluatorRef 引用已创建评估器",
@@ -239,7 +249,7 @@
         "type": "object"
       },
       "example": "[{\"evaluatorRef\": \"Builtin.agent_correctness\", \"name\": \"Builtin.agent_correctness\", \"type\": \"AGENT\", \"resultName\": \"Builtin.agent_correctness\", \"resultType\": \"score\", \"variableMapping\": {\"input\": \"experiment_input\", \"output\": \"experiment_output\", \"expected_output\": \"dataset.ground_truth_json\"}, \"filters\": {\"query\": \"\", \"sample\": \"100\"}, \"config\": {\"variables\": [], \"prompt\": \"\"}}, {\"evaluatorRef\": \"rca-toxicity-safety-accuracy\", \"name\": \"rca-toxicity-safety-accuracy\", \"type\": \"AGENT\", \"resultName\": \"rca-toxicity-safety-accuracy\", \"resultType\": \"score\", \"variableMapping\": {\"input\": \"experiment_input\", \"output\": \"experiment_output\", \"question\": \"dataset.question\", \"expected_output\": \"dataset.ground_truth_json\", \"payload_json\": \"dataset.payload_json\"}, \"filters\": {\"query\": \"\", \"sample\": \"100\"}, \"config\": {\"variables\": [], \"prompt\": \"\"}}]",
-      "help_en": "The list of evaluators. When configured, evaluation can be automatically triggered upon experiment completion",
+      "help_en": "The list of evaluators. After you configure this parameter, an evaluation is automatically triggered when the experiment is completed",
       "help_zh": "评估器列表。配置后实验完成时可自动触发评估",
       "location": "body",
       "name": "evaluators",
@@ -252,8 +262,12 @@
       "type": "array"
     },
     {
+      "enum": [
+        "OFFLINE",
+        "ONLINE"
+      ],
       "example": "OFFLINE",
-      "help_en": "The experiment type. Set this parameter to `OFFLINE` or `ONLINE`",
+      "help_en": "The type of the experiment. Valid values: OFFLINE and ONLINE",
       "help_zh": "实验类型。请求传 `OFFLINE` 或 `ONLINE`",
       "location": "body",
       "name": "experiment_type",
@@ -306,8 +320,44 @@
           {
             "fields": [
               {
+                "example": "true",
+                "help_en": "Specifies whether to enable explicit caching for system messages",
+                "help_zh": "是否对system消息启用显式缓存",
+                "name": "enable_cache_control",
+                "options": [
+                  "--enable-cache-control"
+                ],
+                "raw_name": "enableCacheControl",
+                "required": false,
+                "type": "bool"
+              },
+              {
+                "example": "true",
+                "help_en": "Specifies whether to enable thinking mode. This takes effect only for hybrid thinking models and defaults to false if not specified",
+                "help_zh": "是否开启思考模式，仅混合思考模型生效，不传时默认false",
+                "name": "enable_thinking",
+                "options": [
+                  "--enable-thinking"
+                ],
+                "raw_name": "enableThinking",
+                "required": false,
+                "type": "bool"
+              },
+              {
+                "example": "{\"enable_search\":false}",
+                "help_en": "The extended parameters, which are a serialized string of a JSON object. These are merged into the top level of the model request body to pass through other Model Studio parameters",
+                "help_zh": "扩展参数，JSON对象序列化后的字符串，合并到模型请求体顶层，用于透传百炼其他参数",
+                "name": "extra_body",
+                "options": [
+                  "--extra-body"
+                ],
+                "raw_name": "extraBody",
+                "required": false,
+                "type": "string"
+              },
+              {
                 "example": "0.2",
-                "help_en": "The frequency penalty. Positive values reduce repetition. Valid values: -2.0 to 2.0",
+                "help_en": "The frequency penalty where positive values reduce repetition, with a range of -2.0 to 2.0",
                 "help_zh": "频率惩罚，正值减少重复，范围-2.0到2.0",
                 "name": "frequency_penalty",
                 "options": [
@@ -316,6 +366,18 @@
                 "raw_name": "frequencyPenalty",
                 "required": false,
                 "type": "float"
+              },
+              {
+                "example": "4096",
+                "help_en": "The maximum number of output tokens, including the chain-of-thought and the response. This is recommended for thinking models",
+                "help_zh": "最大输出Token数，包含思维链与回答，思考模型推荐使用",
+                "name": "max_completion_tokens",
+                "options": [
+                  "--max-completion-tokens"
+                ],
+                "raw_name": "maxCompletionTokens",
+                "required": false,
+                "type": "int"
               },
               {
                 "example": "1024",
@@ -331,7 +393,7 @@
               },
               {
                 "example": "0.1",
-                "help_en": "The presence penalty. Positive values encourage new topics. Valid values: -2.0 to 2.0",
+                "help_en": "The presence penalty where positive values encourage new topics, with a range of -2.0 to 2.0",
                 "help_zh": "存在惩罚，正值鼓励新话题，范围-2.0到2.0",
                 "name": "presence_penalty",
                 "options": [
@@ -342,11 +404,123 @@
                 "type": "float"
               },
               {
+                "example": "low",
+                "help_en": "The reasoning effort level. This takes effect only when thinking mode is enabled. For the Qwen3.8 series, valid values are low, medium, and xhigh. This cannot be set simultaneously with thinkingBudget",
+                "help_zh": "推理力度，仅开启思考时生效，qwen3.8系列可选low、medium、xhigh，不可与thinkingBudget同时设置",
+                "name": "reasoning_effort",
+                "options": [
+                  "--reasoning-effort"
+                ],
+                "raw_name": "reasoningEffort",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "example": "1.05",
+                "help_en": "The repetition penalty that controls the repetition of consecutive sequences. The value must be greater than 0. A value of 1.0 indicates no penalty, and a larger value results in less repetition",
+                "help_zh": "重复惩罚，控制连续序列重复度，取值大于0，1.0表示不惩罚，值越大重复越少",
+                "name": "repetition_penalty",
+                "options": [
+                  "--repetition-penalty"
+                ],
+                "raw_name": "repetitionPenalty",
+                "required": false,
+                "type": "float"
+              },
+              {
+                "example": "{\"type\":\"json_schema\",\"jsonSchema\":{\"name\":\"answer\",\"strict\":true,\"schema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"answer\\\":{\\\"type\\\":\\\"string\\\"}},\\\"required\\\":[\\\"answer\\\"]}\"}}",
+                "fields": [
+                  {
+                    "example": "{\"name\":\"answer\",\"strict\":true,\"schema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"answer\\\":{\\\"type\\\":\\\"string\\\"}},\\\"required\\\":[\\\"answer\\\"]}\"}",
+                    "fields": [
+                      {
+                        "example": "answer",
+                        "help_en": "The schema name",
+                        "help_zh": "Schema名称",
+                        "name": "name",
+                        "options": [
+                          "--name"
+                        ],
+                        "raw_name": "name",
+                        "required": false,
+                        "type": "string"
+                      },
+                      {
+                        "example": "{\"type\":\"object\",\"properties\":{\"answer\":{\"type\":\"string\"}},\"required\":[\"answer\"]}",
+                        "help_en": "The JSON Schema definition, which is a serialized string of a JSON object",
+                        "help_zh": "JSON Schema定义，JSON对象序列化后的字符串",
+                        "name": "schema",
+                        "options": [
+                          "--schema"
+                        ],
+                        "raw_name": "schema",
+                        "required": false,
+                        "type": "string"
+                      },
+                      {
+                        "example": "true",
+                        "help_en": "Specifies whether to strictly adhere to the schema structure. Set this to true",
+                        "help_zh": "是否严格遵循Schema结构，推荐true",
+                        "name": "strict",
+                        "options": [
+                          "--strict"
+                        ],
+                        "raw_name": "strict",
+                        "required": false,
+                        "type": "bool"
+                      }
+                    ],
+                    "help_en": "The JSON Schema constraint, which is required when the type is json_schema",
+                    "help_zh": "JSON Schema约束，type为json_schema时必填",
+                    "name": "json_schema",
+                    "options": [
+                      "--json-schema"
+                    ],
+                    "raw_name": "jsonSchema",
+                    "required": false,
+                    "type": "object"
+                  },
+                  {
+                    "example": "json_object",
+                    "help_en": "The format type. Valid values: text, json_object, and json_schema. When using json_object, the prompt must explicitly request JSON output",
+                    "help_zh": "格式类型：text、json_object、json_schema；使用json_object时提示词中须明确要求输出JSON",
+                    "name": "type",
+                    "options": [
+                      "--type"
+                    ],
+                    "raw_name": "type",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "help_en": "The response content format, which defaults to text if not specified",
+                "help_zh": "返回内容格式，不传时默认为text",
+                "name": "response_format",
+                "options": [
+                  "--response-format"
+                ],
+                "raw_name": "responseFormat",
+                "required": false,
+                "type": "object"
+              },
+              {
+                "example": "1234",
+                "help_en": "The random seed, with a range of 0 to 2147483647, which attempts to return the same result for the same input and parameters",
+                "help_zh": "随机数种子，范围0-2147483647，相同输入与参数下尽量返回相同结果",
+                "name": "seed",
+                "options": [
+                  "--seed"
+                ],
+                "raw_name": "seed",
+                "required": false,
+                "type": "int"
+              },
+              {
                 "element": {
                   "type": "string"
                 },
                 "example": "[\"END\"]",
-                "help_en": "The stop sequences. Generation stops immediately when any of these sequences is encountered",
+                "help_en": "The stop sequences that immediately halt generation when encountered",
                 "help_zh": "停止序列，遇到时立即停止生成",
                 "name": "stop_sequences",
                 "options": [
@@ -358,7 +532,7 @@
               },
               {
                 "example": "0.7",
-                "help_en": "The temperature parameter that controls the randomness of the output. Valid values: 0 to 2",
+                "help_en": "The temperature parameter that controls the randomness of the output, with a range of 0 to 2",
                 "help_zh": "温度参数，控制输出随机性，范围0-2",
                 "name": "temperature",
                 "options": [
@@ -369,8 +543,20 @@
                 "type": "float"
               },
               {
+                "example": "2048",
+                "help_en": "The maximum number of tokens for the thinking process. This takes effect only when thinking mode is enabled and cannot be set simultaneously with reasoningEffort",
+                "help_zh": "思考过程最大Token数，仅开启思考时生效，不可与reasoningEffort同时设置",
+                "name": "thinking_budget",
+                "options": [
+                  "--thinking-budget"
+                ],
+                "raw_name": "thinkingBudget",
+                "required": false,
+                "type": "int"
+              },
+              {
                 "example": "50",
-                "help_en": "The top-k sampling parameter. Valid values: 1 to 100",
+                "help_en": "The Top K sampling parameter, with a range of 1 to 100",
                 "help_zh": "Top K 采样参数，范围1-100",
                 "name": "topk",
                 "options": [
@@ -382,7 +568,7 @@
               },
               {
                 "example": "0.9",
-                "help_en": "The top-p sampling parameter. Valid values: 0 to 1",
+                "help_en": "The Top P sampling parameter, with a range of 0 to 1",
                 "help_zh": "Top P 采样参数，范围0-1",
                 "name": "topp",
                 "options": [
@@ -393,7 +579,7 @@
                 "type": "float"
               }
             ],
-            "help_en": "The model generation parameters that control the output length, randomness, sampling range, repetition penalty, and stop sequences",
+            "help_en": "The model generation parameters used to control the output length, randomness, sampling range, repetition penalty, and stop sequences",
             "help_zh": "模型生成参数，用于控制输出长度、随机性、采样范围、重复惩罚和停止序列",
             "name": "model_parameters",
             "options": [
@@ -508,7 +694,7 @@
         "type": "object"
       },
       "example": "[{\"label\": \"A\", \"name\": \"experimentA\", \"modelName\": \"qwen3.7-plus\", \"modelProvider\": \"dashscope\", \"modelParameters\": {\"temperature\": 0.7, \"topP\": 0.8, \"presencePenalty\": 0.0, \"frequencyPenalty\": 0.0}, \"promptTemplate\": [{\"role\": \"system\", \"content\": \"你是阿里云 ARMS 产品答疑机器人\"}, {\"role\": \"user\", \"content\": \"{{input}}\"}]}, {\"label\": \"B\", \"name\": \"experimentB\", \"modelName\": \"qwen3.7-max\", \"modelProvider\": \"dashscope\", \"modelParameters\": {\"temperature\": 0.7, \"topP\": 0.8, \"presencePenalty\": 0.0, \"frequencyPenalty\": 0.0}, \"promptTemplate\": [{\"role\": \"system\", \"content\": \"你是阿里云 ARMS 产品答疑机器人\"}, {\"role\": \"user\", \"content\": \"{{input}}\"}]}]",
-      "help_en": "The list of experiment configurations. A maximum of 5 entries are supported. For offline experiments, this parameter can be omitted or set to an empty array. For online experiments, at least one entry is required",
+      "help_en": "The list of experiment configurations. You can specify up to 5 configurations. This parameter is optional or can be left empty for offline experiments. For online experiments, you must specify at least one configuration",
       "help_zh": "实验配置列表，最多 5 个。离线实验可不传或传空数组；在线实验至少传 1 个",
       "location": "body",
       "name": "experiments",
@@ -538,7 +724,7 @@
       }
     },
     {
-      "help_en": "The name of the associated data processing pipeline (optional). After association, when experiment runs under this plan finish writing results to the experiment result Logstore, the system filters by the traceId of the experiment trace, calls PreviewPipeline, and writes the pipeline-processed results together",
+      "help_en": "The name of the associated data processing pipeline. This parameter is optional. After you associate a pipeline, when the experiment execution under this plan is completed and the experiment results are written to the Logstore, the system filters the data by the traceId of the current experiment trace and calls PreviewPipeline to write the results processed by the pipeline",
       "help_zh": "关联的数据处理Pipeline名称（可选）。关联后，该计划下的实验执行完成写实验结果Logstore时，会按本次实验轨迹的traceId过滤并调用PreviewPipeline，将轨迹经Pipeline处理后的结果一并写入",
       "location": "body",
       "name": "pipeline_name",
@@ -552,7 +738,7 @@
     },
     {
       "example": "rca_benchmark_eval_experiment",
-      "help_en": "The name of the experiment plan. The name must be unique within the same AgentSpace and account",
+      "help_en": "The name of the experiment plan. The name must be unique within the same account in an AgentSpace",
       "help_zh": "实验计划名称。同一 AgentSpace 下同一账号不可重名",
       "location": "body",
       "name": "plan_name",
@@ -566,7 +752,7 @@
     },
     {
       "example": "status='OK'",
-      "help_en": "The custom query SQL clause for partial dataset mode. This parameter can be used when `selectedItemIds` is empty",
+      "help_en": "The custom query SQL clause in partial dataset mode. You can use this parameter when selectedItemIds is empty",
       "help_zh": "部分数据集模式下的自定义查询 SQL 子句。`selectedItemIds` 为空时可使用",
       "location": "body",
       "name": "query_sql",
@@ -583,7 +769,7 @@
         "type": "string"
       },
       "example": "[\"019ef4d5-a0f0-7114-832d-5542d771cd8c\", \"019f1729-be9b-7769-a006-8e98023ad7ad\"]",
-      "help_en": "The list of selected data item IDs for partial dataset mode. This parameter must be used together with `datasetId`",
+      "help_en": "The list of selected data item IDs in partial dataset mode. This parameter must be used together with the datasetId parameter",
       "help_zh": "部分数据集模式下选定的数据项 ID 列表，需与 `datasetId` 配合使用",
       "location": "body",
       "name": "selected_item_ids",
@@ -614,7 +800,7 @@
             "type": "string"
           },
           "planId": {
-            "description_en": "The experiment plan ID",
+            "description_en": "The ID of the experiment plan",
             "description_zh": "实验计划 ID",
             "example": "exp-plan-e95bff54685a4ae29ff3a834c1008a71",
             "title_en": "实验计划ID",
@@ -630,8 +816,12 @@
             "type": "string"
           },
           "status": {
-            "description_en": "The creation result. The value `created` indicates success",
+            "description_en": "The creation result. A value of created indicates success",
             "description_zh": "创建结果。成功为 `created`",
+            "enumValueTitles": {
+              "created": "created",
+              "error": "error"
+            },
             "example": "created",
             "title_en": "状态",
             "title_zh": "状态",
@@ -646,7 +836,7 @@
   },
   "v1_body_parameters": [
     {
-      "help_en": "The request body. For offline experiments, experiments can be omitted. For online experiments, at least one entry in experiments is required",
+      "help_en": "The request body. The experiments parameter is optional for offline experiments. For online experiments, you must specify at least one experiment",
       "help_zh": "请求体。离线实验可不传 experiments；在线实验至少传 1 个 experiments",
       "name": "body",
       "param_style": "json",
@@ -657,7 +847,7 @@
   ],
   "v1_parameters": [
     {
-      "help_en": "The AgentSpace name",
+      "help_en": "The name of the AgentSpace",
       "help_zh": "AgentSpace 名称",
       "name": "agentSpace",
       "position": "path",
@@ -665,7 +855,7 @@
       "type": "string"
     },
     {
-      "help_en": "The request body. For offline experiments, experiments can be omitted. For online experiments, at least one entry in experiments is required",
+      "help_en": "The request body. The experiments parameter is optional for offline experiments. For online experiments, you must specify at least one experiment",
       "help_zh": "请求体。离线实验可不传 experiments；在线实验至少传 1 个 experiments",
       "name": "body",
       "param_style": "json",

@@ -53,6 +53,11 @@
             "backendName": "resultType",
             "description_en": "The evaluation result type. Required for inline evaluators. When referencing an existing evaluator, defaults to score if not specified",
             "description_zh": "评估结果类型。内联评估器场景必填；引用已有评估器时未传默认为 score",
+            "enumValueTitles": {
+              "binary": "binary",
+              "score": "score",
+              "text": "text"
+            },
             "example": "score",
             "title": "结果类型：score / binary / text",
             "type": "string"
@@ -61,6 +66,11 @@
             "backendName": "type",
             "description_en": "The evaluator type. Defaults to LLM if not specified. Inline CODE evaluators are not currently supported. For the CODE type, reference a previously created evaluator by using evaluatorRef",
             "description_zh": "评估器类型。未传时默认 LLM；内联 CODE 评估器当前不支持，CODE 类型请通过 evaluatorRef 引用已创建评估器",
+            "enumValueTitles": {
+              "AGENT": "AGENT",
+              "CODE": "CODE",
+              "LLM": "LLM"
+            },
             "example": "AGENT",
             "title": "评估器类型：LLM / CODE",
             "type": "string"
@@ -426,17 +436,50 @@
         "type": "object"
       },
       "ModelParameters": {
-        "description_en": "The model generation parameters that control the output length, randomness, sampling range, repetition penalty, and stop sequences",
+        "description_en": "The model generation parameters used to control the output length, randomness, sampling range, repetition penalty, and stop sequences",
         "description_zh": "模型生成参数，用于控制输出长度、随机性、采样范围、重复惩罚和停止序列",
         "properties": {
+          "enableCacheControl": {
+            "backendName": "enableCacheControl",
+            "description_en": "Specifies whether to enable explicit caching for system messages",
+            "description_zh": "是否对system消息启用显式缓存",
+            "example": "true",
+            "title": "是否对system消息启用显式缓存",
+            "type": "boolean"
+          },
+          "enableThinking": {
+            "backendName": "enableThinking",
+            "description_en": "Specifies whether to enable thinking mode. This takes effect only for hybrid thinking models and defaults to false if not specified",
+            "description_zh": "是否开启思考模式，仅混合思考模型生效，不传时默认false",
+            "example": "true",
+            "title": "是否开启思考模式，仅混合思考模型生效，不传时默认false",
+            "type": "boolean"
+          },
+          "extraBody": {
+            "backendName": "extraBody",
+            "description_en": "The extended parameters, which are a serialized string of a JSON object. These are merged into the top level of the model request body to pass through other Model Studio parameters",
+            "description_zh": "扩展参数，JSON对象序列化后的字符串，合并到模型请求体顶层，用于透传百炼其他参数",
+            "example": "{\"enable_search\":false}",
+            "title": "扩展参数，JSON对象序列化后的字符串，合并到模型请求体顶层，用于透传百炼其他参数",
+            "type": "string"
+          },
           "frequencyPenalty": {
             "backendName": "frequencyPenalty",
-            "description_en": "The frequency penalty. Positive values reduce repetition. Valid values: -2.0 to 2.0",
+            "description_en": "The frequency penalty where positive values reduce repetition, with a range of -2.0 to 2.0",
             "description_zh": "频率惩罚，正值减少重复，范围-2.0到2.0",
             "example": "0.2",
             "format": "float",
             "title": "频率惩罚，正值减少重复，范围-2.0到2.0",
             "type": "number"
+          },
+          "maxCompletionTokens": {
+            "backendName": "maxCompletionTokens",
+            "description_en": "The maximum number of output tokens, including the chain-of-thought and the response. This is recommended for thinking models",
+            "description_zh": "最大输出Token数，包含思维链与回答，思考模型推荐使用",
+            "example": "4096",
+            "format": "int32",
+            "title": "最大输出Token数，包含思维链与回答，思考模型推荐使用",
+            "type": "integer"
           },
           "maxTokens": {
             "backendName": "maxTokens",
@@ -449,20 +492,98 @@
           },
           "presencePenalty": {
             "backendName": "presencePenalty",
-            "description_en": "The presence penalty. Positive values encourage new topics. Valid values: -2.0 to 2.0",
+            "description_en": "The presence penalty where positive values encourage new topics, with a range of -2.0 to 2.0",
             "description_zh": "存在惩罚，正值鼓励新话题，范围-2.0到2.0",
             "example": "0.1",
             "format": "float",
             "title": "存在惩罚，正值鼓励新话题，范围-2.0到2.0",
             "type": "number"
           },
+          "reasoningEffort": {
+            "backendName": "reasoningEffort",
+            "description_en": "The reasoning effort level. This takes effect only when thinking mode is enabled. For the Qwen3.8 series, valid values are low, medium, and xhigh. This cannot be set simultaneously with thinkingBudget",
+            "description_zh": "推理力度，仅开启思考时生效，qwen3.8系列可选low、medium、xhigh，不可与thinkingBudget同时设置",
+            "example": "low",
+            "title": "推理力度，仅开启思考时生效，qwen3.8系列可选low、medium、xhigh，不可与thinkingBudget同时设置",
+            "type": "string"
+          },
+          "repetitionPenalty": {
+            "backendName": "repetitionPenalty",
+            "description_en": "The repetition penalty that controls the repetition of consecutive sequences. The value must be greater than 0. A value of 1.0 indicates no penalty, and a larger value results in less repetition",
+            "description_zh": "重复惩罚，控制连续序列重复度，取值大于0，1.0表示不惩罚，值越大重复越少",
+            "example": "1.05",
+            "format": "double",
+            "title": "重复惩罚，控制连续序列重复度，取值大于0，1.0表示不惩罚，值越大重复越少",
+            "type": "number"
+          },
+          "responseFormat": {
+            "backendName": "responseFormat",
+            "description_en": "The response content format, which defaults to text if not specified",
+            "description_zh": "返回内容格式，不传时默认为text",
+            "example": "{\"type\":\"json_schema\",\"jsonSchema\":{\"name\":\"answer\",\"strict\":true,\"schema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"answer\\\":{\\\"type\\\":\\\"string\\\"}},\\\"required\\\":[\\\"answer\\\"]}\"}}",
+            "properties": {
+              "jsonSchema": {
+                "backendName": "jsonSchema",
+                "description_en": "The JSON Schema constraint, which is required when the type is json_schema",
+                "description_zh": "JSON Schema约束，type为json_schema时必填",
+                "example": "{\"name\":\"answer\",\"strict\":true,\"schema\":\"{\\\"type\\\":\\\"object\\\",\\\"properties\\\":{\\\"answer\\\":{\\\"type\\\":\\\"string\\\"}},\\\"required\\\":[\\\"answer\\\"]}\"}",
+                "properties": {
+                  "name": {
+                    "backendName": "name",
+                    "description_en": "The schema name",
+                    "description_zh": "Schema名称",
+                    "example": "answer",
+                    "title": "Schema名称",
+                    "type": "string"
+                  },
+                  "schema": {
+                    "backendName": "schema",
+                    "description_en": "The JSON Schema definition, which is a serialized string of a JSON object",
+                    "description_zh": "JSON Schema定义，JSON对象序列化后的字符串",
+                    "example": "{\"type\":\"object\",\"properties\":{\"answer\":{\"type\":\"string\"}},\"required\":[\"answer\"]}",
+                    "title": "JSON Schema定义，JSON对象序列化后的字符串",
+                    "type": "string"
+                  },
+                  "strict": {
+                    "backendName": "strict",
+                    "description_en": "Specifies whether to strictly adhere to the schema structure. Set this to true",
+                    "description_zh": "是否严格遵循Schema结构，推荐true",
+                    "example": "true",
+                    "title": "是否严格遵循Schema结构，推荐true",
+                    "type": "boolean"
+                  }
+                },
+                "title": "JSON Schema约束，type为json_schema时必填",
+                "type": "object"
+              },
+              "type": {
+                "backendName": "type",
+                "description_en": "The format type. Valid values: text, json_object, and json_schema. When using json_object, the prompt must explicitly request JSON output",
+                "description_zh": "格式类型：text、json_object、json_schema；使用json_object时提示词中须明确要求输出JSON",
+                "example": "json_object",
+                "title": "格式类型：text、json_object、json_schema；使用json_object时提示词中须明确要求输出JSON",
+                "type": "string"
+              }
+            },
+            "title": "返回内容格式，不传时默认为text",
+            "type": "object"
+          },
+          "seed": {
+            "backendName": "seed",
+            "description_en": "The random seed, with a range of 0 to 2147483647, which attempts to return the same result for the same input and parameters",
+            "description_zh": "随机数种子，范围0-2147483647，相同输入与参数下尽量返回相同结果",
+            "example": "1234",
+            "format": "int32",
+            "title": "随机数种子，范围0-2147483647，相同输入与参数下尽量返回相同结果",
+            "type": "integer"
+          },
           "stopSequences": {
             "backendName": "stop",
-            "description_en": "The stop sequences. Generation stops immediately when any of these sequences is encountered",
+            "description_en": "The stop sequences that immediately halt generation when encountered",
             "description_zh": "停止序列，遇到时立即停止生成",
             "example": "[\"END\"]",
             "items": {
-              "description_en": "A single stop sequence",
+              "description_en": "The individual stop sequence",
               "description_zh": "单个停止序列",
               "example": "END",
               "type": "string"
@@ -472,16 +593,25 @@
           },
           "temperature": {
             "backendName": "temperature",
-            "description_en": "The temperature parameter that controls the randomness of the output. Valid values: 0 to 2",
+            "description_en": "The temperature parameter that controls the randomness of the output, with a range of 0 to 2",
             "description_zh": "温度参数，控制输出随机性，范围0-2",
             "example": "0.7",
             "format": "float",
             "title": "温度参数，控制输出随机性，范围0-2",
             "type": "number"
           },
+          "thinkingBudget": {
+            "backendName": "thinkingBudget",
+            "description_en": "The maximum number of tokens for the thinking process. This takes effect only when thinking mode is enabled and cannot be set simultaneously with reasoningEffort",
+            "description_zh": "思考过程最大Token数，仅开启思考时生效，不可与reasoningEffort同时设置",
+            "example": "2048",
+            "format": "int32",
+            "title": "思考过程最大Token数，仅开启思考时生效，不可与reasoningEffort同时设置",
+            "type": "integer"
+          },
           "topK": {
             "backendName": "topK",
-            "description_en": "The top-k sampling parameter. Valid values: 1 to 100",
+            "description_en": "The Top K sampling parameter, with a range of 1 to 100",
             "description_zh": "Top K 采样参数，范围1-100",
             "example": "50",
             "format": "int32",
@@ -490,7 +620,7 @@
           },
           "topP": {
             "backendName": "topP",
-            "description_en": "The top-p sampling parameter. Valid values: 0 to 1",
+            "description_en": "The Top P sampling parameter, with a range of 0 to 1",
             "description_zh": "Top P 采样参数，范围0-1",
             "example": "0.9",
             "format": "float",
@@ -527,7 +657,7 @@
     }
   },
   "deprecated": false,
-  "description_en": "Queries a list of experiment run records",
+  "description_en": "Queries a list of experiment runs",
   "description_zh": "查询实验记录列表",
   "kebab_example": "aliyun agentloop list-experiment-runs --agent-space al-playground-cn-hongkong --page 0 --page-size 10 --status evaluating --dataset-id arms_customer_agent_level1 --plan-name arms_agent_experiment --experiment-name experimentA --max-results 20 --next-token eyJwYWdlIjoxfQ== --region cn-hangzhou",
   "method": "GET",
@@ -546,7 +676,7 @@
   "parameters": [
     {
       "example": "al-playground-cn-hongkong",
-      "help_en": "The AgentSpace name",
+      "help_en": "The name of the AgentSpace",
       "help_zh": "AgentSpace 名称",
       "location": "path",
       "name": "agent_space",
@@ -584,8 +714,17 @@
       "type": "int"
     },
     {
+      "enum": [
+        "cancelled",
+        "completed",
+        "evaluating",
+        "failed",
+        "pending",
+        "running",
+        "timeout"
+      ],
       "example": "evaluating",
-      "help_en": "Filters results by status",
+      "help_en": "Filters the results by status",
       "help_zh": "按状态过滤",
       "location": "query",
       "name": "status",
@@ -598,7 +737,7 @@
     },
     {
       "example": "arms_customer_agent_level1",
-      "help_en": "Filters results by exact dataset ID",
+      "help_en": "Filters the results by exact dataset ID",
       "help_zh": "按数据集 ID 精确过滤",
       "location": "query",
       "name": "dataset_id",
@@ -611,7 +750,7 @@
     },
     {
       "example": "arms_agent_experiment",
-      "help_en": "Filters results by fuzzy match on the experiment plan name",
+      "help_en": "Filters the results by using a fuzzy match on the experiment plan name",
       "help_zh": "按实验计划名称模糊过滤",
       "location": "query",
       "name": "plan_name",
@@ -624,7 +763,7 @@
     },
     {
       "example": "experimentA",
-      "help_en": "Filters results by fuzzy match on the experiment configuration name",
+      "help_en": "Filters the results by using a fuzzy match on the name in the experiment configuration",
       "help_zh": "按实验配置中的名称模糊过滤",
       "location": "query",
       "name": "experiment_name",
@@ -637,7 +776,7 @@
     },
     {
       "example": "20",
-      "help_en": "Optional. Use `page` and `pageSize` for pagination instead",
+      "help_en": "Optional. For pagination, use page and pageSize",
       "help_zh": "可选。分页请优先使用 `page` 与 `pageSize`",
       "location": "query",
       "name": "max_results",
@@ -650,7 +789,7 @@
     },
     {
       "example": "eyJwYWdlIjoxfQ==",
-      "help_en": "Optional. Use `page` and `pageSize` for pagination instead",
+      "help_en": "Optional. For pagination, use page and pageSize",
       "help_zh": "可选。分页请优先使用 `page` 与 `pageSize`",
       "location": "query",
       "name": "next_token",
@@ -668,11 +807,11 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response for the experiment run record list",
+        "description_en": "The experiment run list response",
         "description_zh": "实验记录列表响应",
         "properties": {
           "maxResults": {
-            "description_en": "The maximum number of entries returned",
+            "description_en": "The maximum number of returned entries",
             "description_zh": "最大返回条数",
             "example": "20",
             "format": "int32",
@@ -699,13 +838,13 @@
             "type": "integer"
           },
           "records": {
-            "description_en": "The list of experiment run records",
+            "description_en": "The list of experiment runs",
             "description_zh": "实验记录列表",
             "example": "[{\"recordId\": \"exp-run-f6d419b0ed3d43a7b585948a55efc07b\", \"experimentPlanId\": \"exp-plan-0242d983f5d340fd8479cf2c19eb279e\", \"recordName\": \"arms_agent_experiment 2026/07/22 20:02:55\", \"planName\": \"arms_agent_experiment\", \"status\": \"evaluating\", \"progress\": 100.0, \"totalTasks\": 40, \"completedTasks\": 40, \"failedTasks\": 0, \"dataSourceType\": \"dataset-full\", \"datasetId\": \"arms_customer_agent_level1\", \"modelNames\": [\"qwen3.7-plus\", \"qwen3.7-max\"], \"evaluationTaskId\": \"eval-task-6bec93bfa03740dd86ce2bf1496e65fb\", \"executedAt\": 1784721775379, \"completedAt\": 1784721811392}, {\"recordId\": \"a5397261-6e6d-4e45-bf52-feb8686f7524\", \"experimentPlanId\": \"exp-plan-e95bff54685a4ae29ff3a834c1008a71\", \"recordName\": \"rca_benchmark_eval_experiment 2026/07/22 19:23:59\", \"planName\": \"rca_benchmark_eval_experiment\", \"status\": \"completed\", \"progress\": 100.0, \"totalTasks\": 20, \"completedTasks\": 20, \"failedTasks\": 0, \"dataSourceType\": \"dataset-full\", \"datasetId\": \"rca_benckmark_eval\", \"modelNames\": [], \"evaluationTaskId\": \"eval-task-b1395b3bdf3e4dc994d7dcde7a66da45\", \"executedAt\": 1784719439255, \"completedAt\": 1784719989371}]",
             "itemName": "record",
             "items": {
               "$ref": "#/components/schemas/ExperimentRecord",
-              "description_en": "A single experiment run record object",
+              "description_en": "The experiment run object",
               "description_zh": "单个实验记录对象"
             },
             "type": "array"
@@ -734,7 +873,7 @@
   },
   "v1_parameters": [
     {
-      "help_en": "The AgentSpace name",
+      "help_en": "The name of the AgentSpace",
       "help_zh": "AgentSpace 名称",
       "name": "agentSpace",
       "position": "path",
@@ -742,7 +881,7 @@
       "type": "string"
     },
     {
-      "help_en": "Filters results by exact dataset ID",
+      "help_en": "Filters the results by exact dataset ID",
       "help_zh": "按数据集 ID 精确过滤",
       "name": "datasetId",
       "position": "query",
@@ -750,7 +889,7 @@
       "type": "string"
     },
     {
-      "help_en": "Filters results by fuzzy match on the experiment configuration name",
+      "help_en": "Filters the results by using a fuzzy match on the name in the experiment configuration",
       "help_zh": "按实验配置中的名称模糊过滤",
       "name": "experimentName",
       "position": "query",
@@ -758,7 +897,7 @@
       "type": "string"
     },
     {
-      "help_en": "Optional. Use `page` and `pageSize` for pagination instead",
+      "help_en": "Optional. For pagination, use page and pageSize",
       "help_zh": "可选。分页请优先使用 `page` 与 `pageSize`",
       "name": "maxResults",
       "position": "query",
@@ -766,7 +905,7 @@
       "type": "int"
     },
     {
-      "help_en": "Optional. Use `page` and `pageSize` for pagination instead",
+      "help_en": "Optional. For pagination, use page and pageSize",
       "help_zh": "可选。分页请优先使用 `page` 与 `pageSize`",
       "name": "nextToken",
       "position": "query",
@@ -790,7 +929,7 @@
       "type": "int"
     },
     {
-      "help_en": "Filters results by fuzzy match on the experiment plan name",
+      "help_en": "Filters the results by using a fuzzy match on the experiment plan name",
       "help_zh": "按实验计划名称模糊过滤",
       "name": "planName",
       "position": "query",
@@ -798,7 +937,7 @@
       "type": "string"
     },
     {
-      "help_en": "Filters results by status",
+      "help_en": "Filters the results by status",
       "help_zh": "按状态过滤",
       "name": "status",
       "position": "query",
