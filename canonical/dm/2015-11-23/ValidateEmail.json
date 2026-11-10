@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "xxx@yyy.com",
-      "help_en": "The email address to validate",
+      "help_en": "The email address to be validated",
       "help_zh": "待校验的电子邮件地址",
       "location": "query",
       "name": "email",
@@ -35,8 +35,8 @@
     },
     {
       "example": "20",
-      "help_en": "The timeout period. Default value: 60 seconds",
-      "help_zh": "超时时间，单位为秒，默认值为 60 秒",
+      "help_en": "The timeout period for the check, in seconds. If this parameter is not specified or is set to 0, the default value is 20 seconds in FULL mode and 3 seconds in BASIC_ONLY mode. If a value from 1 to 20 is specified, the specified value is used. If a value greater than 20 is specified, 20 seconds is used. This value specifies the maximum wait time for the check. The check returns immediately if it completes early. Overhead such as quota checks is not included in the timeout period",
+      "help_zh": "检测超时时间，单位为秒。未传入或传入 0 时，FULL 模式默认使用 20 秒，BASIC_ONLY 模式默认使用 3 秒。传入 1～20 时使用指定值，超过 20 时按 20 秒处理。该值为检测的最长等待时间，检测提前完成即返回；额度校验等链路开销不计入检测超时时间",
       "location": "query",
       "name": "timeout",
       "options": [
@@ -65,7 +65,7 @@
         "BASIC_ONLY"
       ],
       "example": "FULL",
-      "help_en": "The probe type. Valid values:\n\nFULL: enables all detection capabilities, including SMTP probing. Because SMTP probing involves remote connections, the overall latency is high. This mode is suitable for scenarios that are not sensitive to response time. Each detection consumes 1 address validation quota. In this mode, the UNKNOWN status is not metered.\nBASIC_ONLY: enables all detection capabilities except SMTP probing, with low latency. This mode is suitable for scenarios that are sensitive to response time, such as real-time validation during registration to check whether an email address is a disposable mailbox or an abnormal address with MX forwarding, to prevent batch registration by the cyber underground economy chain. Each detection consumes 1/3 of an address validation quota. In this mode, the UNKNOWN status is metered",
+      "help_en": "The check type. Valid values:\n\nFULL: enables all check capabilities, including SMTP probing. Because SMTP probing involves remote connections, the overall latency is high. This value is suitable for scenarios that are not sensitive to response time. A single check consumes one address validation quota. In this mode, the UNKNOWN status is not metered.\nBASIC_ONLY: enables all check capabilities except SMTP probing, with low latency. This value is suitable for scenarios that are sensitive to response time, such as real-time validation of email addresses during registration to check whether the address is a disposable email or an abnormal address such as an MX forwarding address, to defend against batch registration by the cyber underground economy chain. A single check consumes one-third of an address validation quota. In this mode, the UNKNOWN status is metered",
       "help_zh": "检测类型：\n\nFULL：启用全部检测能力，包括 SMTP 探测。由于 SMTP 探测涉及远程连接，整体延迟较高，适用于对响应时间不敏感的场景。单次检测消费1个地址校验额度。该模式下UNKNOWN状态不会计量。\nBASIC_ONLY：启用除 SMTP 探测外的所有检测能力，延迟低。适用于对响应时间敏感的场景，例如注册环节实时校验邮箱地址是否为一次性邮箱或 MX 转发等异常地址，以防御黑灰产批量注册。单次检测消费1/3个地址校验额度。该模式下UNKNOWN状态会计量",
       "location": "query",
       "name": "probe_type",
@@ -88,7 +88,7 @@
         "properties": {
           "DomainPart": {
             "backendName": "domainPart",
-            "description_en": "The domain part of the email address parsed from syntax validation (converted to lowercase)",
+            "description_en": "The domain part of the email address parsed through syntax validation. The value is converted to lowercase",
             "description_zh": "语法校验解析得到的电子邮件地址的域名部分（经过小写化）",
             "example": "yyy.com",
             "title_en": "语法校验解析得到的电子邮件地址的域名部分",
@@ -97,8 +97,12 @@
           },
           "IsFreeMail": {
             "backendName": "isFreeMail",
-            "description_en": "Indicates whether the address is a free mailbox",
+            "description_en": "Indicates whether the address is a free email address",
             "description_zh": "地址是否为免费邮箱",
+            "enumValueTitles": {
+              "false": "false",
+              "true": "true"
+            },
             "example": "true",
             "title_en": "地址是否为免费邮箱",
             "title_zh": "地址是否为免费邮箱",
@@ -106,7 +110,7 @@
           },
           "LocalPart": {
             "backendName": "localPart",
-            "description_en": "The local part of the email address parsed from syntax validation (converted to lowercase with the plus-sign portion removed)",
+            "description_en": "The local part of the email address parsed through syntax validation. The value is converted to lowercase and the plus sign part is removed",
             "description_zh": "语法校验解析得到的电子邮件地址的本地部分（经过小写化与去掉+号部分）",
             "example": "xxx",
             "title_en": "语法校验解析得到的电子邮件地址的本地部分",
@@ -115,8 +119,22 @@
           },
           "Provider": {
             "backendName": "provider",
-            "description_en": "The email provider classification of the address",
+            "description_en": "The email provider category of the address",
             "description_zh": "地址的电子邮件提供商分类",
+            "enumValueTitles": {
+              "Gmail": "Gmail",
+              "Gmx": "Gmx",
+              "Icloud": "Icloud",
+              "MailDotCom": "MailDotCom",
+              "Netease": "Netease",
+              "Others": "其他",
+              "Outlook": "Outlook",
+              "Proton": "Proton",
+              "Tencent": "Tencent",
+              "Webde": "Webde",
+              "Yahoo": "Yahoo",
+              "Zoho": "Zoho"
+            },
             "example": "Gmail",
             "title_en": "地址的电子邮件提供商分类",
             "title_zh": "地址的电子邮件提供商分类",
@@ -133,8 +151,15 @@
           },
           "Status": {
             "backendName": "status",
-            "description_en": "The email address status obtained from validation",
+            "description_en": "The status of the validated email address",
             "description_zh": "校验得到的电子邮件地址状态",
+            "enumValueTitles": {
+              "CATCHALL": "CatchAll地址，表明该域接收发往该域名下所有不存在邮箱地址的邮件",
+              "DONOTMAIL": "非正常地址，营销场景可以剔除",
+              "INVALID": "无效地址",
+              "UNKNOWN": "未知状态地址",
+              "VALID": "有效地址"
+            },
             "example": "VALID",
             "required": true,
             "title_en": "校验得到的电子邮件地址状态",
@@ -143,8 +168,26 @@
           },
           "SubStatus": {
             "backendName": "subStatus",
-            "description_en": "The email address sub-status obtained from validation, which provides a detailed description of the status",
+            "description_en": "The substatus of the validated email address, which provides a detailed description of the status",
             "description_zh": "校验得到的电子邮件地址子状态，是对状态的详细描述",
+            "enumValueTitles": {
+              "DISABLED": "无效地址，邮箱已被禁用",
+              "DISPOSABLE": "非正常地址，临时邮箱，黑名单库",
+              "DOES_NOT_ACCEPT_MAIL": "无效地址，邮件服务器不接受邮件",
+              "GRAY_LIST": "未知状态，灰名单",
+              "IP_UNROUTABLE": "无效地址，邮件服务器IP不可达",
+              "MAILBOX_FULL": "无效地址，邮箱已满",
+              "MAILBOX_NOT_EXISTS": "无效地址，邮箱不存在",
+              "MISSPELLED": "无效地址，拼写错误",
+              "MX_FORWARD": "非正常地址，MX 转发",
+              "NO_DNS_ENTRIES": "无效地址，没有DNS记录",
+              "ROLE_ACCOUNT": "非正常地址，角色账号，比如role@ info@ contact@ 等",
+              "SMTP_CONNECT_FAILED": "未知状态，连接对方SMTP服务器失败",
+              "SYNTAX_INVALID": "无效地址，语法错误",
+              "SYSTEM_ERROR": "未知状态，系统错误",
+              "TIMEOUT_EXCEEDED": "未知状态，超过指定的超时时间",
+              "UNSPECIFIED": "没有说明，有效、CatchAll、未知状态可能返回"
+            },
             "example": "UNSPECIFIED",
             "required": true,
             "title_en": "校验得到的电子邮件地址子状态，是对状态的详细描述",
