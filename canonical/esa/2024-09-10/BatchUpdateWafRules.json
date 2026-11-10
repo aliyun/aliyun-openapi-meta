@@ -3,7 +3,7 @@
   "cmd_full_name": "esa batch-update-waf-rules",
   "cmd_name": "batch-update-waf-rules",
   "deprecated": false,
-  "description_en": "Modifies multiple rules in a specified WAF ruleset in batches. This operation allows you to update the configurations of multiple rules at the same time",
+  "description_en": "Modifies multiple rules in a specified WAF rule set in batches. You can use this operation to update the configurations of multiple rules at the same time",
   "description_zh": "该接口用于在指定的WAF规则集中批量修改规则。通过此接口，用户可以同时更新多个规则的配置",
   "kebab_example": "aliyun esa batch-update-waf-rules --site-id 1 --region cn-hangzhou",
   "method": "GET|POST",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "1",
-      "help_en": "The site ID. You can call the https://help.aliyun.com/document_detail/2850189.html operation to query the site ID",
+      "help_en": "The ID of the site. You can obtain the ID by calling the https://help.aliyun.com/document_detail/2850189.html operation",
       "help_zh": "站点ID，可通过调用https://help.aliyun.com/document_detail/2850189.html接口获取",
       "location": "query",
       "name": "site_id",
@@ -50,7 +50,7 @@
     },
     {
       "example": "http_anti_scan",
-      "help_en": "The execution phase of WAF rules. This batch operation supports only the following two phases. For other phases, use the `UpdateWafRule` operation:\n`http_anti_scan`: scan protection rules\n`http_bot`: advanced bot management\n\nNote: The `http_anti_scan` and `http_bot` phases support only batch updates. The `UpdateWafRule` operation does not accept these two values. Conversely, other phases (such as `http_custom` and `http_whitelist`) can only be updated by using the `UpdateWafRule` operation and cannot be updated by using this batch operation.\n\nRequired constraint: Although this parameter is marked as optional (required: false) in the specification, it must be specified when you call this batch operation. The server cannot determine the target ruleset without the phase. If this parameter is not provided, the `InvalidParameter(400)` error is returned",
+      "help_en": "The execution phase of WAF rules. This batch operation supports only the following two phases. For other phases, use the single-rule operation `UpdateWafRule`:\n`http_anti_scan`: scan protection rules\n`http_bot`: advanced bot management rules\n\nNote: The `http_anti_scan` and `http_bot` phases support only batch updates. The single-rule operation `UpdateWafRule` does not accept these two values. Conversely, other phases (such as `http_custom` and `http_whitelist`) can only be updated by using the single-rule operation and cannot be updated by using this batch operation.\n\nRequired constraint: Although this parameter is marked as optional (required: false) in the specification, it must be specified when you call this batch operation. The server cannot determine the target rule set without the Phase parameter. If this parameter is not provided, an `InvalidParameter(400)` error is returned",
       "help_zh": "WAF 规则运行阶段，本批量接口仅支持以下两个 phase（其他 phase 请使用单条接口 `UpdateWafRule`）：\n`http_anti_scan`：扫描防护规则\n`http_bot`：高级模式 Bots\n\n说明：`http_anti_scan` / `http_bot` 两个阶段仅支持批量更新，单条接口 `UpdateWafRule` 不接受这两个取值；反之其他 phase（如 `http_custom`、`http_whitelist` 等）只能通过单条接口更新，不能使用本批量接口。\n\n必填约束：此参数虽在 spec 中标注为可选（required: false），但本批量接口实际调用时必须传入，服务端无法在缺少 Phase 时确定目标规则集，未提供时返回 `InvalidParameter(400)`",
       "location": "formData",
       "name": "phase",
@@ -63,7 +63,7 @@
     },
     {
       "example": "10000001",
-      "help_en": "The ID of the WAF ruleset. You can call the https://help.aliyun.com/document_detail/2878359.html operation to query the ruleset ID",
+      "help_en": "The ID of the WAF rule set. You can obtain the ID by calling the https://help.aliyun.com/document_detail/2878359.html operation",
       "help_zh": "WAF规则集的ID，可通过调用https://help.aliyun.com/document_detail/2878359.html接口获取",
       "location": "formData",
       "name": "ruleset_id",
@@ -528,7 +528,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The shared configuration for multiple rules, which specifies the common attributes of multiple rules.\n\nConditionally required: Although this parameter is marked as optional (required: false) in the specification, it is actually required when `Phase` is set to `http_anti_scan`. If this parameter is not provided, the `InvalidParameter(400)` error is returned.\n\nSub-field requirements: In the `http_anti_scan` phase, the Shared configuration must include shared fields such as `Name` (rule name), `Expression` (match expression), and `Action` (rule action). For other phases, the required sub-fields of the Shared configuration depend on the specific phase",
+      "help_en": "The shared configuration for multiple rules, which specifies the common properties of multiple rules.\n\nConditional requirement: Although this parameter is marked as optional (required: false) in the specification, it is actually required when `Phase` is set to `http_anti_scan`. If this parameter is not provided, the server returns an `InvalidParameter(400)` error.\n\nSub-field requirements: In the `http_anti_scan` phase, the Shared parameter must include shared fields such as `Name` (rule name), `Expression` (match expression), and `Action` (rule action). For other phases, the required sub-fields of Shared depend on the specific phase",
       "help_zh": "多规则共享配置，指定多个规则的共有属性。\n\n条件必填：此参数虽在 spec 中标注为可选（required: false），但当 `Phase=http_anti_scan` 时实际必填，未提供时服务返回 `InvalidParameter(400)`。\n\n子字段要求：`http_anti_scan` 阶段下 Shared 必须包含 `Name`（规则名称）、`Expression`（匹配表达式）、`Action`（规则动作）等共享字段；其他 Phase 下 Shared 的必填子字段以具体 Phase 为准",
       "location": "formData",
       "name": "shared",
@@ -1543,7 +1543,7 @@
         "type": "object"
       },
       "example": "10000001",
-      "help_en": "The list of rule configurations, which specifies the detailed configuration of each rule.\n\nRequired sub-fields for each phase (applicable only to the two phases supported by this batch operation):\n\n`http_anti_scan`: You must provide `Type` and at least one of `ManagedList` or `RateLimit`.\n`http_bot`: You must provide configurations related to advanced bot management. For sub-fields, refer to the definition of the `WafRuleConfig` data structure.\n\nNote: Other phases such as `http_custom` and `http_whitelist` cannot be updated by using this batch operation. Use the `UpdateWafRule` operation instead. For sub-field constraints of these phases, refer to the documentation of the `UpdateWafRule` operation.\n\nNotice: If `Configs` is empty or sub-fields are missing, the `InvalidParameter(400)` or `Rule.Config.Malformed` error is returned",
+      "help_en": "The list of rule configurations, which specifies the detailed configuration of each rule.\n\nRequired sub-fields for each phase (applicable only to the two phases supported by this batch operation):\n\n`http_anti_scan`: You must provide `Type`, and at least one of `ManagedList` or `RateLimit`.\n`http_bot`: You must provide configurations related to advanced bot management. The sub-fields are subject to the definition of the `WafRuleConfig` data structure.\n\nNote: Other phases such as `http_custom` and `http_whitelist` cannot be updated by using this batch operation. Use the single-rule operation `UpdateWafRule` instead. The sub-field constraints are subject to the documentation of the single-rule operation.\n\nNote: If `Configs` is empty or sub-fields are missing, the server returns an `InvalidParameter(400)` or `Rule.Config.Malformed` error",
       "help_zh": "各规则配置列表，指定每个规则的详细配置。\n\n各 Phase 下的必填子字段（仅适用于本批量接口支持的两个 phase）：\n\n`http_anti_scan`：必须提供 `Type`，以及 `ManagedList` 或 `RateLimit` 中至少一项；\n`http_bot`：需提供高级模式 Bots 相关配置（子字段以 `WafRuleConfig` 数据结构定义为准）。\n\n说明：`http_custom` / `http_whitelist` 等其他阶段不能使用本批量接口，请使用单条接口 `UpdateWafRule`；对应子字段约束以单条接口文档为准。\n\n注意：无 `Configs` 或子字段缺失时服务返回 `InvalidParameter(400)` / `Rule.Config.Malformed`",
       "location": "formData",
       "name": "configs",
@@ -1583,7 +1583,7 @@
   },
   "v1_body_parameters": [
     {
-      "help_en": "The list of rule configurations, which specifies the detailed configuration of each rule.\n\nRequired sub-fields for each phase (applicable only to the two phases supported by this batch operation):\n\n`http_anti_scan`: You must provide `Type` and at least one of `ManagedList` or `RateLimit`.\n`http_bot`: You must provide configurations related to advanced bot management. For sub-fields, refer to the definition of the `WafRuleConfig` data structure.\n\nNote: Other phases such as `http_custom` and `http_whitelist` cannot be updated by using this batch operation. Use the `UpdateWafRule` operation instead. For sub-field constraints of these phases, refer to the documentation of the `UpdateWafRule` operation.\n\nNotice: If `Configs` is empty or sub-fields are missing, the `InvalidParameter(400)` or `Rule.Config.Malformed` error is returned",
+      "help_en": "The list of rule configurations, which specifies the detailed configuration of each rule.\n\nRequired sub-fields for each phase (applicable only to the two phases supported by this batch operation):\n\n`http_anti_scan`: You must provide `Type`, and at least one of `ManagedList` or `RateLimit`.\n`http_bot`: You must provide configurations related to advanced bot management. The sub-fields are subject to the definition of the `WafRuleConfig` data structure.\n\nNote: Other phases such as `http_custom` and `http_whitelist` cannot be updated by using this batch operation. Use the single-rule operation `UpdateWafRule` instead. The sub-field constraints are subject to the documentation of the single-rule operation.\n\nNote: If `Configs` is empty or sub-fields are missing, the server returns an `InvalidParameter(400)` or `Rule.Config.Malformed` error",
       "help_zh": "各规则配置列表，指定每个规则的详细配置。\n\n各 Phase 下的必填子字段（仅适用于本批量接口支持的两个 phase）：\n\n`http_anti_scan`：必须提供 `Type`，以及 `ManagedList` 或 `RateLimit` 中至少一项；\n`http_bot`：需提供高级模式 Bots 相关配置（子字段以 `WafRuleConfig` 数据结构定义为准）。\n\n说明：`http_custom` / `http_whitelist` 等其他阶段不能使用本批量接口，请使用单条接口 `UpdateWafRule`；对应子字段约束以单条接口文档为准。\n\n注意：无 `Configs` 或子字段缺失时服务返回 `InvalidParameter(400)` / `Rule.Config.Malformed`",
       "name": "Configs",
       "param_style": "json",
@@ -1592,7 +1592,7 @@
       "type": "string"
     },
     {
-      "help_en": "The execution phase of WAF rules. This batch operation supports only the following two phases. For other phases, use the `UpdateWafRule` operation:\n`http_anti_scan`: scan protection rules\n`http_bot`: advanced bot management\n\nNote: The `http_anti_scan` and `http_bot` phases support only batch updates. The `UpdateWafRule` operation does not accept these two values. Conversely, other phases (such as `http_custom` and `http_whitelist`) can only be updated by using the `UpdateWafRule` operation and cannot be updated by using this batch operation.\n\nRequired constraint: Although this parameter is marked as optional (required: false) in the specification, it must be specified when you call this batch operation. The server cannot determine the target ruleset without the phase. If this parameter is not provided, the `InvalidParameter(400)` error is returned",
+      "help_en": "The execution phase of WAF rules. This batch operation supports only the following two phases. For other phases, use the single-rule operation `UpdateWafRule`:\n`http_anti_scan`: scan protection rules\n`http_bot`: advanced bot management rules\n\nNote: The `http_anti_scan` and `http_bot` phases support only batch updates. The single-rule operation `UpdateWafRule` does not accept these two values. Conversely, other phases (such as `http_custom` and `http_whitelist`) can only be updated by using the single-rule operation and cannot be updated by using this batch operation.\n\nRequired constraint: Although this parameter is marked as optional (required: false) in the specification, it must be specified when you call this batch operation. The server cannot determine the target rule set without the Phase parameter. If this parameter is not provided, an `InvalidParameter(400)` error is returned",
       "help_zh": "WAF 规则运行阶段，本批量接口仅支持以下两个 phase（其他 phase 请使用单条接口 `UpdateWafRule`）：\n`http_anti_scan`：扫描防护规则\n`http_bot`：高级模式 Bots\n\n说明：`http_anti_scan` / `http_bot` 两个阶段仅支持批量更新，单条接口 `UpdateWafRule` 不接受这两个取值；反之其他 phase（如 `http_custom`、`http_whitelist` 等）只能通过单条接口更新，不能使用本批量接口。\n\n必填约束：此参数虽在 spec 中标注为可选（required: false），但本批量接口实际调用时必须传入，服务端无法在缺少 Phase 时确定目标规则集，未提供时返回 `InvalidParameter(400)`",
       "name": "Phase",
       "position": "body",
@@ -1600,7 +1600,7 @@
       "type": "string"
     },
     {
-      "help_en": "The ID of the WAF ruleset. You can call the https://help.aliyun.com/document_detail/2878359.html operation to query the ruleset ID",
+      "help_en": "The ID of the WAF rule set. You can obtain the ID by calling the https://help.aliyun.com/document_detail/2878359.html operation",
       "help_zh": "WAF规则集的ID，可通过调用https://help.aliyun.com/document_detail/2878359.html接口获取",
       "name": "RulesetId",
       "position": "body",
@@ -1608,7 +1608,7 @@
       "type": "int"
     },
     {
-      "help_en": "The shared configuration for multiple rules, which specifies the common attributes of multiple rules.\n\nConditionally required: Although this parameter is marked as optional (required: false) in the specification, it is actually required when `Phase` is set to `http_anti_scan`. If this parameter is not provided, the `InvalidParameter(400)` error is returned.\n\nSub-field requirements: In the `http_anti_scan` phase, the Shared configuration must include shared fields such as `Name` (rule name), `Expression` (match expression), and `Action` (rule action). For other phases, the required sub-fields of the Shared configuration depend on the specific phase",
+      "help_en": "The shared configuration for multiple rules, which specifies the common properties of multiple rules.\n\nConditional requirement: Although this parameter is marked as optional (required: false) in the specification, it is actually required when `Phase` is set to `http_anti_scan`. If this parameter is not provided, the server returns an `InvalidParameter(400)` error.\n\nSub-field requirements: In the `http_anti_scan` phase, the Shared parameter must include shared fields such as `Name` (rule name), `Expression` (match expression), and `Action` (rule action). For other phases, the required sub-fields of Shared depend on the specific phase",
       "help_zh": "多规则共享配置，指定多个规则的共有属性。\n\n条件必填：此参数虽在 spec 中标注为可选（required: false），但当 `Phase=http_anti_scan` 时实际必填，未提供时服务返回 `InvalidParameter(400)`。\n\n子字段要求：`http_anti_scan` 阶段下 Shared 必须包含 `Name`（规则名称）、`Expression`（匹配表达式）、`Action`（规则动作）等共享字段；其他 Phase 下 Shared 的必填子字段以具体 Phase 为准",
       "name": "Shared",
       "param_style": "json",
