@@ -1,0 +1,92 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "internetbankopen invoke-data-product",
+  "cmd_name": "invoke-data-product",
+  "deprecated": false,
+  "description_en": "数据产品统一调用入口",
+  "description_zh": "数据产品统一调用入口",
+  "kebab_example": "",
+  "method": "GET|POST",
+  "multi_version": false,
+  "name": "InvokeDataProduct",
+  "operation": {
+    "action": "InvokeDataProduct",
+    "api_style": "ROA",
+    "api_version": "2024-06-12",
+    "method": "POST",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "none",
+    "url": "/pop/api/v1/rpc"
+  },
+  "parameters": [
+    {
+      "example": "a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d",
+      "help_en": "The clientToken",
+      "help_zh": "客户交易流水号，用于幂等。业务上必填，缺失时返回 MissingParameter.ClientToken；只允许 1～64 位 ASCII 字母、数字、点（.）、下划线（_）或短横线（-），区分大小写且不去除首尾空格，格式不符时返回 InvalidParameter.ClientToken。同一云账号（主账号）下 ClientToken 全局唯一，不区分商品：以相同参数重试时，返回首次调用的结果和原 CallId，不会再次调用数据服务方；首次请求仍在处理时返回 RequestInProgress（HTTP 409），请稍后按原参数重试；同一 ClientToken 携带不同的 ProductCode 或 ServiceParameters 时返回 IdempotentParameterMismatch，请换用新的流水号。网络中断未拿到结果时，请使用原 ClientToken 重试，不要更换流水号",
+      "location": "query",
+      "name": "client_token",
+      "options": [
+        "--client-token"
+      ],
+      "raw_name": "clientToken",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "cloudsec.demo.v1",
+      "help_en": "The productCode",
+      "help_zh": "数据产品商品编码，用于标识本次调用的数据产品；网关据此完成商品授权并路由到对应数据服务方。业务上必填，缺失时返回 MissingParameter.ProductCode；编码未登记或已停用时返回 InvalidParameter.ProductCode；当前账号未开通该商品时返回 Forbidden.ProductNotAuthorized",
+      "location": "query",
+      "name": "product_code",
+      "options": [
+        "--product-code"
+      ],
+      "raw_name": "productCode",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "{\"mobileMd5\":\"25f9e794323b453885f5181f1b624d0b\",\"certNoSha256\":\"a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3\"}",
+      "help_en": "The serviceParameters",
+      "help_zh": "业务要素整包，必须是序列化为字符串的 JSON 对象，承载本次数据产品调用所需的业务参数。业务上必填，缺失时返回 MissingParameter.ServiceParameters。手机号、证件号等敏感信息只传摘要，不传明文：传入 mobile、certNo 明文字段时返回 InvalidParameter.ServiceParameters。以 Sha256 结尾的字段须为 64 位十六进制字符串，以 Md5 结尾的字段须为 32 位十六进制字符串，大写会自动转为小写。具体必填要素由 ProductCode 对应的商品决定（例如部分商品要求 mobileSha256 与 mobileMd5 至少传一个），缺少必填要素、JSON 不合法或摘要格式错误时均返回 InvalidParameter.ServiceParameters",
+      "location": "query",
+      "name": "service_parameters",
+      "options": [
+        "--service-parameters"
+      ],
+      "raw_name": "serviceParameters",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/pop/api/v1/rpc",
+  "product_code": "InternetBankOpen",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_zh": "Schema of Response",
+        "properties": {
+          "data": {
+            "backendName": "data",
+            "description_zh": "本次调用的业务结果，为 JSON 对象。调用成功时包含：contractVersion（契约版本，固定为 PRODUCT_CALL_V1）、callId（本次调用编号，格式为 call- 加 UUID，用于查询 AI 报告和问题排查）、dataStatus（FOUND 表示查得，NOT_FOUND 表示查无）、extend（数据服务方返回的业务结果，原样透传，具体结构随数据产品而定，查无时可能不返回）和 reportMode（商品报告模式：NONE 表示无报告，PER_CALL 表示每次调用生成报告，WEEKLY 表示按自然周生成报告）。调用失败或首次请求仍在处理时，若已分配调用编号，仍会返回 contractVersion 和 callId，便于使用原 ClientToken 重试",
+            "example": "{\"contractVersion\":\"PRODUCT_CALL_V1\",\"callId\":\"call-3f2b8c1e-6d4a-4b7e-9a1c-2e5f7d8b9c0a\",\"dataStatus\":\"FOUND\",\"extend\":\"{\\\"score\\\":\\\"650\\\"}\",\"reportMode\":\"NONE\"}",
+            "type": "string"
+          },
+          "requestId": {
+            "backendName": "requestId",
+            "description_zh": "本次请求的唯一标识，由网关生成（取自 x-acs-req-uuid），用于问题排查与链路追踪",
+            "example": "9634F2B3-B59C-5475-BA9F-96D95271882C",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          }
+        },
+        "title_en": "Schema of Response",
+        "title_zh": "Schema of Response",
+        "type": "object"
+      }
+    }
+  }
+}
