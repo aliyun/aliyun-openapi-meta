@@ -3,8 +3,8 @@
   "cmd_full_name": "dds create-account",
   "cmd_name": "create-account",
   "deprecated": false,
-  "description_en": "Creates a read-only shard account for a cloud disk-based ApsaraDB for MongoDB sharded cluster instance",
-  "description_zh": "创建MongoDB云盘版分片集群实例的Shard只读账号",
+  "description_en": "Creates a database account for a specified ApsaraDB for MongoDB instance and grants one or more database role permissions to the account",
+  "description_zh": "调用 CreateAccount 接口，为指定的云数据库 MongoDB 版实例创建数据库账号，并可为账号授予一个或多个数据库角色权限",
   "kebab_example": "aliyun dds create-account --db-instance-id dds-uf6e9433e955xxxx --account-name admin1 --account-password 'Test123456!' --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": false,
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "dds-uf6e9433e955xxxx",
-      "help_en": "The instance ID. For a sharded cluster instance, specify the ID of the sharded cluster. Account operations are performed from the perspective of the Configserver",
+      "help_en": "The instance ID. For a sharded cluster instance, specify the sharded cluster ID. Account operations are executed from the perspective of the ConfigServer",
       "help_zh": "实例ID。分片集群实例请传入分片集群ID，账号操作以config server视角执行",
       "location": "query",
       "name": "db_instance_id",
@@ -35,8 +35,8 @@
     },
     {
       "example": "admin1",
-      "help_en": "The account name. The name must be 2 to 16 characters in length and can contain lowercase letters, digits, and underscores (_). It must start with a lowercase letter and end with a lowercase letter or a digit. You cannot use the system-reserved account name root or the reserved prefix __cloud",
-      "help_zh": "账号名。由小写字母、数字或下划线组成，以小写字母开头，以小写字母或数字结尾，长度为2~16个字符。不能使用系统保留账号名root或保留前缀__cloud",
+      "help_en": "The account name.\nRegular expression: `^[a-z]+[a-z0-9|_]*[a-z0-9]+$`. The name must start with a lowercase letter, end with a lowercase letter or digit, and can contain lowercase letters, digits, and underscores (_). The length must be 2 to 16 characters.\nThe reserved name `root` (case-insensitive, built-in system account) cannot be used.\nThe name cannot start with `__cloud` (reserved prefix for system accounts).\nIf the name is invalid, `InvalidAccountName.Malformed` is returned",
+      "help_zh": "账号名称。\n正则：`^[a-z]+[a-z0-9|_]*[a-z0-9]+$`，即以小写字母开头、以小写字母或数字结尾，中间允许小写字母、数字、下划线（_），总长度 2~16 个字符。\n禁止使用保留名 `root`（忽略大小写，系统自带账号，不可再建同名账号）。\n禁止以 `__cloud` 开头（系统账号保留前缀）。\n非法时返回 `InvalidAccountName.Malformed`",
       "location": "query",
       "name": "account_name",
       "options": [
@@ -48,8 +48,8 @@
     },
     {
       "example": "Test123456!",
-      "help_en": "The account password. The password must be 8 to 32 characters in length and must contain at least three of the following character types: uppercase letters, lowercase letters, digits, and special characters. Special characters include ! @ # $ % ^ & * ( ) _ + - =\n\nFor more information about how to handle special characters, see https://help.aliyun.com/document_detail/471568.html",
-      "help_zh": "账户密码。\n大写、小写、数字、特殊字符占三种，长度为8~32个字符；特殊字符为 ! @ # $ % ^ & * ( ) _ + - =\n\n特殊字符的处理方法，请参见https://help.aliyun.com/document_detail/471568.html",
+      "help_en": "The account password.\nThe length must be 8 to 32 characters. It can contain uppercase letters, lowercase letters, digits, and the following special characters: `!@#$%^&*()_+-=`.\nThe password must contain at least three of the following four character types: uppercase letters, lowercase letters, digits, and special characters.\nIf the password is invalid, `InvalidAccountPassword.Malformed` is returned.\n\n\nFor information about how to handle special characters, see https://help.aliyun.com/document_detail/471568.html",
+      "help_zh": "账号密码。\n长度为 8~32 个字符；允许字符为大写字母、小写字母、数字及特殊字符 `!@#$%^&*()_+-=`。\n必须至少包含大写字母、小写字母、数字、特殊字符四类中的三类。\n非法时返回 `InvalidAccountPassword.Malformed`。\n\n\n特殊字符的处理方法，请参见https://help.aliyun.com/document_detail/471568.html",
       "location": "query",
       "name": "account_password",
       "options": [
@@ -66,8 +66,8 @@
         "normal"
       ],
       "example": "db",
-      "help_en": "The type of the account to be created. Valid values:\ndb: a shard direct connection account for a sharded cluster.\ncs: a Configserver account for a sharded cluster.\nnormal: a standard database account for a replica set.\n\nDefault value: db",
-      "help_zh": "创建账号类型。取值：\ndb：分片集群shard直连账号。\ncs：分片集群config server账号。\nnormal：副本集普通数据库账号。\n\n默认值：db",
+      "help_en": "The account type.<br>Valid values:<br>- `normal`: replica set account. For a replica set instance, any value is processed as `normal`.<br>- `cs`: sharded cluster ConfigServer account.<br>- `db`: sharded cluster Shard direct connection account. For a sharded cluster instance, any value other than `cs` is processed as `db`.<br>Default value: `db`",
+      "help_zh": "账号类型。<br>取值：<br>- `normal`：副本集账号（副本集实例传任何值均按 `normal` 处理）<br>- `cs`：分片集群 ConfigServer 账号<br>- `db`：分片集群 Shard 直连账号（分片实例传 `cs` 以外的值一律按 `db` 处理）<br>默认值：`db`",
       "location": "query",
       "name": "character_type",
       "options": [
@@ -82,8 +82,8 @@
         "fields": [
           {
             "example": "admin",
-            "help_en": "The database referenced by the role, which is the database where the role takes effect. For the value limits of built-in roles, see the Roles parameter description. For a custom role, you must specify the database where the role is defined, which can be queried by calling the DescribeAccountRoles operation. You cannot specify other databases",
-            "help_zh": "角色引用库，即该角色生效的库。内置角色的取值限制请参见Roles参数描述；自定义角色必须填写该角色的定义库（可通过DescribeAccountRoles查询），不可指定其他库",
+            "help_en": "The database to which the account belongs (authentication database).<br>\nDefault value: `admin`.<br>Rules: If this parameter is left empty, the request is allowed and the downstream system processes it as `admin`. If this parameter is specified, the length must be 1 to 63 characters. The value cannot contain `/`, `\\`, `.`, spaces, `\"`, or `$`, and cannot be `local`. Otherwise, `InvalidParameter` is returned",
+            "help_zh": "账号所在库（鉴权库）。<br>\n缺省为 `admin`。<br>规则：为空放行（下游按 `admin` 处理）；非空时长度为 1~63 个字符，禁止包含 `/`、`\\`、`.`、空格、`\"`、`$`，且取值不能为 `local`，非法报 `InvalidParameter`",
             "name": "db_name",
             "options": [
               "--db-name"
@@ -94,7 +94,7 @@
           },
           {
             "example": "read",
-            "help_en": "The role name. It can be a built-in role or a custom role created on the instance. For the value rules, see Roles parameter description (https://www.alibabacloud.com/help/en/mongodb/manage-database-accounts-through-the-console)",
+            "help_en": "The role name. It can be a built-in role or a custom role created on the instance. For value rules, see Roles parameter description (https://www.alibabacloud.com/help/en/mongodb/manage-database-accounts-through-the-console)",
             "help_zh": "角色名称。可以是内置角色或实例上已创建的自定义角色，取值规则请参见Roles参数描述 (https://help.aliyun.com/zh/mongodb/manage-database-accounts-through-the-console?spm=a2c4g.11186623.help-menu-26556.d_2_4_0.463f1e24s7sunh&scm=20140722.H_3172083._.OR_help-T_cn~zh-V_1)",
             "name": "role",
             "options": [
@@ -107,8 +107,8 @@
         ],
         "type": "object"
       },
-      "help_en": "The list of roles authorized for the account",
-      "help_zh": "账号授权角色列表",
+      "help_en": "The list of authorization roles for the account. Required for replica set and ConfigServer (cs) accounts. Prohibited for sharded cluster Shard direct connection (db) accounts.\nGlobally prohibited (returns `InvalidRoles.NotAllowed`): `root`, `clusterAdmin`, `hostManager`, `clusterManager`, `__system`, `__queryableBackup`, and `restore`.\nCan be authorized to any database (including admin): `read`, `userAdmin`, and `enableSharding`.\nCan only be authorized to non-admin databases (returns `InvalidRoles.InvalidDB` if authorized to admin): `readWrite`, `dbAdmin`, and `dbOwner`.\nCan only be authorized to the admin database: `readAnyDatabase`, `readWriteAnyDatabase`, `userAdminAnyDatabase`, `dbAdminAnyDatabase`, `clusterMonitor`, `backup`, and `alibabaCloudAdmin`. (`alibabaCloudAdmin` is supported only for instances with kernel version 4.4 or later. For earlier versions, `InvalidRoles.NotAllowed` is returned.)\nCustom roles: Roles other than the preceding ones are considered custom roles and must already exist in the instance (you can query them by calling DescribeAccountRoles). Otherwise, `InvalidRoles.NotFound` is returned. `Roles.N.DBName` must be the same as the database where the role is defined. Otherwise, `InvalidRoles.DBNotMatch` is returned.\nIf `Roles` is missing as a whole, `MissingRoles` is returned. If `Roles.N.Role` and `Roles.N.DBName` do not appear in pairs, `InvalidRoles.Malformed` is returned. If `Roles` is passed for a sharded cluster Shard direct connection account, `InvalidRoles.NotSupported` is returned",
+      "help_zh": "账号授权角色列表。副本集 / cs 账号必填；分片 db 直连账号禁止传入。\n全局禁止（返回 `InvalidRoles.NotAllowed`）：`root`、`clusterAdmin`、`hostManager`、`clusterManager`、`__system`、`__queryableBackup`、`restore`。\n可授权到任意库（含 admin）：`read`、`userAdmin`、`enableSharding`。\n仅可授权到非 admin 库（授权到 admin 返回 `InvalidRoles.InvalidDB`）：`readWrite`、`dbAdmin`、`dbOwner`。\n仅可授权到 admin 库：`readAnyDatabase`、`readWriteAnyDatabase`、`userAdminAnyDatabase`、`dbAdminAnyDatabase`、`clusterMonitor`、`backup`、`alibabaCloudAdmin`（`alibabaCloudAdmin` 仅 4.4 及以上内核版本实例支持，低版本返回 `InvalidRoles.NotAllowed`）。\n自定义角色：上述之外的角色视为自定义角色，须已存在于实例（可通过 DescribeAccountRoles 查询），否则返回 `InvalidRoles.NotFound`；`Roles.N.DBName` 必须等于该角色的定义库，否则返回 `InvalidRoles.DBNotMatch`。\n`Roles` 整体缺失返回 `MissingRoles`；`Roles.N.Role` 与 `Roles.N.DBName` 未成对出现返回 `InvalidRoles.Malformed`；分片 db 直连账号传入 `Roles` 返回 `InvalidRoles.NotSupported`",
       "location": "query",
       "name": "roles",
       "options": [
@@ -121,8 +121,8 @@
     },
     {
       "example": "admin",
-      "help_en": "The database to which the account belongs, which is the database where the account is created or on which the account operates. Default value: admin. Rules: The name must be 1 to 63 characters in length and cannot contain /, \\, ., spaces, \", or $. The name cannot be local",
-      "help_zh": "账号所在库（账号建在/操作于哪个库），缺省 admin；规则：长度1~63，禁 /、\\、.、空格、\"、$，禁 local",
+      "help_en": "The database to which the account belongs (authentication database).<br>\nDefault value: `admin`.<br>Rules: If this parameter is left empty, the request is allowed and the downstream system processes it as `admin`. If this parameter is specified, the length must be 1 to 63 characters. The value cannot contain `/`, `\\`, `.`, spaces, `\"`, or `$`, and cannot be `local`. Otherwise, `InvalidParameter` is returned",
+      "help_zh": "账号所在库（鉴权库）。<br>\n缺省为 `admin`。<br>规则：为空放行（下游按 `admin` 处理）；非空时长度为 1~63 个字符，禁止包含 `/`、`\\`、`.`、空格、`\"`、`$`，且取值不能为 `local`，非法报 `InvalidParameter`",
       "location": "query",
       "name": "db_name",
       "options": [
@@ -134,8 +134,8 @@
     },
     {
       "example": "test",
-      "help_en": "The description of the account",
-      "help_zh": "账号描述",
+      "help_en": "The account description.\n\nRegular expression: `^[a-zA-Z一-龥][a-zA-Z一-龥0-9_.-]{1,255}$`. The description must start with an English letter or Chinese character, followed by English letters, Chinese characters, digits, underscores (_), periods (.), or hyphens (-). The length must be 2 to 256 characters.\nIf the description is invalid, InvalidAccountDescription.Malformed is returned",
+      "help_zh": "账号备注。\n\n正则：`^[a-zA-Z一-龥][a-zA-Z一-龥0-9_.-]{1,255}$`，即以英文字母或汉字开头，后接英文字母、汉字、数字、下划线（_）、英文句点（.）或短划线（-），总长度 2~256 个字符。\n非法时返回 `InvalidAccountDescription.Malformed`",
       "location": "query",
       "name": "account_description",
       "options": [
