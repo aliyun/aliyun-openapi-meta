@@ -1,0 +1,547 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "dataworks-public get-knowledge-point",
+  "cmd_name": "get-knowledge-point",
+  "deprecated": false,
+  "description_en": "Retrieves the current details of a single knowledge point, supporting local graphs, topic pages, and knowledge content",
+  "description_zh": "读取单个知识点的当前详情，支持局部图、主题页面和知识内容",
+  "kebab_example": "",
+  "method": "POST",
+  "multi_version": true,
+  "name": "GetKnowledgePoint",
+  "operation": {
+    "action": "GetKnowledgePoint",
+    "api_style": "RPC",
+    "api_version": "2024-05-18",
+    "content_type": "application/x-www-form-urlencoded",
+    "method": "POST",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "req_body_type": "formData",
+    "system_operation_type": "get",
+    "url": ""
+  },
+  "parameters": [
+    {
+      "example": "12345678-1234-4234-8234-123456789abc",
+      "help_en": "The ID of the knowledge base to which the knowledge point belongs. This parameter is used together with Type and Id to locate the knowledge point",
+      "help_zh": "知识点所属的知识库 ID。与 Type、Id 一起定位知识点",
+      "location": "formData",
+      "max_length": "512",
+      "name": "knowledge_base_id",
+      "options": [
+        "--knowledge-base-id"
+      ],
+      "raw_name": "KnowledgeBaseId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "enum": [
+        "GRAPH",
+        "WIKI",
+        "KNOWLEDGE_CONTENT"
+      ],
+      "example": "GRAPH",
+      "help_en": "The read category of the knowledge point. Valid values: GRAPH for a local graph, WIKI for a topic page, and KNOWLEDGE_CONTENT for knowledge content",
+      "help_zh": "知识点读取类别：GRAPH 为局部图，WIKI 为主题页面，KNOWLEDGE_CONTENT 为知识内容",
+      "location": "formData",
+      "max_length": "32",
+      "name": "type",
+      "options": [
+        "--type"
+      ],
+      "raw_name": "Type",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "node-sales",
+      "help_en": "The location ID of the knowledge point. Copy this value exactly as it appears in the search results and use it together with the corresponding KnowledgeBaseId and Type. Do not parse or convert this value",
+      "help_zh": "知识点定位 ID。请从检索结果原样复制，并与所属 KnowledgeBaseId、Type 一起使用，不要自行解析或转换",
+      "location": "formData",
+      "max_length": "2048",
+      "name": "id",
+      "options": [
+        "--id"
+      ],
+      "raw_name": "Id",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "20",
+      "help_en": "The maximum number of relationships to return per page. This parameter is valid only when Type is set to GRAPH. Default value: 20. Valid values: 1 to 100. This parameter is not supported when Type is set to WIKI or KNOWLEDGE_CONTENT",
+      "help_zh": "仅 Type=GRAPH 可传，表示每页最多返回的关系数，默认 20，取值 1～100。WIKI 和 KNOWLEDGE_CONTENT 不接受此参数",
+      "location": "formData",
+      "maximum": "100",
+      "minimum": "1",
+      "name": "max_results",
+      "options": [
+        "--max-results"
+      ],
+      "raw_name": "MaxResults",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "eyJvZmZzZXQiOjIwfQ",
+      "help_en": "The pagination cursor. Do not specify this parameter when you request the first page. For subsequent pages, use the NextToken value returned in the previous response. An empty response indicates that no more pages are available. If the current page is empty but the cursor is not empty, continue requesting. This parameter is used only when Type is set to GRAPH. You must keep the same knowledge base, entry point, and MaxResults value",
+      "help_zh": "分页游标。请求第一页时不传；后续页原样使用上次响应的 NextToken。响应为空表示没有下一页；即使当前页为空，游标非空仍应继续。仅 Type=GRAPH 使用，须保持同一知识库、入口和 MaxResults",
+      "location": "formData",
+      "max_length": "4096",
+      "name": "next_token",
+      "options": [
+        "--next-token"
+      ],
+      "raw_name": "NextToken",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "",
+  "product_code": "dataworks-public",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "The successful response of the API operation",
+        "description_zh": "接口成功响应",
+        "properties": {
+          "Code": {
+            "backendName": "data.Code",
+            "description_en": "The business error code. This field is omitted when the request is successful. For failures, the common error response protocol is followed",
+            "description_zh": "业务错误代码。成功时可省略；失败遵循公共错误响应协议",
+            "example": "InvalidParameter",
+            "type": "string"
+          },
+          "Data": {
+            "backendName": "data.Data",
+            "description_en": "The typed details of a single knowledge point. Only the item corresponding to the Type value is returned among Graph, Wiki, and KnowledgeContent",
+            "description_zh": "单个知识点的类型化详情。Graph、Wiki、KnowledgeContent 仅返回与 Type 对应的一项",
+            "parseType": "struct",
+            "properties": {
+              "Graph": {
+                "backendName": "Graph",
+                "description_en": "The one-hop local graph with the requested Id as the entry point. This parameter is returned only when Type is set to GRAPH. It includes the entry point, the relationships on the current page, and their visible endpoints",
+                "description_zh": "仅 Type=GRAPH 返回。以请求 Id 为入口的一跳局部图，包含入口、本页关系及其可见端点",
+                "parseType": "struct",
+                "properties": {
+                  "Edges": {
+                    "backendName": "Edges",
+                    "description_en": "The visible one-hop adjacency relationships on the current page. At least one end of each edge is the RootNodeId, and both ends are in the Nodes of the current page",
+                    "description_zh": "本页可见的一跳邻接关系，每条边至少一端为 RootNodeId，两端都在本页 Nodes 中",
+                    "itemName": "Edges",
+                    "items": {
+                      "backendName": "Edges",
+                      "parseType": "struct",
+                      "properties": {
+                        "Description": {
+                          "backendName": "Description",
+                          "description_en": "The readable supplementary description of the current node or relationship. This field is omitted when no reliable content is available",
+                          "description_zh": "当前节点或关系的可读补充说明，无可靠内容时省略",
+                          "example": "销售额基于订单实付金额计算。",
+                          "type": "string"
+                        },
+                        "EdgeId": {
+                          "backendName": "EdgeId",
+                          "description_en": "The ID of the relationship in the current knowledge base graph",
+                          "description_zh": "当前知识库图内的关系 ID",
+                          "example": "edge-sales-orders",
+                          "type": "string"
+                        },
+                        "FromNodeId": {
+                          "backendName": "FromNodeId",
+                          "description_en": "The NodeId of the start node of the relationship. The start node must exist in Graph.Nodes on the same page",
+                          "description_zh": "关系起点节点的 NodeId，起点应存在于同页 Graph.Nodes",
+                          "example": "node-sales",
+                          "type": "string"
+                        },
+                        "Join": {
+                          "backendName": "Join",
+                          "description_en": "The typed field association information for verified relationships. This field is omitted when no reliable and complete field pairing is available",
+                          "description_zh": "已验证关联关系的类型化字段关联信息；无可靠、完整字段配对时省略",
+                          "parseType": "struct",
+                          "properties": {
+                            "Cardinality": {
+                              "backendName": "Cardinality",
+                              "description_en": "The association cardinality from the start node to the end node. This field is returned when the cardinality is reliable. Valid values: ONE_TO_ONE, ONE_TO_MANY, MANY_TO_ONE, and MANY_TO_MANY",
+                              "description_zh": "从起点指向终点的关联基数，可靠时返回 ONE_TO_ONE、ONE_TO_MANY、MANY_TO_ONE 或 MANY_TO_MANY",
+                              "example": "MANY_TO_ONE",
+                              "type": "string"
+                            },
+                            "JoinKeys": {
+                              "backendName": "JoinKeys",
+                              "description_en": "The equivalent association field pairing for the nodes at both ends. Composite keys are returned in full",
+                              "description_zh": "两端节点的等值关联字段配对；复合键完整返回",
+                              "itemName": "JoinKeys",
+                              "items": {
+                                "backendName": "JoinKeys",
+                                "parseType": "struct",
+                                "properties": {
+                                  "FromField": {
+                                    "backendName": "FromField",
+                                    "description_en": "The name of the association field for the node corresponding to FromNodeId",
+                                    "description_zh": "FromNodeId 对应节点的关联字段名",
+                                    "example": "customer_id",
+                                    "type": "string"
+                                  },
+                                  "ToField": {
+                                    "backendName": "ToField",
+                                    "description_en": "The name of the association field for the node corresponding to ToNodeId",
+                                    "description_zh": "ToNodeId 对应节点的关联字段名",
+                                    "example": "id",
+                                    "type": "string"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              "parseType": "struct",
+                              "type": "array"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "KnowledgeBaseId": {
+                          "backendName": "KnowledgeBaseId",
+                          "description_en": "The ID of the knowledge base to which the knowledge point belongs. This parameter is used together with Type and Id to locate the knowledge point",
+                          "description_zh": "知识点所属的知识库 ID。与 Type、Id 一起定位知识点",
+                          "example": "12345678-1234-4234-8234-123456789abc",
+                          "type": "string"
+                        },
+                        "RelationType": {
+                          "backendName": "RelationType",
+                          "description_en": "The public relationship type from the start node to the end node. For example, CALCULATED_FROM indicates that the start node is calculated based on the end node. You cannot infer the complete formula based solely on the type",
+                          "description_zh": "从起点指向终点的公开关系类型。例如 CALCULATED_FROM 表示起点基于终点计算；不能仅凭类型推断完整公式",
+                          "example": "CALCULATED_FROM",
+                          "type": "string"
+                        },
+                        "ToNodeId": {
+                          "backendName": "ToNodeId",
+                          "description_en": "The NodeId of the end node of the relationship. The end node must exist in Graph.Nodes on the same page",
+                          "description_zh": "关系终点节点的 NodeId，终点应存在于同页 Graph.Nodes",
+                          "example": "node-orders",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "parseType": "struct",
+                    "type": "array"
+                  },
+                  "KnowledgeBaseId": {
+                    "backendName": "KnowledgeBaseId",
+                    "description_en": "The ID of the knowledge base to which the knowledge point belongs. This parameter is used together with Type and Id to locate the knowledge point",
+                    "description_zh": "知识点所属的知识库 ID。与 Type、Id 一起定位知识点",
+                    "example": "12345678-1234-4234-8234-123456789abc",
+                    "type": "string"
+                  },
+                  "Nodes": {
+                    "backendName": "Nodes",
+                    "description_en": "The entry node and all visible endpoints involved in the relationships on the current page, deduplicated by NodeId. Subsequent pages still include the entry node",
+                    "description_zh": "入口节点和本页关系涉及的全部可见端点，按 NodeId 去重；后续页仍包含入口",
+                    "itemName": "Nodes",
+                    "items": {
+                      "backendName": "Nodes",
+                      "parseType": "struct",
+                      "properties": {
+                        "Aliases": {
+                          "backendName": "Aliases",
+                          "description_en": "The list of reliable aliases for the node. This field is omitted when no aliases are available",
+                          "description_zh": "节点的可靠别名列表，无别名时可省略",
+                          "itemName": "Aliases",
+                          "items": {
+                            "description_en": "An alias of the current node",
+                            "description_zh": "当前节点的一个别名",
+                            "example": "实付销售额",
+                            "type": "string"
+                          },
+                          "parseType": "struct",
+                          "type": "array"
+                        },
+                        "Definition": {
+                          "backendName": "Definition",
+                          "description_en": "The reliable business definition of the graph node. This field is omitted when no public definition is available",
+                          "description_zh": "图节点的可靠业务定义；没有可公开定义时省略",
+                          "example": "已支付订单的实付金额之和。",
+                          "type": "string"
+                        },
+                        "Description": {
+                          "backendName": "Description",
+                          "description_en": "The readable supplementary description of the current node or relationship. This field is omitted when no reliable content is available",
+                          "description_zh": "当前节点或关系的可读补充说明，无可靠内容时省略",
+                          "example": "销售额基于订单实付金额计算。",
+                          "type": "string"
+                        },
+                        "EntityId": {
+                          "backendName": "EntityId",
+                          "description_en": "The asset ID in DataWorks Data Map that can be reliably located. This is not the NodeId of the graph node. This field is omitted when no unique and reliable asset mapping is available",
+                          "description_zh": "可可靠定位的 DataWorks 数据地图资产 ID；不是图节点 NodeId，无唯一可靠资产映射时省略",
+                          "example": "maxcompute-table:::sales:public:orders",
+                          "type": "string"
+                        },
+                        "KnowledgeBaseId": {
+                          "backendName": "KnowledgeBaseId",
+                          "description_en": "The ID of the knowledge base to which the knowledge point belongs. This parameter is used together with Type and Id to locate the knowledge point",
+                          "description_zh": "知识点所属的知识库 ID。与 Type、Id 一起定位知识点",
+                          "example": "12345678-1234-4234-8234-123456789abc",
+                          "type": "string"
+                        },
+                        "Name": {
+                          "backendName": "Name",
+                          "description_en": "The display name of the graph node",
+                          "description_zh": "图节点的展示名称",
+                          "example": "销售额",
+                          "type": "string"
+                        },
+                        "NodeId": {
+                          "backendName": "NodeId",
+                          "description_en": "The ID of the node in the current knowledge base graph. You can use this value as the Id when Type is set to GRAPH to read the local graph of this node",
+                          "description_zh": "当前知识库图内的节点 ID，可作为 Type=GRAPH 的 Id 读取该节点局部图",
+                          "example": "node-sales",
+                          "type": "string"
+                        },
+                        "Type": {
+                          "backendName": "Type",
+                          "description_en": "The business category of the graph node. For example, TABLE indicates a data table. This is not the read category of the knowledge point",
+                          "description_zh": "图节点的业务类别，例如 TABLE 表示数据表；不是知识点读取类别",
+                          "example": "TABLE",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "parseType": "struct",
+                    "type": "array"
+                  },
+                  "RootNodeId": {
+                    "backendName": "RootNodeId",
+                    "description_en": "The ID of the entry node for the current local graph. This value is the same as the requested Id",
+                    "description_zh": "本次局部图入口节点 ID，与请求 Id 一致",
+                    "example": "node-sales",
+                    "type": "string"
+                  },
+                  "UpdateTime": {
+                    "backendName": "UpdateTime",
+                    "description_en": "The time when the current graph was last published. This field is returned when the time is reliable",
+                    "description_zh": "当前图最近完成发布的时间，可靠时返回",
+                    "example": "1794373200000",
+                    "format": "int64",
+                    "type": "integer"
+                  }
+                },
+                "type": "object"
+              },
+              "Id": {
+                "backendName": "Id",
+                "description_en": "The location ID of the knowledge point. Copy this value exactly as it appears in the search results and use it together with the corresponding KnowledgeBaseId and Type. Do not parse or convert this value",
+                "description_zh": "知识点定位 ID。请从检索结果原样复制，并与所属 KnowledgeBaseId、Type 一起使用，不要自行解析或转换",
+                "example": "node-sales",
+                "type": "string"
+              },
+              "KnowledgeBaseId": {
+                "backendName": "KnowledgeBaseId",
+                "description_en": "The ID of the knowledge base to which the knowledge point belongs. This parameter is used together with Type and Id to locate the knowledge point",
+                "description_zh": "知识点所属的知识库 ID。与 Type、Id 一起定位知识点",
+                "example": "12345678-1234-4234-8234-123456789abc",
+                "type": "string"
+              },
+              "KnowledgeContent": {
+                "backendName": "KnowledgeContent",
+                "description_en": "The title, Markdown body, and optional sources of the knowledge content. This parameter is returned only when Type is set to KNOWLEDGE_CONTENT",
+                "description_zh": "仅 Type=KNOWLEDGE_CONTENT 返回的知识内容标题、Markdown 正文及可选来源",
+                "parseType": "struct",
+                "properties": {
+                  "Content": {
+                    "backendName": "Content",
+                    "description_en": "The currently public Markdown body. The knowledge content may be a document fragment or a readable projection of structured knowledge. The full text of the original file is not guaranteed",
+                    "description_zh": "当前可公开的 Markdown 正文；知识内容可能是文档片段或结构化知识的可读投影，不保证是原文件全文",
+                    "example": "销售额按已支付订单的实付金额汇总。",
+                    "type": "string"
+                  },
+                  "Sources": {
+                    "backendName": "Sources",
+                    "description_en": "The download information of the uploaded original document explicitly associated with the current content. This field is omitted when no reliable source is available or when you do not have read permissions for the original file. The ability to retrieve a knowledge point does not mean you can download the complete original file",
+                    "description_zh": "当前内容明确关联的上传原文档下载信息。无可靠来源或无原文件读取权限时省略；可检索知识点不代表可以下载完整原文件",
+                    "itemName": "Sources",
+                    "items": {
+                      "backendName": "Sources",
+                      "parseType": "struct",
+                      "properties": {
+                        "DownloadUrl": {
+                          "backendName": "DownloadUrl",
+                          "description_en": "The temporary HTTPS download URL of the original file. The URL is valid for 2 hours. This field is returned only when the source can be reliably located and the caller has read permissions for the original file. Do not forward this URL publicly or store it for a long time",
+                          "description_zh": "原文件的 HTTPS 临时下载地址，有效期为 2 小时。仅在来源可可靠定位且调用者有原文件读取权限时返回；请勿公开转发或长期保存",
+                          "example": "https://example.com/sales-policy.pdf",
+                          "type": "string"
+                        },
+                        "ExpirationTime": {
+                          "backendName": "ExpirationTime",
+                          "description_en": "The expiration time of the download URL. The value is a UNIX timestamp in milliseconds",
+                          "description_zh": "下载地址的过期时间，Unix 毫秒时间戳",
+                          "example": "1794376800000",
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "FileName": {
+                          "backendName": "FileName",
+                          "description_en": "The full file name of the original document used for building. This is not the name of the current knowledge point fragment",
+                          "description_zh": "构建使用的完整原文档文件名，不是当前知识点片段名称",
+                          "example": "销售制度.pdf",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "parseType": "struct",
+                    "type": "array"
+                  },
+                  "Title": {
+                    "backendName": "Title",
+                    "description_en": "The display title of the current knowledge point",
+                    "description_zh": "当前知识点的展示标题",
+                    "example": "销售额",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "NextToken": {
+                "backendName": "NextToken",
+                "description_en": "The pagination cursor. Do not specify this parameter when you request the first page. For subsequent pages, use the NextToken value returned in the previous response. An empty response indicates that no more pages are available. If the current page is empty but the cursor is not empty, continue requesting. This parameter is used only when Type is set to GRAPH. You must keep the same knowledge base, entry point, and MaxResults value",
+                "description_zh": "分页游标。请求第一页时不传；后续页原样使用上次响应的 NextToken。响应为空表示没有下一页；即使当前页为空，游标非空仍应继续。仅 Type=GRAPH 使用，须保持同一知识库、入口和 MaxResults",
+                "example": "eyJvZmZzZXQiOjIwfQ",
+                "type": "string"
+              },
+              "Type": {
+                "backendName": "Type",
+                "description_en": "The read category of the knowledge point. Valid values: GRAPH for a local graph, WIKI for a topic page, and KNOWLEDGE_CONTENT for knowledge content",
+                "description_zh": "知识点读取类别：GRAPH 为局部图，WIKI 为主题页面，KNOWLEDGE_CONTENT 为知识内容",
+                "example": "GRAPH",
+                "type": "string"
+              },
+              "Warnings": {
+                "backendName": "Warnings",
+                "description_en": "The truncation, scope limitation, or degradation prompts for the current call. Use Code for judgment. Message is only for reading instructions",
+                "description_zh": "本次调用的裁剪、范围受限或降级提示。根据 Code 判断，Message 仅用于阅读说明",
+                "itemName": "Warnings",
+                "items": {
+                  "backendName": "Warnings",
+                  "parseType": "struct",
+                  "properties": {
+                    "Code": {
+                      "backendName": "Code",
+                      "description_en": "The truncation or degradation prompt code. For example, CONTENT_TRUNCATED indicates that the content is truncated, and SOURCE_UNAVAILABLE indicates that the original file download is temporarily unavailable",
+                      "description_zh": "裁剪或降级提示码。例如 CONTENT_TRUNCATED 表示内容有裁剪，SOURCE_UNAVAILABLE 表示原文下载暂不可用",
+                      "example": "CONTENT_TRUNCATED",
+                      "type": "string"
+                    },
+                    "Message": {
+                      "backendName": "Message",
+                      "description_en": "The sanitized and readable description of the current prompt. Use Code for programmatic judgment instead of relying on the text",
+                      "description_zh": "当前提示的安全化可读说明。程序判断请使用 Code，不依赖文案",
+                      "example": "部分内容超过长度限制，已裁剪。",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "parseType": "struct",
+                "type": "array"
+              },
+              "Wiki": {
+                "backendName": "Wiki",
+                "description_en": "The title, Markdown body, and optional sources of the topic page. This parameter is returned only when Type is set to WIKI",
+                "description_zh": "仅 Type=WIKI 返回的主题页面标题、Markdown 正文及可选来源",
+                "parseType": "struct",
+                "properties": {
+                  "Content": {
+                    "backendName": "Content",
+                    "description_en": "The currently public Markdown body. The knowledge content may be a document fragment or a readable projection of structured knowledge. The full text of the original file is not guaranteed",
+                    "description_zh": "当前可公开的 Markdown 正文；知识内容可能是文档片段或结构化知识的可读投影，不保证是原文件全文",
+                    "example": "销售额按已支付订单的实付金额汇总。",
+                    "type": "string"
+                  },
+                  "Sources": {
+                    "backendName": "Sources",
+                    "description_en": "The download information of the uploaded original document explicitly associated with the current content. This field is omitted when no reliable source is available or when you do not have read permissions for the original file. The ability to retrieve a knowledge point does not mean you can download the complete original file",
+                    "description_zh": "当前内容明确关联的上传原文档下载信息。无可靠来源或无原文件读取权限时省略；可检索知识点不代表可以下载完整原文件",
+                    "itemName": "Sources",
+                    "items": {
+                      "backendName": "Sources",
+                      "parseType": "struct",
+                      "properties": {
+                        "DownloadUrl": {
+                          "backendName": "DownloadUrl",
+                          "description_en": "The temporary HTTPS download URL of the original file. The URL is valid for 2 hours. This field is returned only when the source can be reliably located and the caller has read permissions for the original file. Do not forward this URL publicly or store it for a long time",
+                          "description_zh": "原文件的 HTTPS 临时下载地址，有效期为 2 小时。仅在来源可可靠定位且调用者有原文件读取权限时返回；请勿公开转发或长期保存",
+                          "example": "https://example.com/sales-policy.pdf",
+                          "type": "string"
+                        },
+                        "ExpirationTime": {
+                          "backendName": "ExpirationTime",
+                          "description_en": "The expiration time of the download URL. The value is a UNIX timestamp in milliseconds",
+                          "description_zh": "下载地址的过期时间，Unix 毫秒时间戳",
+                          "example": "1794376800000",
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "FileName": {
+                          "backendName": "FileName",
+                          "description_en": "The full file name of the original document used for building. This is not the name of the current knowledge point fragment",
+                          "description_zh": "构建使用的完整原文档文件名，不是当前知识点片段名称",
+                          "example": "销售制度.pdf",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "parseType": "struct",
+                    "type": "array"
+                  },
+                  "Title": {
+                    "backendName": "Title",
+                    "description_en": "The display title of the current knowledge point",
+                    "description_zh": "当前知识点的展示标题",
+                    "example": "销售额",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "Message": {
+            "backendName": "data.Message",
+            "description_en": "The readable description of the business error. This field is omitted when the request is successful. Provide the RequestId when troubleshooting failures",
+            "description_zh": "业务错误的可读说明，成功时可省略。失败定位时请同时提供 RequestId",
+            "example": "The request parameters are invalid.",
+            "type": "string"
+          },
+          "RequestId": {
+            "backendName": "requestId",
+            "description_en": "The unique identifier of the request. You can use this ID to troubleshoot issues",
+            "description_zh": "本次请求的唯一标识，可用于定位问题",
+            "example": "00000000-0000-4000-8000-000000000001",
+            "title_en": "Id of the request",
+            "title_zh": "Id of the request",
+            "type": "string"
+          },
+          "Success": {
+            "backendName": "data.Success",
+            "description_en": "Indicates whether the request is successful",
+            "description_zh": "本次请求是否成功",
+            "title_en": "请求是否成功",
+            "title_zh": "请求是否成功",
+            "type": "boolean"
+          }
+        },
+        "title_en": "Schema of Response",
+        "title_zh": "Schema of Response",
+        "type": "object"
+      }
+    }
+  },
+  "timeout_ms": 60000
+}
