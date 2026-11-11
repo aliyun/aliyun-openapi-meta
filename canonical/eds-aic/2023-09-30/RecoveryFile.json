@@ -5,7 +5,7 @@
   "deprecated": false,
   "description_en": "Restores a backup file",
   "description_zh": "恢复备份文件",
-  "kebab_example": "aliyun eds-aic recovery-file --android-instance-id-list '[\"acp-ig2bdpk374l12****\"]' --api-version 2023-09-30 --region cn-hangzhou",
+  "kebab_example": "aliyun eds-aic recovery-file --android-instance-id-list '[\"acp-ig2bdpk374l12****\"]' --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": false,
   "name": "RecoveryFile",
@@ -80,7 +80,7 @@
     },
     {
       "example": "oss://cloudphone-saved-bucket-cn-hangzhou-****/backupDir/acp-ig2bdpk374l12****_2024052014****.ab",
-      "help_en": "The OSS address to which the backup file is uploaded.\n<notice>Call the describeBuckets operation to obtain the bucketName, and select ossObjectList to obtain the key. The key is the path of the backup file. Concatenate them into \"oss://${bucketName}/${key}\".</notice>",
+      "help_en": "The OSS address where the backup file is uploaded.\n<notice>Call the DescribeBuckets operation to obtain the bucket name, and select ossObjectList to obtain the key. The key is the path of the backup file. Concatenate them into the format \"oss://${bucketName}/${key}\".</notice>",
       "help_zh": "备份文件上传的OSS地址。\n<notice>调用describeBuckets接口获取bucketName，选择ossObjectList获取key，key是备份文件的路径，拼接成“oss://${bucketName}/${key}”。</notice>",
       "location": "query",
       "name": "backup_file_path",
@@ -93,7 +93,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether it is a full-device backup",
+      "help_en": "Specifies whether to perform a full-device backup",
       "help_zh": "是否整机备份",
       "location": "query",
       "name": "backup_all",
@@ -108,7 +108,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The list of excluded app package names for full-device restore. Matched apps are not uninstalled, and their APKs are not installed (compatible with legacy backups that contain APKs). Only user data is replaced. The empty shell must be installed by the customer using pm install. If this parameter is not specified, no apps are excluded",
+      "help_en": "The list of excluded app package names for full-device restoration. Matched apps are not uninstalled and their APKs are not installed (compatible with legacy backups containing APKs), and only user data is replaced. Empty shells must be installed by the customer by running the pm install command. If this parameter is not specified, no apps are excluded",
       "help_zh": "整机恢复排除的应用包名名单:命中的应用不卸载、不安装其 APK(兼容存量含 APK 的老备份),仅替换用户数据;空壳由客户自行 pm install;不传即不排除",
       "location": "query",
       "name": "exclude_app_list",
@@ -117,6 +117,88 @@
       ],
       "param_style": "repeatList",
       "raw_name": "ExcludeAppList",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "element": {
+        "fields": [
+          {
+            "example": "my-bucket",
+            "help_en": "The name of the user OSS bucket",
+            "help_zh": "用户 OSS 桶名",
+            "name": "oss_bucket",
+            "options": [
+              "--oss-bucket"
+            ],
+            "raw_name": "OssBucket",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "oss-cn-hangzhou-internal.aliyuncs.com",
+            "help_en": "The internal endpoint of the user OSS. The endpoint must end with -internal.aliyuncs.com",
+            "help_zh": "用户 OSS 内网 endpoint(必须以 -internal.aliyuncs.com 结尾)",
+            "name": "oss_endpoint",
+            "options": [
+              "--oss-endpoint"
+            ],
+            "raw_name": "OssEndpoint",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "script/recover.sh",
+            "help_en": "The object key of the user OSS, which is the path of the script in the bucket",
+            "help_zh": "用户 OSS objectKey(脚本在桶内的路径)",
+            "name": "oss_object_key",
+            "options": [
+              "--oss-object-key"
+            ],
+            "raw_name": "OssObjectKey",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "cn-hangzhou",
+            "help_en": "The region of the user OSS bucket. The region must be the same as the region of the instance",
+            "help_zh": "用户 OSS 桶地域(须与实例地域一致)",
+            "name": "oss_region",
+            "options": [
+              "--oss-region"
+            ],
+            "raw_name": "OssRegion",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "element": {
+              "type": "string"
+            },
+            "example": "[\"acp-0n4k52uiyon472rq0\"]",
+            "help_en": "The list of instance IDs bound to the script. This parameter is optional. The IDs must be a subset of AndroidInstanceIdList. If this parameter is not specified, the script serves as the fallback script for all instances in the current task. You can specify up to 100 instance IDs",
+            "help_zh": "可选：该脚本绑定的实例 ID 列表，必须是本次 AndroidInstanceIdList 的子集；不传则该脚本为本次任务全量兜底脚本。最多 100 个",
+            "name": "test_instance_ids",
+            "options": [
+              "--test-instance-ids"
+            ],
+            "raw_name": "TestInstanceIds",
+            "required": false,
+            "type": "array"
+          }
+        ],
+        "type": "object"
+      },
+      "example": "[{\"OssBucket\":\"my-bucket\",\"OssObjectKey\":\"script/recover.sh\",\"OssEndpoint\":\"oss-cn-hangzhou-internal.aliyuncs.com\",\"OssRegion\":\"cn-hangzhou\"}]",
+      "help_en": "The custom restoration scripts. This parameter is optional. If this parameter is not specified, all instances use the built-in scripts of the platform, and the behavior remains exactly the same as before. Each item represents a script. If TestInstanceIds is specified, only the instances in the list use the script, which must be a subset of AndroidInstanceIdList. If TestInstanceIds is not specified, the script serves as the fallback script for all instances in the current task. A task can have at most one item without TestInstanceIds. The maximum array size is 11",
+      "help_zh": "用户自定义恢复脚本(可选)。不传则全部实例使用平台内置脚本，行为与今日完全一致。每项为一份脚本：TestInstanceIds 指定时仅列表内实例使用该脚本(须为 AndroidInstanceIdList 子集)；不指定时该脚本为本次任务全量兜底脚本(一次任务至多 1 份不带 TestInstanceIds 的项)。数组上限 11",
+      "location": "query",
+      "name": "custom_scripts",
+      "options": [
+        "--custom-scripts"
+      ],
+      "param_style": "repeatList",
+      "raw_name": "CustomScripts",
       "required": false,
       "type": "array"
     }
