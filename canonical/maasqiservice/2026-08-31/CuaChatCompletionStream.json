@@ -3,7 +3,7 @@
   "cmd_full_name": "maasqiservice cua-chat-completion-stream",
   "cmd_name": "cua-chat-completion-stream",
   "deprecated": false,
-  "description_en": "Invokes the published Computer Use Agent (CUA) Standard Edition, submits a task and the current desktop screenshot, and returns single-step computer operation decisions through Server-Sent Events (SSE). After the client executes the `computer_use` action, it returns the actual results and continues the call with the session ID and the latest screenshot",
+  "description_en": "Calls the published Computer Use Agent (CUA) Standard Edition, submits a task and the current desktop screenshot, and returns single-step computer operation decisions by using Server-Sent Events (SSE). After the client executes the computer_use action, it returns the actual results and continues the call with the session ID and the latest screenshot",
   "description_zh": "调用已发布的 Computer Use Agent（CUA）标准版，提交任务和当前桌面截图，以 SSE 返回单步电脑操作决策。客户端执行 `computer_use` 动作后回传真实结果，并携带会话 ID 和最新截图继续调用",
   "kebab_example": "aliyun maasqiservice cua-chat-completion-stream --x-qi-agent-api-key 'qis_<instance_api_key>' --x-qi-instance-id 'CUA_<instance_id>' --messages '[{\"role\":\"user\",\"content\":[{\"type\":\"image_url\"}]}]' --stream true --region cn-hangzhou",
   "method": "POST",
@@ -34,7 +34,7 @@
   "parameters": [
     {
       "example": "qis_<instance_api_key>",
-      "help_en": "The instance access key, which must match the instance. According to the original materials, you can pass the original qis_ key or the Bearer format. It cannot replace the POP AK signature",
+      "help_en": "The instance access key, which must match the instance. According to the original materials, the original qis_ key or Bearer format can be passed. It cannot replace the POP AK signature",
       "help_zh": "实例访问密钥，须与实例匹配；按原资料可传原始 qis_ 密钥或 Bearer 形式，不能替代 POP AK 签名",
       "location": "header",
       "name": "x_qi_agent_api_key",
@@ -73,7 +73,7 @@
     },
     {
       "example": "request_id",
-      "help_en": "We recommend that you explicitly generate this ID. Reuse it for retries of the same step, and use a new ID for a new step",
+      "help_en": "It is recommended to explicitly generate this ID. Reuse it for retries of the same step, and use a new ID for a new step",
       "help_zh": "建议显式生成；同一步重试复用，新一步换新ID",
       "location": "header",
       "name": "x_qi_request_id",
@@ -106,7 +106,7 @@
                   "fields": [
                     {
                       "example": "data:image/jpeg;base64,<当前截图BASE64>",
-                      "help_en": "An accessible HTTP(S) URL or a complete image data URL. HTTPS is recommended. Signed links must not be expired",
+                      "help_en": "An accessible HTTP(S) URL or a complete image data URL. HTTPS is recommended",
                       "help_zh": "可访问 HTTP(S) URL 或完整图片 Data URL；推荐 HTTPS",
                       "name": "url",
                       "options": [
@@ -129,7 +129,7 @@
                 },
                 {
                   "example": "观察桌面，打开浏览器并找到设置页面\n",
-                  "help_en": "The text content. In the first round, the user message must provide a non-empty task objective. For tool messages, enter the actual execution results",
+                  "help_en": "The text content. In the first round, the user must provide a non-empty task objective. For tool, use the actual execution result",
                   "help_zh": "首轮非空任务目标；tool 使用真实执行结果",
                   "name": "text",
                   "options": [
@@ -147,7 +147,7 @@
                     "input_image"
                   ],
                   "example": "image_url",
-                  "help_en": "The content type. For text, use text or input_text. For screenshots, use image_url or input_image",
+                  "help_en": "The type of the content item. For text, use text or input_text. For screenshots, use image_url or input_image",
                   "help_zh": "文本为 text/input_text，截图为 image_url/input_image",
                   "name": "type",
                   "options": [
@@ -160,7 +160,7 @@
               ],
               "type": "object"
             },
-            "help_en": "For user messages, use a multimodal array. For tool messages, you can use an array of text content items to return execution results. The backend is also compatible with non-empty strings or objects",
+            "help_en": "For user, a multimodal array is used. For tool, an array of text content items can be used to return execution results. The backend is also compatible with non-empty strings or objects",
             "help_zh": "user 使用多模态数组；tool 支持文本项数组、非空字符串或对象",
             "name": "content",
             "options": [
@@ -176,7 +176,7 @@
               "tool"
             ],
             "example": "user",
-            "help_en": "The role of the message. Only user and tool are supported. Do not pass system, assistant, or full history",
+            "help_en": "The role of the message. Only user or tool is supported. In the first round, use user. In subsequent rounds, the sequence is tool and then user",
             "help_zh": "仅 user/tool；不传 system、assistant 或完整历史",
             "name": "role",
             "options": [
@@ -188,7 +188,7 @@
           },
           {
             "example": "call_上一轮返回的ID",
-            "help_en": "Required when role is set to tool. It must be equal to the computer_use call ID returned in the previous step of the same session",
+            "help_en": "Required when role is tool. It must be equal to the computer_use call ID returned in the previous step of the same session",
             "help_zh": "role=tool 时必填，必须等于同 session 上一步 computer_use 调用 ID",
             "name": "tool_call_id",
             "options": [
@@ -201,7 +201,7 @@
         ],
         "type": "object"
       },
-      "help_en": "Required. In the first round, only one user message is allowed. In subsequent rounds, only one tool message followed by one user message is allowed. Exactly one screenshot is required for each step",
+      "help_en": "Required. In the first round, only one user message is included. In subsequent rounds, only one tool message followed by one user message is included. Exactly one screenshot is included per step",
       "help_zh": "首轮仅一条 user；续轮仅一条 tool 后接一条 user；每步恰好一张截图",
       "location": "body",
       "name": "messages",
@@ -217,7 +217,7 @@
       "fields": [
         {
           "example": "gui-only / gui+cli",
-          "help_en": "The action mode. Valid values: gui-only and gui+cli. This parameter is case-sensitive and must remain fixed within a session. Supplemented by subsequent service instructions",
+          "help_en": "The action mode. Valid values: gui-only or gui+cli. This parameter is case-sensitive and remains fixed within a session. Supplemented by subsequent service instructions",
           "help_zh": "gui-only 或 gui+cli，大小写敏感，session 内固定；后续服务说明补充",
           "name": "action_mode",
           "options": [
@@ -266,7 +266,7 @@
     },
     {
       "example": "\"\"",
-      "help_en": "A compatible field. You can omit it or pass an empty string. The actual model is determined by the instance or the model catalog configured for debugging, and is not routed based on this field",
+      "help_en": "A compatible field. It can be omitted or set to an empty string. The actual model is determined by the instance or the model catalog configured for debugging, and is not routed based on this field",
       "help_zh": "可省略或传 \"\"，实际模型由实例决定",
       "location": "body",
       "name": "model",
@@ -283,7 +283,7 @@
         "true"
       ],
       "example": "true",
-      "help_en": "Specifies whether to enable streaming. Set this parameter to true for this SSE API operation. The current CUA outputs results after completing the single-step model decision, rather than outputting in real time token by token",
+      "help_en": "Specifies whether to enable streaming. Set this parameter to true for this SSE API",
       "help_zh": "固定 true",
       "location": "body",
       "name": "stream",
@@ -310,7 +310,7 @@
           "type": "bool"
         }
       ],
-      "help_en": "The optional settings for SSE",
+      "help_en": "The SSE settings",
       "help_zh": "SSE 设置",
       "location": "body",
       "name": "stream_options",
@@ -330,7 +330,7 @@
         }
       },
       "example": "[]",
-      "help_en": "The tools array. You can only omit it or pass an empty array. CUA uses the fixed computer_use tool and does not allow custom tools",
+      "help_en": "Can only be omitted or set to an empty array. CUA uses the fixed computer_use tool and does not allow custom tools",
       "help_zh": "只能省略或传 []，不允许自定义工具",
       "location": "body",
       "name": "tools",
@@ -371,7 +371,7 @@
   "timeout_ms": 62000,
   "v1_body_parameters": [
     {
-      "help_en": "The input for the current step of CUA. In the first round, it includes the task text and one screenshot. In subsequent rounds, it includes the tool receipt of the previous action and a new screenshot. Complete history is not accepted",
+      "help_en": "The input for the current step of CUA. In the first round, it is the task text and a screenshot. In subsequent rounds, it is the tool receipt of the previous action and a new screenshot. Complete history is not accepted",
       "help_zh": "CUA 当前一步输入：首轮为任务文本和一张截图；续轮为上一动作的 tool 回执和一张新截图，不接受完整历史",
       "name": "body",
       "param_style": "json",
