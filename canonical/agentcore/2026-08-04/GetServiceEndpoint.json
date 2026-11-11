@@ -3,7 +3,7 @@
   "cmd_full_name": "agentcore get-service-endpoint",
   "cmd_name": "get-service-endpoint",
   "deprecated": false,
-  "description_en": "Queries the details of a specified service endpoint, including the target route, access URLs, authentication configuration, and current status",
+  "description_en": "Queries the details of a specified service endpoint, including the target route, access address, authentication configuration, and current status",
   "description_zh": "查询指定服务端点的详细信息，包括目标路由、访问地址、鉴权配置和当前状态",
   "kebab_example": "aliyun agentcore get-service-endpoint --workspace-id ws-123456 --service-endpoint-id se-123456 --region cn-hangzhou",
   "method": "GET",
@@ -89,7 +89,7 @@
                     },
                     "status": {
                       "backendName": "status",
-                      "description_en": "The access URL status. Valid values: CREATING, READY, and DEGRADED",
+                      "description_en": "The status of the access URL. Valid values: CREATING, READY, and DEGRADED",
                       "description_zh": "访问地址状态。可选值：CREATING、READY、DEGRADED",
                       "enum": [
                         "CREATING",
@@ -106,7 +106,7 @@
                     },
                     "statusReason": {
                       "backendName": "statusReason",
-                      "description_en": "The reason for the access URL status. The specific reason is returned when the status is abnormal",
+                      "description_en": "The reason for the access URL status. Returns the specific reason when the status is abnormal",
                       "description_zh": "访问地址状态原因。状态异常时返回具体原因",
                       "example": "ServiceEndpoint.Provider.Unavailable: no provider for the target type",
                       "type": "string"
@@ -130,7 +130,7 @@
                 "properties": {
                   "type": {
                     "backendName": "type",
-                    "description_en": "The authentication method. NONE indicates that no authentication is required. API_KEY indicates that authentication is performed by passing an API key in the x-api-key request header",
+                    "description_en": "The authentication method. NONE indicates that no authentication is required. API_KEY indicates that authentication is performed by passing an API key through the x-api-key request header",
                     "description_zh": "鉴权方式。NONE 表示无需鉴权，API_KEY 表示通过 x-api-key 请求头传递 API Key 进行鉴权",
                     "enum": [
                       "NONE",
@@ -148,14 +148,64 @@
               },
               "createdAt": {
                 "backendName": "createdAt",
-                "description_en": "The creation time in UTC format compliant with RFC 3339",
+                "description_en": "The creation time in UTC format based on RFC 3339",
                 "description_zh": "创建时间，采用 RFC 3339 格式的 UTC 时间",
                 "example": "2026-08-12T03:04:05Z",
                 "type": "string"
               },
+              "currentInstances": {
+                "backendName": "currentInstances",
+                "description_en": "Read-only. For Get operations, this field queries RM sandboxPhaseCounts.RUNNING based on the endpoint runtimeKey. For Create and Update operations, this field returns null. The value is a non-negative integer. If the statistics are unavailable, null is returned. This value is not replaced by the baseline upper and lower limits, target count, or READY status. Unavailable statistics do not block submission",
+                "description_zh": "只读，Get 按 Endpoint runtimeKey 查询 RM sandboxPhaseCounts.RUNNING；Create/Update 返回 null。非负整数，统计不可获得时返回 null；不以基础上下限、目标数量或 READY 状态替代，统计不可获得不阻塞提交",
+                "example": "2",
+                "format": "int32",
+                "minimum": "0",
+                "nullable": true,
+                "readOnly": true,
+                "title_en": "当前实例数",
+                "title_zh": "当前实例数",
+                "type": "integer"
+              },
+              "effectiveCapacity": {
+                "backendName": "effectiveCapacity",
+                "description_en": "Read-only and returned only in detail responses. The console reads this from autoScalingStatus.effectiveLimits in the same RM detail request that queries the current instance count. It represents the upper and lower limits currently used by RM, rather than the saved base configuration or actual instance count. This value is null if it is not applicable, the running object does not exist, the identity does not match, the query fails, or RM does not return a valid range. Configuration values are not used as a fallback, and this field is not used for edit backfill or submission",
+                "description_zh": "只读，仅详情返回。由 Console 在查询当前实例数的同一次 RM 详情请求中读取 autoScalingStatus.effectiveLimits，表示 RM 当前采用的上下限，不是保存的基础配置或实际实例数。不适用、运行对象不存在、身份不匹配、查询失败或 RM 未返回有效范围时为 null；不使用配置值代替，不用于编辑回填或提交",
+                "example": "{\"minSandboxCount\":8,\"maxSandboxCount\":20}",
+                "nullable": true,
+                "properties": {
+                  "maxSandboxCount": {
+                    "backendName": "maxSandboxCount",
+                    "description_en": "Read-only. Maps to RM autoScalingStatus.effectiveLimits.maxSandboxes. When effectiveCapacity is not null, this value must be returned in pairs with the minimum value. The value must be non-negative and not less than the minimum value. 0 is a valid value. The read value is not truncated at the upper limit of 100 for written configurations",
+                    "description_zh": "只读，映射 RM autoScalingStatus.effectiveLimits.maxSandboxes。effectiveCapacity 非空时必须与最小值成对返回，取值非负且不小于最小值；0 是有效值，读取不按写入配置的 100 上限截断",
+                    "example": "20",
+                    "format": "int32",
+                    "minimum": "0",
+                    "readOnly": true,
+                    "title_en": "当前生效最大实例数",
+                    "title_zh": "当前生效最大实例数",
+                    "type": "integer"
+                  },
+                  "minSandboxCount": {
+                    "backendName": "minSandboxCount",
+                    "description_en": "Read-only. Maps to RM autoScalingStatus.effectiveLimits.minSandboxes. When effectiveCapacity is not null, this value must be returned in pairs with the maximum value. The value must be non-negative and not greater than the maximum value. The read value is not truncated at the upper limit of 100 for written configurations",
+                    "description_zh": "只读，映射 RM autoScalingStatus.effectiveLimits.minSandboxes。effectiveCapacity 非空时必须与最大值成对返回，取值非负且不大于最大值；读取不按写入配置的 100 上限截断",
+                    "example": "8",
+                    "format": "int32",
+                    "minimum": "0",
+                    "readOnly": true,
+                    "title_en": "当前生效最小实例数",
+                    "title_zh": "当前生效最小实例数",
+                    "type": "integer"
+                  }
+                },
+                "readOnly": true,
+                "title_en": "当前生效实例范围",
+                "title_zh": "当前生效实例范围",
+                "type": "object"
+              },
               "effectivePublicAccessEnabled": {
                 "backendName": "effectivePublicAccessEnabled",
-                "description_en": "The result of combining publicAccessEnabled with the public inbound access upper limit of the workspace. The value is true only when both allow public inbound access. This field only indicates the policy target and does not mean that the public endpoint has been published. The actual status is subject to accessUrls and status",
+                "description_en": "The result of combining publicAccessEnabled with the workspace public inbound access limit. The value is true only when both allow public inbound access. This field only indicates the policy target and does not mean that the public endpoint has been published. The actual status is subject to accessUrls and status",
                 "description_zh": "publicAccessEnabled 与工作空间公网入向上限叠加后的结果：二者均允许时为 true。仅表示策略目标，不代表公网入口已发布完成，实际状态以 accessUrls 与 status 为准",
                 "title_en": "服务端点公网入向的有效期望值",
                 "title_zh": "服务端点公网入向的有效期望值",
@@ -163,46 +213,241 @@
               },
               "elasticityPolicy": {
                 "backendName": "elasticityPolicy",
-                "description_en": "This object is returned only when elastic override values are configured for the service endpoint. You can configure override values for Router-type service endpoints and DEFAULT service endpoints of the GATEWAY_API_WITH_VPC_INGRESS type. If no override values are configured, this object is not returned, which indicates that the source configuration of the agent is inherited. Do not treat the absence of this object as an empty object or a default policy. When this object is returned, all three fields are included",
-                "description_zh": "仅在服务端点设置过弹性覆盖值时返回，可设置的为 Router 类型服务端点与 GATEWAY_API_WITH_VPC_INGRESS 类型的 DEFAULT 服务端点；未设置覆盖值时不返回该对象，表示继承智能体源配置，不得当作空对象或默认策略。返回时三个字段必全",
+                "description_en": "Used for edit backfill. It is not the currently effective upper and lower limits or the actual instance count. The Get operation preferentially returns the saved configuration. If not saved, an endpoint that supports elasticity backfills the base values from the frozen configuration of the expected runtime or the bound version configuration when the runtime is not yet established. Successful publication is not required. The value is null when the source is temporarily unavailable or no applicable configuration exists, but status and statusReason are still returned. The Create and Update operations return only the saved configuration, and the value is null if not saved. The historical base capacity can exceed 100, and the read value is not truncated",
+                "description_zh": "用于编辑回填，不是当前生效上下限或实际实例数。Get 优先返回保存配置；未保存时，支持弹性的 Endpoint 从期望 runtime 冻结配置或尚未建立 runtime 时的绑定版本配置回填基础值，不要求发布成功。来源暂缺或无适用配置时为 null，仍返回 status/statusReason；Create/Update 仅返回已保存配置，未保存时为 null。历史基础容量可超过 100，读取不截断",
+                "nullable": true,
                 "properties": {
+                  "dynamicPolicy": {
+                    "backendName": "dynamicPolicy",
+                    "description_en": "Returns the saved dynamic configuration. If the base configuration before the requirement goes online lacks dynamicPolicy, it is supplemented with enabled=false and policies=[]",
+                    "description_zh": "返回保存的动态配置；需求上线前的基础配置缺 dynamicPolicy 时补为 enabled=false、policies=[]",
+                    "properties": {
+                      "enabled": {
+                        "backendName": "enabled",
+                        "description_en": "Required during creation. If omitted during an update, the original value is retained. Disabling it retains existing policies and restores the base upper and lower limits. Re-enabling it triggers immediate calculation. When finally enabled, policies must not be empty",
+                        "description_zh": "创建时必填；更新时省略保留原值。关闭保留已有策略并恢复基础上下限，重新开启立即计算；最终开启时 policies 不得为空",
+                        "example": "true",
+                        "title_en": "是否启用动态策略",
+                        "title_zh": "是否启用动态策略",
+                        "type": "boolean"
+                      },
+                      "policies": {
+                        "backendName": "policies",
+                        "description_en": "Required during creation. If omitted during an update, the original list is retained. If passed, the entire list is replaced and not merged by ID. To clear the list, you must also ensure that the final enabled value is false. Each item must be complete. Conditional requirements and cross-field constraints are validated by the server. The display order does not indicate priority",
+                        "description_zh": "创建时必填；更新时省略保留原列表，传入即整体替换，不按 id 合并。清空须同时保证最终 enabled=false。每项必须完整，条件必填和跨字段约束由服务端校验；显示顺序不作为优先级",
+                        "items": {
+                          "properties": {
+                            "endTime": {
+                              "backendName": "endTime",
+                              "description_en": "Required only when validity is set to range. The format is the same as startTime, the seconds must be set to 00, and the value must be later than startTime. The interval does not include the end time. If validity is set to forever, the start and end times must be omitted. Valid dates and cross-field constraints are verified by the console",
+                              "description_zh": "仅 validity=range 必填，格式与 startTime 相同，秒位固定 00，必须晚于 startTime；区间不包含结束时刻。forever 必须省略起止时间；合法日期和跨字段约束由 Console 校验",
+                              "example": "2026-12-01T00:00:00",
+                              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T([01][0-9]|2[0-3]):[0-5][0-9]:00$",
+                              "title_en": "有效期结束时间",
+                              "title_zh": "有效期结束时间",
+                              "type": "string"
+                            },
+                            "id": {
+                              "backendName": "id",
+                              "description_en": "Required. It must be unique and stable within the endpoint. It is generated by the frontend when added, and retained during editing and retries",
+                              "description_zh": "必填，Endpoint 内唯一且稳定；新增时由前端生成，编辑和重试保留",
+                              "example": "policy-weekday",
+                              "title_en": "策略标识",
+                              "title_zh": "策略标识",
+                              "type": "string"
+                            },
+                            "priority": {
+                              "backendName": "priority",
+                              "description_en": "Required. 5 indicates normal priority, and 10 indicates high priority. New policies default to normal priority and must be explicitly included during submission. No default value is set by the API. When the final dynamicPolicy.enabled is true, the validity periods of high-priority policies must not overlap, except for end-to-end connections. Long-term high-priority policies can overlap with other high-priority policies. Overlapping drafts can be saved when disabled, and the final configuration is validated when re-enabled. The validity of other fields and trigger conflicts within the policy are always validated. The priority must be explicitly provided",
+                              "description_zh": "必填，5 为常规，10 为高优；新增策略默认选择常规，提交时显式携带，不设置接口默认值。最终 dynamicPolicy.enabled=true 时，高优策略之间有效期不得重叠，首尾相接允许，长期高优与其他高优重叠；关闭时允许保存重叠草稿，重新开启时校验最终配置。其他字段合法性与策略内触发冲突始终校验；priority 必须显式提供",
+                              "enum": [
+                                "5",
+                                "10"
+                              ],
+                              "example": "5",
+                              "format": "int32",
+                              "title_en": "策略优先级",
+                              "title_zh": "策略优先级",
+                              "type": "integer"
+                            },
+                            "repeat": {
+                              "backendName": "repeat",
+                              "description_en": "Required. daily indicates every day, weekly indicates every week, and monthly indicates every month. Only submit the fields corresponding to the specified cycle",
+                              "description_zh": "必填。daily 为每天，weekly 为每星期，monthly 为每月；仅提交对应周期的字段",
+                              "enum": [
+                                "daily",
+                                "weekly",
+                                "monthly"
+                              ],
+                              "example": "weekly",
+                              "title_en": "重复周期",
+                              "title_zh": "重复周期",
+                              "type": "string"
+                            },
+                            "startTime": {
+                              "backendName": "startTime",
+                              "description_en": "Required only when validity is set to range. The start time in the YYYY-MM-DDTHH:mm:ss format in the policy time zone, without a time zone offset. The seconds must be set to 00. The interval includes the start time. When you edit the policy, the existing past start time is retained, and the update or retry is not rejected even if the start time is earlier than the current time",
+                              "description_zh": "仅 validity=range 必填，策略时区下的 YYYY-MM-DDTHH:mm:ss，不带时区偏移，秒位固定 00。区间包含开始时刻；编辑保留已有的过去开始时间，不因其早于当前时间拒绝更新或重试",
+                              "example": "2026-11-01T00:00:00",
+                              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T([01][0-9]|2[0-3]):[0-5][0-9]:00$",
+                              "title_en": "有效期开始时间",
+                              "title_zh": "有效期开始时间",
+                              "type": "string"
+                            },
+                            "timePoints": {
+                              "backendName": "timePoints",
+                              "description_en": "Required and cannot be empty. Each item must be complete. The day of the week or day of the month is configured independently for each item. Within the same policy, daily policies conflict if they have the same time. Weekly and monthly policies conflict only if they have the same time and intersecting date sets. This is validated by the console",
+                              "description_zh": "必填且非空，每项必须完整。星期或月日期由每项独立配置。同一策略内，daily 相同 time 冲突，weekly/monthly 仅在 time 相同且日期集合相交时冲突，由 Console 校验",
+                              "items": {
+                                "properties": {
+                                  "maxInstances": {
+                                    "backendName": "maxInstances",
+                                    "description_en": "Required. The value ranges from 1 to 100",
+                                    "description_zh": "必填，1～100",
+                                    "example": "5",
+                                    "format": "int32",
+                                    "maximum": "100",
+                                    "minimum": "1",
+                                    "title_en": "目标最大实例数",
+                                    "title_zh": "目标最大实例数",
+                                    "type": "integer"
+                                  },
+                                  "minInstances": {
+                                    "backendName": "minInstances",
+                                    "description_en": "Required. The value ranges from 0 to 100 and must not be greater than the maxInstances value in the same item",
+                                    "description_zh": "必填，0～100，且不大于同项 maxInstances",
+                                    "example": "1",
+                                    "format": "int32",
+                                    "maximum": "100",
+                                    "minimum": "0",
+                                    "title_en": "目标最小实例数",
+                                    "title_zh": "目标最小实例数",
+                                    "type": "integer"
+                                  },
+                                  "monthDays": {
+                                    "backendName": "monthDays",
+                                    "description_en": "Required only for each trigger point of the monthly cycle. The list must be non-empty and contain unique integers from 1 to 31. Each day is selected independently. If a selected day does not exist in a specific month, the trigger does not occur and is not postponed to the end of the month. This field must be omitted for other cycles",
+                                    "description_zh": "仅 monthly 的每个触发点必填，非空且去重，整数 1～31；每行独立选择，月份不存在的日期不触发，不顺延到月末。其他周期必须省略",
+                                    "items": {
+                                      "description_en": "The day of the month, ranging from 1 to 31. If the specified day does not exist in a specific month, the trigger does not occur",
+                                      "description_zh": "月内日期，范围为 1～31，所在月份不存在的日期不触发",
+                                      "example": "15",
+                                      "format": "int32",
+                                      "title_en": "月内日期，范围为 1～31，所在月份不存在的日期不触发。",
+                                      "title_zh": "月内日期，范围为 1～31，所在月份不存在的日期不触发。",
+                                      "type": "integer"
+                                    },
+                                    "title_en": "月内日期列表",
+                                    "title_zh": "月内日期列表",
+                                    "type": "array"
+                                  },
+                                  "time": {
+                                    "backendName": "time",
+                                    "description_en": "Required. The trigger time in the HH:mm:ss format, interpreted in the time zone of the associated policy. The time is accurate to the minute, and the seconds must be set to 00",
+                                    "description_zh": "必填，HH:mm:ss，按所属策略时区解释，精确到分钟，秒位固定 00",
+                                    "example": "09:00:00",
+                                    "pattern": "^([01][0-9]|2[0-3]):[0-5][0-9]:00$",
+                                    "title_en": "触发时间",
+                                    "title_zh": "触发时间",
+                                    "type": "string"
+                                  },
+                                  "weekdays": {
+                                    "backendName": "weekdays",
+                                    "description_en": "Required only for each trigger point of weekly policies. It cannot be empty and must be deduplicated. Valid values are integers from 1 to 7, where 1 represents Monday and 7 represents Sunday. Each row is selected independently. It must be omitted for other cycles",
+                                    "description_zh": "仅 weekly 的每个触发点必填，非空且去重，整数 1～7，1 为周一、7 为周日；每行独立选择。其他周期必须省略",
+                                    "items": {
+                                      "description_en": "The weekday number, where 1 represents Monday and 7 represents Sunday",
+                                      "description_zh": "星期序号，1 为周一，7 为周日",
+                                      "example": "1",
+                                      "format": "int32",
+                                      "title_en": "星期序号，1 为周一，7 为周日。",
+                                      "title_zh": "星期序号，1 为周一，7 为周日。",
+                                      "type": "integer"
+                                    },
+                                    "title_en": "星期列表",
+                                    "title_zh": "星期列表",
+                                    "type": "array"
+                                  }
+                                },
+                                "type": "object"
+                              },
+                              "title_en": "周期触发时间点",
+                              "title_zh": "周期触发时间点",
+                              "type": "array"
+                            },
+                            "timeZone": {
+                              "backendName": "timeZone",
+                              "description_en": "Required. A valid IANA time zone. All dates and times in this policy are interpreted in this time zone",
+                              "description_zh": "必填，合法 IANA 时区。本策略所有日期和时间均在该时区下解释",
+                              "example": "Asia/Shanghai",
+                              "title_en": "策略时区",
+                              "title_zh": "策略时区",
+                              "type": "string"
+                            },
+                            "validity": {
+                              "backendName": "validity",
+                              "description_en": "Required. Valid values: forever for long-term validity, and range for short-term validity. After expiration, the policy and its trigger results are excluded from the current calculation, and the remaining policies are recalculated. If no candidate is available, the baseline value is restored. The saved configurations are not automatically deleted",
+                              "description_zh": "必填，forever 为长期有效，range 为短期有效。到期后策略及其触发结果退出当前计算并重算剩余策略；无候选恢复基础值，保存的配置不自动删除",
+                              "enum": [
+                                "forever",
+                                "range"
+                              ],
+                              "example": "range",
+                              "title_en": "策略有效期类型",
+                              "title_zh": "策略有效期类型",
+                              "type": "string"
+                            }
+                          },
+                          "type": "object"
+                        },
+                        "title_en": "完整动态策略列表",
+                        "title_zh": "完整动态策略列表",
+                        "type": "array"
+                      }
+                    },
+                    "title_en": "动态策略配置",
+                    "title_zh": "动态策略配置",
+                    "type": "object"
+                  },
                   "enabled": {
                     "backendName": "enabled",
-                    "description_en": "Specifies whether elasticity is enabled",
-                    "description_zh": "是否开启弹性",
+                    "description_en": "Independent of dynamicPolicy.enabled. If omitted during an update, the original value is retained",
+                    "description_zh": "与 dynamicPolicy.enabled 独立。更新时省略表示保留原值",
                     "example": "true",
-                    "title_en": "是否开启弹性",
-                    "title_zh": "是否开启弹性",
+                    "title_en": "是否开启整个自动弹性模式",
+                    "title_zh": "是否开启整个自动弹性模式",
                     "type": "boolean"
                   },
                   "maxSandboxCount": {
                     "backendName": "maxSandboxCount",
-                    "description_en": "The maximum number of instances. The value must be greater than or equal to 1",
-                    "description_zh": "最大实例数，不小于 1",
+                    "description_en": "The saved or backfilled base maximum instance count. It must not be less than minSandboxCount. Historical values can exceed 100, and the read value is not truncated. The base value is used when dynamic scaling is disabled or no candidates are available",
+                    "description_zh": "保存或回填的基础最大实例数，不小于 minSandboxCount。历史值可超过 100，读取不截断；动态关闭或无候选时使用基础值",
                     "example": "5",
                     "format": "int32",
-                    "title_en": "最大实例数，不小于 1",
-                    "title_zh": "最大实例数，不小于 1",
+                    "minimum": "0",
+                    "title_en": "保存的基础最大实例数",
+                    "title_zh": "保存的基础最大实例数",
                     "type": "integer"
                   },
                   "minSandboxCount": {
                     "backendName": "minSandboxCount",
-                    "description_en": "The minimum number of instances. The value must be greater than or equal to 0 and less than or equal to the value of maxSandboxCount",
-                    "description_zh": "最小实例数，不小于 0 且不大于 maxSandboxCount",
+                    "description_en": "The saved or backfilled base minimum instance count. It must be non-negative and not greater than maxSandboxCount. Historical values can exceed 100, and the read value is not truncated. A newly written complete configuration must still meet the 0 to 100 range",
+                    "description_zh": "保存或回填的基础最小实例数，非负且不大于 maxSandboxCount。历史值可超过 100，读取不截断；新写入的完整配置仍须满足 0～100",
                     "example": "1",
                     "format": "int32",
-                    "title_en": "最小实例数，不小于 0 且不大于 maxSandboxCount",
-                    "title_zh": "最小实例数，不小于 0 且不大于 maxSandboxCount",
+                    "minimum": "0",
+                    "title_en": "保存的基础最小实例数",
+                    "title_zh": "保存的基础最小实例数",
                     "type": "integer"
                   }
                 },
-                "title_en": "服务端点生效的弹性策略覆盖值",
-                "title_zh": "服务端点生效的弹性策略覆盖值",
+                "title_en": "服务端点保存的完整弹性配置",
+                "title_zh": "服务端点保存的完整弹性配置",
                 "type": "object"
               },
               "endpointType": {
                 "backendName": "endpointType",
-                "description_en": "The service endpoint type. DEFAULT indicates the default endpoint created and maintained by the platform. NAMED indicates the named endpoint explicitly created by the user",
+                "description_en": "The service endpoint type. DEFAULT indicates a default endpoint created and maintained by the platform. NAMED indicates a named endpoint explicitly created by a user",
                 "description_zh": "服务端点类型。DEFAULT 表示由平台创建并维护的默认端点，NAMED 表示用户显式创建的命名端点",
                 "enum": [
                   "DEFAULT",
@@ -217,14 +462,14 @@
               },
               "name": {
                 "backendName": "name",
-                "description_en": "The service endpoint name. The name must be unique within the workspace and be 1 to 128 characters in length",
+                "description_en": "The name of the service endpoint. It must be unique within the workspace and 1 to 128 characters in length",
                 "description_zh": "服务端点名称。在工作空间内唯一，长度为 1~128 个字符",
                 "example": "my-agent-endpoint",
                 "type": "string"
               },
               "publicAccessEnabled": {
                 "backendName": "publicAccessEnabled",
-                "description_en": "The expected public inbound access configured by the user on the service endpoint. For historical service endpoints where this value is not configured, true is returned. This field only indicates the configuration expectation. The actual availability of the public URL is subject to accessUrls and status",
+                "description_en": "The expected public inbound access setting configured by the user on the service endpoint. For historical service endpoints where this setting was not configured, true is returned. This field only indicates the configuration expectation. The actual availability of the public IP address is subject to accessUrls and status",
                 "description_zh": "用户在服务端点上设置的公网入向期望；未设置过的历史服务端点按 true 返回。仅表示配置期望，实际公网地址是否可用以 accessUrls 与 status 为准",
                 "title_en": "服务端点公网入向开关的期望值",
                 "title_zh": "服务端点公网入向开关的期望值",
@@ -246,7 +491,7 @@
               },
               "status": {
                 "backendName": "status",
-                "description_en": "The service endpoint status. Valid values: CREATING, READY, UPDATING, DEGRADED, DISABLED, and DELETING",
+                "description_en": "The status of the service endpoint. Valid values: CREATING, READY, UPDATING, DEGRADED, DISABLED, and DELETING",
                 "description_zh": "服务端点状态。可选值：CREATING、READY、UPDATING、DEGRADED、DISABLED、DELETING",
                 "enum": [
                   "CREATING",
@@ -269,33 +514,33 @@
               },
               "statusReason": {
                 "backendName": "statusReason",
-                "description_en": "The reason for the service endpoint status. The specific reason is returned when the status is abnormal",
+                "description_en": "The reason for the service endpoint status. Returns the specific reason when the status is abnormal",
                 "description_zh": "服务端点状态原因。状态异常时返回具体原因",
                 "example": "ServiceEndpoint.Provider.Unavailable: no provider for the target type",
                 "type": "string"
               },
               "target": {
                 "backendName": "target",
-                "description_en": "The target route configuration of the service endpoint",
+                "description_en": "The target routing configuration of the service endpoint",
                 "description_zh": "服务端点的目标路由配置",
                 "properties": {
                   "agentId": {
                     "backendName": "agentId",
-                    "description_en": "The target agent ID. This parameter is returned when the target type is AGENT_VERSION",
+                    "description_en": "The ID of the target agent. Returned when the target type is AGENT_VERSION",
                     "description_zh": "目标智能体 ID。目标类型为 AGENT_VERSION 时返回",
                     "example": "agent-123456",
                     "type": "string"
                   },
                   "agentVersion": {
                     "backendName": "agentVersion",
-                    "description_en": "The target agent version number. This parameter is returned when the target type is AGENT_VERSION",
+                    "description_en": "The version number of the target agent. Returned when the target type is AGENT_VERSION",
                     "description_zh": "目标智能体版本号。目标类型为 AGENT_VERSION 时返回",
                     "example": "v1",
                     "type": "string"
                   },
                   "collaborationComponent": {
                     "backendName": "collaborationComponent",
-                    "description_en": "The collaboration component type. This parameter is returned when the target type is TEAM_COLLABORATION",
+                    "description_en": "The collaboration component type. Returned when the target type is TEAM_COLLABORATION",
                     "description_zh": "协作组件类型。目标类型为 TEAM_COLLABORATION 时返回",
                     "enum": [
                       "MATRIX_CLIENT",
@@ -312,7 +557,7 @@
                   },
                   "resourceBindingId": {
                     "backendName": "resourceBindingId",
-                    "description_en": "The workspace resource binding ID associated with the target collaboration component. This parameter is returned when the target type is TEAM_COLLABORATION",
+                    "description_en": "The workspace resource binding ID associated with the target collaboration component. Returned when the target type is TEAM_COLLABORATION",
                     "description_zh": "目标协作组件关联的工作空间资源绑定 ID。目标类型为 TEAM_COLLABORATION 时返回",
                     "example": "wrb-123456",
                     "type": "string"
@@ -337,7 +582,7 @@
               },
               "updatedAt": {
                 "backendName": "updatedAt",
-                "description_en": "The time of the last modification in UTC format compliant with RFC 3339",
+                "description_en": "The time of the last modification in UTC format based on RFC 3339",
                 "description_zh": "最近一次修改的时间，采用 RFC 3339 格式的 UTC 时间",
                 "example": "2026-08-12T03:04:05Z",
                 "type": "string"
@@ -362,7 +607,7 @@
           },
           "message": {
             "backendName": "message",
-            "description_en": "The response message. An error description is returned if the request fails",
+            "description_en": "The response message. Returns an error description if the request fails",
             "description_zh": "响应消息。请求失败时返回错误描述",
             "example": "success",
             "type": "string"
