@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun eas POST /api/v2/services/cn-shanghai/foo/autoscaler --region cn-hangzhou --header \"Content-Type=application/json\"",
+  "camel_example": "aliyun eas POST /api/v2/services/cn-shanghai/foo/autoscaler --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"min\":2,\"max\":8,\"scaleStrategies\":[{\"metricName\":\"qps\",\"threshold\":10.0}]}'",
   "cmd_full_name": "eas create-service-auto-scaler",
   "cmd_name": "create-service-auto-scaler",
   "deprecated": false,
-  "description_en": "Enables the Autoscaler feature and creates an Autoscaler controller for a service",
+  "description_en": "Enables the auto-scaling feature for a service and creates an auto-scaling controller for the service",
   "description_zh": "开通服务自动扩缩容功能，为服务创建自动扩缩控制器",
-  "kebab_example": "aliyun eas create-service-auto-scaler --cluster-id cn-shanghai --service-name foo --region cn-hangzhou",
+  "kebab_example": "aliyun eas create-service-auto-scaler --cluster-id cn-shanghai --service-name foo --min 2 --max 8 --scale-strategies metricName=qps threshold=10.0 --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "CreateServiceAutoScaler",
@@ -30,7 +30,7 @@
   "parameters": [
     {
       "example": "cn-shanghai",
-      "help_en": "The ID of the region where the service is deployed",
+      "help_en": "The region where the service is located",
       "help_zh": "服务所在地域",
       "location": "path",
       "name": "cluster_id",
@@ -43,7 +43,7 @@
     },
     {
       "example": "foo",
-      "help_en": "The service name. For more information about how to query the service name, see https://help.aliyun.com/document_detail/412109.html",
+      "help_en": "The name of the service. For more information about how to view the service name, see https://help.aliyun.com/document_detail/412109.html",
       "help_zh": "服务名称。如何查看服务名称，请参见https://help.aliyun.com/document_detail/412109.html",
       "location": "path",
       "name": "service_name",
@@ -60,7 +60,7 @@
           "fields": [
             {
               "example": "600",
-              "help_en": "The time window that is required before the number of instances is reduced to 0. The number of instances can be reduced to 0 only if no request is available or no traffic exists in the specified time window. Default value: 600",
+              "help_en": "The grace period before scaling in to zero. When the metrics meet the conditions for scaling in to zero, the scale-in to zero is executed after the grace period elapses. Default value: 600",
               "help_zh": "缩容到0之前的等待期。\n当指标满足缩容到0的条件时，需要经过等待期的时间，才会执行缩容到0。默认值为600",
               "name": "scale_down_grace_period_seconds",
               "options": [
@@ -72,7 +72,7 @@
             },
             {
               "example": "1",
-              "help_en": "The number of instances that you want to create at a time if the number of instances is 0. Default value: 1",
+              "help_en": "The number of instances created at a time when scaling out from zero. Default value: 1",
               "help_zh": "当从0开始扩容时，一次性创建的实例数。默认值为1",
               "name": "scale_up_activation_replicas",
               "options": [
@@ -83,7 +83,7 @@
               "type": "int"
             }
           ],
-          "help_en": "The operation that reduces the number of instances to 0",
+          "help_en": "The behavior when scaling in to zero",
           "help_zh": "缩容到0时的行为",
           "name": "on_zero",
           "options": [
@@ -97,7 +97,7 @@
           "fields": [
             {
               "example": "300",
-              "help_en": "The time window that is required before the scale-in operation is performed. The scale-in operation can be performed only if the specified metric drops below the specified threshold in the specified time window. Default value: 300",
+              "help_en": "The stabilization window period for scale-in. Default value: 300. Scale-in is executed only when the metrics do not meet the specified conditions over the past period of time",
               "help_zh": "缩容稳定窗口期时间，默认值为300。\n只有当过去一段时间内的指标均不满足条件，才会执行缩容",
               "name": "stabilization_window_seconds",
               "options": [
@@ -108,7 +108,7 @@
               "type": "int"
             }
           ],
-          "help_en": "The scale-in operation",
+          "help_en": "The behavior during scale-in",
           "help_zh": "缩容时的行为",
           "name": "scale_down",
           "options": [
@@ -122,7 +122,7 @@
           "fields": [
             {
               "example": "0",
-              "help_en": "The time window that is required before the scale-out operation is performed. The scale-out operation can be performed only if the specified metric exceeds the specified threshold in the specified time window. Default value: 0",
+              "help_en": "The stabilization window period for scale-out. Default value: 0. Scale-out is executed only when the metrics meet the specified conditions over the past period of time",
               "help_zh": "扩容稳定窗口期时间，默认值为0。\n只有当过去一段时间内的指标均满足条件，才会执行扩容",
               "name": "stabilization_window_seconds",
               "options": [
@@ -133,7 +133,7 @@
               "type": "int"
             }
           ],
-          "help_en": "The scale-out operation",
+          "help_en": "The behavior during scale-out",
           "help_zh": "扩容时的行为",
           "name": "scale_up",
           "options": [
@@ -144,7 +144,7 @@
           "type": "object"
         }
       ],
-      "help_en": "The Autoscaler operation",
+      "help_en": "The behavior during auto-scaling",
       "help_zh": "自动扩缩容时的行为",
       "location": "body",
       "name": "behavior",
@@ -158,7 +158,7 @@
     },
     {
       "example": "8",
-      "help_en": "The maximum number of instances in the service. The value of max must be greater than the value of min",
+      "help_en": "The maximum number of instances. The value must be greater than the minimum number of instances",
       "help_zh": "最大实例数，需要大于Min Replica",
       "location": "body",
       "name": "max",
@@ -172,7 +172,7 @@
     },
     {
       "example": "2",
-      "help_en": "The minimum number of instances in the service",
+      "help_en": "The minimum number of instances. The value must be greater than 0",
       "help_zh": "最小实例数，需要大于0",
       "location": "body",
       "name": "min",
@@ -189,7 +189,7 @@
         "fields": [
           {
             "example": "qps",
-            "help_en": "The name of the metric for triggering auto scaling. Valid values:\n\nqps: the queries per second (qps) for an individual instance.\n\ncpu: the cpu utilization.\n\ngpu[util]: gpu utilization",
+            "help_en": "The name of the metric. Valid values:\nqps: the queries per second (QPS) threshold per instance\ncpu: the CPU utilization threshold\ngpu[util]: the GPU utilization threshold",
             "help_zh": "指标名称，取值如下：\nqps：单实例qps伸缩阈值。\ncpu：cpu利用率阈值。\ngpu[util]：gpu利用率阈值",
             "name": "metric_name",
             "options": [
@@ -201,7 +201,7 @@
           },
           {
             "example": "demo_svc",
-            "help_en": "The service for which the metric is specified. If you do not set this parameter, the current service is specified by default",
+            "help_en": "The service to which the metric belongs. If this parameter is not specified, the current service is used by default",
             "help_zh": "指标所属服务，不配置默认为当前服务",
             "name": "service",
             "options": [
@@ -213,7 +213,7 @@
           },
           {
             "example": "10",
-            "help_en": "The threshold of the metric that triggers auto scaling.\n\nIf you set metricName to qps, scale-out is triggered when the average qps for a single instance is greater than this threshold.\n\nIf you set metricName to cpu, scale-out is triggered when the average cpu utilization for a single instance is greater than this threshold.\n\nIf you set metricName to gpu, scale-out is triggered when the average gpu utilization for a single instance is greater than this threshold",
+            "help_en": "The threshold that triggers auto-scaling.\nIf the metric name is set to qps, scale-out is triggered when the average QPS per instance exceeds this value.\nIf the metric name is set to cpu, scale-out is triggered when the average CPU utilization per instance exceeds this value.\nIf the metric name is set to gpu[util], scale-out is triggered when the average GPU utilization per instance exceeds this value",
             "help_zh": "触发自动伸缩阈值。\n指标名称配置为qps：当单实例的平均qps大于该值时会触发扩容。\n指标名称配置为cpu：当单实例的平均cpu使用率大于该值时会触发扩容。\n指标名称配置为gpu[util]：当单实例的平均gpu使用率大于该值时会触发扩容",
             "name": "threshold",
             "options": [
@@ -226,7 +226,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The service for which the metric is specified. If you do not set this parameter, the current service is specified by default",
+      "help_en": "The list of scaling policies",
       "help_zh": "伸缩策略列表",
       "location": "body",
       "name": "scale_strategies",
@@ -245,11 +245,11 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response parameters",
+        "description_en": "The response",
         "description_zh": "返回结果",
         "properties": {
           "Message": {
-            "description_en": "The returned message",
+            "description_en": "The message returned in the response",
             "description_zh": "请求返回信息",
             "example": "Succeed to auto scale service [foo]",
             "type": "string"
