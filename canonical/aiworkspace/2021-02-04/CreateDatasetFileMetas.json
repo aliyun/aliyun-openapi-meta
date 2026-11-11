@@ -1,5 +1,5 @@
 {
-  "camel_example": "aliyun aiworkspace POST /api/v1/datasets/d-lfd60v0p0000ujtsdx/datasetfilemetas --region cn-hangzhou --header \"Content-Type=application/json\"",
+  "camel_example": "aliyun aiworkspace POST /api/v1/datasets/d-lfd60v0p0000ujtsdx/datasetfilemetas --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"DatasetFileMetas\":[{\"ContentType\":\"image/jpeg\",\"FileType\":\"image\",\"Uri\":\"oss://*****-test/dataset/1653421.jpg\\nnas://0e25d***dff/dataset/1653421.jpg\",\"FileUpdateTime\":\"2025-01-12T14:36:01Z\",\"FileFingerPrint\":\"D41D8CD98F*****E9800998ECF8\"}],\"WorkspaceId\":\"478**\",\"DatasetVersion\":\"v1\"}'",
   "cmd_full_name": "aiworkspace create-dataset-file-metas",
   "cmd_name": "create-dataset-file-metas",
   "components": {
@@ -42,9 +42,9 @@
     }
   },
   "deprecated": false,
-  "description_en": "Creates file metadata records in a dataset in batches",
+  "description_en": "Creates file metadata records for a dataset in batches",
   "description_zh": "批量创建数据集下的文件元数据记录",
-  "kebab_example": "aliyun aiworkspace create-dataset-file-metas --dataset-id d-lfd60v0p0000ujtsdx --region cn-hangzhou",
+  "kebab_example": "aliyun aiworkspace create-dataset-file-metas --dataset-id d-lfd60v0p0000ujtsdx --workspace-id '478**' --dataset-version v1 --dataset-file-metas '[{\"ContentType\":\"image/jpeg\",\"FileType\":\"image\",\"Uri\":\"oss://*****-test/dataset/1653421.jpg\\nnas://0e25d***dff/dataset/1653421.jpg\",\"FileUpdateTime\":\"2025-01-12T14:36:01Z\",\"FileFingerPrint\":\"D41D8CD98F*****E9800998ECF8\"}]' --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "CreateDatasetFileMetas",
@@ -68,7 +68,7 @@
   "parameters": [
     {
       "example": "d-lfd60v0p****ujtsdx",
-      "help_en": "The dataset ID. For information about how to obtain the dataset ID, see https://help.aliyun.com/document_detail/457222.html",
+      "help_en": "The dataset ID. For more information about how to obtain the dataset ID, see https://help.aliyun.com/document_detail/457222.html",
       "help_zh": "数据集ID。如何获取数据集ID，详情请参见https://help.aliyun.com/document_detail/457222.html",
       "location": "path",
       "name": "dataset_id",
@@ -95,6 +95,17 @@
             "type": "string"
           },
           {
+            "enum": [
+              "image/bmp",
+              "image/gif",
+              "image/heic ",
+              "image/jpeg",
+              "image/png",
+              "image/svg+xml",
+              "image/tiff",
+              "image/webp",
+              "image/x-icon"
+            ],
             "example": "image/jpeg",
             "help_en": "The MIME type of the file. Contains Type and SubType",
             "help_zh": "文件的MIME类型。包含Type和SubType",
@@ -155,6 +166,13 @@
             "type": "string"
           },
           {
+            "enum": [
+              "application",
+              "audio",
+              "image",
+              "text",
+              "video"
+            ],
             "example": "image",
             "help_en": "The file type. Same as MIME Type",
             "help_zh": "文件类型。与MIME Type相同",
@@ -217,7 +235,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The list of file metadata entries",
+      "help_en": "The list of file metadata",
       "help_zh": "文件元数据内容列表",
       "location": "body",
       "name": "dataset_file_metas",
@@ -231,7 +249,7 @@
     },
     {
       "example": "v1",
-      "help_en": "The dataset version name",
+      "help_en": "The name of the dataset version",
       "help_zh": "数据集版本名称",
       "location": "body",
       "name": "dataset_version",
@@ -245,7 +263,7 @@
     },
     {
       "example": "478**",
-      "help_en": "The ID of the workspace where the dataset resides. For information about how to obtain the workspace ID, see https://help.aliyun.com/document_detail/449124.html",
+      "help_en": "The ID of the workspace to which the dataset belongs. For more information about how to obtain the workspace ID, see https://help.aliyun.com/document_detail/449124.html",
       "help_zh": "数据集所在工作空间ID。如何获取工作空间ID，请参见https://help.aliyun.com/document_detail/449124.html",
       "location": "body",
       "name": "workspace_id",
@@ -264,17 +282,17 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response",
+        "description_en": "The request result",
         "description_zh": "请求结果",
         "properties": {
           "FailedDetails": {
             "backendName": "FailedDetails",
-            "description_en": "The list of file metadata entries that failed to be created",
+            "description_en": "The list of file metadata records that failed to be created",
             "description_zh": "创建失败的文件元数据列表",
             "itemName": "FailedDetails",
             "items": {
               "$ref": "#/components/schemas/DatasetFileMetaResponse",
-              "description_en": "The details of a file metadata entry that failed to be created",
+              "description_en": "The details of the file metadata records that failed to be created",
               "description_zh": "创建失败的文件元数据详情"
             },
             "type": "array"
@@ -290,18 +308,22 @@
           },
           "Status": {
             "backendName": "Status",
-            "description_en": "The status of the batch metadata creation result. A value of true indicates that all entries are created. If the value is false, check FailedDetails",
+            "description_en": "The status of the batch metadata creation. A value of true indicates that all metadata records are created successfully. If the value is false, check FailedDetails",
             "description_zh": "本批元数据创建结果的状态。全部成功为true，如果为false，需要查看FailedDetails",
+            "enumValueTitles": {
+              "false": "失败",
+              "true": "成功"
+            },
             "example": "true",
             "type": "boolean"
           },
           "SucceedDetails": {
-            "description_en": "The list of file metadata entries that were created",
+            "description_en": "The list of file metadata records that are successfully created",
             "description_zh": "创建成功的文件元数据列表",
             "itemName": "SucceedDetails",
             "items": {
               "$ref": "#/components/schemas/DatasetFileMetaResponse",
-              "description_en": "The details of a file metadata entry that was created",
+              "description_en": "The details of the file metadata records that are successfully created",
               "description_zh": "创建成功的文件元数据详情"
             },
             "type": "array"
