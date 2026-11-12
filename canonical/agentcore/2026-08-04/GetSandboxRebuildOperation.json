@@ -3,7 +3,7 @@
   "cmd_full_name": "agentcore get-sandbox-rebuild-operation",
   "cmd_name": "get-sandbox-rebuild-operation",
   "deprecated": false,
-  "description_en": "Queries the overall result of a specified sandbox rebuild task. Always use the initial operationId returned by RebuildSandbox. You do not need to track the rebuild task and subsequent creation tasks separately. Only a status of SUCCEEDED indicates completion. UNKNOWN, missing status, or query exceptions must not be treated as success, and the rebuild must not be automatically resubmitted",
+  "description_en": "Queries the overall result of a specified sandbox rebuild task. Always use the initial operationId returned by RebuildSandbox without tracking the rebuild task and subsequent creation tasks separately. Only the SUCCEEDED status indicates completion. Do not treat UNKNOWN, missing status, or query exceptions as success, and do not automatically resubmit the rebuild",
   "description_zh": "查询指定 Sandbox 重建任务的整体结果。始终使用 RebuildSandbox 返回的首次 operationId，无需分别跟踪重建任务和后续创建任务。只有 status 为 SUCCEEDED 才表示完成；UNKNOWN、状态缺失或查询异常不能按成功处理，也不要自动重新提交重建",
   "kebab_example": "aliyun agentcore get-sandbox-rebuild-operation --workspace-id ws-4fff1234448849b70000 --agent-id agent-3677a577b6854f8aa4da1ed98caa0000 --sandbox-id 01a1b56a-b00f-7aa3-bacf-cc9d04b00000 --operation-id 01a1be92-7fa4-76b2-a871-b376d6d00000 --region cn-hangzhou",
   "method": "GET",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "se-7f3a92c1",
-      "help_en": "The service endpoint ID. This parameter is optional. If specified, the operation targets the runtime instance corresponding to the endpoint under the agent. If omitted, the default latest runtime identity is used. Pass the endpoint ID, not the endpoint name. This parameter must remain consistent when querying instances, submitting rebuilds, and querying tasks",
+      "help_en": "The service registration endpoint ID. This parameter is optional. If specified, the operation targets the runtime instance corresponding to the endpoint under the agent. If omitted, the default latest runtime identity is used. Pass the endpoint ID instead of the endpoint name. Keep this parameter consistent when querying instances, committing rebuilds, and querying nodes",
       "help_zh": "服务接入点 ID，可选。指定时操作该智能体下接入点对应的运行实例；省略时使用默认 latest 运行身份。传入接入点 ID，而非接入点名称。查询实例、提交重建和查询任务时须保持该参数一致",
       "location": "query",
       "name": "service_endpoint_id",
@@ -61,7 +61,7 @@
     },
     {
       "example": "01a1b56a-b00f-7aa3-bacf-cc9d04b0****",
-      "help_en": "The sandbox ID. Use the instance identifier returned by ListSandboxes. The sandbox must belong to the runtime scope corresponding to the specified agent and service endpoint",
+      "help_en": "The sandbox ID. Use the instance identity returned by ListSandboxes. The sandbox must belong to the runtime scope corresponding to the specified agent and service registration endpoint",
       "help_zh": "Sandbox ID。使用 ListSandboxes 返回的实例标识，且须属于指定智能体和服务接入点对应的运行范围",
       "location": "path",
       "name": "sandbox_id",
@@ -95,7 +95,7 @@
         "properties": {
           "code": {
             "backendName": "code",
-            "description_en": "The result code of this API request. A successful request returns SUCCESS. Query the asynchronous task result separately",
+            "description_en": "The result code of the API request. A successful request returns SUCCESS. Query the asynchronous task result separately",
             "description_zh": "本次接口请求的结果码。成功请求返回 SUCCESS；异步任务结果另行查询",
             "example": "SUCCESS",
             "type": "string"
@@ -107,19 +107,19 @@
             "properties": {
               "error": {
                 "backendName": "error",
-                "description_en": "The publicly displayable task error. Returned when the task fails, is canceled, or is overridden by subsequent operations. This field can be empty in other states",
+                "description_en": "The publicly accessible node error. This error is returned when the node fails, is canceled, or subsequent operations override it. It can be empty in other states",
                 "description_zh": "可公开展示的任务错误。失败、取消或被后续操作替代时返回；其他状态下可为空",
                 "properties": {
                   "code": {
                     "backendName": "code",
-                    "description_en": "The task error code. Used to distinguish between rebuild failures, subsequent instance creation failures, cancellations, or supersessions",
+                    "description_en": "The task error code. This code is used to distinguish between rebuild failures, subsequent instance creation failures, cancellations, or supersessions",
                     "description_zh": "任务错误码，用于区分重建失败、后续实例创建失败、取消或被替代等情况",
                     "example": "SandboxRebuild.Failed",
                     "type": "string"
                   },
                   "message": {
                     "backendName": "message",
-                    "description_en": "The publicly displayable task error message. Retain the task ID for troubleshooting",
+                    "description_en": "The publicly accessible task error message. Keep the task ID for troubleshooting",
                     "description_zh": "可公开展示的任务错误说明。请保留任务 ID 以便排查",
                     "example": "The Sandbox rebuild did not complete. Contact support with the operation ID.",
                     "type": "string"
@@ -149,7 +149,7 @@
               },
               "status": {
                 "backendName": "status",
-                "description_en": "The overall rebuild status. Valid values:\nPENDING: Waiting to be processed.\nRUNNING: Executing.\nSUCCEEDED: Overall success.\nFAILED: Failed.\nCANCELED: Canceled.\nSUPERSEDED: Overridden by subsequent operations.\nUNKNOWN: Unable to confirm.\nOnly SUCCEEDED indicates completion. UNKNOWN, missing status, or query exceptions must not be treated as success, and the rebuild must not be automatically resubmitted",
+                "description_en": "The overall rebuild status. Valid values:\nPENDING: Waiting to be processed.\nRUNNING: execute in progress.\nSUCCEEDED: Overall success.\nFAILED: Failed.\nCANCELED: Canceled.\nSUPERSEDED: override by subsequent operations.\nUNKNOWN: Unconfirmed.\nOnly SUCCEEDED indicates completion. Do not treat UNKNOWN, missing status, or query exceptions as success, and do not automatically resubmit the rebuild",
                 "description_zh": "重建整体状态。PENDING：等待处理；RUNNING：执行中；SUCCEEDED：整体成功；FAILED：失败；CANCELED：已取消；SUPERSEDED：已被后续操作替代；UNKNOWN：无法确认。只有 SUCCEEDED 表示完成。UNKNOWN、状态缺失或查询异常不得按成功处理，也不得自动重新提交重建",
                 "enum": [
                   "PENDING",
@@ -179,7 +179,7 @@
           },
           "httpStatusCode": {
             "backendName": "httpStatusCode",
-            "description_en": "The HTTP status code corresponding to this API request",
+            "description_en": "The HTTP status code of the API request",
             "description_zh": "本次接口请求对应的 HTTP 状态码",
             "example": "200",
             "format": "int32",
@@ -187,21 +187,21 @@
           },
           "message": {
             "backendName": "message",
-            "description_en": "The result message of this API request. This does not indicate that the asynchronous rebuild task is completed",
+            "description_en": "The result message of the API request. This message does not indicate that the asynchronous rebuild task is completed",
             "description_zh": "本次接口请求的结果说明，不表示异步重建任务已完成",
             "example": "success",
             "type": "string"
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The request ID. Used to trace this API call",
+            "description_en": "The request ID used to trace the API call",
             "description_zh": "请求 ID，用于定位本次接口调用",
             "example": "01A1BE93-46A7-1A2A-BD62-159FCDAA****",
             "type": "string"
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether this API request is successful. A value of true does not mean that the sandbox rebuild is completed",
+            "description_en": "Indicates whether the API request is successful. A value of true does not indicate that the sandbox rebuild is completed",
             "description_zh": "本次接口请求是否成功。为 true 不代表 Sandbox 重建已完成",
             "type": "boolean"
           }
