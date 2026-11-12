@@ -1,11 +1,11 @@
 {
-  "camel_example": "",
+  "camel_example": "aliyun apig GET /v1/gateways/gw-123456/quota-rules/qr-123456/subjects/cs-123456/usage/export-tasks/finops-export-abcdef1234567890 --region cn-hangzhou --header \"Content-Type=application/json\"",
   "cmd_full_name": "apig get-gateway-quota-rule-subject-usage-export-task",
   "cmd_name": "get-gateway-quota-rule-subject-usage-export-task",
   "deprecated": false,
-  "description_en": "Queries the status, processing progress, failure cause, and file download information of an export task for quota rule subject consumption details",
+  "description_en": "Queries the status, processing progress, failure cause, and file download information of an export task for the usage details of a quota rule subject",
   "description_zh": "查询配额规则主体消费明细导出任务的状态、处理进度、失败原因及文件下载信息",
-  "kebab_example": "",
+  "kebab_example": "aliyun apig get-gateway-quota-rule-subject-usage-export-task --gateway-id gw-123456 --rule-id qr-123456 --subject-id cs-123456 --task-id finops-export-abcdef1234567890 --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
   "name": "GetGatewayQuotaRuleSubjectUsageExportTask",
@@ -48,7 +48,7 @@
     },
     {
       "example": "cs-123456",
-      "help_en": "The consumption subject ID. This parameter is required and must be the same as the subjectId passed when the task was created. Consumers use IDs with the cs- prefix, and consumer groups use IDs with the csg- prefix",
+      "help_en": "The consumer subject ID. This parameter is required and must be the same as the subjectId passed when the task was created. Use an ID with the cs- prefix for a consumer, and an ID with the csg- prefix for a consumer group",
       "help_zh": "消费主体 ID。必填，必须与创建该任务时传入的 subjectId 一致。消费者使用 cs- 前缀的 ID，消费者组使用 csg- 前缀的 ID",
       "location": "path",
       "name": "subject_id",
@@ -98,7 +98,7 @@
             "properties": {
               "errorMessage": {
                 "backendName": "errorMessage",
-                "description_en": "The error summary when the task fails, which is used to troubleshoot issues such as disabled logs, query failures, exceeded detail limits, processing timeouts, or file generation failures. This field may be omitted when no errors occur",
+                "description_en": "The error summary when the task fails, which is used to troubleshoot issues such as disabled logs, query failures, exceeded detail limits, processing timeouts, or file generation failures. This field may be omitted if no errors occur",
                 "description_zh": "任务失败时的错误摘要，用于排查日志未启用、查询失败、明细超限、处理超时或文件生成失败等问题。无错误时该字段可能省略",
                 "example": "log delivery is not enabled",
                 "title_en": "任务失败错误摘要",
@@ -116,7 +116,7 @@
               },
               "processedCount": {
                 "backendName": "processedCount",
-                "description_en": "The number of detail rows written to the exported file, excluding the header. This value is used to check the processing progress. Even if this value equals totalCount, you should determine whether the file is downloadable based on status=Success",
+                "description_en": "The number of detail rows written to the exported file, excluding the header. This value is used to check the processing progress. Even if this value equals totalCount, determine whether the file is downloadable based on status=Success",
                 "description_zh": "已写入导出文件的明细行数，不包含表头。该值用于查看处理进度；即使等于 totalCount，也应以 status=Success 判断文件是否可下载",
                 "example": "100",
                 "format": "int32",
@@ -151,7 +151,7 @@
                   },
                   "effectiveWindowStart": {
                     "backendName": "effectiveWindowStart",
-                    "description_en": "The start time of the actual export time range. It is a UNIX timestamp in seconds. The actual start time is also limited by the rule creation time, rule reset, or the effective start time of clearing history records. No details are available if the start time is not earlier than the end time",
+                    "description_en": "The start time of the actual export time range. It is a UNIX timestamp in seconds. The actual start time is also limited by the rule creation time, rule reset, or the effective start time of purging history records. No details are available if the start time is not earlier than the end time",
                     "description_zh": "实际导出时间范围起点，Unix 时间戳，单位为秒。实际还受规则创建时间、规则重置或清除历史记录的生效起点限制。起点不早于终点时无明细",
                     "example": "1783931600",
                     "format": "int64",
@@ -161,7 +161,7 @@
                   },
                   "fileExpired": {
                     "backendName": "fileExpired",
-                    "description_en": "Indicates whether the exported file has exceeded the server-side period for providing download links. A value of true indicates that the file has expired, downloadUrl and downloadUrlExpiredAt are not returned, and you need to create a new export task. This field may be omitted when the value is false. To determine whether the file is downloadable, check both status and downloadUrl",
+                    "description_en": "Indicates whether the exported file has exceeded the period during which the server provides download links. A value of true indicates that the file has expired, downloadUrl and downloadUrlExpiredAt are not returned, and you need to create a new export task. This field may be omitted if the value is false. To determine whether the file is downloadable, check both status and downloadUrl",
                     "description_zh": "导出文件是否已超过服务端提供下载链接的期限。true 表示文件已过期，不返回 downloadUrl 和 downloadUrlExpiredAt，需要重新创建导出任务。false 时字段可能省略；是否可下载应同时检查 status 和 downloadUrl",
                     "example": "false",
                     "title_en": "导出文件是否已超过服务端下载窗口",
@@ -170,7 +170,7 @@
                   },
                   "fileExpiredAt": {
                     "backendName": "fileExpiredAt",
-                    "description_en": "The time when the file stops providing new download links. It is a UNIX timestamp in seconds and is usually 24 hours after the file is successfully uploaded. After this time, this operation returns fileExpired=true and no longer generates downloadUrl. The task remains in the Success state. This time is different from the downloadUrlExpiredAt of a single signed link",
+                    "description_en": "The time when the file stops providing new download links. It is a UNIX timestamp in seconds and is usually 24 hours after the file is successfully uploaded. After this time is reached, this operation returns fileExpired=true and no longer generates downloadUrl. The task remains in the Success state. This time is different from downloadUrlExpiredAt of a single signed link",
                     "description_zh": "文件停止提供新下载链接的时间，Unix 时间戳，单位为秒，通常为文件上传成功后 24 小时。达到该时间后，本接口返回 fileExpired=true，不再生成 downloadUrl；任务仍为 Success。此时间不同于单个签名链接的 downloadUrlExpiredAt",
                     "example": "1784021600",
                     "format": "int64",
@@ -180,7 +180,7 @@
                   },
                   "fileSize": {
                     "backendName": "fileSize",
-                    "description_en": "The size of the successfully generated and uploaded GZIP compressed file, in bytes. This field may be omitted when the task is not successful",
+                    "description_en": "The size of the successfully generated and uploaded GZIP compressed file, in bytes. This field may be omitted if the task has not succeeded",
                     "description_zh": "成功生成并上传的 GZIP 压缩文件大小，单位为字节。任务尚未成功时可能省略",
                     "example": "1024",
                     "format": "int64",
@@ -190,7 +190,7 @@
                   },
                   "filterFailedRequests": {
                     "backendName": "filterFailedRequests",
-                    "description_en": "Specifies whether to filter out requests with failed or zero usage, which is specified when the task is created. A value of true filters out records with 0 usage and retains only records with usage. This field may be omitted when the value is false",
+                    "description_en": "The usage filter switch specified when the task was created. A value of true filters out records with 0 usage and retains only records with usage. This field may be omitted if the value is false",
                     "description_zh": "任务创建时指定的用量过滤开关。true 过滤用量为 0 的记录，仅保留有用量的记录。false 时该字段可能省略",
                     "example": "true",
                     "title_en": "是否过滤失败或零用量请求",
@@ -211,7 +211,7 @@
                   },
                   "queryWindowEnd": {
                     "backendName": "queryWindowEnd",
-                    "description_en": "The end time of the request time range determined when the task was created. It is a UNIX timestamp in seconds and does not include this moment. If no time range is specified, this value is the task creation time and is not updated when the task is queried",
+                    "description_en": "The end time of the request time range determined when the task was created. It is a UNIX timestamp in seconds and excludes this moment. If no time range is specified, this value is the task creation time and is not updated when the task is queried",
                     "description_zh": "任务创建时确定的请求时间范围终点，Unix 时间戳，单位为秒，不包含该时刻。未指定时间范围时，此值为任务创建时刻，查询任务时不会更新",
                     "example": "1783935200",
                     "format": "int64",
@@ -231,7 +231,7 @@
                   },
                   "quotaDimension": {
                     "backendName": "quotaDimension",
-                    "description_en": "The quota metering dimension determined when the task was created. token indicates token usage, and credit indicates credit usage. The CSV file outputs the corresponding columns based on this dimension. Credit usage retains decimal places",
+                    "description_en": "The quota metering dimension determined when the task was created. token indicates token usage, and credit indicates credit usage. The CSV file outputs the corresponding column based on this dimension. Credit usage retains decimal places",
                     "description_zh": "任务创建时确定的配额计量维度。token 表示 Token 用量，credit 表示 Credit 用量。CSV 按该维度输出对应列，Credit 用量保留小数",
                     "example": "token",
                     "title_en": "配额维度",
@@ -240,7 +240,7 @@
                   },
                   "rowCount": {
                     "backendName": "rowCount",
-                    "description_en": "The number of successfully exported consumption detail rows, excluding the CSV header. This field may be omitted when the task is not successful or the export result contains 0 rows. If the task is successful but no matching details exist, the file contains only the header",
+                    "description_en": "The number of successfully exported usage detail rows, excluding the CSV header. This field may be omitted if the task has not succeeded or the export result contains 0 rows. If the task succeeds but no matching details are found, the file contains only the header",
                     "description_zh": "成功导出的消费明细行数，不包含 CSV 表头。任务尚未成功或导出结果为 0 行时，该字段可能省略。成功且无匹配明细时，文件仅包含表头",
                     "example": "100",
                     "format": "int64",
@@ -264,7 +264,7 @@
               },
               "status": {
                 "backendName": "status",
-                "description_en": "The current status of the task. Valid values:\nPending: The task is submitted and waiting to be processed.\nRunning: The task is querying details, generating files, or uploading files.\nSuccess: The file is generated and uploaded. You still need to check whether the file is expired.\nFailed: The task failed. For the cause, see errorMessage.\n\nTasks that are not completed within 10 minutes after creation are processed as Failed. After a file expires, the task remains in the Success state",
+                "description_en": "The current status of the task.\n\nPending: The task is submitted and pending processing.\nRunning: The system is querying details, generating files, or uploading files.\nSuccess: The file is generated and uploaded. You still need to check whether the file is expired.\nFailed: The task failed. For the cause, see errorMessage.\n\nTasks that are not completed within 10 minutes after creation are processed as Failed. After the file expires, the task remains in the Success state",
                 "description_zh": "任务当前状态。\n\nPending：已提交，等待处理。\nRunning：正在查询明细、生成文件或上传文件。\nSuccess：文件已生成并上传。仍需检查文件是否过期。\nFailed：任务失败，原因见 errorMessage。\n\n超过创建时间 10 分钟仍未完成的任务按 Failed 处理。文件过期后，任务仍保持 Success",
                 "enum": [
                   "Pending",
@@ -288,7 +288,7 @@
               },
               "subjectName": {
                 "backendName": "subjectName",
-                "description_en": "The subject name recorded when the task was created, which is used to match consumption logs. Subsequent changes to the subject name do not modify the name recorded for this task",
+                "description_en": "The subject name recorded when the task was created, which is used to match usage logs. Subsequent changes to the subject name do not modify the name recorded for this task",
                 "description_zh": "创建任务时记录的主体名称，用于匹配消费日志。后续主体名称变化不会修改该任务记录的名称",
                 "example": "consumer-name",
                 "title_en": "主体名称",
@@ -306,7 +306,7 @@
               },
               "taskType": {
                 "backendName": "taskType",
-                "description_en": "The task type. The value is fixed as FinOpsUsageDetailExport, which indicates the export of quota rule subject consumption details",
+                "description_en": "The task type. The value is fixed as FinOpsUsageDetailExport, which indicates the export of usage details for a quota rule subject",
                 "description_zh": "任务类型，固定为 FinOpsUsageDetailExport，表示配额规则主体消费明细导出",
                 "example": "FinOpsUsageDetailExport",
                 "title_en": "任务类型",
@@ -315,7 +315,7 @@
               },
               "totalCount": {
                 "backendName": "totalCount",
-                "description_en": "The total number of detail rows to be exported as counted by backend queries, excluding the CSV header. This value may be 0 before the counting is completed. You cannot determine whether the result is empty or the task is completed based solely on this value",
+                "description_en": "The total number of detail rows to be exported as counted by backend queries, excluding the CSV header. This value may be 0 before counting is completed. Do not determine whether the result is empty or the task is completed based solely on this value",
                 "description_zh": "后台查询统计的待导出明细总行数，不包含 CSV 表头。完成统计前可能为 0，不能仅凭此值判断结果为空或任务已完成",
                 "example": "100",
                 "format": "int32",
@@ -339,7 +339,7 @@
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The request ID of this OpenAPI query call, which is used to troubleshoot call issues. This is different from the request_id of each consumption record in the exported file",
+            "description_en": "The request ID of this OpenAPI query call, which is used to troubleshoot call issues. This is different from the request_id of each usage record in the exported file",
             "description_zh": "本次 OpenAPI 查询调用的请求 ID，用于排查调用问题。与导出文件中每条消费记录的 request_id 不同",
             "example": "1234567890",
             "title_en": "Id of the request",
@@ -371,7 +371,7 @@
       "type": "string"
     },
     {
-      "help_en": "The consumption subject ID. This parameter is required and must be the same as the subjectId passed when the task was created. Consumers use IDs with the cs- prefix, and consumer groups use IDs with the csg- prefix",
+      "help_en": "The consumer subject ID. This parameter is required and must be the same as the subjectId passed when the task was created. Use an ID with the cs- prefix for a consumer, and an ID with the csg- prefix for a consumer group",
       "help_zh": "消费主体 ID。必填，必须与创建该任务时传入的 subjectId 一致。消费者使用 cs- 前缀的 ID，消费者组使用 csg- 前缀的 ID",
       "name": "subjectId",
       "position": "path",
