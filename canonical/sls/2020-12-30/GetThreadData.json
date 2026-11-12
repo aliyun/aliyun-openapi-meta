@@ -3,7 +3,7 @@
   "cmd_full_name": "sls get-thread-data",
   "cmd_name": "get-thread-data",
   "deprecated": false,
-  "description_en": "Retrieves the conversation data of a specified thread and returns the messages generated in each turn in chronological order with pagination",
+  "description_en": "Retrieves the conversation data of a specified session and returns the messages generated in each turn in chronological order with pagination",
   "description_zh": "获取指定会话的对话数据，按对话发生的先后顺序分页返回每一轮产生的消息",
   "kebab_example": "aliyun sls get-thread-data --name order-analysis-agent --thread-id thread-tiirv9-irwdoal8t4rm --next-token 'e81493d42a7d212810e0ac****' --max-results 20 --region cn-hangzhou",
   "method": "GET",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "order-analysis-agent",
-      "help_en": "The name of the DataAgent. This parameter is passed in the request path and specifies the DataAgent to which the session belongs",
+      "help_en": "The name of the DataAgent. It is passed in the request path to specify the DataAgent to which the session belongs",
       "help_zh": "DataAgent 的名称，通过请求路径传入，用于指定会话所属的 DataAgent",
       "location": "path",
       "name": "name",
@@ -35,7 +35,7 @@
     },
     {
       "example": "thread-tiirv9-irwdoal8t4rm",
-      "help_en": "The ID of the session to query. This parameter is passed in the request path and is returned by CreateThread",
+      "help_en": "The ID of the session to query. It is passed in the request path and returned by CreateThread",
       "help_zh": "要查询的会话 ID，通过请求路径传入，由 CreateThread 返回",
       "location": "path",
       "name": "thread_id",
@@ -48,7 +48,7 @@
     },
     {
       "example": "e81493d42a7d212810e0ac****",
-      "help_en": "The pagination cursor. Pass the nextToken returned in the previous response to retrieve the next page. You do not need to pass this parameter for the first query",
+      "help_en": "The pagination cursor. Pass the nextToken returned in the previous response to retrieve the next page. This parameter is not required for the first query",
       "help_zh": "翻页游标。传入上一次响应返回的 nextToken 可获取下一页；首次查询无需传入",
       "location": "query",
       "name": "next_token",
@@ -61,7 +61,7 @@
     },
     {
       "example": "20",
-      "help_en": "The maximum number of conversation turns to return per page. Maximum value: 100",
+      "help_en": "The number of conversation turns to return per page. Maximum value: 100",
       "help_zh": "单页返回的对话轮数，最大为 100",
       "location": "query",
       "name": "max_results",
@@ -79,29 +79,29 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response body. Returns the conversation data and pagination information of the thread",
+        "description_en": "The response body. Returns the conversation data and pagination information of the session",
         "description_zh": "响应体。返回该会话的对话数据与分页信息",
         "properties": {
           "data": {
-            "description_en": "The thread data returned in the current request. The data is paginated and sorted in chronological order of the conversation turns",
+            "description_en": "The session data returned in the current request. The data is paginated and returned in chronological order of the conversations",
             "description_zh": "本次返回的会话数据，按对话发生的先后顺序分页返回",
             "items": {
-              "description_en": "The data of a single conversation turn",
+              "description_en": "The data of a conversation turn",
               "description_zh": "一轮对话的数据",
               "properties": {
                 "messages": {
-                  "description_en": "The list of messages generated in the current conversation turn, including user inputs, agent responses, tool invokes, and status events",
+                  "description_en": "The list of messages generated in the current conversation turn, including user inputs, agent replies, tool invokes, and status events",
                   "description_zh": "本轮对话产生的消息列表，包含用户输入、Agent 回复、工具调用与状态事件",
                   "items": {
                     "description_en": "A message",
                     "description_zh": "一条消息",
                     "properties": {
                       "agents": {
-                        "description_en": "The list of sub-agent calls initiated in the current message. This field is available only when role is assistant",
+                        "description_en": "The list of sub-agent calls initiated in the current message. This field may appear only when role is set to assistant",
                         "description_zh": "本条消息中发起的子 Agent 调用列表，仅 role 为 assistant 时可能出现",
                         "items": {
                           "additionalProperties": {
-                            "description_en": "The details of sub-agent invocations. Common fields include name (the name of the sub-agent), arguments (the input parameters for the invocation), and status (the execution status: start, progress, success, or fail)",
+                            "description_en": "The details of sub-agent invocations. Common fields include name (the name of the sub-agent), arguments (the input parameters for the current invocation), and status (the execution status: start, progress, success, or fail)",
                             "description_zh": "子 Agent 调用明细，常见字段为 name（子 Agent 名称）、arguments（本次调用的入参）、status（执行状态：start、progress、success、fail）",
                             "example": "search_data",
                             "type": "any"
@@ -113,7 +113,7 @@
                         "type": "array"
                       },
                       "artifacts": {
-                        "description_en": "The list of artifacts (files) generated by the current message. This field is available only when role is assistant",
+                        "description_en": "The list of artifacts (files) generated by the current message. This field may appear only when role is set to assistant",
                         "description_zh": "本条消息产出的产物（文件）列表，仅 role 为 assistant 时可能出现",
                         "items": {
                           "additionalProperties": {
@@ -129,17 +129,17 @@
                         "type": "array"
                       },
                       "callId": {
-                        "description_en": "The call ID of the current execution. Messages that use this value as their parentCallId are its child messages. You can use this field to reconstruct the execution hierarchy of the agent",
+                        "description_en": "The call ID of the current execution. Messages that use this value as parentCallId are its subordinate messages. This field can be used to reconstruct the execution hierarchy of the agent",
                         "description_zh": "本次执行的调用标识。以该值为 parentCallId 的消息即为它的下级消息，可用于还原 Agent 的执行层级",
                         "example": "call_0fdabe9ba7c645a7a6cbf34f",
                         "type": "string"
                       },
                       "contents": {
-                        "description_en": "The list of content blocks in the current message",
+                        "description_en": "The list of contents in the current message",
                         "description_zh": "本条消息的内容列表",
                         "items": {
                           "additionalProperties": {
-                            "description_en": "The details of content. Common fields include type and value. When type is text, value is the reply text snippet. When type is spin_text, value is the prompt for the thinking and execution process of the agent. When type is thread_title_updated, value is the updated session title. When type is error, value is the fault message that contains code and message. During streaming output, the append (indicates whether it is an incremental snippet) and lastChunk (indicates whether it is the last chunk) markers are also included",
+                            "description_en": "The details of content. Common fields include type and value. If type is text, value is the reply text snippet. If type is spin_text, value is the prompt for the thinking and execution process of the agent. If type is thread_title_updated, value is the updated conversation title. If type is error, value is the error message that contains code and message. During streaming output, the append (whether it is an incremental snippet) and lastChunk (whether it is the last chunk) markers are also included",
                             "description_zh": "内容明细。常见字段为 type 与 value：type 为 text 时 value 是回复文本片段；type 为 spin_text 时 value 是 Agent 的思考与执行过程提示；type 为 thread_title_updated 时 value 是更新后的会话标题；type 为 error 时 value 是包含 code 与 message 的错误信息。流式输出时还带有 append（是否为增量片段）与 lastChunk（是否为最后一段）标记",
                             "example": "text",
                             "type": "any"
@@ -157,7 +157,7 @@
                         "type": "string"
                       },
                       "events": {
-                        "description_en": "The list of events carried by the current message, which indicates changes in the session status. Common types include: thinking (the agent is thinking), interactive (additional input or confirmation is required), task_finished (the current node is completed, and the payload contains success status and statistics information), stream_done (the current streaming output is completed), error (an execute error occurred), and thread_title_updated (the session title is updated)",
+                        "description_en": "The list of events carried in the current message, which indicates the changes in the session status. Common types include: thinking (the agent is thinking), interactive (additional input or confirmation is required from you), task_finished (the current node is completed, and the payload contains success status and statistics information), stream_done (the current streaming output is completed), error (an execute error occurred), and thread_title_updated (the session title is updated)",
                         "description_zh": "本条消息携带的事件列表，用于表达会话状态的变化。常见 type：thinking（思考中）、interactive（需要您补充输入或确认）、task_finished（本次任务结束，payload 中带有 success 与统计信息）、stream_done（本次流式输出结束）、error（执行出错）、thread_title_updated（会话标题更新）",
                         "items": {
                           "additionalProperties": {
@@ -173,32 +173,32 @@
                         "type": "array"
                       },
                       "parentCallId": {
-                        "description_en": "The ID of the parent call, which is used to reconstruct the execution hierarchy. An empty string indicates the root node of the current thread",
+                        "description_en": "The ID of the parent call, which is used to reconstruct the execution hierarchy. An empty string indicates the root node of the current session",
                         "description_zh": "父调用的标识，用于还原执行层级。取值为空字符串时表示本次会话的根节点",
                         "example": "thread-tiirv9-irwdoal8t4rm",
                         "type": "string"
                       },
                       "role": {
-                        "description_en": "The sender of the message. Valid values: assistant (the response or action of the agent), tool (the result of a tool execution), user (the user input), and system (a system message)",
+                        "description_en": "The sender of the message. Valid values: assistant (the reply or action of the agent), tool (the result of a tool execution), user (the user input), and system (a system message)",
                         "description_zh": "消息的产生方。取值：assistant（Agent 的回复或动作）、tool（工具执行结果）、user（用户输入）、system（系统消息）",
                         "example": "assistant",
                         "type": "string"
                       },
                       "seq": {
-                        "description_en": "The sequence number of the message. This number increments within the same thread and can be used to sort messages at the same level. We recommend that you also refer to timestamp instead of relying solely on this value",
+                        "description_en": "The sequence number of the message. It increments within the same session and can be used to sort messages at the same level. We recommend that you also refer to timestamp and do not strictly rely on this value",
                         "description_zh": "消息序号，在同一次会话中递增，可用于同级消息排序。建议同时参考 timestamp，不要强依赖该值",
                         "example": "1",
                         "format": "int64",
                         "type": "integer"
                       },
                       "timestamp": {
-                        "description_en": "The time when the message was generated. The value is a UNIX timestamp in string format",
+                        "description_en": "The time when the message was generated. It is a UNIX timestamp in string format",
                         "description_zh": "消息生成时间，Unix 时间戳，字符串形式",
                         "example": "1765289000",
                         "type": "string"
                       },
                       "tools": {
-                        "description_en": "The list of tool invokes initiated by the agent in the current message. This field is available only when role is assistant",
+                        "description_en": "The list of tool invokes initiated by the agent in the current message. This field may appear only when role is set to assistant",
                         "description_zh": "本条消息中 Agent 发起的工具调用列表，仅 role 为 assistant 时可能出现",
                         "items": {
                           "additionalProperties": {
@@ -214,7 +214,7 @@
                         "type": "array"
                       },
                       "type": {
-                        "description_en": "The message type. Regular response messages may not have this field. This field appears when the entire message is used to express a status. For example, done indicates that the thread is closed, and error indicates an error message",
+                        "description_en": "The message type. Regular reply messages may not have this field. It appears when the entire message is used to express a status. For example, done indicates that the session is ended, and error indicates an error message",
                         "description_zh": "消息类型。常规回复消息可以没有该字段；当整条消息用于表达状态时会出现，例如 done 表示会话结束、error 表示错误消息",
                         "example": "done",
                         "type": "string"
@@ -231,13 +231,13 @@
                   "type": "array"
                 },
                 "requestId": {
-                  "description_en": "The request ID that generated the current conversation turn. You can use this ID to associate the turn with the CreateChat call that initiated it",
+                  "description_en": "The request ID that generated the current conversation turn. It can be used to associate the CreateChat call that initiated the turn",
                   "description_zh": "产生本轮对话的请求 ID，可用于关联发起该轮对话的 CreateChat 调用",
                   "example": "5B0A6B60BB6EE39764D458B5",
                   "type": "string"
                 },
                 "traceId": {
-                  "description_en": "The Tracing Analysis ID of the current conversation turn, which is used to locate the invoke during troubleshooting",
+                  "description_en": "The Tracing Analysis ID of the current conversation turn. It is used to locate the current invoke during troubleshooting",
                   "description_zh": "本轮对话的链路追踪 ID，用于在问题排查时定位本次调用",
                   "example": "88b50db22437400fa9c16c5399722310",
                   "type": "string"
@@ -248,7 +248,7 @@
             "type": "array"
           },
           "maxResults": {
-            "description_en": "The actual number of items returned per page in the current request",
+            "description_en": "The actual number of items per page that takes effect in the current request",
             "description_zh": "本次请求实际生效的单页条数",
             "example": "20",
             "format": "int64",
@@ -261,13 +261,13 @@
             "type": "string"
           },
           "requestId": {
-            "description_en": "The ID of the current request, which is used to locate the call during troubleshooting",
+            "description_en": "The ID of the current request. It is used to locate the current call during troubleshooting",
             "description_zh": "本次请求的 ID，用于问题排查时定位本次调用",
             "example": "5B0A6B60BB6EE39764D458B5",
             "type": "string"
           },
           "threadId": {
-            "description_en": "The ID of the session to query, which is the same as the threadId passed in the request path",
+            "description_en": "The ID of the session for the current query. It is the same as the threadId passed in the request path",
             "description_zh": "本次查询的会话 ID，与请求路径中传入的 threadId 一致",
             "example": "thread-tiirv9-irwdoal8t4rm",
             "type": "string"
@@ -279,7 +279,7 @@
   },
   "v1_parameters": [
     {
-      "help_en": "The maximum number of conversation turns to return per page. Maximum value: 100",
+      "help_en": "The number of conversation turns to return per page. Maximum value: 100",
       "help_zh": "单页返回的对话轮数，最大为 100",
       "name": "maxResults",
       "position": "query",
@@ -287,7 +287,7 @@
       "type": "int"
     },
     {
-      "help_en": "The name of the DataAgent. This parameter is passed in the request path and specifies the DataAgent to which the session belongs",
+      "help_en": "The name of the DataAgent. It is passed in the request path to specify the DataAgent to which the session belongs",
       "help_zh": "DataAgent 的名称，通过请求路径传入，用于指定会话所属的 DataAgent",
       "name": "name",
       "position": "path",
@@ -295,7 +295,7 @@
       "type": "string"
     },
     {
-      "help_en": "The pagination cursor. Pass the nextToken returned in the previous response to retrieve the next page. You do not need to pass this parameter for the first query",
+      "help_en": "The pagination cursor. Pass the nextToken returned in the previous response to retrieve the next page. This parameter is not required for the first query",
       "help_zh": "翻页游标。传入上一次响应返回的 nextToken 可获取下一页；首次查询无需传入",
       "name": "nextToken",
       "position": "query",
@@ -303,7 +303,7 @@
       "type": "string"
     },
     {
-      "help_en": "The ID of the session to query. This parameter is passed in the request path and is returned by CreateThread",
+      "help_en": "The ID of the session to query. It is passed in the request path and returned by CreateThread",
       "help_zh": "要查询的会话 ID，通过请求路径传入，由 CreateThread 返回",
       "name": "threadId",
       "position": "path",
