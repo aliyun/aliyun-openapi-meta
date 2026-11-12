@@ -14,6 +14,7 @@
     "api_style": "ROA",
     "api_version": "2026-08-01",
     "body_mapping": {
+      "attachments": "attachments",
       "content": "content",
       "resume": "resume",
       "run_id": "runId",
@@ -31,7 +32,7 @@
   "parameters": [
     {
       "example": "session_example_001",
-      "help_en": "The ID of the target session to which the message is sent or the run is resumed",
+      "help_en": "The ID of the target session for sending a message or resuming a run",
       "help_zh": "发送消息或恢复运行的目标会话 ID",
       "location": "path",
       "name": "session_id",
@@ -43,11 +44,77 @@
       "type": "string"
     },
     {
+      "element": {
+        "fields": [
+          {
+            "example": "xlsx",
+            "help_en": "The file name extension",
+            "help_zh": "文件后缀名",
+            "name": "file_extension",
+            "options": [
+              "--file-extension"
+            ],
+            "raw_name": "fileExtension",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "att_12345678",
+            "help_en": "The ID of the file after it is uploaded",
+            "help_zh": "文件上传后的文件ID",
+            "name": "file_id",
+            "options": [
+              "--file-id"
+            ],
+            "raw_name": "fileId",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "文件.xlsx",
+            "help_en": "The original name of the file",
+            "help_zh": "文件的原始名字",
+            "name": "source_name",
+            "options": [
+              "--source-name"
+            ],
+            "raw_name": "sourceName",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "source/att_12345678.xlsx",
+            "help_en": "The workspace path",
+            "help_zh": "工作空间路径",
+            "name": "workspace_path",
+            "options": [
+              "--workspace-path"
+            ],
+            "raw_name": "workspacePath",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "type": "object"
+      },
+      "example": "[]",
+      "help_en": "The list of attachments",
+      "help_zh": "附件列表",
+      "location": "body",
+      "name": "attachments",
+      "options": [
+        "--attachments"
+      ],
+      "param_style": "json",
+      "raw_name": "attachments",
+      "required": false,
+      "type": "array"
+    },
+    {
       "example": "请查询示例资源状态，不执行变更。",
       "help_en": "The message text in MESSAGE mode. This parameter cannot be empty. The type parameter can be omitted in this mode",
       "help_zh": "MESSAGE 模式的消息文本，不能为空。该模式可省略 type",
       "location": "body",
-      "min_length": "1",
       "name": "content",
       "options": [
         "--content"
@@ -62,7 +129,7 @@
         "fields": [
           {
             "example": "interrupt_example_001",
-            "help_en": "The ID of the interrupt to be replied to. This value is obtained from `data.outcome.interrupts[].id` in the SSE `RUN_FINISHED` event or `data.outcome.interrupts[].id` in the `GetRun` response",
+            "help_en": "The ID of the interrupt to be replied to. Obtain this value from data.outcome.interrupts[].id in the SSE RUN_FINISHED event or the GetRun response",
             "help_zh": "待回复的中断 ID。取自 SSE `RUN_FINISHED` 事件的 `data.outcome.interrupts[].id`，或 `GetRun` 响应的 `data.outcome.interrupts[].id`",
             "name": "interrupt_id",
             "options": [
@@ -74,7 +141,7 @@
           },
           {
             "example": "{\"region\":\"cn-hangzhou\"}",
-            "help_en": "The interrupt processing result. This parameter is required when `status` is set to `resolved` and must conform to the `responseSchema` of the corresponding interrupt. This parameter is not passed when `status` is set to `cancelled`",
+            "help_en": "The interrupt handling result. This parameter is required when status is set to resolved and must conform to the responseSchema of the corresponding interrupt. Do not pass this parameter when status is set to cancelled",
             "help_zh": "中断处理结果。status 为 resolved 时必填，须符合对应中断的 responseSchema；为 cancelled 时不传",
             "name": "payload",
             "options": [
@@ -90,7 +157,7 @@
               "cancelled"
             ],
             "example": "resolved",
-            "help_en": "The reply method for the current interrupt. A value of `resolved` indicates that the answer, confirmation, or tool result required by the interrupt is submitted, and `payload` must be provided. A value of `cancelled` indicates that the interrupt is canceled, and `payload` is not passed",
+            "help_en": "The reply method for the interrupt. Valid values: resolved (submits the answer, confirmation, or tool result required by the interrupt, and must include payload) and cancelled (cancels the interrupt without passing payload)",
             "help_zh": "本次中断的回复方式：`resolved` 表示提交中断要求的回答、确认或工具结果，必须携带 `payload`；`cancelled` 表示取消该中断，不传 `payload`",
             "name": "status",
             "options": [
@@ -103,7 +170,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The list of interrupt replies. This parameter is required when `type` is set to `RESUME`. You must reply to all pending interrupts at once, and each `interruptId` can appear only once",
+      "help_en": "The list of interrupt replies. This parameter is required when type is set to RESUME. You must reply to all pending interrupts at once. Each interruptId can appear only once",
       "help_zh": "中断回复列表，`type=RESUME` 时必填。须一次回复当前全部待处理中断，每个 `interruptId` 只能出现一次",
       "location": "body",
       "name": "resume",
@@ -117,7 +184,7 @@
     },
     {
       "example": "run_example_001",
-      "help_en": "Required in RECONNECT mode. Specifies the ID of the active run to resubscribe to",
+      "help_en": "The ID of the active run to resubscribe to. This parameter is required in RECONNECT mode",
       "help_zh": "RECONNECT 模式必填，指定需要重新订阅的活动运行 ID",
       "location": "body",
       "min_length": "1",
@@ -137,7 +204,7 @@
         "RECONNECT"
       ],
       "example": "MESSAGE",
-      "help_en": "The request type. Valid values: `MESSAGE` (sends a message), `RESUME` (resumes a run), and `RECONNECT` (reconnects to a run). Default value: `MESSAGE`",
+      "help_en": "The request type. Valid values: MESSAGE (sends a message), RESUME (resumes a run), and RECONNECT (reconnects to a run). Default value: MESSAGE",
       "help_zh": "请求类型。取值：`MESSAGE`（发送消息）、`RESUME`（恢复运行）、`RECONNECT`（重连运行）。默认值：`MESSAGE`",
       "location": "body",
       "name": "type",
@@ -170,7 +237,7 @@
     "200": {
       "schema": {
         "backendName": "eventStream",
-        "description_en": "The SSE event stream. The `Content-Type` is `text/event-stream`. Each business frame contains an `event` and `data` in JSON format. The `event` is consistent with `data.type`. The example shows the simplest lifecycle without text increments",
+        "description_en": "The Server-Sent Events (SSE) event stream. The Content-Type is text/event-stream. Each business frame contains an event and data in JSON format. The event matches data.type. The example shows the simplest lifecycle without text increments",
         "description_zh": "SSE 事件流，Content-Type 为 text/event-stream。每个业务帧包含 event 和 JSON 格式的 data，event 与 data.type 一致。示例为不含文本增量的最简生命周期",
         "example": "event: RUN_STARTED\ndata: {\"type\":\"RUN_STARTED\",\"sessionId\":\"session_example_001\",\"runId\":\"run_example_001\"}\n\nevent: RUN_FINISHED\ndata: {\"type\":\"RUN_FINISHED\",\"sessionId\":\"session_example_001\",\"runId\":\"run_example_001\",\"outcome\":{\"type\":\"success\"}}\n\n",
         "sensitive": true,
@@ -181,7 +248,7 @@
   "timeout_ms": 62000,
   "v1_body_parameters": [
     {
-      "help_en": "The request body. Select the corresponding structure for MESSAGE, RESUME, or RECONNECT based on the type. Do not mix fields",
+      "help_en": "The request body. Select the structure that corresponds to MESSAGE, RESUME, or RECONNECT based on the type parameter. Do not mix fields from different structures",
       "help_zh": "请求体。按 type 选择 MESSAGE、RESUME 或 RECONNECT 对应结构，不能混用字段",
       "name": "body",
       "param_style": "json",
