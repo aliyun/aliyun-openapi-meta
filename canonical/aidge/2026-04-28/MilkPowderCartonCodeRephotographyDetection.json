@@ -3,7 +3,7 @@
   "cmd_full_name": "aidge milk-powder-carton-code-rephotography-detection",
   "cmd_name": "milk-powder-carton-code-rephotography-detection",
   "deprecated": false,
-  "description_en": "Reviews infant formula carton code images based on recapture detection and element localization using multimodal foundation models. It targets photos of infant formula products, outer cartons, and carton codes captured during channel inspections. It determines whether images are non-recaptured, recaptured, or suspected recaptures, and localizes visible infant formula products, outer cartons, and code regions to provide a structured basis for image review and manual verification",
+  "description_en": "Analyzes milk powder box code images for channel inspection by using recapture detection and multimodal large model element grounding. Outputs non-recapture, recapture, or suspected recapture conclusions, and locates visible milk powder products, outer boxes, and code areas to provide a structured basis for photo review and manual verification",
   "description_zh": "基于翻拍识别能力与多模态大模型元素定位构建的奶粉箱码图片审核产品，面向渠道巡检中的奶粉商品、外箱及箱码照片。产品输出非翻拍、翻拍或疑似翻拍结论，并定位可见奶粉商品、外箱与码区，为照片审核和人工复核提供结构化依据",
   "kebab_example": "aliyun aidge milk-powder-carton-code-rephotography-detection --image-url https://example.com/image.jpg --region cn-hangzhou",
   "method": "POST",
@@ -64,17 +64,13 @@
                 "properties": {
                   "Grounding": {
                     "backendName": "grounding",
-                    "description_en": "The supplementary element grounding results",
+                    "description_en": "The supplementary element grounding result",
                     "description_zh": "补充元素定位结果",
                     "properties": {
                       "Coverage": {
                         "backendName": "coverage",
-                        "description_en": "The coverage of the grounding. Valid values:\n`complete`: The relevant visible targets are complete.\n`partial`: Only some targets are valid or recognizable",
+                        "description_en": "The coverage. Valid values:\n`complete`: The relevant visible targets are complete.\n`partial`: Only some targets are valid or recognizable",
                         "description_zh": "`complete`：相关可见目标完整\n`partial`：仅部分目标有效或可辨认",
-                        "enum": [
-                          "complete",
-                          "partial"
-                        ],
                         "example": "complete",
                         "title_en": "覆盖度",
                         "title_zh": "覆盖度",
@@ -82,14 +78,14 @@
                       },
                       "Regions": {
                         "backendName": "regions",
-                        "description_en": "The array of targets, which contains up to 12 items. This array can be empty if no relevant targets are found",
+                        "description_en": "The target array, containing up to 12 items. This array can be empty if no relevant targets are found",
                         "description_zh": "目标数组，最多 12 项；没有相关目标时可为空",
                         "itemName": "区域",
                         "items": {
                           "properties": {
                             "Bbox2d": {
                               "backendName": "bbox2d",
-                              "description_en": "The coordinates of the bounding box in the `[top-left x, top-left y, bottom-right x, bottom-right y]` format. The value range is 0 to 1000. The left value must be less than the right value, and the top value must be less than the bottom value",
+                              "description_en": "The bounding box coordinates.\n`[top-left x, top-left y, bottom-right x, bottom-right y]`\nValue range: 0 to 1000.\nThe left value must be less than the right value, and the top value must be less than the bottom value",
                               "description_zh": "`[左上x, 左上y, 右下x, 右下y]`\n值范围：0–1000\n左 < 右，上 < 下",
                               "itemName": "坐标",
                               "items": {
@@ -105,15 +101,8 @@
                             },
                             "Label": {
                               "backendName": "label",
-                              "description_en": "The category of the target. For enumerated values, see the following table",
+                              "description_en": "The target category. For valid values, see the following table",
                               "description_zh": "目标类别，枚举见下表",
-                              "enum": [
-                                "milk_powder",
-                                "milk_powder_carton",
-                                "box_code",
-                                "barcode",
-                                "qr_code"
-                              ],
                               "example": "milk_powder",
                               "title_en": "标签",
                               "title_zh": "标签",
@@ -121,7 +110,7 @@
                             },
                             "Text": {
                               "backendName": "text",
-                              "description_en": "The confirmed short name or text, which contains up to 24 characters. This field is an empty string if the text is unclear",
+                              "description_en": "The confirmed short name or text, up to 24 characters. If the text is unclear, an empty string is returned",
                               "description_zh": "最多 24 字的可确认短名称或文字；看不清时为空字符串",
                               "example": "奶粉",
                               "title_en": "识别文本",
@@ -162,11 +151,6 @@
                     "backendName": "photoStatus",
                     "description_en": "The recapture status. Valid values:\n`0`: Non-recapture.\n`1`: Recapture.\n`2`: Suspected recapture",
                     "description_zh": "`0`：非翻拍\n`1`：翻拍\n`2`：疑似翻拍",
-                    "enum": [
-                      "0",
-                      "1",
-                      "2"
-                    ],
                     "example": "1",
                     "format": "int32",
                     "title_en": "翻拍状态",
@@ -175,7 +159,7 @@
                   },
                   "Score": {
                     "backendName": "score",
-                    "description_en": "The confidence score for recapture detection",
+                    "description_en": "The recapture confidence score",
                     "description_zh": "翻拍置信度分值",
                     "example": "0.89",
                     "format": "float",
@@ -185,7 +169,7 @@
                   },
                   "Type": {
                     "backendName": "type",
-                    "description_en": "The detection type. The value is fixed to `boxCode`",
+                    "description_en": "Fixed to `boxCode`",
                     "description_zh": "固定为 `boxCode`",
                     "example": "boxCode",
                     "title_en": "检测类型",
@@ -206,7 +190,7 @@
                   "type": "integer"
                 },
                 "backendName": "usageMap",
-                "description_en": "The usage information. The value is `{\"ProcessingCount\":1}` if the call is successful, or an empty object if the call fails",
+                "description_en": "The usage information. If the call is successful, the value is `{\"ProcessingCount\":1}`. If the call fails, the value is an empty object",
                 "description_zh": "成功为 `{\"ProcessingCount\":1}`；失败为空对象",
                 "example": "{\"ProcessingCount\":1}",
                 "title_en": "用量信息",
