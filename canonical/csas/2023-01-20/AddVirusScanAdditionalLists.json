@@ -3,7 +3,7 @@
   "cmd_full_name": "csas add-virus-scan-additional-lists",
   "cmd_name": "add-virus-scan-additional-lists",
   "deprecated": false,
-  "description_en": "Performs a batch append of entries to the virus scan blacklists and whitelists for a specified operating system and does not overwrite existing entries. The quota is calculated independently for each combination of matching dimension and list type. Each combination allows a maximum of 10,000 whitelist entries and 1,000 blacklist entries. If the quota is exceeded after the append operation, the entire batch is marked as failed",
+  "description_en": "Adds entries in batches to the virus scan blacklists and whitelists for a specified operating system without overwriting existing entries. The quota is calculated independently for each combination of matching dimension and list type. For each combination, the whitelist supports up to 10,000 entries and the blacklist supports up to 1,000 entries. If the quota is exceeded after the addition, the entire batch fails",
   "description_zh": "向指定操作系统的病毒扫描黑白名单批量追加条目，不会覆盖已有条目。配额按匹配维度与名单类型的每个组合独立计算，每个组合下白名单最多10000条、黑名单最多1000条，追加后超出配额时整批失败",
   "kebab_example": "aliyun csas add-virus-scan-additional-lists --dev-type windows --region cn-hangzhou",
   "method": "POST",
@@ -23,8 +23,12 @@
   },
   "parameters": [
     {
+      "enum": [
+        "macOS",
+        "windows"
+      ],
       "example": "windows",
-      "help_en": "The operating system type for which the list takes effect. Valid values:\nwindows: Windows.\nmacOS: macOS",
+      "help_en": "The operating system type to which the list applies. Valid values:\nwindows: Windows.\nmacOS: macOS",
       "help_zh": "名单生效的操作系统类型。取值：\nwindows：Windows系统。\nmacOS：macOS系统",
       "location": "formData",
       "name": "dev_type",
@@ -39,6 +43,13 @@
       "element": {
         "fields": [
           {
+            "enum": [
+              "FileMd5",
+              "FileName",
+              "FilePath",
+              "FileSuffix",
+              "FolderName"
+            ],
             "example": "FileSuffix",
             "help_en": "The matching dimension of the list entry. Valid values:\nFileSuffix: Matches by file name extension.\nFileName: Matches by file name.\nFolderName: Matches by folder name.\nFilePath: Matches by file path.\nFileMd5: Matches by file MD5 hash",
             "help_zh": "名单条目的匹配维度。取值：\nFileSuffix：按文件扩展名匹配。\nFileName：按文件名匹配。\nFolderName：按文件夹名匹配。\nFilePath：按文件路径匹配。\nFileMd5：按文件MD5值匹配",
@@ -52,7 +63,7 @@
           },
           {
             "example": ".tmp",
-            "help_en": "The content of the list entry. The length cannot exceed 255 characters. The meaning is determined by AdditionalType: If AdditionalType is set to FileSuffix, specify the file name extension. If AdditionalType is set to FileName, specify the file name. If AdditionalType is set to FolderName, specify the folder name. If AdditionalType is set to FilePath, specify the file path. If AdditionalType is set to FileMd5, specify the MD5 hash of the file",
+            "help_en": "The content of the list entry. The value can be up to 255 characters in length. The meaning of this parameter is determined by the AdditionalType parameter. If AdditionalType is set to FileSuffix, specify the file name extension. If AdditionalType is set to FileName, specify the file name. If AdditionalType is set to FolderName, specify the folder name. If AdditionalType is set to FilePath, specify the file path. If AdditionalType is set to FileMd5, specify the MD5 hash of the file",
             "help_zh": "名单条目内容，长度不超过255个字符。含义由AdditionalType决定：AdditionalType取值为FileSuffix时填写文件扩展名，取值为FileName时填写文件名，取值为FolderName时填写文件夹名，取值为FilePath时填写文件路径，取值为FileMd5时填写文件的MD5值",
             "name": "detail",
             "options": [
@@ -63,8 +74,12 @@
             "type": "string"
           },
           {
+            "enum": [
+              "Blacklist",
+              "Whitelist"
+            ],
             "example": "Whitelist",
-            "help_en": "The list type. Valid values:\nBlacklist: Blacklist. Files that match the entries are directly identified as virus files.\nWhitelist: Whitelist. Files that match the entries are excluded from virus detection",
+            "help_en": "The list type. Valid values:\nBlacklist: Blacklist. Matched files are directly identified as virus files.\nWhitelist: Whitelist. Matched files are excluded from virus detection",
             "help_zh": "名单类型。取值：\nBlacklist：黑名单，命中的文件直接判定为病毒文件。\nWhitelist：白名单，命中的文件不参与病毒检测",
             "name": "list_type",
             "options": [
@@ -77,7 +92,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The list of entries to be added. The list must contain at least one entry",
+      "help_en": "The list of entries to add. The list must contain at least one entry",
       "help_zh": "待追加的名单条目列表，至少包含1个",
       "location": "formData",
       "name": "additional_lists",
@@ -101,7 +116,7 @@
         "properties": {
           "ListIds": {
             "backendName": "data",
-            "description_en": "The list of IDs for the newly added list entries. The order is consistent with the AdditionalLists parameter in the request",
+            "description_en": "The IDs of the added list entries. The order of the IDs is the same as the order of the entries in the AdditionalLists parameter of the request",
             "description_zh": "本次新增的名单条目ID列表，顺序与请求中的AdditionalLists一致",
             "itemName": "data",
             "items": {
