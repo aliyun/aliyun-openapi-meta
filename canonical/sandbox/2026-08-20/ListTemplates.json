@@ -1,5 +1,5 @@
 {
-  "camel_example": "aliyun sandbox GET /pop/2026-08-20/templates --region cn-hangzhou --maxResults 20 --nextToken 'cae5f900-8b1d-4c0e-9c2a-1a2b3c4d5e6f' --teamID '13b721e6-8cc8-5df2-af13-80316f7508af' --header \"Content-Type=application/json\" --version 2026-08-20 --force",
+  "camel_example": "aliyun sandbox GET /pop/2026-08-20/templates --region cn-hangzhou --resourceTags '[{\"value\":\"demo\",\"key\":\"project\"}]' --maxResults 20 --nextToken 'cae5f900-8b1d-4c0e-9c2a-1a2b3c4d5e6f' --teamID '13b721e6-8cc8-5df2-af13-80316f7508af' --header \"Content-Type=application/json\" --version 2026-08-20 --force",
   "cmd_full_name": "sandbox list-templates",
   "cmd_name": "list-templates",
   "components": {
@@ -17,7 +17,7 @@
           },
           "name": {
             "backendName": "name",
-            "description_en": "The name of the template, which is unique within a team",
+            "description_en": "The template name, which is unique within a team",
             "description_zh": "模板名称，在同一团队内唯一",
             "example": "python-data-analysis",
             "type": "string"
@@ -59,7 +59,7 @@
           "runtimeConfig": {
             "$ref": "#/components/schemas/PublicTemplateRuntimeConfig",
             "backendName": "runtimeConfig",
-            "description_en": "The runtime configuration of the template, which determines the specifications and environment of the sandbox instances created from the template",
+            "description_en": "The runtime configuration of the template, which determines the specifications and environment of sandbox instances created from this template",
             "description_zh": "模板的运行时配置，决定由该模板创建的沙箱实例的规格与环境"
           },
           "status": {
@@ -77,16 +77,23 @@
           },
           "teamName": {
             "backendName": "teamName",
-            "description_en": "The name of the team",
+            "description_en": "The team name",
             "description_zh": "团队名称",
             "example": "sandbox-dev",
             "type": "string"
           },
           "templateID": {
             "backendName": "templateID",
-            "description_en": "The ID of the sandbox template",
+            "description_en": "The sandbox template ID",
             "description_zh": "沙箱模板 ID",
             "example": "tm-8f3a2c7b5e14d806",
+            "type": "string"
+          },
+          "templateType": {
+            "backendName": "templateType",
+            "description_en": "The templatetype. An empty value indicates a runtime template",
+            "description_zh": "模板类型，返回空即为runtime模板",
+            "example": "layer",
             "type": "string"
           }
         },
@@ -155,12 +162,13 @@
         "type": "object"
       },
       "PublicTemplateRuntimeConfig": {
+        "descriptionEn": "The runtime configuration returned for a template. vpcBindings reflects the template's currently effective configuration; the previous configuration is returned until an updated version is successfully built.",
         "description_en": "The runtime configuration of the template",
         "description_zh": "模板的运行时配置",
         "properties": {
           "cpu": {
             "backendName": "cpu",
-            "description_en": "The CPU specification of the sandbox instance, in cores",
+            "description_en": "The CPU specifications of the sandbox instance, in cores",
             "description_zh": "沙箱实例的 CPU 规格，单位为核",
             "example": "2",
             "format": "float",
@@ -168,7 +176,7 @@
           },
           "diskSize": {
             "backendName": "diskSize",
-            "description_en": "The disk specification of the sandbox instance, in MB",
+            "description_en": "The disk specifications of the sandbox instance, in MB",
             "description_zh": "沙箱实例的磁盘规格，单位为 MB",
             "example": "10240",
             "format": "int32",
@@ -188,7 +196,7 @@
           },
           "memorySize": {
             "backendName": "memorySize",
-            "description_en": "The memory specification of the sandbox instance, in MB",
+            "description_en": "The memory specifications of the sandbox instance, in MB",
             "description_zh": "沙箱实例的内存规格，单位为 MB",
             "example": "2048",
             "format": "int32",
@@ -200,6 +208,23 @@
             "description_en": "The image and startup configuration of the sandbox instance",
             "description_zh": "沙箱实例的镜像与启动配置"
           },
+          "vpcBindings": {
+            "backendName": "vpcBindings",
+            "descriptionEn": "The allowed inbound source VPC IDs in the returned template configuration. An omitted field or an empty array means no inbound VPC bindings. This setting is independent of outbound vpcConfig. Later template updates do not change the inbound VPC bindings of existing sandboxes.",
+            "description_en": "The collection of inbound source VPCs allowed by the current template configuration. Omitting this field or providing an empty array indicates that no inbound VPC bindings are configured. This configuration is independent of the egress network vpcConfig. Subsequent template updates do not change the inbound VPC bindings of existing sandbox instances",
+            "description_zh": "模板当前配置允许的入站来源 VPC 集合。省略或空数组表示未配置入站 VPC 绑定。该配置独立于出口网络 vpcConfig；模板后续更新不会改变已有沙箱的入站 VPC 绑定",
+            "example": "[\"vpc-examplea\",\"vpc-exampleb\"]",
+            "items": {
+              "descriptionEn": "A source VPC ID allowed to access sandbox data endpoints.",
+              "description_en": "The source VPC ID that is allowed to access the sandbox data endpoint",
+              "description_zh": "模板允许访问沙箱数据端点的来源 VPC ID",
+              "example": "vpc-examplea",
+              "title": "允许的入站来源 VPC ID",
+              "type": "string"
+            },
+            "title": "模板允许的入站来源 VPC 列表",
+            "type": "array"
+          },
           "vpcConfig": {
             "$ref": "#/components/schemas/PublicTemplateVPCConfig",
             "backendName": "vpcConfig",
@@ -207,6 +232,7 @@
             "description_zh": "沙箱实例的专有网络配置"
           }
         },
+        "title": "模板运行时配置",
         "type": "object"
       },
       "PublicTemplateSandboxConfig": {
@@ -404,9 +430,9 @@
     }
   },
   "deprecated": false,
-  "description_en": "Performs a paging query on the template list",
+  "description_en": "Performs a paging query to retrieve the template list",
   "description_zh": "分页查询模板列表",
-  "kebab_example": "aliyun sandbox list-templates --team-id 13b721e6-8cc8-5df2-af13-80316f7508af --max-results 20 --next-token cae5f900-8b1d-4c0e-9c2a-1a2b3c4d5e6f --region cn-hangzhou",
+  "kebab_example": "aliyun sandbox list-templates --team-id 13b721e6-8cc8-5df2-af13-80316f7508af --max-results 20 --next-token cae5f900-8b1d-4c0e-9c2a-1a2b3c4d5e6f --resource-tags value=demo key=project --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
   "name": "ListTemplates",
@@ -449,7 +475,7 @@
     },
     {
       "example": "cae5f900-8b1d-4c0e-9c2a-1a2b3c4d5e6f",
-      "help_en": "The pagination token. Set this parameter to the value of nextToken returned in the response of the previous page",
+      "help_en": "The pagination token. Use the nextToken value returned in the previous response",
       "help_zh": "分页标记，取上一页响应返回的 nextToken",
       "location": "query",
       "name": "next_token",
@@ -519,7 +545,7 @@
             "type": "string"
           },
           "maxResults": {
-            "description_en": "The maximum number of entries per page used in this response",
+            "description_en": "The maximum number of entries returned per page in the current response",
             "description_zh": "本次返回使用的每页最大条数",
             "example": "20",
             "format": "int32",
