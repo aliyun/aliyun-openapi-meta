@@ -35,7 +35,7 @@
     },
     {
       "example": "agdb-example",
-      "help_en": "The instance ID of the undeleted SaaS service. A standard DBInstanceId cannot override it",
+      "help_en": "The instance ID of the undeleted SaaS service. A standard DBInstanceId is not accepted as an override",
       "help_zh": "未删除的SaaS服务实例ID，不接受普通DBInstanceId替代",
       "location": "query",
       "name": "service_id",
@@ -61,7 +61,7 @@
     },
     {
       "example": "2026-10-20T02:00:00Z",
-      "help_en": "The end time of the query in UTC. The format is yyyy-MM-ddTHH:mm:ssZ, and the seconds must be 00. The end time must be later than the start time and no later than the request time. The query range is not automatically truncated",
+      "help_en": "The end time of the query in UTC. The format is yyyy-MM-ddTHH:mm:ssZ, and the seconds must be 00. The end time must be later than the start time and cannot be later than the request time. The query range is not automatically truncated",
       "help_zh": "UTC时间，格式yyyy-MM-ddTHH:mm:ssZ，秒必须为00。必须晚于StartTime且不晚于请求时刻，不自动裁剪查询范围",
       "location": "query",
       "name": "end_time",
@@ -78,7 +78,7 @@
         "day"
       ],
       "example": "hour",
-      "help_en": "Specifies the time granularity. Valid values: hour (UTC hour) and day (UTC day). Default value: hour. This parameter only determines the trend aggregation method and is not returned in the response",
+      "help_en": "The time granularity. Valid values: hour (UTC hour) and day (UTC day). Default value: hour. This parameter only determines the trend aggregation method and is not returned in the response",
       "help_zh": "支持hour（UTC小时）或day（UTC日），未传默认hour。仅决定趋势汇总方式，不在响应中回显",
       "location": "query",
       "name": "time_unit",
@@ -99,14 +99,14 @@
         "properties": {
           "Distribution": {
             "backendName": "data.distribution",
-            "description_en": "The business distribution. The items are sorted in descending order of DataUnit. Items with unknown amounts are placed at the end. Items with the same value are sorted in ascending order of scenario code, project ID, and name. The items are grouped by scenario and project ID. Items without an ID but with a name are grouped by name. Records missing both are grouped as unassociated projects. The sum of all items in the complete result equals the summary. Missing or blank log scenarios are classified as other. Scenarios with values but no configured mapping retain the original values as codes and display names, and are normally included in the total. No empty rows are created for other if there are no records",
+            "description_en": "The usage distribution. The items are sorted in descending order of DataUnit. Items with unknown amounts are placed at the end. Items with the same value are sorted in ascending order of scenario code, project ID, and name. The items are grouped by scenario and project ID. If the project ID is missing but the name is present, the items are grouped by name. Records with both missing are considered unassociated projects. The sum of all items in the complete result equals the summary. Missing or blank log scenarios are classified as other. Scenarios with values but no configured mapping retain the original values as codes and display names, and are normally included in the total. If there are no records for other, no empty row is created",
             "description_zh": "按DataUnit降序，未知金额排末尾，同值按场景码、项目ID和名称升序。按场景和项目ID分组；无ID但有名称按名称分组；两者均缺失的记录为未关联项目。完整结果各项之和等于汇总；缺失或空白的日志场景归other（其他）；有值但未配置映射的场景保留原值作为编码和展示名，正常计入总量；无记录的other不创建空行",
             "itemName": "distribution",
             "items": {
               "properties": {
                 "DataUnit": {
                   "backendName": "dataUnit",
-                  "description_en": "The exact non-negative decimal string. Floating-point or exponential formats are not used. The value is null when the amount is incomplete",
+                  "description_en": "The exact non-negative decimal string. Floating-point or exponential formats are not used. If the amount is incomplete, the value is null",
                   "description_zh": "精确非负十进制字符串，不使用浮点或指数格式；金额不完整时为null",
                   "example": "2.82",
                   "nullable": true,
@@ -116,7 +116,7 @@
                 },
                 "ProjectId": {
                   "backendName": "projectId",
-                  "description_en": "The project attribution at the time of the call. The value is null when missing, which does not affect the total amount",
+                  "description_en": "The project attribution at the time of the call. If missing, the value is null, which does not affect the total amount",
                   "description_zh": "调用时的项目归因；缺失时为null，不影响总量",
                   "example": "project-1",
                   "nullable": true,
@@ -126,7 +126,7 @@
                 },
                 "ProjectName": {
                   "backendName": "projectName",
-                  "description_en": "The project name. For the same scenario and project ID, the latest non-empty name snapshot within the query range is used. If multiple snapshots exist in the same second, the maximum value in lexicographical order is used. The value is null when missing",
+                  "description_en": "The project name. For the same scenario and project ID, the latest non-empty name snapshot within the query range is used. If multiple snapshots exist in the same second, the one with the maximum lexicographical value is used. If missing, the value is null",
                   "description_zh": "同一场景和项目ID取查询范围内最新非空名称快照，同秒取字典序最大值；缺失为null",
                   "example": "场景重制",
                   "nullable": true,
@@ -136,7 +136,7 @@
                 },
                 "UsageScene": {
                   "backendName": "usageScene",
-                  "description_en": "The business scenario code",
+                  "description_en": "The usage scenario code",
                   "description_zh": "业务场景码",
                   "example": "drama_game_oneshot",
                   "title_en": "业务场景码",
@@ -145,7 +145,7 @@
                 },
                 "UsageSceneName": {
                   "backendName": "usageSceneName",
-                  "description_en": "The display name of the business scenario. This name is supplemented by a dictionary that maps the original Meta values to Chinese names, and is not an SLS field. UsageScene always retains the original log value. If no Chinese name is available, the original value is used as the name. Blank values are classified as other. Different codes with the same Chinese name are not merged",
+                  "description_en": "The display name of the usage scenario. This field is supplemented by a dictionary that maps original Meta values to Chinese names, and is not an SLS field. UsageScene always retains the original log value. If no Chinese name is available, the original value is used as the name. Blank values are classified as other. Different codes with the same Chinese name are not merged",
                   "description_zh": "由Meta原值到中文名的字典补充，不是SLS字段。UsageScene始终保留日志原值；无中文名则名称也用原值；空白归其他。同中文名不同编码不合并",
                   "example": "游戏生成",
                   "title_en": "业务场景展示名称",
@@ -202,7 +202,7 @@
             "properties": {
               "DataUnit": {
                 "backendName": "dataUnit",
-                "description_en": "The exact non-negative decimal string. Floating-point or exponential formats are not used. The value is null when the amount is incomplete",
+                "description_en": "The exact non-negative decimal string. Floating-point or exponential formats are not used. If the amount is incomplete, the value is null",
                 "description_zh": "精确非负十进制字符串，不使用浮点或指数格式；金额不完整时为null",
                 "example": "2.82",
                 "nullable": true,
@@ -217,14 +217,14 @@
           },
           "TimeSeries": {
             "backendName": "data.timeSeries",
-            "description_en": "The time trend. The items are sorted in ascending order of the UTC bucket start time. Zero buckets are padded for complete queries. The value is null for unknown amounts and is not replaced with zero",
+            "description_en": "The time trend. The items are sorted in ascending order of the UTC bucket start time. For a complete query, zero buckets are filled. If the amount is unknown, the value is null and is not replaced with zero",
             "description_zh": "按UTC桶起点升序。完整查询补齐零桶；未知金额为null，不以零替代",
             "itemName": "timeSeries",
             "items": {
               "properties": {
                 "DataUnit": {
                   "backendName": "dataUnit",
-                  "description_en": "The exact non-negative decimal string. Floating-point or exponential formats are not used. The value is null when the amount is incomplete",
+                  "description_en": "The exact non-negative decimal string. Floating-point or exponential formats are not used. If the amount is incomplete, the value is null",
                   "description_zh": "精确非负十进制字符串，不使用浮点或指数格式；金额不完整时为null",
                   "example": "2.82",
                   "nullable": true,
@@ -241,7 +241,7 @@
                     "properties": {
                       "DataUnit": {
                         "backendName": "dataUnit",
-                        "description_en": "The exact non-negative decimal string. Floating-point or exponential formats are not used. The value is null when the amount is incomplete",
+                        "description_en": "The exact non-negative decimal string. Floating-point or exponential formats are not used. If the amount is incomplete, the value is null",
                         "description_zh": "精确非负十进制字符串，不使用浮点或指数格式；金额不完整时为null",
                         "example": "2.82",
                         "nullable": true,
@@ -251,7 +251,7 @@
                       },
                       "ProjectId": {
                         "backendName": "projectId",
-                        "description_en": "The project attribution at the time of the call. The value is null when missing, which does not affect the total amount",
+                        "description_en": "The project attribution at the time of the call. If missing, the value is null, which does not affect the total amount",
                         "description_zh": "调用时的项目归因；缺失时为null，不影响总量",
                         "example": "project-1",
                         "nullable": true,
@@ -261,7 +261,7 @@
                       },
                       "ProjectName": {
                         "backendName": "projectName",
-                        "description_en": "The project name. For the same scenario and project ID, the latest non-empty name snapshot within the query range is used. If multiple snapshots exist in the same second, the maximum value in lexicographical order is used. The value is null when missing",
+                        "description_en": "The project name. For the same scenario and project ID, the latest non-empty name snapshot within the query range is used. If multiple snapshots exist in the same second, the one with the maximum lexicographical value is used. If missing, the value is null",
                         "description_zh": "同一场景和项目ID取查询范围内最新非空名称快照，同秒取字典序最大值；缺失为null",
                         "example": "场景重制",
                         "nullable": true,
@@ -271,7 +271,7 @@
                       },
                       "UsageScene": {
                         "backendName": "usageScene",
-                        "description_en": "The business scenario code",
+                        "description_en": "The usage scenario code",
                         "description_zh": "业务场景码",
                         "example": "game_translation",
                         "title_en": "业务场景码",
@@ -303,14 +303,14 @@
           },
           "Warnings": {
             "backendName": "data.warnings",
-            "description_en": "The product notifications",
+            "description_en": "The product notices",
             "description_zh": "产品提示",
             "itemName": "warnings",
             "items": {
               "properties": {
                 "Code": {
                   "backendName": "code",
-                  "description_en": "The notification code. Valid values include DATA_INCOMPLETE and DATA_UNIT_PENDING",
+                  "description_en": "The notice code. Valid values include DATA_INCOMPLETE and DATA_UNIT_PENDING",
                   "description_zh": "包括DATA_INCOMPLETE和DATA_UNIT_PENDING",
                   "example": "DATA_INCOMPLETE",
                   "title_en": "提示码",
@@ -319,7 +319,7 @@
                 },
                 "Message": {
                   "backendName": "message",
-                  "description_en": "The notification message",
+                  "description_en": "The content of the product notice",
                   "description_zh": "产品提示内容",
                   "example": "部分用量尚未就绪",
                   "title_en": "产品提示内容",
