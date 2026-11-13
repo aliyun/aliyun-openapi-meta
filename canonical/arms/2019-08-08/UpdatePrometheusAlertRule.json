@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun arms UpdatePrometheusAlertRule --region cn-hangzhou --AlertId 3888704 --AlertName Prometheus_Alert --Message 'labels.pod_name_CPU使用率大于80%，当前值_value_%' --ClusterId c0bad479465464e1d8c1e641b0afb0000 --Expression '100_0_sum_rate_container_cpu_usage_seconds_total_1m_by_pod_name_/_sum_label_replace_kube_pod_container_resource_limits_cpu_cores,_pod_name_,_1_,_pod_,_.0_by_pod_name_75' --Duration 1 --RegionId 'cn-hangzhou'",
+  "camel_example": "aliyun arms UpdatePrometheusAlertRule --region cn-hangzhou --AlertId 3888704 --AlertName Prometheus_Alert --Message '${{$labels.pod_name}}CPU使用率大于80%，当前值{{$value}}%' --ClusterId 'c0bad479465464e1d8c1e641b0afb****' --Expression '100 * (sum(rate(container_cpu_usage_seconds_total[1m])) by (pod_name) / sum(label_replace(kube_pod_container_resource_limits_cpu_cores, \\\"pod_name\\\", \\\"$1\\\", \\\"pod\\\", \\\"(.*)\\\")) by (pod_name))>75' --Duration 1 --RegionId 'cn-hangzhou'",
   "cmd_full_name": "arms update-prometheus-alert-rule",
   "cmd_name": "update-prometheus-alert-rule",
   "deprecated": false,
-  "description_en": "Updates a Prometheus alert rule by calling the UpdatePrometheusAlertRule operation",
+  "description_en": "Updates a Prometheus alert rule",
   "description_zh": "调用UpdatePrometheusAlertRule接口更新Prometheus报警规则",
-  "kebab_example": "aliyun arms update-prometheus-alert-rule --biz-region-id cn-hangzhou --alert-name Prometheus_Alert --cluster-id c0bad479465464e1d8c1e641b0afb0000 --expression 100_0_sum_rate_container_cpu_usage_seconds_total_1m_by_pod_name_/_sum_label_replace_kube_pod_container_resource_limits_cpu_cores,_pod_name_,_1_,_pod_,_.0_by_pod_name_75 --duration 1 --message 'labels.pod_name_CPU使用率大于80%，当前值_value_%' --alert-id 3888704 --api-version 2019-08-08 --region cn-hangzhou",
+  "kebab_example": "aliyun arms update-prometheus-alert-rule --biz-region-id cn-hangzhou --alert-name Prometheus_Alert --cluster-id 'c0bad479465464e1d8c1e641b0afb****' --expression '100 * (sum(rate(container_cpu_usage_seconds_total[1m])) by (pod_name) / sum(label_replace(kube_pod_container_resource_limits_cpu_cores, \\\"pod_name\\\", \\\"$1\\\", \\\"pod\\\", \\\"(.*)\\\")) by (pod_name))>75' --duration 1 --message '${{$labels.pod_name}}CPU使用率大于80%，当前值{{$value}}%' --alert-id 3888704 --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": false,
   "name": "UpdatePrometheusAlertRule",
@@ -77,7 +77,7 @@
     },
     {
       "example": "ALERT_MANAGER",
-      "help_en": "The notification type. Valid values:\n\n`ALERT_MANAGER`: Notifications are sent through the alert operations center.\n`DISPATCH_RULE`: Notifications are sent based on a specified notification policy",
+      "help_en": "The notification type. Valid values:\n\n`ALERT_MANAGER`: Notifications are sent through the Alert Operations Center.\n`DISPATCH_RULE`: Notifications are sent based on a specified notification policy",
       "help_zh": "通知类型， 取值：\n\n`ALERT_MANAGER`：通过告警运维中心通知。\n`DISPATCH_RULE`：指定通知策略进行通知",
       "location": "query",
       "name": "notify_type",
@@ -104,7 +104,7 @@
     {
       "doc_required": true,
       "example": "100 * (sum(rate(container_cpu_usage_seconds_total[1m])) by (pod_name) / sum(label_replace(kube_pod_container_resource_limits_cpu_cores, \\\"pod_name\\\", \\\"$1\\\", \\\"pod\\\", \\\"(.*)\\\")) by (pod_name))>75",
-      "help_en": "The alert expression, which must be a PromQL statement",
+      "help_en": "The alert expression. You must use a PromQL statement",
       "help_zh": "告警表达式，需要使用PromQL语句",
       "location": "query",
       "name": "expression",
@@ -145,7 +145,7 @@
     },
     {
       "example": "[{\"Value\": \"critical\",\"Name\": \"severity\"}]",
-      "help_en": "The label JSON string. You must set the Name and Value of the label",
+      "help_en": "The JSON string of labels. You must specify the Name and Value for each label",
       "help_zh": "标签JSON串。需要设置标签的Name和Value",
       "location": "query",
       "name": "labels",
@@ -158,7 +158,7 @@
     },
     {
       "example": "[{\"Value\": \"xxx\",\"Name\": \"description\"}]",
-      "help_en": "The annotation JSON string. You must set the Name and Value of the annotation",
+      "help_en": "The JSON string of annotations. You must specify the Name and Value for each annotation",
       "help_zh": "注释JSON串。需要设置注释的Name和Value",
       "location": "query",
       "name": "annotations",
@@ -172,7 +172,7 @@
     {
       "doc_required": true,
       "example": "3888704",
-      "help_en": "The ID of the alerting rule. You can obtain the ID from the response data of the ListPrometheusAlertRules API operation",
+      "help_en": "The ID of the alerting rule. You can view the ID in the response of the ListPrometheusAlertRules API operation",
       "help_zh": "告警规则ID，您可以在ListPrometheusAlertRules API接口的返回数据中查看",
       "location": "query",
       "name": "alert_id",
@@ -384,7 +384,7 @@
               },
               "NotifyType": {
                 "backendName": "notifyWay",
-                "description_en": "The notification type. Valid values:\n\n`ALERT_MANAGER`: Notifications are sent through the alert operations center.\n`DISPATCH_RULE`: Notifications are sent based on a specified notification policy",
+                "description_en": "The notification type. Valid values:\n\n`ALERT_MANAGER`: Notifications are sent through the Alert Operations Center.\n`DISPATCH_RULE`: Notifications are sent based on a specified notification policy",
                 "description_zh": "通知类型， 取值：\n\n`ALERT_MANAGER`：通过报警运维中心通知。\n`DISPATCH_RULE`：指定通知策略进行通知",
                 "example": "ALERT_MANAGER",
                 "mappingResourcePropertyName": "$.NotifyType",
@@ -393,7 +393,7 @@
               },
               "Status": {
                 "backendName": "status",
-                "description_en": "The status of the alert rule. Valid values:\n\n`1`: enabled\n`0`: disabled",
+                "description_en": "The enabled status of the alert rule. Valid values:\n\n`1`: Enabled.\n`0`: Disabled",
                 "description_zh": "告警规则启用状态，取值：\n\n`1`：开启\n`0`：关闭",
                 "example": "1",
                 "format": "int32",
@@ -424,7 +424,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the operation was successful. Valid values:\n\n`true`: The operation was successful.\n`false`: The operation failed",
+            "description_en": "Indicates whether the operation is successful. Valid values:\n\n`true`: The operation is successful.\n`false`: The operation fails",
             "description_zh": "操作是否成功：\n\n`true`：操作成功\n`false`：操作失败",
             "example": "True",
             "type": "boolean"
