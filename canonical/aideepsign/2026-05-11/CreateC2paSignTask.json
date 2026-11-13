@@ -22,8 +22,8 @@
   "parameters": [
     {
       "example": "https://example.com/images/photo.png?token=xxx",
-      "help_en": "The absolute HTTP or HTTPS URL of the file to be signed. The URL can be up to 4,096 characters in length",
-      "help_zh": "待签名文件的绝对 HTTP 或 HTTPS 地址，最多 4096 个字符",
+      "help_en": "The absolute HTTP or HTTPS URL of signature file to be signed. The URL can be up to 4,096 characters in length and must not contain URL user info. The URL path must end with a .jpg, .jpeg, .png, .mp4, .flac, .m4a, .mp3, or .wav file name. Signature file name extension is case-insensitive. The URL query is not used for file name identification. The source URL must be accessible by the service and directly return an HTTP 200 status code. Redirection is not supported. The size of a single file must not exceed 800 MiB",
+      "help_zh": "待签名文件的绝对 HTTP 或 HTTPS 地址，最多 4096 个字符，不能包含 URL user info。URL path 须以 `.jpg`、`.jpeg`、`.png`、`.mp4`、`.flac`、`.m4a`、`.mp3` 或 `.wav` 文件名结尾，扩展名大小写不敏感；URL query 不参与文件名识别。源地址必须可由服务访问并直接返回 HTTP 200，不支持重定向。单个文件大小不得超过 800 MiB",
       "location": "query",
       "name": "file_url",
       "options": [
@@ -34,9 +34,49 @@
       "type": "string"
     },
     {
+      "enum": [
+        "algorithmicMedia",
+        "algorithmicallyEnhanced",
+        "composite",
+        "compositeCapture",
+        "compositeSynthetic",
+        "compositeWithTrainedAlgorithmicMedia",
+        "computationalCapture",
+        "dataDrivenMedia",
+        "digitalCapture",
+        "digitalCreation",
+        "empty",
+        "http://c2pa.org/digitalsourcetype/empty",
+        "http://c2pa.org/digitalsourcetype/trainedAlgorithmicData",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/algorithmicMedia",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/algorithmicallyEnhanced",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/composite",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/compositeCapture",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/compositeSynthetic",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/compositeWithTrainedAlgorithmicMedia",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/computationalCapture",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/dataDrivenMedia",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/digitalCreation",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/humanEdits",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/negativeFilm",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/positiveFilm",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/print",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/screenCapture",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia",
+        "http://cv.iptc.org/newscodes/digitalsourcetype/virtualRecording",
+        "humanEdits",
+        "negativeFilm",
+        "positiveFilm",
+        "print",
+        "screenCapture",
+        "trainedAlgorithmicData",
+        "trainedAlgorithmicMedia",
+        "virtualRecording"
+      ],
       "example": "trainedAlgorithmicMedia",
-      "help_en": "This parameter is not supported in the current version",
-      "help_zh": "当前版本暂不支持",
+      "help_en": "The optional content source type. The value can be up to 128 characters in length. It supports 19 short names and their corresponding full HTTP URIs, and is case-sensitive. Examples include digitalCapture and trainedAlgorithmicMedia. The source declaration is written into the content credentials of the signature file. If this parameter is not specified, no additional source is declared. The service will deny invalid values during the creation phase. For the complete enumeration and URIs, refer to the supplementary description of request parameters",
+      "help_zh": "可选的内容来源类型，最多 128 个字符。支持 19 个短名称及其对应的完整 HTTP URI，区分大小写；例如 `digitalCapture`、`trainedAlgorithmicMedia`。来源声明会写入签名文件的内容凭证；未填写则不额外声明，非法值在创建阶段拒绝。完整枚举和 URI 见请求参数补充说明",
       "location": "query",
       "max_length": "128",
       "name": "source_type",
@@ -49,8 +89,8 @@
     },
     {
       "example": "Alibaba Cloud Qwen ImageGen",
-      "help_en": "This parameter is not supported in the current version",
-      "help_zh": "当前版本暂不支持",
+      "help_en": "The optional name of the software that generated or processed the content. The value can be up to 128 characters in length, such as Example Studio 1.0. This software information is written into the content credentials of the signature file and is independent of SourceType and CustomAssertions",
+      "help_zh": "可选的生成或处理内容的软件名称，最多 128 个字符，例如 `Example Studio 1.0`。该软件信息会写入签名文件的内容凭证，与 `SourceType` 和 `CustomAssertions` 独立",
       "location": "query",
       "name": "software_agent",
       "options": [
@@ -62,8 +102,8 @@
     },
     {
       "example": "[{\"label\":\"com.shein.internal\",\"data\":{\"meta_id\":\"emp001\",\"generation\":{\"modelVersion\":\"2.1\",\"count\":3},\"tags\":[\"AI生成\",\"电商\"],\"enabled\":true,\"optional\":null}}]",
-      "help_en": "The JSON string of the custom assertion list",
-      "help_zh": "自定义声明列表的 JSON 字符串",
+      "help_en": "The optional list of custom assertions. Pass a character string representing a JSON array. The original JSON text can be up to 4,096 UTF-8 bytes in length and contain up to 64 assertions. Each item must and can only contain label and data. data supports any JSON value. Objects and arrays can be nested up to 5 levels deep. JSON integers must be within the signed 64-bit range. The assertions are written into the manifest of the signature file and can be read and authenticated for integrity by label. For detailed formats, limits, and examples, refer to the supplementary description of request parameters",
+      "help_zh": "可选的自定义声明列表，请传入 JSON 数组字符串。原始 JSON 文本最多 4096 个 UTF-8 字节、最多 64 条声明；每项必须且只能包含 `label` 和 `data`。`data` 支持任意 JSON 值，对象和数组最多嵌套 5 层，JSON 整数须在有符号 64 位范围内。声明将写入本次签名文件的 Manifest，可按 `label` 读取并验证完整性。详细格式、限制及示例见请求参数补充说明",
       "location": "query",
       "max_length": "4096",
       "name": "custom_assertions",
@@ -81,7 +121,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The task creation response",
+        "description_en": "The task creation result",
         "description_zh": "创建任务返回结果",
         "properties": {
           "Code": {
@@ -114,7 +154,7 @@
           },
           "RequestId": {
             "backendName": "RequestId",
-            "description_en": "The request ID of this API call",
+            "description_en": "The request ID of this OpenAPI invoke",
             "description_zh": "本次 OpenAPI 调用的请求 ID",
             "example": "A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
             "title_en": "请求ID",
@@ -132,7 +172,7 @@
           },
           "TaskId": {
             "backendName": "TaskId",
-            "description_en": "The opaque task ID generated by the service. You can use this ID to call the GetC2paSignResult operation",
+            "description_en": "The opaque task ID generated by the service, which is used to call GetC2paSignResult",
             "description_zh": "服务生成的不透明任务 ID，用于调用 GetC2paSignResult",
             "example": "7093c29e-f472-4e1e-91c6-a43df7c7382e",
             "title_en": "官方C2PA单文件签名任务ID，可用于GetC2paSignResult查询",
