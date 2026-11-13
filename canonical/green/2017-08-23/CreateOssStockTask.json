@@ -2,7 +2,7 @@
   "cmd_full_name": "green create-oss-stock-task",
   "cmd_name": "create-oss-stock-task",
   "deprecated": false,
-  "description_en": "Creates a stock scan task",
+  "description_en": "Creates a scan task for existing data",
   "description_zh": "创建存量扫描任务",
   "kebab_example": "aliyun green create-oss-stock-task --start-date '2026-08-05 00:00:00 +0800' --end-date '2026-08-11 03:20:00 +0800' --buckets '[{\"bucket\":\"aileshijie\",\"selected\":true,\"prefixes\":[]}]' --image-opened true --image-scenes '[\\\"porn\\\",\\\"terrorism\\\"]' --scan-image-no-file-type false --video-opened true --video-scenes '[\\\"ad\\\",\\\"terrorism\\\",\\\"live\\\",\\\"porn\\\"]' --audio-opened true --audio-scenes '[\\\"antispam\\\"]' --image-auto-freeze-opened true --image-porn-freeze-config '{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"block\\\"}' --image-terrorism-freeze-config '{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"review,block\\\"}' --image-ad-freeze-config '{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"review,block\\\"}' --image-live-freeze-config '{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"block\\\"}' --video-frame-interval 1 --video-max-frames 5 --video-max-size 500 --video-auto-freeze-opened true --video-porn-freeze-config '{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"block,review\\\"}' --video-terrorism-freeze-config '{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"review,block\\\"}' --video-ad-freeze-config '{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"review,block\\\"}' --video-live-freeze-config '{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"block,review\\\"}' --video-voice-antispam-freeze-config '{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"block\\\"}' --audio-auto-freeze-opened true --audio-max-size 200 --audio-antispam-freeze-config '{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"block\\\"}' --auto-freeze-type acl --callback-id 1764 --biz-type recommend_reading_template_01 --image-scan-limit 1000 --video-scan-limit 200 --audio-scan-limit 100 --api-version 2017-08-23 --region cn-hangzhou",
   "method": "GET|POST",
@@ -34,7 +34,7 @@
     },
     {
       "example": "2026-08-11 03:20:00 +0800",
-      "help_en": "The end time. Format: yyyy-MM-dd HH:mm:ss +HHMM. This parameter is required in practice. If this parameter is not specified, the service returns a 400 error with the message \"startDate is empty\"",
+      "help_en": "The end time. Format: yyyy-MM-dd HH:mm:ss +HHMM. This parameter is actually required. If it is not provided, the service returns a 400 error with the message \"startDate is empty\"",
       "help_zh": "结束时间。格式为yyyy-MM-dd HH:mm:ss +HHMM。此参数实际为必填项，未提供时服务返回 400 startDate is empty",
       "location": "query",
       "name": "end_date",
@@ -47,8 +47,8 @@
     },
     {
       "example": "[{\"bucket\":\"aileshijie\",\"selected\":true,\"prefixes\":[]}]",
-      "help_en": "The OSS bucket",
-      "help_zh": "存储空间",
+      "help_en": "The OSS buckets. The bucket name must belong to an existing OSS bucket under the caller's account. You can call the OSS ListBuckets API operation to query available buckets. For bucket values, call the OSS ListBuckets API operation to query the list of available buckets under the current account. For more information, see https://help.aliyun.com/document_detail/31964.html",
+      "help_zh": "存储空间。\nbucket 字段需为调用方账号下已存在的 OSS 存储空间名称，可通过 OSS ListBuckets API 查询可用 bucket 列表 bucket 取值可调用 OSS ListBuckets 接口查询当前账号下可用的存储空间列表（参考 https://help.aliyun.com/document_detail/31964.html ）",
       "location": "query",
       "name": "buckets",
       "options": [
@@ -60,8 +60,8 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to scan images. If this parameter is set to true, you must also specify ImageScenes",
-      "help_zh": "是否扫描图片。设为 true 时须配合 ImageScenes 使用",
+      "help_en": "Specifies whether to scan images. If this parameter is set to true, it must be used together with ImageScenes. This API operation requires that at least one of ImageOpened, VideoOpened, and AudioOpened is set to true",
+      "help_zh": "是否扫描图片。设为 true 时须配合 ImageScenes 使用。\n本 API 要求 ImageOpened、VideoOpened、AudioOpened 至少有一个设为 true",
       "location": "query",
       "name": "image_opened",
       "options": [
@@ -73,7 +73,7 @@
     },
     {
       "example": "[\\\"porn\\\",\\\"terrorism\\\"]",
-      "help_en": "The image moderation scenarios. This parameter is required if ImageOpened is set to true. Specify a list of image moderation scenarios, such as porn and terrorism",
+      "help_en": "The image moderation scenarios. This parameter is required when ImageOpened is set to true. You must pass in a list of image moderation scenarios, such as porn and terrorism",
       "help_zh": "图片场景。当 ImageOpened 设为 true 时本参数必填，需传入图片审核场景列表（如 porn、terrorism）",
       "location": "query",
       "name": "image_scenes",
@@ -86,7 +86,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to scan files without file name extensions",
+      "help_en": "Specifies whether to detect files without extensions",
       "help_zh": "检测无后缀文件",
       "location": "query",
       "name": "scan_image_no_file_type",
@@ -99,8 +99,8 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to scan videos. If this parameter is set to true, you must also specify VideoScenes",
-      "help_zh": "是否扫描视频。设为 true 时须配合 VideoScenes 使用",
+      "help_en": "Specifies whether to scan videos. If this parameter is set to true, it must be used together with VideoScenes. This API operation requires that at least one of ImageOpened, VideoOpened, and AudioOpened is set to true",
+      "help_zh": "是否扫描视频。设为 true 时须配合 VideoScenes 使用。\n本 API 要求 ImageOpened、VideoOpened、AudioOpened 至少有一个设为 true",
       "location": "query",
       "name": "video_opened",
       "options": [
@@ -125,8 +125,8 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to scan audio files. If this parameter is set to true, you must also specify AudioScenes",
-      "help_zh": "是否扫描音频。设为 true 时须配合 AudioScenes 使用",
+      "help_en": "Specifies whether to scan audio files. If this parameter is set to true, it must be used together with AudioScenes. This API operation requires that at least one of ImageOpened, VideoOpened, and AudioOpened is set to true",
+      "help_zh": "是否扫描音频。设为 true 时须配合 AudioScenes 使用。\n本 API 要求 ImageOpened、VideoOpened、AudioOpened 至少有一个设为 true",
       "location": "query",
       "name": "audio_opened",
       "options": [
@@ -151,7 +151,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to enable automatic freezing for images",
+      "help_en": "Specifies whether to automatically freeze images",
       "help_zh": "图片需要自动冻结",
       "location": "query",
       "name": "image_auto_freeze_opened",
@@ -164,7 +164,7 @@
     },
     {
       "example": "{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"block\\\"}",
-      "help_en": "The automatic freezing configuration for pornographic images",
+      "help_en": "The configuration for automatically freezing images in the pornography scenario",
       "help_zh": "图片自动冻结涉黄场景",
       "location": "query",
       "name": "image_porn_freeze_config",
@@ -177,7 +177,7 @@
     },
     {
       "example": "{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"review,block\\\"}",
-      "help_en": "The automatic freezing configuration for terrorism-related images",
+      "help_en": "The configuration for automatically freezing images in the terrorism scenario",
       "help_zh": "图片自动冻结暴恐场景",
       "location": "query",
       "name": "image_terrorism_freeze_config",
@@ -190,7 +190,7 @@
     },
     {
       "example": "{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"review,block\\\"}",
-      "help_en": "The automatic freezing configuration for advertisement images",
+      "help_en": "The configuration for automatically freezing images in the advertising scenario",
       "help_zh": "图片自动冻结广告场景",
       "location": "query",
       "name": "image_ad_freeze_config",
@@ -203,7 +203,7 @@
     },
     {
       "example": "{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"block\\\"}",
-      "help_en": "The automatic freezing configuration for inappropriate images",
+      "help_en": "The configuration for automatically freezing images in the undesirable content scenario",
       "help_zh": "图片自动冻结不良场景",
       "location": "query",
       "name": "image_live_freeze_config",
@@ -216,7 +216,7 @@
     },
     {
       "example": "1",
-      "help_en": "The video frame interval. Unit: seconds",
+      "help_en": "The interval between video frames, in seconds",
       "help_zh": "视频帧间隔，单位为秒",
       "location": "query",
       "name": "video_frame_interval",
@@ -229,7 +229,7 @@
     },
     {
       "example": "5",
-      "help_en": "The maximum number of video frames",
+      "help_en": "The maximum number of frames per video",
       "help_zh": "视频最大帧数",
       "location": "query",
       "name": "video_max_frames",
@@ -255,7 +255,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to enable automatic freezing for videos",
+      "help_en": "Specifies whether to automatically freeze videos",
       "help_zh": "视频需要自动冻结",
       "location": "query",
       "name": "video_auto_freeze_opened",
@@ -268,7 +268,7 @@
     },
     {
       "example": "{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"block,review\\\"}",
-      "help_en": "The automatic freezing configuration for pornographic videos",
+      "help_en": "The configuration for automatically freezing videos in the pornography scenario",
       "help_zh": "视频自动冻结涉黄场景",
       "location": "query",
       "name": "video_porn_freeze_config",
@@ -281,7 +281,7 @@
     },
     {
       "example": "{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"review,block\\\"}",
-      "help_en": "The automatic freezing configuration for terrorism-related videos",
+      "help_en": "The configuration for automatically freezing videos in the terrorism scenario",
       "help_zh": "视频自动冻结暴恐场景",
       "location": "query",
       "name": "video_terrorism_freeze_config",
@@ -294,7 +294,7 @@
     },
     {
       "example": "{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"review,block\\\"}",
-      "help_en": "The automatic freezing configuration for advertisement videos",
+      "help_en": "The configuration for automatically freezing videos in the advertising scenario",
       "help_zh": "视频自动冻结广告场景",
       "location": "query",
       "name": "video_ad_freeze_config",
@@ -307,7 +307,7 @@
     },
     {
       "example": "{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"block,review\\\"}",
-      "help_en": "The automatic freezing configuration for inappropriate videos",
+      "help_en": "The configuration for automatically freezing videos in the undesirable content scenario",
       "help_zh": "视频自动冻结不良场景",
       "location": "query",
       "name": "video_live_freeze_config",
@@ -320,7 +320,7 @@
     },
     {
       "example": "{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"block\\\"}",
-      "help_en": "The automatic freezing configuration for videos with voice violations",
+      "help_en": "The configuration for automatically freezing videos in the audio violation scenario",
       "help_zh": "视频自动冻结语音违规场景",
       "location": "query",
       "name": "video_voice_antispam_freeze_config",
@@ -333,7 +333,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to enable automatic freezing for audio files",
+      "help_en": "Specifies whether to automatically freeze audio files",
       "help_zh": "音频需要自动冻结",
       "location": "query",
       "name": "audio_auto_freeze_opened",
@@ -359,7 +359,7 @@
     },
     {
       "example": "{\\\"type\\\":\\\"suggestion\\\",\\\"value\\\":\\\"block\\\"}",
-      "help_en": "The automatic freezing configuration for audio antispam scenarios",
+      "help_en": "The configuration for automatically freezing audio files in the anti-spam scenario",
       "help_zh": "自动冻结语音反垃圾场景",
       "location": "query",
       "name": "audio_antispam_freeze_config",
@@ -372,7 +372,7 @@
     },
     {
       "example": "acl",
-      "help_en": "The freezing method. This parameter is required in practice. If this parameter is not specified, the service returns a MissingParameter (400) error",
+      "help_en": "The freeze method. This parameter is actually required. If it is not provided, the service returns a 400 error with the MissingParameter error code",
       "help_zh": "冻结方式。此参数实际为必填项，未提供时服务返回 MissingParameter (400)",
       "location": "query",
       "name": "auto_freeze_type",
@@ -385,7 +385,7 @@
     },
     {
       "example": "1764",
-      "help_en": "The callback task ID",
+      "help_en": "The ID of the callback task",
       "help_zh": "回调任务id",
       "location": "query",
       "name": "callback_id",
@@ -424,7 +424,7 @@
     },
     {
       "example": "200",
-      "help_en": "The maximum number of frames to capture from a single video",
+      "help_en": "The maximum number of frames to capture per video",
       "help_zh": "单视频截帧上限",
       "location": "query",
       "name": "video_scan_limit",
@@ -458,7 +458,7 @@
         "properties": {
           "Id": {
             "backendName": "id",
-            "description_en": "The scan task ID",
+            "description_en": "The ID of the moderation task",
             "description_zh": "检测任务ID",
             "example": "5122",
             "format": "int64",
