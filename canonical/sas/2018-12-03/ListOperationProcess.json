@@ -3,7 +3,7 @@
   "cmd_full_name": "sas list-operation-process",
   "cmd_name": "list-operation-process",
   "deprecated": false,
-  "description_en": "Queries a list of operation tasks",
+  "description_en": "Queries the list of operation tasks",
   "description_zh": "查询操作任务列表",
   "kebab_example": "aliyun sas list-operation-process --task-types CHECK_POLICY --current-page 1 --page-size 20 --status-codes 0 --start-time 1680919232000 --end-time 1635575219000 --task-ids '[\"3d7a1b68-599f-4e16-9b45-e920a183b***\"]' --task-sources YAO_CHI --api-version 2018-12-03 --region cn-hangzhou",
   "method": "GET|POST",
@@ -24,7 +24,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The task type. Valid values:\nCHECK_ALL: full check.\nCHECK_POLICY: check performed based on check items in the configured policy.\nCHECK_SCHEDULE: scheduled check.\nCHECK_ITEM: check performed based on specified check items.\nCHECK_INSTANCE: check performed based on specified check items and instances",
+      "help_en": "The task types. Valid values:\nCHECK_ALL: full check\nCHECK_POLICY: check executed based on the check items of the configured policy\nCHECK_SCHEDULE: scheduled check\nCHECK_ITEM: check executed based on specified check items\nCHECK_INSTANCE: check executed based on specified check items and instances",
       "help_zh": "任务类型，取值：\nCHECK_ALL：全量检查。\nCHECK_POLICY：按照配置策略的检查项执行的检查。\nCHECK_SCHEDULE：定时检查。\nCHECK_ITEM：按照指定检查项检查。\nCHECK_INSTANCE：按照指定检查项加实例的检查",
       "location": "query",
       "name": "task_types",
@@ -38,7 +38,7 @@
     },
     {
       "example": "1",
-      "help_en": "The page number of the current page to display in a paged query. This parameter is used for paging",
+      "help_en": "The page number of the current page returned during paging in a paged query",
       "help_zh": "分页查询时，显示的当前页的页码",
       "location": "query",
       "name": "current_page",
@@ -135,6 +135,58 @@
       "raw_name": "TaskSources",
       "required": false,
       "type": "array"
+    },
+    {
+      "example": "true",
+      "help_en": "Specifies whether to query real-time check records. Valid values:\ntrue: queries independent real-time task records. Each record corresponds to one asset and one check item triggered at a time.\nfalse or not specified: queries original periodic or manual tasks. The following real-time specific filter parameters take effect only when this parameter is set to true",
+      "help_zh": "是否查询实时检查记录。true：查询独立实时任务记录，每条记录对应一次触发的一个资产、一个检查项；false或不传：沿用原周期、手动等任务查询。以下实时专属筛选参数仅在true时生效",
+      "location": "query",
+      "name": "realtime",
+      "options": [
+        "--realtime"
+      ],
+      "raw_name": "Realtime",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "example": "133",
+      "help_en": "The real-time check item ID. This parameter takes effect only when Realtime is set to true. It is used to precisely filter specified check items. The value must be greater than 0. If this parameter is not specified, check items are not filtered",
+      "help_zh": "实时检查项ID。Realtime=true时生效，精确筛选指定检查项；取值必须大于0，不传表示不按检查项筛选",
+      "location": "query",
+      "name": "check_id",
+      "options": [
+        "--check-id"
+      ],
+      "raw_name": "CheckId",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "i-example001",
+      "help_en": "The instance ID of the real-time check asset. This parameter takes effect only when Realtime is set to true. An exact match is performed on the original instance ID of the asset. Fuzzy match is not supported. The value can be up to 255 characters in length. If this parameter is not specified, instances are not filtered",
+      "help_zh": "实时检查资产的实例ID。Realtime=true时生效，按资产原始实例ID精确匹配，不支持模糊匹配；最多255个字符。不传表示不按实例筛选",
+      "location": "query",
+      "name": "instance_id",
+      "options": [
+        "--instance-id"
+      ],
+      "raw_name": "InstanceId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "Ecs",
+      "help_en": "The original identity of the cloud service that triggers the real-time check. This parameter takes effect only when Realtime is set to true. An exact match is performed on the service name in the ActionTrail event, such as Ecs. The value can be up to 128 characters in length. If this parameter is not specified, cloud services are not filtered",
+      "help_zh": "触发实时检查的云产品原始标识。Realtime=true时生效，沿用Trail事件中的服务名称精确匹配，例如Ecs；最多128个字符。不传表示不按云产品筛选",
+      "location": "query",
+      "name": "service_name",
+      "options": [
+        "--service-name"
+      ],
+      "raw_name": "ServiceName",
+      "required": false,
+      "type": "string"
     }
   ],
   "pathPattern": "",
@@ -153,7 +205,7 @@
             "properties": {
               "Count": {
                 "backendName": "count",
-                "description_en": "The number of entries on the current page",
+                "description_en": "The number of entries displayed on the current page",
                 "description_zh": "当前页显示的数据条数",
                 "example": "4",
                 "format": "int32",
@@ -161,7 +213,7 @@
               },
               "CurrentPage": {
                 "backendName": "currentPage",
-                "description_en": "The page number of the current page to display in a paged query. This parameter is used for paging",
+                "description_en": "The page number of the current page returned during paging in a paged query",
                 "description_zh": "分页查询时，显示的当前页的页码",
                 "example": "1",
                 "format": "int32",
@@ -195,6 +247,35 @@
               "description_en": "The operation task information",
               "description_zh": "操作任务信息",
               "properties": {
+                "CheckId": {
+                  "backendName": "checkId",
+                  "description_en": "The check item ID of the current real-time task. This field is populated only for real-time check records",
+                  "description_zh": "本次实时任务检查的检查项ID。仅实时检查记录填充",
+                  "example": "133",
+                  "format": "int64",
+                  "title_en": "本次实时检查的检查项ID。",
+                  "title_zh": "本次实时检查的检查项ID。",
+                  "type": "integer"
+                },
+                "CheckName": {
+                  "backendName": "checkName",
+                  "description_en": "The display name of the check item. If the name cannot be obtained, the check item ID is used as a fallback. This field is populated only for real-time check records",
+                  "description_zh": "检查项展示名称；无法取得名称时回退为检查项ID文本。仅实时检查记录填充",
+                  "example": "示例检查项",
+                  "title_en": "本次实时检查的检查项名称。",
+                  "title_zh": "本次实时检查的检查项名称。",
+                  "type": "string"
+                },
+                "CheckResult": {
+                  "backendName": "checkResult",
+                  "description_en": "The final result of the current check. Valid values:\n3: passed (no risk)\n5: failed (risk detected)\n6: actual check execution timed out\n7: detection failed\nThis field can be empty if the actual final state has not been reached, the task is skipped, or the query times out before completion is confirmed. Intermediate states such as waiting, checking, and pre-checking are not returned as final results",
+                  "description_zh": "本次检查最终结果：3表示通过（无风险），5表示不通过（有风险），6表示实际检查执行超时，7表示检测失败。尚未取得实际终态、任务跳过或仅查询超时未确认完成时可为空；等待、检查中、预检查等中间状态不作为最终结果返回",
+                  "example": "5",
+                  "format": "int32",
+                  "title_en": "本次最终检查结果：3通过、5不通过、6执行超时、7检测失败；尚无终态时为空。",
+                  "title_zh": "本次最终检查结果：3通过、5不通过、6执行超时、7检测失败；尚无终态时为空。",
+                  "type": "integer"
+                },
                 "CreateTime": {
                   "backendName": "createTime",
                   "description_en": "The creation time of the task. Unit: milliseconds",
@@ -230,11 +311,102 @@
                 },
                 "FinishCount": {
                   "backendName": "finishCount",
-                  "description_en": "The number of completed items",
+                  "description_en": "The number of completed tasks",
                   "description_zh": "完成数量",
                   "example": "197",
                   "format": "int32",
                   "type": "integer"
+                },
+                "HasRisk": {
+                  "backendName": "hasRisk",
+                  "description_en": "Indicates whether a risk exists in the current check. The value is true when CheckResult is 5, and false when CheckResult is 3. This field is empty when the check times out, fails, or has no valid risk conclusion. An unknown status is not considered as no risk",
+                  "description_zh": "本次检查是否存在风险。CheckResult=5时为true，CheckResult=3时为false；超时、失败或无有效风险结论时为空，不将未知视为无风险",
+                  "example": "true",
+                  "title_en": "本次是否有风险：true有风险，false无风险，空值表示暂无有效风险结论。",
+                  "title_zh": "本次是否有风险：true有风险，false无风险，空值表示暂无有效风险结论。",
+                  "type": "boolean"
+                },
+                "InstanceId": {
+                  "backendName": "instanceId",
+                  "description_en": "The original instance ID of the asset corresponding to the current real-time task. This field is populated only for real-time check records",
+                  "description_zh": "本次实时任务对应资产的原始实例ID。仅实时检查记录填充",
+                  "example": "i-example001",
+                  "title_en": "本次实时检查的资产实例ID。",
+                  "title_zh": "本次实时检查的资产实例ID。",
+                  "type": "string"
+                },
+                "PreviousStatus": {
+                  "backendName": "previousStatus",
+                  "description_en": "The snapshot of the most recent final result for the same asset and check item before the current check, including the final states of periodic, manual, and real-time checks. Valid values:\n3: passed\n5: failed\n6: actual check execution timed out\n7: detection failed\n0: confirmed no historical results\nAn empty value indicates that the history is unknown. Intermediate states such as waiting, checking, and pre-checking do not overwrite this value. This value does not change with new check results after the current task",
+                  "description_zh": "同一资产、同一检查项在本次检查前最近一次最终结果的快照，包含周期、手动和实时检查的终态。3表示通过，5表示不通过，6表示实际检查执行超时，7表示检测失败；0表示确认无历史结果，空值表示历史未知。等待、检查中、预检查等中间状态不覆盖该值；不随本次任务之后的新检查结果变化",
+                  "example": "3",
+                  "format": "int32",
+                  "title_en": "同一资产、同一检查项上次终态：3通过、5不通过、6执行超时、7检测失败；0无历史，空值未知；中间状态不覆盖。",
+                  "title_zh": "同一资产、同一检查项上次终态：3通过、5不通过、6执行超时、7检测失败；0无历史，空值未知；中间状态不覆盖。",
+                  "type": "integer"
+                },
+                "ReasonCode": {
+                  "backendName": "reasonCode",
+                  "description_en": "The end reason code of the real-time task, which is different from the OpenAPI call error code. This field is empty if the reason is missing. Valid values:\npolicy-disabled: the global switch for real-time detection is turned off\naccount-disabled: the real-time detection switch for the account is turned off\nsource-missing: the trigger source is missing\ninvalid-task: the task parameters are invalid\nasset-not-found: the asset does not exist or is no longer visible\nregion-denied: checks are not allowed in the region of the asset\nunsupported-sale-mode: the current edition does not support real-time checks\nasset-unbound: the billable asset is not bound to an authorization\ncheck-filtered: the check item is not in the current allowed scope\nruntime-init-failed: the initialization of the check result record failed\nasset-blocked: checks are prohibited for the account or asset category\nsend-failed: the delivery of the check task failed\ndependency-failed: an exception occurred when calling the check dependency\nno-authority: the access authorization for the cloud account is missing\nconcurrent-check: a check is already being executed for the same asset and check item\nwhitelist: the check item or asset is added to the whitelist\nscript-missing: the check script does not exist\nsale-rejected: the original detection sales verification failed\nscript-failed: the check execution failed\nresult-send-failed: the delivery of the check result notification failed\nretry-send-failed: the delivery of the original detection retry task failed\nno-result: the current check did not generate a valid conclusion\ntimeout: the check timed out and completion has not been confirmed",
+                  "description_zh": "实时任务结束原因码，与OpenAPI调用错误码不同。原因缺失时为空；具体值和含义见下述说明。\n\npolicy-disabled：实时检测总开关已关闭。\naccount-disabled：账号实时检测开关已关闭。\nsource-missing：缺少触发来源。\ninvalid-task：任务参数无效。\nasset-not-found：资产不存在或不再可见。\nregion-denied：资产地域不允许检查。\nunsupported-sale-mode：当前售卖版本不支持实时检查。\nasset-unbound：计费资产未绑定授权。\ncheck-filtered：检查项不在当前允许范围。\nruntime-init-failed：检查结果记录初始化失败。\nasset-blocked：账号或资产类别已禁止检查。\nsend-failed：检查任务投递失败。\ndependency-failed：检查依赖调用异常。\nno-authority：缺少云账号访问授权。\nconcurrent-check：同资产检查项已有检查执行。\nwhitelist：检查项或资产已加白。\nscript-missing：检查脚本不存在。\nsale-rejected：原检测售卖校验未通过。\nscript-failed：检查执行失败。\nresult-send-failed：检查结果通知投递失败。\nretry-send-failed：原检测重试任务投递失败。\nno-result：本次检查未产生有效结论。\ntimeout：检查超时，尚未确认完成",
+                  "example": "asset-not-found",
+                  "title_en": "实时任务结束原因码；具体取值和含义见详细说明。",
+                  "title_zh": "实时任务结束原因码；具体取值和含义见详细说明。",
+                  "type": "string"
+                },
+                "ReasonMessage": {
+                  "backendName": "reasonMessage",
+                  "description_en": "The display text for the end reason of the real-time task, which corresponds to ReasonCode and does not include exception stacks. This field is empty if the reason is missing",
+                  "description_zh": "实时任务结束原因的展示文案，与ReasonCode对应，不包含异常堆栈；原因缺失时为空",
+                  "example": "资产不存在或不再可见",
+                  "title_en": "实时任务结束原因说明，与ReasonCode对应。",
+                  "title_zh": "实时任务结束原因说明，与ReasonCode对应。",
+                  "type": "string"
+                },
+                "ResultChange": {
+                  "backendName": "resultChange",
+                  "description_en": "The change type between the two final results. Valid values:\nCHANGED: the final results are different\nUNCHANGED: the final results are the same\nNO_HISTORY: the current check has a final result and it is confirmed that there are no historical results\nUNKNOWN: the final state of the current check is not obtained, the history is unknown, or the results cannot be compared\nThe comparison scope includes 3 (passed), 5 (failed), 6 (actual execution timed out), and 7 (detection failed). Intermediate states such as waiting, checking, and pre-checking are not compared",
+                  "description_zh": "两次最终结果的变化类型：CHANGED表示最终结果不同；UNCHANGED表示最终结果相同；NO_HISTORY表示本次已有最终结果且确认无历史结果；UNKNOWN表示未取得本次终态、历史未知或结果不可比较。比较范围为3（通过）、5（不通过）、6（实际执行超时）、7（检测失败）；不比较等待、检查中、预检查等中间状态",
+                  "example": "CHANGED",
+                  "title_en": "最终结果变化类型：CHANGED已变化、UNCHANGED未变化、NO_HISTORY无历史、UNKNOWN不可比较；仅比较终态。",
+                  "title_zh": "最终结果变化类型：CHANGED已变化、UNCHANGED未变化、NO_HISTORY无历史、UNKNOWN不可比较；仅比较终态。",
+                  "type": "string"
+                },
+                "ResultChanged": {
+                  "backendName": "resultChanged",
+                  "description_en": "Indicates whether the final result of the current check has changed compared with the previous one. When both results are within 3 (passed), 5 (failed), 6 (actual execution timed out), and 7 (detection failed), the value is true if they are different, and false if they are the same. This field is empty if there is no history or either final result is unknown. Failures and timeouts are included in the comparison, while intermediate states are not",
+                  "description_zh": "本次与上次最终结果是否变化。两次结果均在3（通过）、5（不通过）、6（实际执行超时）、7（检测失败）内时，不同为true，相同为false；无历史或任一最终结果未知时为空。失败和超时参与比较，中间状态不参与",
+                  "example": "true",
+                  "title_en": "本次与上次最终结果是否变化：true变化，false未变化，空值表示不可比较；失败和超时参与比较。",
+                  "title_zh": "本次与上次最终结果是否变化：true变化，false未变化，空值表示不可比较；失败和超时参与比较。",
+                  "type": "boolean"
+                },
+                "RiskChange": {
+                  "backendName": "riskChange",
+                  "description_en": "The change type between the two risk conclusions. Valid values:\nNEW_RISK: changed from 3 to 5 (from no risk to risk detected)\nRESOLVED: changed from 5 to 3 (from risk detected to no risk)\nUNCHANGED: remained 3 to 3 or 5 to 5\nNO_HISTORY: the current check has a risk conclusion but it is confirmed that there are no historical results\nUNKNOWN: the current or historical risk conclusion is unknown, failed, timed out, or otherwise incomparable",
+                  "description_zh": "两次风险结论的变化类型：NEW_RISK表示3→5（无风险变为有风险）；RESOLVED表示5→3（有风险变为无风险）；UNCHANGED表示3→3或5→5；NO_HISTORY表示本次有风险结论但确认无历史结果；UNKNOWN表示本次或历史风险结论未知、失败、超时等不可比较情形",
+                  "example": "NEW_RISK",
+                  "title_en": "风险变化类型：NEW_RISK新增风险、RESOLVED风险消除、UNCHANGED未变化、NO_HISTORY无历史、UNKNOWN不可比较。",
+                  "title_zh": "风险变化类型：NEW_RISK新增风险、RESOLVED风险消除、UNCHANGED未变化、NO_HISTORY无历史、UNKNOWN不可比较。",
+                  "type": "string"
+                },
+                "RiskChanged": {
+                  "backendName": "riskChanged",
+                  "description_en": "Indicates whether the risk conclusion of the current check has changed compared with the previous one. The two results can be compared only when both are 3 (no risk) or 5 (risk detected). The value is true if the results are different, and false if they are the same. This field is empty if the results cannot be compared due to no history, unknown history, failure, or timeout",
+                  "description_zh": "本次与上次风险结论是否变化。仅两次结果均为3（无风险）或5（有风险）时可比较；不同为true，相同为false；无历史、历史未知、失败或超时导致不可比较时为空",
+                  "example": "true",
+                  "title_en": "本次与上次风险结论是否变化：true变化，false未变化，空值表示不可比较。",
+                  "title_zh": "本次与上次风险结论是否变化：true变化，false未变化，空值表示不可比较。",
+                  "type": "boolean"
+                },
+                "ServiceName": {
+                  "backendName": "serviceName",
+                  "description_en": "The original identifier of the cloud service that triggered the current real-time check. This value is obtained from the ActionTrail event, such as Ecs. If the source is missing, this field is empty",
+                  "description_zh": "触发本次实时检查的云产品原始标识，来自Trail事件，例如Ecs；来源缺失时为空",
+                  "example": "Ecs",
+                  "title_en": "触发本次实时检查的云产品标识。",
+                  "title_zh": "触发本次实时检查的云产品标识。",
+                  "type": "string"
                 },
                 "StartTime": {
                   "backendName": "startTime",
@@ -246,7 +418,7 @@
                 },
                 "StatusCode": {
                   "backendName": "statusCode",
-                  "description_en": "The check task status code. Valid values:\n\n0: not started.\n1: checking.\n2: check completed.\n3: timed out",
+                  "description_en": "The check task status codes. Valid values:\n0: not started\n1: checking\n2: check completed\n3: timed out",
                   "description_zh": "检查任务状态码列表，取值：\n\n0：未启动\n1：检查中\n2：检查完成\n3： 超时",
                   "example": "1",
                   "format": "int32",
@@ -262,21 +434,21 @@
                 },
                 "TaskSource": {
                   "backendName": "taskSource",
-                  "description_en": "The task source. Valid values:\n\nYAO_CHI: ApsaraDB",
+                  "description_en": "The task source. Valid values:\nYAO_CHI: ApsaraDB",
                   "description_zh": "任务来源。取值：\n\nYAO_CHI：瑶池",
                   "example": "YAO_CHI",
                   "type": "string"
                 },
                 "TaskType": {
                   "backendName": "taskType",
-                  "description_en": "The task type. Valid values:\nCHECK_ALL: full check.\nCHECK_POLICY: check performed based on check items in the configured policy.\nCHECK_SCHEDULE: scheduled check.\nCHECK_ITEM: check performed based on specified check items.\nCHECK_INSTANCE: check performed based on specified check items and instances",
+                  "description_en": "The task types. Valid values:\nCHECK_ALL: full check\nCHECK_POLICY: check executed based on the check items of the configured policy\nCHECK_SCHEDULE: scheduled check\nCHECK_ITEM: check executed based on specified check items\nCHECK_INSTANCE: check executed based on specified check items and instances",
                   "description_zh": "任务类型，取值：\nCHECK_ALL：全量检查。\nCHECK_POLICY：按照配置策略的检查项执行的检查。\nCHECK_SCHEDULE：定时检查。\nCHECK_ITEM：按照指定检查项检查。\nCHECK_INSTANCE：按照指定检查项加实例的检查",
                   "example": "CHECK_POLICY",
                   "type": "string"
                 },
                 "TotalCount": {
                   "backendName": "totalCount",
-                  "description_en": "The total number of entries returned",
+                  "description_en": "The total number of queried entries",
                   "description_zh": "查询到的数据总条数",
                   "example": "337",
                   "format": "int32",
@@ -289,7 +461,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The ID of the request. Alibaba Cloud generates a unique identifier for each request. You can use this ID to troubleshoot issues",
+            "description_en": "The ID of the request. It is a unique identifier generated by Alibaba Cloud for the request and can be used to troubleshoot and locate issues",
             "description_zh": "本次调用请求的ID，是由阿里云为该请求生成的唯一标识符，可用于排查和定位问题",
             "example": "F8B6F758-BCD4-597A-8A2C-DA5A552C****",
             "type": "string"
