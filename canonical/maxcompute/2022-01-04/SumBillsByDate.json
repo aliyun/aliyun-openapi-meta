@@ -3,7 +3,7 @@
   "cmd_full_name": "maxcompute sum-bills-by-date",
   "cmd_name": "sum-bills-by-date",
   "deprecated": false,
-  "description_en": "Retrieves a daily summary of costs, grouped by instance or billable item",
+  "description_en": "Aggregates daily costs by instance or billing item",
   "description_zh": "按实例或者费用项逐日统计费用",
   "kebab_example": "aliyun maxcompute sum-bills-by-date --project-names projectName --start-date 1715393576201 --end-date 1718590596556 --stats-type PROJECT --topn 8 --region cn-hangzhou",
   "method": "POST",
@@ -31,7 +31,7 @@
   "parameters": [
     {
       "example": "1718590596556",
-      "help_en": "The end time of the cost statistics period",
+      "help_en": "The end time of the billing statistical period. The value is a UNIX timestamp in milliseconds",
       "help_zh": "费用统计周期结束时间。格式为 Unix 时间戳，单位为毫秒",
       "location": "body",
       "name": "end_date",
@@ -47,7 +47,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "A list of instance names. In this context, an instance is a MaxCompute project",
+      "help_en": "The list of instance names",
       "help_zh": "实例名称列表",
       "location": "body",
       "name": "project_names",
@@ -61,7 +61,7 @@
     },
     {
       "example": "1715393576201",
-      "help_en": "The start time of the cost statistics period",
+      "help_en": "The start time of the billing statistical period. The value is a UNIX timestamp in milliseconds",
       "help_zh": "费用统计周期开始时间。格式为 Unix 时间戳，单位为毫秒",
       "location": "body",
       "name": "start_date",
@@ -75,7 +75,7 @@
     },
     {
       "example": "PROJECT",
-      "help_en": "The statistics type. Valid values: `PROJECT` (by instance) and `FEE_ITEM` (by billable item)",
+      "help_en": "The statistics type. Valid values: PROJECT (instance) and FEE_ITEM (billing item)",
       "help_zh": "统计类型，枚举值：PROJECT(实例)或者 FEE_ITEM(费用项)",
       "location": "body",
       "name": "stats_type",
@@ -89,7 +89,7 @@
     },
     {
       "example": "8",
-      "help_en": "The number of top results to return, sorted by cost",
+      "help_en": "The number of top items to return after sorting by cost",
       "help_zh": "费用排序之后前多少项",
       "location": "body",
       "name": "topn",
@@ -108,21 +108,21 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "PopResult\\<List>",
+        "description_en": "PopResult<List<DailySumBillDTO>>",
         "description_zh": "PopResult<List<DailySumBillDTO>>",
         "properties": {
           "data": {
             "backendName": "data",
-            "description_en": "The list of results",
+            "description_en": "The list of returned results",
             "description_zh": "返回结果列表",
             "itemName": "data",
             "items": {
-              "description_en": "An object that contains the daily cost breakdown",
+              "description_en": "The returned result",
               "description_zh": "返回结果",
               "properties": {
                 "cost": {
                   "backendName": "cost",
-                  "description_en": "The total cost for the specified `dateTime`",
+                  "description_en": "The total cost of the billing items under the current dateTime dimension",
                   "description_zh": "当前dateTime维度，下面费用列表的总费用",
                   "example": "2000",
                   "type": "string"
@@ -136,18 +136,18 @@
                 },
                 "dateTime": {
                   "backendName": "dateTime",
-                  "description_en": "The date of the statistics, in `yyyyMMdd` format",
+                  "description_en": "The statistical date. The format is yyyyMMdd",
                   "description_zh": "统计日期。格式为yyyyMMdd",
                   "example": "20250719",
                   "type": "string"
                 },
                 "itemBills": {
                   "backendName": "itemBills",
-                  "description_en": "A list of billable items",
+                  "description_en": "The list of billing items",
                   "description_zh": "费用项列表",
                   "itemName": "itemBill",
                   "items": {
-                    "description_en": "A billable item",
+                    "description_en": "The list of billing items",
                     "description_zh": "费用项列表",
                     "properties": {
                       "cost": {
@@ -166,14 +166,14 @@
                       },
                       "itemName": {
                         "backendName": "itemName",
-                        "description_en": "The name of the item. The value of this parameter depends on the `statsType` parameter in the request. If `statsType` is `PROJECT`, this parameter indicates the instance name. If `statsType` is `FEE_ITEM`, this parameter can be a value such as `DRStorage`, `ComputationSql`, or `Storage`",
+                        "description_en": "The name of the billing item. If the billing item type is PROJECT, this parameter indicates the instance name. If the billing item type is FEE_ITEM, the value can be DRStorage, ComputationSql, Storage, or similar",
                         "description_zh": "当费用项类型为 PROJECT 时，表示实例名称；当费用项类型为 FEE_ITEM 时，itemName 可能是 DRStorage，ComputationSql，Storage 等等",
                         "example": "projectName",
                         "type": "string"
                       },
                       "percentage": {
                         "backendName": "percentage",
-                        "description_en": "The item's cost as a percentage of the total daily cost. This value does not include a percent sign (%)",
+                        "description_en": "The percentage of the cost in the current total cost. The value does not include the percent sign",
                         "description_zh": "费用占当前总费用的百分比，不带百分号",
                         "example": "50",
                         "format": "double",
@@ -214,7 +214,7 @@
   "timeout_ms": 17000,
   "v1_body_parameters": [
     {
-      "help_en": "The request body. Example: {\"startDate\":1775714495313,\"endDate\":1776232895313,\"projectNames\":[\"vw2\",\"mcqa2_tpcds_test\",\"bird\"],\"statsType\":\"FEE_ITEM\",\"topN\":8}",
+      "help_en": "The request body parameters. Example: {\"startDate\":1775714495313,\"endDate\":1776232895313,\"projectNames\":[\"vw2\",\"mcqa2_tpcds_test\",\"bird\"],\"statsType\":\"FEE_ITEM\",\"topN\":8}",
       "help_zh": "请求体参数，eg. {\"startDate\":1775714495313,\"endDate\":1776232895313,\"projectNames\":[\"vw2\",\"mcqa2_tpcds_test\",\"bird\"],\"statsType\":\"FEE_ITEM\",\"topN\":8}",
       "name": "body",
       "param_style": "json",
