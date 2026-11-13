@@ -3,7 +3,7 @@
   "cmd_full_name": "apig update-service",
   "cmd_name": "update-service",
   "deprecated": false,
-  "description_en": "Updates a service, including the health check configuration, DNS domain names, and static address configurations",
+  "description_en": "Updates a service. Supports updating the health check configuration, DNS domain names, and static address configurations of the service",
   "description_zh": "更新服务。支持更新服务健康检查配置， DNS 域名和固定地址的地址配置信息",
   "kebab_example": "aliyun apig update-service --service-id svc-cr6pk4tlhtgm58e000 --addresses 127.0.0.1:8080 --agent-service-config '{\"address\":\"https://dashscope.aliyuncs.com/api/v1\",\"provider\":\"qwen\",\"customConfig\":{\"apiKey\":\"REDACTED_API_KEY\",\"apiKeyGenerateMode\":\"Reference\"},\"enableHealthCheck\":true,\"dashScopeConfig\":{\"appCredentials\":[{\"apiKey\":\"REDACTED_API_KEY\",\"appId\":\"app-xxx\"}]},\"upstreamAuthMode\":\"api-key\",\"difyConfig\":{\"apiKey\":\"REDACTED_API_KEY\",\"botType\":\"chatflow\"},\"protocols\":[\"DashScope\"],\"enableOutlierDetection\":true}' --ai-service-config '{\"ApiKeyGenerateMode\":\"Custom\",\"address\":\"https://dashscope.aliyun.com\",\"provider\":\"qwen\\nmoonshot\\nbaichuan\\nyi\\nzhipuai\\n360ai\\nhunyuan\\nstepfun\\nspark\\nopenai\\nclaude\\nanthropic\\ndoubao\\nminimax\\ngemini\\nazure\\ndeepseek\\ncustom\\npai-eas\\nbedrock\\nvertex\",\"enableHealthCheck\":true,\"paiEASServiceConfig\":{\"endpointType\":\"\\\"public\\\"，\\\"private\\\"\",\"serviceId\":\"svc-cvaeb0um1hkqp79k72v0\",\"serviceName\":\"auto-ai-service\",\"workspaceId\":\"cb89d4de30042df4459442589664e00d\"},\"apiKeys\":[\"sk-xxx\"],\"defaultModelName\":\"gpt-4\",\"bedrockServiceConfig\":{\"awsRegion\":\"us-east-1\",\"awsAccessKey\":\"AKIAIOSFODNN7EXAMPLE\",\"awsSecretKey\":\"wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY\"},\"protocols\":[\"OpenAI/v1\"],\"vertexServiceConfig\":{\"vertexTokenRefreshAhead\":300,\"vertexAuthKey\":\"{\\\\\\\"type\\\\\\\":\\\\\\\"service_account\\\\\\\",\\\\\\\"project_id\\\\\\\":\\\\\\\"my-project\\\\\\\",\\\\\\\"private_key\\\\\\\":\\\\\\\"-----BEGIN PRIVATE KEY-----...\\\\\\\",\\\\\\\"client_email\\\\\\\":\\\\\\\"xxx@xxx.iam.gserviceaccount.com\\\\\\\",\\\\\\\"token_uri\\\\\\\":\\\\\\\"https://oauth2.googleapis.com/token\\\\\\\"}\",\"geminiSafetySetting\":{\"key\":\"{\\\"BLOCK_NONE\\\": \\\"true\\\"}\"},\"vertexAuthServiceName\":\"google-oauth2\",\"vertexRegion\":\"us-central1\",\"vertexProjectId\":\"my-project\"},\"enableOutlierDetection\":true,\"compatibleProtocols\":[\"\\\"openai\\\", \\\"anthropic\\\"\"]}' --api-key-references-to-add my-kms-ref --api-keys-to-add sk-xxxxxxxx --dns-servers 1.1.1.1 --health-check-config '{\"httpPath\":\"/healthz\",\"protocol\":\"HTTP\",\"expectedStatuses\":[\"200\"],\"enable\":true,\"unhealthyThreshold\":22,\"interval\":2,\"healthyThreshold\":2,\"httpHost\":\"dev.itemcener.com\",\"timeout\":2}' --healthy-panic-threshold 80.0 --model-provider-id 'mp-xxx****' --outlier-detection-config baseEjectionTime=30 enable=false failurePercentageThreshold=80 interval=30 failurePercentageMinimumHosts=1 --ports '[{\"protocol\":\"TCP|UDP\",\"port\":80,\"name\":\"catalog\"}]' --protocol HTTP --region cn-hangzhou",
   "method": "PUT",
@@ -20,6 +20,7 @@
       "api_key_references_to_add": "apiKeyReferencesToAdd",
       "api_keys_to_add": "apiKeysToAdd",
       "dns_servers": "dnsServers",
+      "expected_config_revision": "expectedConfigRevision",
       "health_check_config": "healthCheckConfig",
       "healthy_panic_threshold": "healthyPanicThreshold",
       "model_provider_id": "modelProviderId",
@@ -312,7 +313,7 @@
       "fields": [
         {
           "example": "Custom",
-          "help_en": "The API key generation mode",
+          "help_en": "The generation mode of the API key",
           "help_zh": "API 密钥的生成模式",
           "name": "api_key_generate_mode",
           "options": [
@@ -335,6 +336,95 @@
           "type": "string"
         },
         {
+          "fields": [
+            {
+              "example": "30000",
+              "help_en": "The cooldown duration after an API key is ejected",
+              "help_zh": "API Key 被摘除后的冷却时长",
+              "name": "cooldown_duration",
+              "options": [
+                "--cooldown-duration"
+              ],
+              "raw_name": "cooldownDuration",
+              "required": false,
+              "type": "int"
+            },
+            {
+              "example": "false",
+              "help_en": "Specifies whether to enable API key failure ejection",
+              "help_zh": "是否启用 API Key 失败摘除",
+              "name": "enabled",
+              "options": [
+                "--enabled"
+              ],
+              "raw_name": "enabled",
+              "required": false,
+              "type": "bool"
+            },
+            {
+              "element": {
+                "type": "string"
+              },
+              "help_en": "The set of response status matching rules that trigger API key failure ejection",
+              "help_zh": "触发 API Key 失败摘除的响应状态匹配规则集合",
+              "name": "failover_on_status",
+              "options": [
+                "--failover-on-status"
+              ],
+              "raw_name": "failoverOnStatus",
+              "required": false,
+              "type": "array"
+            },
+            {
+              "example": "3",
+              "help_en": "The failure count threshold that triggers API key ejection",
+              "help_zh": "触发 API Key 摘除的失败次数阈值",
+              "name": "failure_threshold",
+              "options": [
+                "--failure-threshold"
+              ],
+              "raw_name": "failureThreshold",
+              "required": false,
+              "type": "int"
+            }
+          ],
+          "help_en": "The configuration for API key failure ejection and recovery",
+          "help_zh": "API Key 失败摘除与恢复配置",
+          "name": "api_key_failover",
+          "options": [
+            "--api-key-failover"
+          ],
+          "raw_name": "apiKeyFailover",
+          "required": false,
+          "type": "object"
+        },
+        {
+          "example": "Custom",
+          "help_en": "The source of the API key. If provided along with the legacy field, the values must be identical",
+          "help_zh": "API Key来源；与旧字段同时传入时必须一致",
+          "name": "api_key_generate_mode",
+          "options": [
+            "--api-key-generate-mode"
+          ],
+          "raw_name": "apiKeyGenerateMode",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "element": {
+            "type": "string"
+          },
+          "help_en": "The read-only summary of KMS reference names, excluding credential values",
+          "help_zh": "只读KMS引用名称摘要，不包含凭据值",
+          "name": "api_key_references",
+          "options": [
+            "--api-key-references"
+          ],
+          "raw_name": "apiKeyReferences",
+          "required": false,
+          "type": "array"
+        },
+        {
           "element": {
             "type": "string"
           },
@@ -347,6 +437,18 @@
           "raw_name": "apiKeys",
           "required": false,
           "type": "array"
+        },
+        {
+          "example": "Authorization",
+          "help_en": "The name of the request header used to pass authentication credentials to the upstream",
+          "help_zh": "向上游传递鉴权凭证时使用的请求头名称",
+          "name": "auth_header_key",
+          "options": [
+            "--auth-header-key"
+          ],
+          "raw_name": "authHeaderKey",
+          "required": false,
+          "type": "string"
         },
         {
           "fields": [
@@ -385,6 +487,69 @@
               "raw_name": "awsSecretKey",
               "required": false,
               "type": "string"
+            },
+            {
+              "example": "{\"systemPrompt\":true}",
+              "help_en": "Configures whether to insert Bedrock cache markers based on prompt positions",
+              "help_zh": "按提示词位置配置是否插入 Bedrock 缓存标记",
+              "name": "bedrock_prompt_cache_point_positions",
+              "options": [
+                "--bedrock-prompt-cache-point-positions"
+              ],
+              "raw_name": "bedrockPromptCachePointPositions",
+              "required": false,
+              "type": "map",
+              "value": {
+                "type": "bool"
+              }
+            },
+            {
+              "example": "runtime",
+              "help_en": "The Bedrock service endpoint mode, which supports runtime and mantle. If omitted, runtime is used",
+              "help_zh": "Bedrock 服务端点模式，支持 runtime 和 mantle；省略时沿用 runtime",
+              "name": "endpoint_mode",
+              "options": [
+                "--endpoint-mode"
+              ],
+              "raw_name": "endpointMode",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "example": "true",
+              "help_en": "Specifies whether to enable prompt caching for the Bedrock upstream",
+              "help_zh": "是否为 Bedrock 上游启用提示词缓存",
+              "name": "prompt_cache_enable",
+              "options": [
+                "--prompt-cache-enable"
+              ],
+              "raw_name": "promptCacheEnable",
+              "required": false,
+              "type": "bool"
+            },
+            {
+              "example": "in_memory",
+              "help_en": "The data retention policy for the prompt cache",
+              "help_zh": "提示词缓存保留策略",
+              "name": "prompt_cache_retention",
+              "options": [
+                "--prompt-cache-retention"
+              ],
+              "raw_name": "promptCacheRetention",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "example": "supported_models_only",
+              "help_en": "The applicable model strategy for Bedrock prompt caching",
+              "help_zh": "Bedrock 提示词缓存的适用模型策略",
+              "name": "prompt_cache_strategy",
+              "options": [
+                "--prompt-cache-strategy"
+              ],
+              "raw_name": "promptCacheStrategy",
+              "required": false,
+              "type": "string"
             }
           ],
           "help_en": "The Bedrock service-specific configuration",
@@ -396,6 +561,18 @@
           "raw_name": "bedrockServiceConfig",
           "required": false,
           "type": "object"
+        },
+        {
+          "example": "false",
+          "help_en": "Specifies whether to enable Claude Code compatibility mode",
+          "help_zh": "是否启用 Claude Code 兼容模式",
+          "name": "claude_code_mode",
+          "options": [
+            "--claude-code-mode"
+          ],
+          "raw_name": "claudeCodeMode",
+          "required": false,
+          "type": "bool"
         },
         {
           "element": {
@@ -412,8 +589,20 @@
           "type": "array"
         },
         {
+          "example": "7e4f52a9b0c34d16a268e913f5c2087b",
+          "help_en": "The read-only service configuration version. Use expectedConfigRevision for conditional updates",
+          "help_zh": "只读服务配置版本；条件更新使用expectedConfigRevision",
+          "name": "config_revision",
+          "options": [
+            "--config-revision"
+          ],
+          "raw_name": "configRevision",
+          "required": false,
+          "type": "string"
+        },
+        {
           "example": "gpt-4",
-          "help_en": "The default model name",
+          "help_en": "The name of the default model",
           "help_zh": "默认使用的模型名称",
           "name": "default_model_name",
           "options": [
@@ -425,7 +614,7 @@
         },
         {
           "example": "true",
-          "help_en": "Specifies whether to enable the health check",
+          "help_en": "Specifies whether to enable health checks",
           "help_zh": "是否启用健康检查",
           "name": "enable_health_check",
           "options": [
@@ -450,8 +639,57 @@
         {
           "fields": [
             {
+              "example": "kling-access-key-****",
+              "help_en": "The KlingAI access key identifier. Examples use desensitized values",
+              "help_zh": "KlingAI 访问密钥标识，示例使用脱敏值",
+              "name": "kling_access_key",
+              "options": [
+                "--kling-access-key"
+              ],
+              "raw_name": "klingAccessKey",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "example": "kling-secret-key-****",
+              "help_en": "The KlingAI secret key. Examples use desensitized values",
+              "help_zh": "KlingAI 访问密钥，示例使用脱敏值",
+              "name": "kling_secret_key",
+              "options": [
+                "--kling-secret-key"
+              ],
+              "raw_name": "klingSecretKey",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "example": "120",
+              "help_en": "The advance refresh configuration for KlingAI tokens",
+              "help_zh": "KlingAI 令牌的提前刷新配置",
+              "name": "kling_token_refresh_ahead",
+              "options": [
+                "--kling-token-refresh-ahead"
+              ],
+              "raw_name": "klingTokenRefreshAhead",
+              "required": false,
+              "type": "int"
+            }
+          ],
+          "help_en": "The authentication and token configuration specific to the KlingAI service",
+          "help_zh": "KlingAI 服务专用的鉴权与令牌配置",
+          "name": "kling_service_config",
+          "options": [
+            "--kling-service-config"
+          ],
+          "raw_name": "klingServiceConfig",
+          "required": false,
+          "type": "object"
+        },
+        {
+          "fields": [
+            {
               "example": "\"public\"，\"private\"",
-              "help_en": "The connection type: VPC or public network",
+              "help_en": "The connection type, which can be a private network (VPC) or a public network",
               "help_zh": "连接类型：私网(vpc)/公网(public)",
               "name": "endpoint_type",
               "options": [
@@ -524,13 +762,88 @@
         },
         {
           "example": "qwen\nmoonshot\nbaichuan\nyi\nzhipuai\n360ai\nhunyuan\nstepfun\nspark\nopenai\nclaude\nanthropic\ndoubao\nminimax\ngemini\nazure\ndeepseek\ncustom\npai-eas\nbedrock\nvertex",
-          "help_en": "The large model provider",
+          "help_en": "The large language model provider",
           "help_zh": "大模型提供商",
           "name": "provider",
           "options": [
             "--provider"
           ],
           "raw_name": "provider",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "fields": [
+            {
+              "example": "false",
+              "help_en": "Specifies whether to enable retries upon current request failure",
+              "help_zh": "是否启用当前请求失败重试",
+              "name": "enabled",
+              "options": [
+                "--enabled"
+              ],
+              "raw_name": "enabled",
+              "required": false,
+              "type": "bool"
+            },
+            {
+              "example": "2",
+              "help_en": "The maximum number of retries for the current request",
+              "help_zh": "当前请求最多重试次数",
+              "name": "max_retries",
+              "options": [
+                "--max-retries"
+              ],
+              "raw_name": "maxRetries",
+              "required": false,
+              "type": "int"
+            },
+            {
+              "element": {
+                "type": "string"
+              },
+              "help_en": "The set of response status matching rules that trigger retries for the current request",
+              "help_zh": "触发当前请求重试的响应状态匹配规则集合",
+              "name": "retry_on_status",
+              "options": [
+                "--retry-on-status"
+              ],
+              "raw_name": "retryOnStatus",
+              "required": false,
+              "type": "array"
+            },
+            {
+              "example": "30000",
+              "help_en": "The retry timeout configuration for the current request",
+              "help_zh": "当前请求的失败重试超时配置",
+              "name": "retry_timeout",
+              "options": [
+                "--retry-timeout"
+              ],
+              "raw_name": "retryTimeout",
+              "required": false,
+              "type": "int"
+            }
+          ],
+          "help_en": "The configuration for retrying with a different key after the current request fails",
+          "help_zh": "当前请求失败后的换 Key 重试配置",
+          "name": "retry_on_failure",
+          "options": [
+            "--retry-on-failure"
+          ],
+          "raw_name": "retryOnFailure",
+          "required": false,
+          "type": "object"
+        },
+        {
+          "example": "api-key",
+          "help_en": "The upstream authentication mode, which distinguishes between API key authentication, no authentication, and pass-through downstream authentication",
+          "help_zh": "上游鉴权方式，区分 API Key 鉴权、无鉴权和透传下游鉴权",
+          "name": "upstream_auth_mode",
+          "options": [
+            "--upstream-auth-mode"
+          ],
+          "raw_name": "upstreamAuthMode",
           "required": false,
           "type": "string"
         },
@@ -575,6 +888,18 @@
               "type": "string"
             },
             {
+              "example": "false",
+              "help_en": "Specifies whether to use the OpenAI-compatible interface of Vertex AI",
+              "help_zh": "是否使用 Vertex AI 的 OpenAI 兼容接口",
+              "name": "vertex_open_ai_compatible",
+              "options": [
+                "--vertex-open-ai-compatible"
+              ],
+              "raw_name": "vertexOpenAICompatible",
+              "required": false,
+              "type": "bool"
+            },
+            {
               "example": "my-project",
               "help_en": "The Google Cloud project ID",
               "help_zh": "Google Cloud 项目 ID",
@@ -600,7 +925,7 @@
             },
             {
               "example": "300",
-              "help_en": "The number of seconds before expiration to refresh the access token",
+              "help_en": "The number of seconds before access token expiration to trigger an advance refresh",
               "help_zh": "在访问令牌过期前多少秒提前刷新",
               "name": "vertex_token_refresh_ahead",
               "options": [
@@ -611,7 +936,7 @@
               "type": "int"
             }
           ],
-          "help_en": "The Vertex AI service configuration",
+          "help_en": "The configuration information for the Vertex AI service",
           "help_zh": "Vertex AI 服务的配置信息",
           "name": "vertex_service_config",
           "options": [
@@ -639,7 +964,7 @@
         "type": "string"
       },
       "example": "[\"my-kms-ref\"]",
-      "help_en": "The list of KMS reference names to append. This parameter is available only in Reference mode and does not read KMS content",
+      "help_en": "The list of KMS reference names to append. This parameter is only available in Reference mode. KMS content is not read",
       "help_zh": "仅追加的 KMS 引用名称列表；仅 Reference 模式可用，不会读取 KMS 内容",
       "location": "body",
       "name": "api_key_references_to_add",
@@ -656,7 +981,7 @@
         "type": "string"
       },
       "example": "[\"sk-xxxxxxxx\"]",
-      "help_en": "The list of API keys to append. This parameter is available only in Custom API Key mode for AI services. It must be used with fully masked apiKeys or by omitting apiKeys. It does not read or return existing keys",
+      "help_en": "The list of API keys to append. This parameter is only available in Custom API Key mode for AI services. It must be used with fully masked apiKeys or omitted apiKeys. Existing keys are not read or returned",
       "help_zh": "仅追加的 API Key 列表；仅 AI 服务 Custom API Key 模式可用，需与全掩码 apiKeys 或省略 apiKeys 配套，不会读取或返回已有 Key",
       "location": "body",
       "name": "api_keys_to_add",
@@ -685,10 +1010,24 @@
       "type": "array"
     },
     {
+      "example": "7e4f52a9b0c34d16a268e913f5c2087b",
+      "help_en": "The expected configuration revision for conditional updates of the AI service. If this parameter is not provided, backward compatibility with legacy calls is maintained. If the version changes, the Conflict.ServiceConfigurationChanged error is returned",
+      "help_zh": "AI服务条件更新版本；不传时兼容旧调用，版本变化返回Conflict.ServiceConfigurationChanged",
+      "location": "body",
+      "name": "expected_config_revision",
+      "options": [
+        "--expected-config-revision"
+      ],
+      "param_style": "json",
+      "raw_name": "expectedConfigRevision",
+      "required": false,
+      "type": "string"
+    },
+    {
       "fields": [
         {
           "example": "true",
-          "help_en": "Specifies whether to enable the health check for the service",
+          "help_en": "Specifies whether to enable health checks for the service",
           "help_zh": "是否开启服务的健康检查",
           "name": "enable",
           "options": [
@@ -702,7 +1041,7 @@
           "element": {
             "type": "string"
           },
-          "help_en": "The list of normal HTTP status codes returned for a request. This parameter is required when the protocol is HTTP",
+          "help_en": "The list of normal HTTP status codes returned in responses. This parameter is required when the protocol is HTTP",
           "help_zh": "请求返回正常状态码列表。当协议为HTTP时，需要配置",
           "name": "expected_statuses",
           "options": [
@@ -714,7 +1053,7 @@
         },
         {
           "example": "2",
-          "help_en": "The healthy threshold for the health check",
+          "help_en": "The healthy threshold for health checks",
           "help_zh": "健康检查健康阈值",
           "name": "healthy_threshold",
           "options": [
@@ -726,7 +1065,7 @@
         },
         {
           "example": "dev.itemcener.com",
-          "help_en": "The domain name for the health check. This parameter is optional and can be configured when the protocol is HTTP",
+          "help_en": "The domain name for health checks. This parameter is optional and can be configured when the protocol is HTTP",
           "help_zh": "健康检查域名。可选。当协议为HTTP时候，可以配置",
           "name": "http_host",
           "options": [
@@ -738,7 +1077,7 @@
         },
         {
           "example": "/healthz",
-          "help_en": "The request path for the health check. This parameter is required when the protocol is HTTP",
+          "help_en": "The request path for health checks. This parameter is required when the protocol is HTTP",
           "help_zh": "健康检查的请求路径。当协议为HTTP的时候，需要填写",
           "name": "http_path",
           "options": [
@@ -766,7 +1105,7 @@
             "TCP"
           ],
           "example": "HTTP",
-          "help_en": "The protocol for the health check",
+          "help_en": "The protocol used for health checks",
           "help_zh": "健康检查的协议",
           "name": "protocol",
           "options": [
@@ -778,7 +1117,7 @@
         },
         {
           "example": "2",
-          "help_en": "The response timeout period for the health check. Unit: seconds",
+          "help_en": "The response timeout period for health checks. Unit: seconds",
           "help_zh": "健康检查响应超时时间。单位：秒",
           "name": "timeout",
           "options": [
@@ -790,7 +1129,7 @@
         },
         {
           "example": "22",
-          "help_en": "The unhealthy threshold for the health check",
+          "help_en": "The unhealthy threshold for health checks",
           "help_zh": "健康检查不健康阈值",
           "name": "unhealthy_threshold",
           "options": [
@@ -845,7 +1184,7 @@
       "fields": [
         {
           "example": "30",
-          "help_en": "The initial isolation duration after a node is ejected, such as 30 seconds. The isolation time is calculated by using the formula: k × base_ejection_time, where the initial value of k is 1. The isolation time increases each time the node is ejected (k increases by 1) and gradually decreases if consecutive health checks are normal (k decreases by 1)",
+          "help_en": "The initial isolation duration after a node is ejected, such as 30 seconds. The isolation time is calculated as k × base_ejection_time, where the initial value of k is 1. The isolation time increases with each ejection by incrementing k by 1, and gradually decreases when consecutive health checks succeed by decrementing k by 1",
           "help_zh": "初始隔离时长，节点被弹出后的初始隔离时长（如 30 秒）。隔离时间计算公式：k * base_ejection_time（k 初始值为1），每次弹出会延长隔离时间（k 加一），若连续检测正常则逐步缩短隔离时间（k 减一）",
           "name": "base_ejection_time",
           "options": [
@@ -869,7 +1208,7 @@
         },
         {
           "example": "1",
-          "help_en": "The panic threshold.\n\nIf the proportion of healthy nodes in the service is greater than the panic threshold, health checks take effect normally. Requests are sent only to healthy nodes and not to ejected nodes.\nIf the proportion of healthy nodes in the service is less than or equal to the panic threshold, health checks are effectively disabled. Requests are sent to all nodes, including ejected nodes",
+          "help_en": "The panic threshold. When the proportion of healthy nodes in the service is greater than the panic threshold, health checks take effect normally, and requests are sent only to healthy nodes, not to ejected nodes. When the proportion of healthy nodes is less than or equal to the panic threshold, health checks are effectively disabled, and requests are sent to all nodes, including ejected ones",
           "help_zh": "恐慌阈值\n\n当服务中健康节点比例大于恐慌阈值的时候，健康检测正常生效，请求只被发送到健康节点，不发送到被弹出节点；\n当服务中健康节点比例小于等于恐慌阈值的时候，健康检测相当于被禁用，请求被发送到所有节点，包括已被弹出节点",
           "name": "failure_percentage_minimum_hosts",
           "options": [

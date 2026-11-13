@@ -178,6 +178,7 @@
     "api_style": "ROA",
     "api_version": "2024-03-27",
     "body_mapping": {
+      "default_service_id": "defaultServiceId",
       "display_name": "displayName",
       "service_ids": "serviceIds"
     },
@@ -192,7 +193,7 @@
   "parameters": [
     {
       "example": "mp-8c13d2b4f8a1",
-      "help_en": "The ID of the model provider to update. This ID is returned by the model creation provider operation, and the format starts with mp-",
+      "help_en": "The ID of the model provider to update. The ID is returned by the model creation provider operation, and the format starts with mp-",
       "help_zh": "要更新的模型供应商 ID。该 ID 由创建模型供应商接口返回，格式以 mp- 开头",
       "location": "path",
       "name": "model_provider_id",
@@ -201,6 +202,20 @@
       ],
       "raw_name": "modelProviderId",
       "required": true,
+      "type": "string"
+    },
+    {
+      "example": "svc-d00000000000000000000",
+      "help_en": "The optional default AI service ID. If not empty, it must be a service in the updated association set. Omitting this parameter retains the saved default. An explicit empty string clears the default. A non-empty value sets the default. The value can be up to 64 characters in length",
+      "help_zh": "可选默认AI服务ID，非空时必须是更新后绑定集合中的服务。省略表示保留已保存默认，显式空串表示清除默认，非空值表示设置默认。长度不超过64个字符",
+      "location": "body",
+      "name": "default_service_id",
+      "options": [
+        "--default-service-id"
+      ],
+      "param_style": "json",
+      "raw_name": "defaultServiceId",
+      "required": false,
       "type": "string"
     },
     {
@@ -221,7 +236,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The complete set of AI service IDs to bind to the model provider. If this parameter is not specified, the existing bindings are retained. If an empty array is passed, all bindings are cleared. Duplicate and empty values are normalized",
+      "help_en": "The complete set of AI service IDs to associate with the model provider. If you do not specify this parameter, the existing associations are retained. If you pass an empty array, all associations are cleared. Duplicate and empty values are normalized",
       "help_zh": "要绑定到该模型供应商的 AI 服务 ID 全量集合。不传时沿用现有绑定，传空数组时清空全部绑定；重复值和空值会被归一化",
       "location": "body",
       "name": "service_ids",
@@ -257,19 +272,28 @@
             "properties": {
               "boundServices": {
                 "backendName": "boundServices",
-                "description_en": "The list of summaries of AI services currently bound to the model provider",
+                "description_en": "The list of summaries of AI services currently associated with the model provider",
                 "description_zh": "当前绑定到该模型供应商的 AI 服务摘要列表",
                 "itemName": "boundService",
                 "items": {
                   "$ref": "#/components/schemas/ServiceInfo",
-                  "description_en": "The summary of a bound AI service",
+                  "description_en": "The summary of an associated AI service",
                   "description_zh": "绑定的 AI 服务摘要"
                 },
                 "type": "array"
               },
+              "defaultServiceId": {
+                "backendName": "defaultServiceId",
+                "description_en": "The default AI service ID. The value is empty if not set",
+                "description_zh": "默认AI服务ID，未设置时为空",
+                "example": "svc-d00000000000000000000",
+                "title_en": "默认AI服务ID，未设置时为空。",
+                "title_zh": "默认AI服务ID，未设置时为空。",
+                "type": "string"
+              },
               "displayName": {
                 "backendName": "displayName",
-                "description_en": "The display name of the model provider, which can be up to 128 characters in length",
+                "description_en": "The display name of the model provider. The value can be up to 128 characters in length",
                 "description_zh": "模型供应商展示名称，长度不超过 128 个字符",
                 "example": "千问云 / 阿里云百炼",
                 "type": "string"
@@ -292,23 +316,23 @@
                   "properties": {
                     "availablePaths": {
                       "backendName": "availablePaths",
-                      "description_en": "The list of invocation paths supported by the model. Each item contains both path and type",
+                      "description_en": "The list of invocation paths supported by the model. Each item includes both path and type",
                       "description_zh": "模型支持的调用路径列表。每一项同时包含 path 和 type",
                       "itemName": "availablePath",
                       "items": {
-                        "description_en": "The configuration of a single model invocation path",
+                        "description_en": "A single model invocation path configuration",
                         "description_zh": "单个模型调用路径配置",
                         "properties": {
                           "path": {
                             "backendName": "path",
-                            "description_en": "The model invocation path, which can be up to 2,048 characters in length",
+                            "description_en": "The model invocation path. The value can be up to 2,048 characters in length",
                             "description_zh": "模型调用路径，长度不超过 2048 个字符",
                             "example": "/v1/chat/completions",
                             "type": "string"
                           },
                           "type": {
                             "backendName": "type",
-                            "description_en": "The protocol type corresponding to the path, which can be up to 64 characters in length",
+                            "description_en": "The protocol type corresponding to the path. The value can be up to 64 characters in length",
                             "description_zh": "路径对应的协议类型，长度不超过 64 个字符",
                             "example": "OpenAICompatible",
                             "type": "string"
@@ -325,7 +349,7 @@
                       "properties": {
                         "cacheCost": {
                           "backendName": "cacheCost",
-                          "description_en": "The cache hit token cost, in Credits per million tokens",
+                          "description_en": "The cache hit token cost. The unit is Credits per million tokens",
                           "description_zh": "缓存命中 Token 费用，单位为 Credits/百万 Token",
                           "example": "0.5",
                           "format": "float",
@@ -333,7 +357,7 @@
                         },
                         "inputCost": {
                           "backendName": "inputCost",
-                          "description_en": "The input token cost, in Credits per million tokens",
+                          "description_en": "The input token cost. The unit is Credits per million tokens",
                           "description_zh": "输入 Token 费用，单位为 Credits/百万 Token",
                           "example": "1.5",
                           "format": "float",
@@ -341,7 +365,7 @@
                         },
                         "outputCost": {
                           "backendName": "outputCost",
-                          "description_en": "The output token cost, in Credits per million tokens",
+                          "description_en": "The output token cost. The unit is Credits per million tokens",
                           "description_zh": "输出 Token 费用，单位为 Credits/百万 Token",
                           "example": "3",
                           "format": "float",
@@ -362,7 +386,7 @@
                     },
                     "features": {
                       "backendName": "features",
-                      "description_en": "The model capability switches. The key is the name of the model capability supported by the API gateway, and the value is a Boolean value",
+                      "description_en": "The model capability switches. The key is the name of a model capability supported by the API gateway, and the value is a Boolean value",
                       "description_zh": "模型能力开关。键为 API 网关支持的模型能力名称，值为布尔值",
                       "example": "{\"functionCalling\":true,\"toolChoice\":true}",
                       "type": "object"
@@ -409,7 +433,7 @@
                           "description_zh": "模型支持的输入模态列表，最多包含 16 项，每一项均不能为空",
                           "itemName": "modality",
                           "items": {
-                            "description_en": "A single modality name in the input modality list",
+                            "description_en": "A single modality name in the list of input modalities",
                             "description_zh": "输入模态列表中的单个模态名称",
                             "example": "text",
                             "type": "string"
@@ -422,7 +446,7 @@
                           "description_zh": "模型支持的输出模态列表，最多包含 16 项，每一项均不能为空",
                           "itemName": "modality",
                           "items": {
-                            "description_en": "A single modality name in the output modality list",
+                            "description_en": "A single modality name in the list of output modalities",
                             "description_zh": "输出模态列表中的单个模态名称",
                             "example": "text",
                             "type": "string"
@@ -434,28 +458,28 @@
                     },
                     "modelCardId": {
                       "backendName": "modelCardId",
-                      "description_en": "The model card ID. This ID is generated by the system and starts with mc-",
+                      "description_en": "The model card ID. The ID is generated by the system and starts with mc-",
                       "description_zh": "模型卡片 ID。由系统生成，格式以 mc- 开头",
                       "example": "mc-8c13d2b4f8a1",
                       "type": "string"
                     },
                     "modelName": {
                       "backendName": "modelName",
-                      "description_en": "The name of the model",
+                      "description_en": "The model name",
                       "description_zh": "模型名称",
                       "example": "qwen-plus",
                       "type": "string"
                     },
                     "modelProvider": {
                       "backendName": "modelProvider",
-                      "description_en": "The identifier of the model provider",
+                      "description_en": "The model provider identifier",
                       "description_zh": "模型供应商标识",
                       "example": "qwen",
                       "type": "string"
                     },
                     "source": {
                       "backendName": "source",
-                      "description_en": "The source of the model card. For current instance-level model cards, user is returned",
+                      "description_en": "The source of the model card. For instance-level model cards, user is returned",
                       "description_zh": "模型卡片来源。当前实例级模型卡片返回 user",
                       "enumValueTitles": {
                         "user": "user"
@@ -465,14 +489,14 @@
                     },
                     "sourceURL": {
                       "backendName": "sourceURL",
-                      "description_en": "The link to the model metadata",
+                      "description_en": "The URL for the model metadata",
                       "description_zh": "模型元信息链接",
                       "example": "http://https://dashscope-intl.aliyuncs.com",
                       "type": "string"
                     },
                     "updateTime": {
                       "backendName": "updateTime",
-                      "description_en": "The last update time of the model card, in the yyyy-MM-dd HH:mm:ss format",
+                      "description_en": "The last update time of the model card. The format is yyyy-MM-dd HH:mm:ss",
                       "description_zh": "模型卡片的最近更新时间，格式为 yyyy-MM-dd HH:mm:ss",
                       "example": "2026-07-14 18:30:00",
                       "type": "string"
@@ -492,21 +516,21 @@
               },
               "modelProviderId": {
                 "backendName": "modelProviderId",
-                "description_en": "The model provider ID. This ID is generated by the system and starts with mp-",
+                "description_en": "The model provider ID. The ID is generated by the system and starts with mp-",
                 "description_zh": "模型供应商 ID。由系统生成，格式以 mp- 开头",
                 "example": "mp-8c13d2b4f8a1",
                 "type": "string"
               },
               "provider": {
                 "backendName": "provider",
-                "description_en": "The stable identifier of the model provider, which can be up to 128 characters in length",
+                "description_en": "The stable model provider identifier. The value can be up to 128 characters in length",
                 "description_zh": "稳定的模型供应商标识，长度不超过 128 个字符",
                 "example": "qwen",
                 "type": "string"
               },
               "source": {
                 "backendName": "source",
-                "description_en": "The source of the model provider. The valid values defined in code are user and builtin",
+                "description_en": "The source of the model provider. Valid values: user and builtin",
                 "description_zh": "模型供应商来源。代码定义的取值为 user 和 builtin",
                 "enumValueTitles": {
                   "builtin": "builtin",
@@ -517,7 +541,7 @@
               },
               "updateTime": {
                 "backendName": "updateTime",
-                "description_en": "The last update time of the model provider, in the yyyy-MM-dd HH:mm:ss format",
+                "description_en": "The last update time of the model provider. The format is yyyy-MM-dd HH:mm:ss",
                 "description_zh": "模型供应商的最近更新时间，格式为 yyyy-MM-dd HH:mm:ss",
                 "example": "2026-07-14 18:30:00",
                 "type": "string"
@@ -534,7 +558,7 @@
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The request ID. This ID is generated by the system to trace the call",
+            "description_en": "The request ID. This ID is generated by the system and used to trace the call",
             "description_zh": "请求 ID，由系统生成，用于定位本次调用",
             "example": "473469C7-AA6F-4DC5-B3DB-A3DC0DE3C83E",
             "title_en": "Id of the request",
@@ -550,7 +574,7 @@
   },
   "v1_body_parameters": [
     {
-      "help_en": "The request body for updating an AI model provider. The provider identifier and gatewayId cannot be modified",
+      "help_en": "The request body for updating the AI model provider. The provider identifier and gatewayId cannot be modified",
       "help_zh": "更新 AI 模型供应商的请求体。provider 标识和 gatewayId 不可修改",
       "name": "body",
       "param_style": "json",

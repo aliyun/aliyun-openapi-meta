@@ -242,7 +242,7 @@
         "properties": {
           "ApiKeyGenerateMode": {
             "backendName": "apiKeyGenerateMode",
-            "description_en": "The API key generation mode",
+            "description_en": "The generation mode of the API key",
             "description_zh": "API 密钥的生成模式",
             "example": "Custom",
             "title": "API Key来源（兼容旧公开字段）",
@@ -256,6 +256,71 @@
             "title": "服务地址",
             "type": "string"
           },
+          "apiKeyFailover": {
+            "backendName": "apiKeyFailover",
+            "description_en": "The configuration for API key failure ejection and recovery",
+            "description_zh": "API Key 失败摘除与恢复配置",
+            "properties": {
+              "cooldownDuration": {
+                "backendName": "cooldownDuration",
+                "description_en": "The cooldown duration after an API key is ejected",
+                "description_zh": "API Key 被摘除后的冷却时长",
+                "example": "30000",
+                "format": "int64",
+                "type": "integer"
+              },
+              "enabled": {
+                "backendName": "enabled",
+                "description_en": "Specifies whether to enable API key failure ejection",
+                "description_zh": "是否启用 API Key 失败摘除",
+                "example": "false",
+                "type": "boolean"
+              },
+              "failoverOnStatus": {
+                "backendName": "failoverOnStatus",
+                "description_en": "The set of response status matching rules that trigger API key failure ejection",
+                "description_zh": "触发 API Key 失败摘除的响应状态匹配规则集合",
+                "items": {
+                  "description_en": "A response status matching rule that triggers failure ejection",
+                  "description_zh": "一个触发失败摘除的响应状态匹配规则",
+                  "example": "429",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "failureThreshold": {
+                "backendName": "failureThreshold",
+                "description_en": "The failure count threshold that triggers API key ejection",
+                "description_zh": "触发 API Key 摘除的失败次数阈值",
+                "example": "3",
+                "format": "int64",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "apiKeyGenerateMode": {
+            "backendName": "apiKeyGenerateMode",
+            "description_en": "The source of the API key. If provided along with the legacy field, the values must be identical",
+            "description_zh": "API Key来源；与旧字段同时传入时必须一致",
+            "example": "Custom",
+            "title": "API Key来源；与旧字段同时传入时必须一致",
+            "type": "string"
+          },
+          "apiKeyReferences": {
+            "backendName": "apiKeyReferences",
+            "description_en": "The read-only summary of KMS reference names, excluding credential values",
+            "description_zh": "只读KMS引用名称摘要，不包含凭据值",
+            "items": {
+              "description_en": "An API key credential reference identifier",
+              "description_zh": "一个 API Key 凭证引用标识",
+              "example": "apig-qwen-api-key",
+              "type": "string"
+            },
+            "readOnly": true,
+            "title": "只读KMS引用名称摘要，不包含凭据值",
+            "type": "array"
+          },
           "apiKeys": {
             "backendName": "apiKeys",
             "description_en": "The list of API keys",
@@ -266,8 +331,16 @@
               "example": "sk-xxx",
               "type": "string"
             },
+            "sensitive": true,
             "title": "apiKey列表",
             "type": "array"
+          },
+          "authHeaderKey": {
+            "backendName": "authHeaderKey",
+            "description_en": "The name of the request header used to pass authentication credentials to the upstream",
+            "description_zh": "向上游传递鉴权凭证时使用的请求头名称",
+            "example": "Authorization",
+            "type": "string"
           },
           "bedrockServiceConfig": {
             "backendName": "bedrockServiceConfig",
@@ -279,6 +352,7 @@
                 "description_en": "The AWS access key",
                 "description_zh": "AWS访问密钥",
                 "example": "AKIAIOSFODNN7EXAMPLE",
+                "sensitive": true,
                 "title": "AWS-AccessKey",
                 "type": "string"
               },
@@ -295,35 +369,93 @@
                 "description_en": "The AWS secret key",
                 "description_zh": "AWS密钥",
                 "example": "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
+                "sensitive": true,
                 "title": "AWS-SecretKey",
+                "type": "string"
+              },
+              "bedrockPromptCachePointPositions": {
+                "additionalProperties": {
+                  "description_en": "Specifies whether to insert a cache marker at the prompt position",
+                  "description_zh": "该提示词位置是否插入缓存标记",
+                  "example": "true",
+                  "type": "boolean"
+                },
+                "backendName": "bedrockPromptCachePointPositions",
+                "description_en": "Configures whether to insert Bedrock cache markers based on prompt positions",
+                "description_zh": "按提示词位置配置是否插入 Bedrock 缓存标记",
+                "example": "{\"systemPrompt\":true}",
+                "type": "object"
+              },
+              "endpointMode": {
+                "backendName": "endpointMode",
+                "description_en": "The Bedrock service endpoint mode, which supports runtime and mantle. If omitted, runtime is used",
+                "description_zh": "Bedrock 服务端点模式，支持 runtime 和 mantle；省略时沿用 runtime",
+                "example": "runtime",
+                "type": "string"
+              },
+              "promptCacheEnable": {
+                "backendName": "promptCacheEnable",
+                "description_en": "Specifies whether to enable prompt caching for the Bedrock upstream",
+                "description_zh": "是否为 Bedrock 上游启用提示词缓存",
+                "example": "true",
+                "type": "boolean"
+              },
+              "promptCacheRetention": {
+                "backendName": "promptCacheRetention",
+                "description_en": "The data retention policy for the prompt cache",
+                "description_zh": "提示词缓存保留策略",
+                "example": "in_memory",
+                "type": "string"
+              },
+              "promptCacheStrategy": {
+                "backendName": "promptCacheStrategy",
+                "description_en": "The applicable model strategy for Bedrock prompt caching",
+                "description_zh": "Bedrock 提示词缓存的适用模型策略",
+                "example": "supported_models_only",
                 "type": "string"
               }
             },
             "title": "Bedrock服务专属配置",
             "type": "object"
           },
+          "claudeCodeMode": {
+            "backendName": "claudeCodeMode",
+            "description_en": "Specifies whether to enable Claude Code compatibility mode",
+            "description_zh": "是否启用 Claude Code 兼容模式",
+            "example": "false",
+            "type": "boolean"
+          },
           "compatibleProtocols": {
             "backendName": "compatibleProtocols",
             "description_en": "The list of compatible protocols supported by the service",
             "description_zh": "服务支持的兼容协议列表",
             "items": {
-              "description_en": "The parameters",
+              "description_en": "The parameter",
               "description_zh": "参数",
               "example": "\"openai\", \"anthropic\"",
               "type": "string"
             },
             "type": "array"
           },
+          "configRevision": {
+            "backendName": "configRevision",
+            "description_en": "The read-only service configuration version. Use expectedConfigRevision for conditional updates",
+            "description_zh": "只读服务配置版本；条件更新使用expectedConfigRevision",
+            "example": "7e4f52a9b0c34d16a268e913f5c2087b",
+            "readOnly": true,
+            "title": "只读服务配置版本；条件更新使用expectedConfigRevision",
+            "type": "string"
+          },
           "defaultModelName": {
             "backendName": "defaultModelName",
-            "description_en": "The default model name",
+            "description_en": "The name of the default model",
             "description_zh": "默认使用的模型名称",
             "example": "gpt-4",
             "type": "string"
           },
           "enableHealthCheck": {
             "backendName": "enableHealthCheck",
-            "description_en": "Specifies whether to enable the health check",
+            "description_en": "Specifies whether to enable health checks",
             "description_zh": "是否启用健康检查",
             "example": "true",
             "title": "是否启用健康检查",
@@ -336,6 +468,38 @@
             "example": "true",
             "type": "boolean"
           },
+          "klingServiceConfig": {
+            "backendName": "klingServiceConfig",
+            "description_en": "The authentication and token configuration specific to the KlingAI service",
+            "description_zh": "KlingAI 服务专用的鉴权与令牌配置",
+            "properties": {
+              "klingAccessKey": {
+                "backendName": "klingAccessKey",
+                "description_en": "The KlingAI access key identifier. Examples use desensitized values",
+                "description_zh": "KlingAI 访问密钥标识，示例使用脱敏值",
+                "example": "kling-access-key-****",
+                "sensitive": true,
+                "type": "string"
+              },
+              "klingSecretKey": {
+                "backendName": "klingSecretKey",
+                "description_en": "The KlingAI secret key. Examples use desensitized values",
+                "description_zh": "KlingAI 访问密钥，示例使用脱敏值",
+                "example": "kling-secret-key-****",
+                "sensitive": true,
+                "type": "string"
+              },
+              "klingTokenRefreshAhead": {
+                "backendName": "klingTokenRefreshAhead",
+                "description_en": "The advance refresh configuration for KlingAI tokens",
+                "description_zh": "KlingAI 令牌的提前刷新配置",
+                "example": "120",
+                "format": "int64",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
           "paiEASServiceConfig": {
             "backendName": "paiEASServiceConfig",
             "description_en": "The PAI-EAS service-specific configuration",
@@ -343,7 +507,7 @@
             "properties": {
               "endpointType": {
                 "backendName": "endpointType",
-                "description_en": "The connection type: VPC or public network",
+                "description_en": "The connection type, which can be a private network (VPC) or a public network",
                 "description_zh": "连接类型：私网(vpc)/公网(public)",
                 "example": "\"public\"，\"private\"",
                 "title": "连接类型：私网(vpc)/公网(public)",
@@ -392,20 +556,70 @@
           },
           "provider": {
             "backendName": "provider",
-            "description_en": "The large model provider",
+            "description_en": "The large language model provider",
             "description_zh": "大模型提供商",
             "example": "qwen\nmoonshot\nbaichuan\nyi\nzhipuai\n360ai\nhunyuan\nstepfun\nspark\nopenai\nclaude\nanthropic\ndoubao\nminimax\ngemini\nazure\ndeepseek\ncustom\npai-eas\nbedrock\nvertex",
             "title": "大模型提供商",
             "type": "string"
           },
+          "retryOnFailure": {
+            "backendName": "retryOnFailure",
+            "description_en": "The configuration for retrying with a different key after the current request fails",
+            "description_zh": "当前请求失败后的换 Key 重试配置",
+            "properties": {
+              "enabled": {
+                "backendName": "enabled",
+                "description_en": "Specifies whether to enable retries upon current request failure",
+                "description_zh": "是否启用当前请求失败重试",
+                "example": "false",
+                "type": "boolean"
+              },
+              "maxRetries": {
+                "backendName": "maxRetries",
+                "description_en": "The maximum number of retries for the current request",
+                "description_zh": "当前请求最多重试次数",
+                "example": "2",
+                "format": "int64",
+                "type": "integer"
+              },
+              "retryOnStatus": {
+                "backendName": "retryOnStatus",
+                "description_en": "The set of response status matching rules that trigger retries for the current request",
+                "description_zh": "触发当前请求重试的响应状态匹配规则集合",
+                "items": {
+                  "description_en": "A response status matching rule that triggers a retry",
+                  "description_zh": "一个触发重试的响应状态匹配规则",
+                  "example": "429",
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "retryTimeout": {
+                "backendName": "retryTimeout",
+                "description_en": "The retry timeout configuration for the current request",
+                "description_zh": "当前请求的失败重试超时配置",
+                "example": "30000",
+                "format": "int64",
+                "type": "integer"
+              }
+            },
+            "type": "object"
+          },
+          "upstreamAuthMode": {
+            "backendName": "upstreamAuthMode",
+            "description_en": "The upstream authentication mode, which distinguishes between API key authentication, no authentication, and pass-through downstream authentication",
+            "description_zh": "上游鉴权方式，区分 API Key 鉴权、无鉴权和透传下游鉴权",
+            "example": "api-key",
+            "type": "string"
+          },
           "vertexServiceConfig": {
             "backendName": "vertexServiceConfig",
-            "description_en": "The Vertex AI service configuration",
+            "description_en": "The configuration information for the Vertex AI service",
             "description_zh": "Vertex AI 服务的配置信息",
             "properties": {
               "geminiSafetySetting": {
                 "additionalProperties": {
-                  "description_en": "The parameters",
+                  "description_en": "The parameter",
                   "description_zh": "参数",
                   "example": "{\"BLOCK_NONE\": \"true\"}",
                   "type": "string"
@@ -420,6 +634,7 @@
                 "description_en": "The authentication key for Vertex AI",
                 "description_zh": "Vertex AI 的认证密钥",
                 "example": "{\\\"type\\\":\\\"service_account\\\",\\\"project_id\\\":\\\"my-project\\\",\\\"private_key\\\":\\\"-----BEGIN PRIVATE KEY-----...\\\",\\\"client_email\\\":\\\"xxx@xxx.iam.gserviceaccount.com\\\",\\\"token_uri\\\":\\\"https://oauth2.googleapis.com/token\\\"}",
+                "sensitive": true,
                 "type": "string"
               },
               "vertexAuthServiceName": {
@@ -428,6 +643,13 @@
                 "description_zh": "Vertex AI 使用的认证服务名称",
                 "example": "google-oauth2",
                 "type": "string"
+              },
+              "vertexOpenAICompatible": {
+                "backendName": "vertexOpenAICompatible",
+                "description_en": "Specifies whether to use the OpenAI-compatible interface of Vertex AI",
+                "description_zh": "是否使用 Vertex AI 的 OpenAI 兼容接口",
+                "example": "false",
+                "type": "boolean"
               },
               "vertexProjectId": {
                 "backendName": "vertexProjectId",
@@ -445,7 +667,7 @@
               },
               "vertexTokenRefreshAhead": {
                 "backendName": "vertexTokenRefreshAhead",
-                "description_en": "The number of seconds before expiration to refresh the access token",
+                "description_en": "The number of seconds before access token expiration to trigger an advance refresh",
                 "description_zh": "在访问令牌过期前多少秒提前刷新",
                 "example": "300",
                 "format": "int32",
@@ -1006,7 +1228,7 @@
     },
     {
       "example": "user-service",
-      "help_en": "The exact name of the service to query",
+      "help_en": "The name of the service for an exact match",
       "help_zh": "根据服务名精确查询",
       "location": "query",
       "name": "name",
@@ -1026,7 +1248,7 @@
         "VIP"
       ],
       "example": "MSE_NACOS",
-      "help_en": "The source type of the service. Valid values:\nMSE_NACOS: Services from MSE Nacos.\nK8S: Services from Kubernetes clusters in Container Service.\nFC3: Services from Function Compute.\nVIP: Services from fixed addresses.\nDNS: Services from domain names",
+      "help_en": "The source type of the service. Valid values:\nMSE_NACOS: services from Microservices Engine (MSE) Nacos.\nK8S: services from Kubernetes clusters in Container Service for Kubernetes.\nFC3: services from Function Compute.\nVIP: services from fixed addresses.\nDNS: services from domain names",
       "help_zh": "根据服务来源类型查询, 服务来源：\nMSE_NACOS:  来源为MSE Nacos里的服务。\nK8S: 来源为容器服务里K8S集群里的服务。\nFC3: 来源为函数计算里的服务。\nVIP: 来源为固定地址的服务。\nDNS: 来源为域名的服务",
       "location": "query",
       "name": "source_type",
@@ -1146,7 +1368,7 @@
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The ID of the request",
+            "description_en": "The request ID",
             "description_zh": "请求ID",
             "example": "585657D2-1C20-5B8A-AF17-D727C6490BE4",
             "title_en": "Id of the request",
