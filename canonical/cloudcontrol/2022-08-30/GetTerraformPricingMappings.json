@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun cloudcontrol POST /api/v1/price/terraform-mappings --region cn-hangzhou --header \"Content-Type=application/json\" --body {\"resourceTypes\":[\"alicloud_instance\",\"alicloud_vpc\"]} --version 2022-08-30 --force",
+  "camel_example": "aliyun cloudcontrol POST /api/v1/price/terraform-mappings --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"resourceTypes\":[\"alicloud_instance\",\"alicloud_vpc\"]}' --version 2022-08-30 --force",
   "cmd_full_name": "cloudcontrol get-terraform-pricing-mappings",
   "cmd_name": "get-terraform-pricing-mappings",
   "deprecated": false,
-  "description_en": "Retrieves pricing mapping catalogs in batches by Terraform resource type for cost estimation during the RunIaC plan phase",
+  "description_en": "Retrieves the pricing mapping catalog in batches by Terraform resource type for cost estimation during the RunIaC plan phase",
   "description_zh": "按 Terraform 资源类型批量获取询价 mapping 目录（供 RunIaC plan 阶段成本预估）",
-  "kebab_example": "",
+  "kebab_example": "aliyun cloudcontrol get-terraform-pricing-mappings --biz-body '{\"resourceTypes\":[\"alicloud_instance\",\"alicloud_vpc\"]}' --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "GetTerraformPricingMappings",
@@ -25,7 +25,7 @@
     {
       "direct_body": true,
       "example": "{\n  \"resourceTypes\": [\n    \"alicloud_instance\",\n    \"alicloud_vpc\"\n  ]\n}",
-      "help_en": "The request body. The resourceTypes field specifies a list of Terraform resource types, such as alicloud_instance. You can specify a maximum of 200 resource types in a single request",
+      "help_en": "The request body: The resourceTypes field specifies a list of Terraform resource types, such as alicloud_instance. You can specify up to 200 resource types per request",
       "help_zh": "请求体：resourceTypes（Terraform 资源类型列表，如 alicloud_instance），单次最多 200 个",
       "location": "body",
       "name": "body",
@@ -47,12 +47,12 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "Schema of Response",
+        "description_en": "The response schema",
         "description_zh": "Schema of Response",
         "properties": {
           "mappingVersion": {
             "backendName": "mappingVersion",
-            "description_en": "The mapping content version, which is the timestamp of the most recent data change. Consumers can use this value for caching and auditing",
+            "description_en": "The content version of the mapping, which is the timestamp of the most recent data change. Consumers use this version for caching and auditing",
             "description_zh": "mapping 内容版本（数据最近变更时间戳），用于消费方缓存与审计",
             "example": "1786000000000",
             "nullToEmpty": false,
@@ -63,7 +63,7 @@
           },
           "mappings": {
             "backendName": "mappings",
-            "description_en": "The list of matched mappings. Each item contains a resourceType and pricingTargets, which include pricing targets and parameter extraction rules. The rules reference Terraform plan resource properties by using $after/$before",
+            "description_en": "The list of matched mappings. Each item contains the resourceType and pricingTargets fields. The pricingTargets field includes pricing targets and parameter extraction rules. Within the rules, $after and $before reference the resource attributes in the Terraform plan",
             "description_zh": "命中的 mapping 列表：每项含 resourceType 与 pricingTargets（询价目标与参数抽取规则，规则内 $after/$before 引用 Terraform plan 的资源属性）",
             "itemName": "mappings",
             "items": {
@@ -72,12 +72,13 @@
               "properties": {
                 "pricingTargets": {
                   "backendName": "pricingTargets",
-                  "description_en": "The list of pricing targets. Each item contains actions (create/update), popCode/popVersion/apiName, pricingUnit, params (parameter extraction rules: from=$after.xxx / const / default / expand), and when/whenChanged conditions",
+                  "description_en": "The list of pricing targets. Each item contains the actions (create or update), popCode, popVersion, apiName, pricingUnit, params, and when or whenChanged conditions. The params field defines parameter extraction rules, such as from=$after.xxx, const, default, or expand",
                   "description_zh": "询价目标列表：每项含 actions（create/update）、popCode/popVersion/apiName、pricingUnit、params（参数抽取规则：from=$after.xxx / const / default / expand）、when/whenChanged 条件",
                   "itemName": "pricingTargets",
                   "items": {
-                    "description_en": "A single pricing target, which contains the API triplet (popCode, popVersion, and apiName) and parameter extraction rules required for a pricing call",
+                    "description_en": "A single pricing target. It includes the API triplet and parameter extraction rules required for a pricing call",
                     "description_zh": "单个询价目标：一次询价调用所需的 API 三元组与参数抽取规则",
+                    "example": "{\"actions\":[\"create\"],\"popCode\":\"Ecs\",\"popVersion\":\"2014-05-26\",\"apiName\":\"RunInstances\",\"params\":{\"InstanceType\":{\"from\":\"$after.instance_type\"}}}",
                     "title_en": "单个询价目标：一次询价调用所需的 API 三元组与参数抽取规则",
                     "title_zh": "单个询价目标：一次询价调用所需的 API 三元组与参数抽取规则",
                     "type": "object"
@@ -111,11 +112,11 @@
           },
           "missingResourceTypes": {
             "backendName": "missingResourceTypes",
-            "description_en": "The resource types in the request that do not have registered mappings. Consumers must treat these as unknown cost. Do not assume they are free",
+            "description_en": "The resource types in the request that do not have registered mappings. Consumers must treat these resource types as having unknown costs and must not treat them as free",
             "description_zh": "请求中未注册 mapping 的资源类型；消费方必须按费用未知处理，不得当作免费",
             "itemName": "missingResourceTypes",
             "items": {
-              "description_en": "A Terraform resource type without a registered mapping. The cost is unknown, which does not mean the resource is free",
+              "description_en": "A Terraform resource type for which no mapping is registered. Its cost is unknown and must not be treated as zero",
               "description_zh": "未注册 mapping 的 Terraform 资源类型，费用未知（不等于免费）",
               "example": "alicloud_brand_new",
               "title_en": "未注册 mapping 的 Terraform 资源类型，费用未知（不等于免费）",
@@ -130,7 +131,7 @@
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "Id of the request",
+            "description_en": "The request ID",
             "description_zh": "Id of the request",
             "example": "1AF0AD89-ED4F-5E9E-8B7B-9A3B27CE9E1B",
             "nullToEmpty": false,
@@ -141,7 +142,7 @@
           },
           "schemaVersion": {
             "backendName": "schemaVersion",
-            "description_en": "The schema version of the mapping catalog. The current version is 1.0. Consumers use this value to determine compatibility",
+            "description_en": "The schema version of the mapping catalog. The current version is 1.0. Consumers use this version to determine compatibility",
             "description_zh": "mapping 目录 schema 版本，当前为 1.0；消费方按此判断兼容性",
             "example": "1.0",
             "nullToEmpty": false,
@@ -152,11 +153,11 @@
           },
           "unsupportedResourceTypes": {
             "backendName": "unsupportedResourceTypes",
-            "description_en": "The resource types that are confirmed to not support pricing, such as free resources or resources without a pricing interface. These are different from missing resource types",
+            "description_en": "The resource types that are confirmed not to support price inquiries, such as resources that are free of charge or have no pricing API. These differ from the resource types listed in missingResourceTypes",
             "description_zh": "已确认不支持询价的资源类型（如纯免费或无询价面），与 missing 区分",
             "itemName": "unsupportedResourceTypes",
             "items": {
-              "description_en": "A Terraform resource type that is confirmed to have no pricing interface, such as a free resource",
+              "description_en": "A Terraform resource type that is confirmed to have no pricing API, such as a resource that is free of charge",
               "description_zh": "已确认无询价面的 Terraform 资源类型，如纯免费资源",
               "example": "alicloud_security_group",
               "title_en": "已确认无询价面的 Terraform 资源类型，如纯免费资源",
