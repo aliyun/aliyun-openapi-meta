@@ -3,7 +3,7 @@
   "cmd_full_name": "quotas list-product-quotas",
   "cmd_name": "list-product-quotas",
   "deprecated": false,
-  "description_en": "Queries the quotas of a specified cloud service",
+  "description_en": "Queries the list of quotas for a specified cloud service",
   "description_zh": "查询目标云产品的配额列表",
   "kebab_example": "aliyun quotas list-product-quotas --product-code ecs --region cn-hangzhou",
   "method": "GET|POST",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "AAAAAd****",
-      "help_en": "The token used to retrieve the next page of results.\n\nLeave this parameter empty for the first request or when no more results are available.\nIf more results are available, set this parameter to the NextToken value returned when you invoke the previous API call",
+      "help_en": "The token for the next query.\n\nFor the first query or when no subsequent query is required, you do not need to specify this parameter.\nIf a subsequent query is required, set the value to the NextToken value returned by the previous API call",
       "help_zh": "是否拥有下一次查询的令牌（Token）。\n\n第一次查询和没有下一次查询时，均无需填写。\n如果有下一次查询，取值为上一次 API 调用返回的 NextToken 值",
       "location": "formData",
       "name": "next_token",
@@ -37,7 +37,7 @@
     },
     {
       "example": "30",
-      "help_en": "The maximum number of entries to return in a single request.\n\nValid values: 1 to 100. Default value: 30",
+      "help_en": "The maximum number of entries to return for the current query.\n\nValid values: 1 to 100. Default value: 30",
       "help_zh": "本次查询的最大记录条数。\n\n取值范围：1~100。默认值：30",
       "location": "formData",
       "name": "max_results",
@@ -50,7 +50,7 @@
     },
     {
       "example": "ecs",
-      "help_en": "The abbreviation of the cloud service.\n\nFor more information about how to obtain the abbreviation of a cloud service, see `ProductCode` in https://help.aliyun.com/document_detail/440555.html",
+      "help_en": "The abbreviated name of the cloud service.\n\nFor more information about how to obtain the abbreviated name of a cloud service, see `ProductCode` in https://help.aliyun.com/document_detail/440555.html",
       "help_zh": "云产品的缩写名称。\n\n关于如何获取云产品的缩写名称，请参见https://help.aliyun.com/document_detail/440555.html中的0",
       "location": "formData",
       "name": "product_code",
@@ -63,7 +63,7 @@
     },
     {
       "example": "q_security-groups",
-      "help_en": "The ID of the quota",
+      "help_en": "The quota ID",
       "help_zh": "配额ID",
       "location": "formData",
       "name": "quota_action_code",
@@ -88,8 +88,13 @@
       "type": "string"
     },
     {
+      "enum": [
+        "RESERVED",
+        "TIME",
+        "TOTAL"
+      ],
       "example": "TIME",
-      "help_en": "The sorting method supported by the quota.\n\nThis parameter applies only to Elastic Computing Service server instance type quotas (ecs-spec). If no Settings are specified, it is left empty",
+      "help_en": "The sorting method supported by the quota.\n\nThis parameter applies only to Elastic Computing Service server instance type quotas (ecs-spec). If the Settings are not specified, it is left empty",
       "help_zh": "配额支持的排序方式。\n\n该参数仅针对云服务器ECS规格配额（ecs-spec），如果不设置，则为空",
       "location": "formData",
       "name": "sort_field",
@@ -106,7 +111,7 @@
         "Descending"
       ],
       "example": "Ascending",
-      "help_en": "The sorting method supported by the quota.\n\nThis parameter applies only to Elastic Computing Service server instance type quotas (ecs-spec). If no Settings are specified, it is left empty",
+      "help_en": "The sorting method supported by the quota.\n\nThis parameter applies only to Elastic Computing Service server instance type quotas (ecs-spec). If the Settings are not specified, it is left empty",
       "help_zh": "配额支持的排序方式。\n\n该参数仅针对云服务器ECS规格配额（ecs-spec），如果不设置，则为空",
       "location": "formData",
       "name": "sort_order",
@@ -179,7 +184,7 @@
     },
     {
       "example": "entconsole_w1j3ms****",
-      "help_en": "The code of the dimension group",
+      "help_en": "The dimension group code",
       "help_zh": "维度组代码",
       "location": "formData",
       "name": "group_code",
@@ -212,7 +217,7 @@
           },
           "NextToken": {
             "backendName": "module.nextToken",
-            "description_en": "Indicates whether a token for the next query is available.\n\nIf NextToken is empty, it indicates that no subsequent query is available.\nIf NextToken is returned, the value is the token used to start the next query",
+            "description_en": "Indicates whether a token for the next query is available.\n\nIf NextToken is empty, it indicates that no subsequent query is available.\nIf NextToken has a return value, the value indicates the token for the next query",
             "description_zh": "是否拥有下一次查询的令牌（Token）。\n\n如果 NextToken 为空表示没有下一次查询。\n如果 NextToken 有返回值，该取值表示下一次查询开始的令牌",
             "example": "AAAAAd****",
             "nullToEmpty": false,
@@ -232,6 +237,10 @@
                   "backendName": "adjustable",
                   "description_en": "Indicates whether the quota is adjustable",
                   "description_zh": "配额是否可调整",
+                  "enumValueTitles": {
+                    "false": "配额不可调整",
+                    "true": "配额可调整"
+                  },
                   "example": "true",
                   "mappingResourcePropertyName": "$.Adjustable",
                   "nullToEmpty": false,
@@ -240,14 +249,15 @@
                 },
                 "ApplicableRange": {
                   "backendName": "applicable",
-                  "description_en": "The range of quota values that can be applied for the current quota item, which serves as a reference for quota applications",
+                  "description_en": "The range of quota values that can be applied for the current quota item. This range is for reference when you apply for a quota",
                   "description_zh": "当前配额项可申请的配额值区间，用于配额申请时进行参考",
+                  "example": "[1010,10000]",
                   "itemName": "ApplicableRange",
                   "items": {
                     "backendName": "applicable",
-                    "description_en": "The range of quota values that can be applied for the current quota item.\n\nThis range excludes the existing range of the current user and serves as a reference for quota applications. Example: `[1010,10000]`",
+                    "description_en": "The range of quota values that can be applied for the current quota item.\n\nThis range excludes the existing range of the current user and is for reference when you apply for a quota. Example: `[1010,10000]`",
                     "description_zh": "当前配额项可申请的配额值区间。\n\n排除当前用户已有区间，用于申请配额时进行参考，例如：`[1010,10000]`",
-                    "example": "[1010,10000]",
+                    "example": "1010",
                     "format": "float",
                     "mappingResourcePropertyName": "$.ApplicableRange[*]",
                     "nullToEmpty": false,
@@ -262,6 +272,10 @@
                   "backendName": "applicableType",
                   "description_en": "The quota adjustment type",
                   "description_zh": "配额调整类型",
+                  "enumValueTitles": {
+                    "continuous": "连续",
+                    "discontinuous": "间断"
+                  },
                   "example": "discontinuous",
                   "mappingResourcePropertyName": "$.ApplicableType",
                   "nullToEmpty": false,
@@ -279,6 +293,10 @@
                   "backendName": "consumable",
                   "description_en": "Indicates whether the used quota is displayed",
                   "description_zh": "是否显示“已使用”的配额",
+                  "enumValueTitles": {
+                    "false": "不显示“已使用”的配额",
+                    "true": "显示“已使用”的配额"
+                  },
                   "example": "true",
                   "mappingResourcePropertyName": "$.Consumable",
                   "nullToEmpty": false,
@@ -312,6 +330,10 @@
                   "backendName": "globalQuota",
                   "description_en": "Indicates whether the quota is a global quota",
                   "description_zh": "是否为全局配额",
+                  "enumValueTitles": {
+                    "false": "该配额项为每个Region独立",
+                    "true": "该配额项为所有Region共用"
+                  },
                   "example": "true",
                   "type": "boolean"
                 },
@@ -325,6 +347,13 @@
                       "backendName": "periodUnit",
                       "description_en": "The unit of the quota calculation period",
                       "description_zh": "配额计算周期的单位",
+                      "enumValueTitles": {
+                        "day": "天",
+                        "hour": "小时",
+                        "minute": "分钟",
+                        "second": "秒",
+                        "week": "周"
+                      },
                       "example": "day",
                       "mappingResourcePropertyName": "$.Period.PeriodUnit",
                       "nullToEmpty": false,
@@ -335,7 +364,7 @@
                       "backendName": "periodValue",
                       "description_en": "The value of the quota calculation period",
                       "description_zh": "配额计算周期的取值",
-                      "example": "{}",
+                      "example": "1",
                       "format": "int32",
                       "mappingResourcePropertyName": "$.Period.PeriodValue",
                       "nullToEmpty": false,
@@ -358,7 +387,7 @@
                 },
                 "QuotaActionCode": {
                   "backendName": "quotaActionCode",
-                  "description_en": "The ID of the quota",
+                  "description_en": "The quota ID",
                   "description_zh": "配额ID",
                   "example": "q_security-groups",
                   "mappingResourcePropertyName": "$.QuotaActionCode",
@@ -380,6 +409,11 @@
                   "backendName": "quotaCategoryEnum",
                   "description_en": "The quota type",
                   "description_zh": "配额类型",
+                  "enumValueTitles": {
+                    "CommonQuota": "通用配额",
+                    "FlowControl": "API速率配额",
+                    "WhiteListLabel": "权益配额"
+                  },
                   "example": "CommonQuota",
                   "mappingResourcePropertyName": "$.QuotaCategory",
                   "type": "string"
@@ -425,6 +459,10 @@
                         "backendName": "type",
                         "description_en": "The quota category",
                         "description_zh": "配额类别",
+                        "enumValueTitles": {
+                          "BaseQuota": "保障配额",
+                          "ReservedQuota": "预留配额"
+                        },
                         "example": "BaseQuota",
                         "nullToEmpty": false,
                         "type": "string",
@@ -460,6 +498,10 @@
                   "backendName": "quotaType",
                   "description_en": "The quota type",
                   "description_zh": "配额类型",
+                  "enumValueTitles": {
+                    "normal": "普通",
+                    "privilege": "特权"
+                  },
                   "example": "privilege",
                   "mappingResourcePropertyName": "$.QuotaType",
                   "nullToEmpty": false,
@@ -478,14 +520,15 @@
                 },
                 "SupportedRange": {
                   "backendName": "supportedRange",
-                  "description_en": "The range of quota values supported by the current quota item, which serves as a reference when you configure a quota template",
+                  "description_en": "The range of quota values supported by the current quota item. This range is for reference when you configure a quota template",
                   "description_zh": "当前配额项支持的配额值区间，用于配置配额模板时进行参考",
+                  "example": "[1009,10000]",
                   "itemName": "SupportedRange",
                   "items": {
                     "backendName": "applicable",
-                    "description_en": "The range of quota values supported by the current quota item, which serves as a reference when you configure a quota template.\n\nIf ApplicableType is continuous and the value is [1009,10000], it indicates all numbers from 1009 to 10000.\n\nIf ApplicableType is discontinuous and the value is [10,20,50,100], it indicates only the values 10, 20, 50, and 100",
+                    "description_en": "The range of quota values supported by the current quota item. This range is for reference when you configure a quota template.\n\nIf ApplicableType is set to continuous and the value is [1009,10000], it indicates all numbers from 1009 to 10000.\n\nIf ApplicableType is set to discontinuous and the value is [10,20,50,100], it indicates that the valid values are only 10, 20, 50, and 100",
                     "description_zh": "当前配额项支持的配额值区间，用于配置配额模板时进行参考。\n\n当ApplicableType为continuous时，如果取值为[1009,10000]，则表示取值为1009~10000中的所有数。\n\n当ApplicableType为discontinuous时，如果取值为[10,20,50,100]，则表示取值仅为10、20、50和100",
-                    "example": "[1009,10000]",
+                    "example": "1009",
                     "format": "float",
                     "mappingResourcePropertyName": "$.SupportedRange[*]",
                     "nullToEmpty": false,
@@ -522,6 +565,11 @@
                   "backendName": "unadjustableDetail",
                   "description_en": "The reason why the quota is not adjustable",
                   "description_zh": "配额不可调整原因",
+                  "enumValueTitles": {
+                    "applicationProcess": "配额申请处理中",
+                    "limitReached": "已达配额上限",
+                    "nonactivated": "未开通服务"
+                  },
                   "example": "applicationProcess",
                   "mappingResourcePropertyName": "$.UnadjustableDetail",
                   "nullToEmpty": false,
@@ -535,7 +583,7 @@
                   "properties": {
                     "MetricDimensions": {
                       "additionalProperties": {
-                        "description_en": "The CloudMonitor monitoring dimension values",
+                        "description_en": "The CloudMonitor monitoring dimension value",
                         "description_zh": "CloudMonitor监控维度值",
                         "example": "ecs",
                         "type": "string"
@@ -543,18 +591,19 @@
                       "backendName": "metricDimensions",
                       "description_en": "The CloudMonitor monitoring dimensions.\n\nFormat: a collection of `key:value` pairs. Example:\n`{\"productCode\":\"***\",\"metricKey\":\"***\",\"regionId\":\"***\",\"label\":\"***\"}`",
                       "description_zh": "CloudMonitor监控维度。\n\n格式：`key:value`键值对形式的集合，例如：\n`{\"productCode\":\"***\",\"metricKey\":\"***\",\"regionId\":\"***\",\"label\":\"***\"}`",
+                      "example": "{\"productCode\":\"ecs\"}",
                       "type": "object"
                     },
                     "MetricName": {
                       "backendName": "metricName",
-                      "description_en": "The name of the CloudMonitor monitoring metric",
+                      "description_en": "The CloudMonitor metric name",
                       "description_zh": "CloudMonitor监控项名称",
                       "example": "Usage",
                       "type": "string"
                     },
                     "MetricNamespace": {
                       "backendName": "metricNamespace",
-                      "description_en": "The namespace of the CloudMonitor monitoring data",
+                      "description_en": "The CloudMonitor monitoring data namespace",
                       "description_zh": "CloudMonitor监控数据命名空间",
                       "example": "acs_quotas_flowcontrol",
                       "type": "string"
