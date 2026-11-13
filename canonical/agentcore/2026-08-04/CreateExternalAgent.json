@@ -3,7 +3,7 @@
   "cmd_full_name": "agentcore create-external-agent",
   "cmd_name": "create-external-agent",
   "deprecated": false,
-  "description_en": "Creates an agent that runs in an external environment, saves the configurations for the platform model, instructions, tools, and skills, and asynchronously processes the access configuration",
+  "description_en": "Creates an agent that runs in an external environment, saves the configurations for the platform model, instructions, tools, and skills, and asynchronously processes the onboarding configuration",
   "description_zh": "创建由外部环境运行的智能体，保存平台模型、指令、工具和技能配置，并异步处理接入配置",
   "kebab_example": "aliyun agentcore create-external-agent --workspace-id ws-1 --region cn-hangzhou",
   "method": "POST",
@@ -50,8 +50,49 @@
           "type": "string"
         },
         {
+          "fields": [
+            {
+              "element": {
+                "fields": [
+                  {
+                    "example": "cred-example",
+                    "help_en": "Required when a credential reference item is passed. Validated by the backend",
+                    "help_zh": "传入凭证引用项时必填，由后端校验",
+                    "name": "credential_id",
+                    "options": [
+                      "--credential-id"
+                    ],
+                    "raw_name": "credentialId",
+                    "required": false,
+                    "type": "string"
+                  }
+                ],
+                "type": "object"
+              },
+              "help_en": "This list must be explicitly provided and cannot be null when the environment object is passed. The list is replaced as a whole. If environment is not passed during an update, the original binding is retained. If an empty list is passed or environment is null, the binding is cleared. Only the credential ID is passed, not the actual secret key",
+              "help_zh": "传入 environment 对象时必须显式提供此列表，不可为 null。列表整体替换；更新时不传 environment 保留原绑定，传空列表或 environment 为 null 时清空绑定。仅传凭证 ID，不传真实密钥",
+              "name": "credential_references",
+              "options": [
+                "--credential-references"
+              ],
+              "raw_name": "credentialReferences",
+              "required": false,
+              "type": "array"
+            }
+          ],
+          "help_en": "Optional. Credentials can be bound to both PLATFORM and RUNTIME model sources. When passing the object, you must explicitly provide a non-null credentialReferences list. Common environment variables are not supported",
+          "help_zh": "可选。PLATFORM 和 RUNTIME 模型来源均可绑定凭证。传入对象时必须显式提供非 null 的 credentialReferences 列表，不支持普通环境变量",
+          "name": "environment",
+          "options": [
+            "--environment"
+          ],
+          "raw_name": "environment",
+          "required": false,
+          "type": "object"
+        },
+        {
           "example": "你是一个代码评审助手",
-          "help_en": "The agent instructions, which are used to guide the behavior of the agent",
+          "help_en": "The agent instruction, used to guide the behavior of the agent",
           "help_zh": "智能体指令，用于指导智能体的行为",
           "name": "instruction",
           "options": [
@@ -91,7 +132,7 @@
               "fields": [
                 {
                   "example": "true",
-                  "help_en": "Specifies whether to enable the token quota. Default value: true. If set to false, the quota is disabled and existing quota rules are deleted",
+                  "help_en": "Specifies whether to enable the token quota. Defaults to true if not specified. Passing false disables and deletes existing quota rules",
                   "help_zh": "是否启用 Token 配额；不填时默认为 true，传 false 表示关闭并删除已有配额规则",
                   "name": "enabled",
                   "options": [
@@ -173,7 +214,7 @@
             "RUNTIME"
           ],
           "example": "PLATFORM",
-          "help_en": "The source of the model configuration. PLATFORM indicates that the platform parses and delivers the model configuration. RUNTIME indicates that the external runtime manages the model, and the model parameter cannot be passed at the same time. Valid values: PLATFORM (platform model) and RUNTIME (runtime model)",
+          "help_en": "The source of the model configuration. PLATFORM indicates that the platform parses and delivers the model configuration. RUNTIME indicates that the external runtime manages the model itself, and the model parameter cannot be passed at the same time. Valid values: PLATFORM (platform model) and RUNTIME (runtime model)",
           "help_zh": "模型配置来源。PLATFORM 表示由平台解析并下发 model 配置；RUNTIME 表示由外部运行时自行管理模型，不能同时传入 model。枚举值：PLATFORM（平台模型）、RUNTIME（运行时模型）",
           "name": "model_source",
           "options": [
@@ -216,7 +257,7 @@
                   "STATIC"
                 ],
                 "example": "REFERENCE",
-                "help_en": "The skill source type. REFERENCE references AI Registry, and STATIC is statically provided with the package",
+                "help_en": "The skill source type. REFERENCE references the AI Registry. STATIC is statically provided with the deployment package",
                 "help_zh": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
                 "name": "source_type",
                 "options": [
@@ -228,7 +269,7 @@
               },
               {
                 "example": "1.0.0",
-                "help_en": "The skill version field for compatibility with legacy requests. For new requests, use sourceType and versionSelector. Do not submit this field in combination with sourceType",
+                "help_en": "The skill version field for compatibility with legacy requests. Use sourceType and versionSelector for new requests. Do not submit it in combination with sourceType",
                 "help_zh": "兼容旧请求的 Skill 版本字段。新请求使用 sourceType 与 versionSelector，不与 sourceType 组合提交",
                 "name": "version",
                 "options": [
@@ -246,7 +287,7 @@
                       "VERSION"
                     ],
                     "example": "LABEL",
-                    "help_en": "The version selector type. LABEL selects by tag, and VERSION selects by specific version",
+                    "help_en": "The version selector type. LABEL selects by tag. VERSION selects by specific version",
                     "help_zh": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
                     "name": "type",
                     "options": [
@@ -269,7 +310,7 @@
                     "type": "string"
                   }
                 ],
-                "help_en": "The skill reference version selector, which supports LABEL tags and VERSION specific versions. If omitted, LABEL/latest is used. STATIC sources do not provide a selector",
+                "help_en": "The skill reference version selector. Supports LABEL tags and VERSION specific versions. Defaults to LABEL/latest if omitted. Selectors are not provided for STATIC sources",
                 "help_zh": "Skill 引用版本选择器，支持 LABEL 标签与 VERSION 具体版本；省略时使用 LABEL/latest。STATIC 来源不提供选择器",
                 "name": "version_selector",
                 "options": [
@@ -298,7 +339,7 @@
               "fields": [
                 {
                   "example": "code-review-template",
-                  "help_en": "The name of the template in AI Registry",
+                  "help_en": "The name of the template in the AI Registry",
                   "help_zh": "AI Registry 中模板的名称",
                   "name": "name",
                   "options": [
@@ -310,7 +351,7 @@
                 },
                 {
                   "example": "1.0.0",
-                  "help_en": "The version of the template in AI Registry",
+                  "help_en": "The version of the template in the AI Registry",
                   "help_zh": "AI Registry 中模板的版本",
                   "name": "version",
                   "options": [
@@ -400,7 +441,7 @@
     },
     {
       "example": "client-token-1",
-      "help_en": "The reserved query parameter. Currently, the backend does not provide idempotency guarantees for deduplication or restoring the original acceptance result based on this identifier",
+      "help_en": "The reserved query parameter. The backend does not provide idempotency guarantees for deduplication or restoring the original acceptance result based on this identifier at this time",
       "help_zh": "预留 Query 参数，当前后端不提供按该标识去重或恢复原受理结果的幂等保证",
       "location": "query",
       "name": "client_token",
@@ -423,7 +464,7 @@
         "properties": {
           "code": {
             "backendName": "code",
-            "description_en": "The business status code. The value is SUCCESS if the request is successful",
+            "description_en": "The business status code. A value of SUCCESS indicates success",
             "description_zh": "业务状态码。成功时为 SUCCESS",
             "example": "SUCCESS",
             "type": "string"
@@ -459,7 +500,7 @@
                     },
                     "sourceType": {
                       "backendName": "sourceType",
-                      "description_en": "The skill source type. REFERENCE references AI Registry, and STATIC is statically provided with the package",
+                      "description_en": "The skill source type. REFERENCE references the AI Registry. STATIC is statically provided with the deployment package",
                       "description_zh": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
                       "enum": [
                         "REFERENCE",
@@ -476,7 +517,7 @@
                     },
                     "version": {
                       "backendName": "version",
-                      "description_en": "The legacy compatibility field. Use sourceType and versionSelector for new requests",
+                      "description_en": "The legacy compatibility field. For new requests, use sourceType and versionSelector",
                       "description_zh": "旧版兼容字段，新请求使用 sourceType 和 versionSelector",
                       "example": "1.0.0",
                       "title_en": "旧版兼容字段，新请求使用 sourceType 和 versionSelector",
@@ -485,12 +526,12 @@
                     },
                     "versionSelector": {
                       "backendName": "versionSelector",
-                      "description_en": "The skill reference version selector, which supports LABEL tags and VERSION specific versions. If omitted, LABEL/latest is used. STATIC sources do not provide a selector",
+                      "description_en": "The skill reference version selector. Supports LABEL tags and VERSION specific versions. Defaults to LABEL/latest if omitted. Selectors are not provided for STATIC sources",
                       "description_zh": "Skill 引用版本选择器，支持 LABEL 标签与 VERSION 具体版本；省略时使用 LABEL/latest。STATIC 来源不提供选择器",
                       "properties": {
                         "type": {
                           "backendName": "type",
-                          "description_en": "The version selector type. LABEL selects by tag, and VERSION selects by specific version",
+                          "description_en": "The version selector type. LABEL selects by tag. VERSION selects by specific version",
                           "description_zh": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
                           "enum": [
                             "LABEL",
@@ -554,6 +595,39 @@
                 "example": "运行在用户环境中的代码评审智能体",
                 "type": "string"
               },
+              "environment": {
+                "backendName": "environment",
+                "description_en": "The credential binding configuration",
+                "description_zh": "凭证绑定配置",
+                "properties": {
+                  "credentialReferences": {
+                    "backendName": "credentialReferences",
+                    "description_en": "This list must be explicitly provided and cannot be null when the environment object is passed. The list is replaced as a whole. If environment is not passed during an update, the original binding is retained. If an empty list is passed or environment is null, the binding is cleared. Only the credential ID is passed, not the actual secret key",
+                    "description_zh": "传入 environment 对象时必须显式提供此列表，不可为 null。列表整体替换；更新时不传 environment 保留原绑定，传空列表或 environment 为 null 时清空绑定。仅传凭证 ID，不传真实密钥",
+                    "itemName": "credentialReferences",
+                    "items": {
+                      "properties": {
+                        "credentialId": {
+                          "backendName": "credentialId",
+                          "description_en": "Required when a credential reference item is passed. Validated by the backend",
+                          "description_zh": "传入凭证引用项时必填，由后端校验",
+                          "example": "cred-example",
+                          "title_en": "同一工作空间中的凭证 ID",
+                          "title_zh": "同一工作空间中的凭证 ID",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "title_en": "凭证引用列表",
+                    "title_zh": "凭证引用列表",
+                    "type": "array"
+                  }
+                },
+                "title_en": "凭证绑定配置",
+                "title_zh": "凭证绑定配置",
+                "type": "object"
+              },
               "externalAgentStatus": {
                 "backendName": "externalAgentStatus",
                 "description_en": "The runtime status information reported by the managed agent",
@@ -561,7 +635,7 @@
                 "properties": {
                   "heartbeatStatus": {
                     "backendName": "heartbeatStatus",
-                    "description_en": "The heartbeat status. ONLINE indicates that the most recent heartbeat has not exceeded the configured timeout threshold. STALE indicates that the heartbeat has timed out. UNKNOWN indicates that the heartbeat is missing or the format is invalid. Valid values: ONLINE (online), STALE (heartbeat expired), UNKNOWN (unknown)",
+                    "description_en": "The heartbeat status. ONLINE indicates that the latest heartbeat is within the configured timeout threshold. STALE indicates that the heartbeat has timed out. UNKNOWN indicates that the heartbeat is missing or the format is invalid. Valid values:\nONLINE: Online.\nSTALE: Heartbeat expired.\nUNKNOWN: Unknown",
                     "description_zh": "心跳状态。ONLINE 表示最近心跳未超过配置的超时阈值；STALE 表示心跳已超时；UNKNOWN 表示心跳缺失或格式无效。枚举值：ONLINE（在线）、STALE（心跳过期）、UNKNOWN（未知）",
                     "enum": [
                       "ONLINE",
@@ -578,14 +652,14 @@
                   },
                   "lastActiveAt": {
                     "backendName": "lastActiveAt",
-                    "description_en": "The time when the managed agent was last active, in RFC 3339 format",
+                    "description_en": "The last active time of the managed agent, in RFC 3339 format",
                     "description_zh": "纳管 Agent最近一次活跃时间，RFC 3339 格式",
                     "example": "2026-01-01T00:00:00Z",
                     "type": "string"
                   },
                   "lastHeartbeat": {
                     "backendName": "lastHeartbeat",
-                    "description_en": "The time of the last heartbeat from the managed agent, in RFC 3339 format",
+                    "description_en": "The time of the last heartbeat reported by the managed agent, in RFC 3339 format",
                     "description_zh": "纳管 Agent最近一次心跳时间，RFC 3339 格式",
                     "example": "2026-01-01T00:00:00Z",
                     "type": "string"
@@ -609,7 +683,7 @@
               },
               "instruction": {
                 "backendName": "instruction",
-                "description_en": "The agent instructions, which are used to guide the behavior of the agent",
+                "description_en": "The agent instruction, used to guide the behavior of the agent",
                 "description_zh": "智能体指令，用于指导智能体的行为",
                 "example": "你是一个代码评审助手",
                 "type": "string"
@@ -624,7 +698,7 @@
               },
               "latestVersionStatus": {
                 "backendName": "latestVersionStatus",
-                "description_en": "The processing status of the latest specification version. Valid values:\npending: Pending.\nprocessing: Processing.\nwaiting_retry: Waiting for retry.\nsucceeded: Succeeded.\nfailed: Failed.\nsuperseded: Superseded by a new version",
+                "description_en": "The processing status of the latest specification version. Valid values: pending (Pending), processing (Processing), waiting_retry (Waiting for retry), succeeded (Succeeded), failed (Failed), and superseded (Superseded by a new version)",
                 "description_zh": "最新规格版本的处理状态。枚举值：pending（待处理）、processing（处理中）、waiting_retry（等待重试）、succeeded（成功）、failed（失败）、superseded（已被新版本取代）",
                 "enum": [
                   "pending",
@@ -666,12 +740,12 @@
                   },
                   "quota": {
                     "backendName": "quota",
-                    "description_en": "The model token quota configuration and usage status for the current period. This field is empty if no quota is configured",
+                    "description_en": "The model token quota configuration and the quota usage status for the current cycle. This parameter is empty if no quota is configured",
                     "description_zh": "模型 Token 配额配置及当前周期的配额使用状态；未配置配额时为空",
                     "properties": {
                       "enabled": {
                         "backendName": "enabled",
-                        "description_en": "Indicates whether the quota is enabled. This field is not returned if no quota is configured",
+                        "description_en": "Indicates whether the quota is enabled. This parameter is not returned if no quota is configured",
                         "description_zh": "配额是否处于启用状态；未配置配额时不返回",
                         "example": "true",
                         "title_en": "配额是否处于启用状态；未配置配额时不返回",
@@ -680,7 +754,7 @@
                       },
                       "limitType": {
                         "backendName": "limitType",
-                        "description_en": "The quota limit type. Only token is supported",
+                        "description_en": "The quota limit type. Currently, only token is supported",
                         "description_zh": "配额限制类型；当前仅支持 token",
                         "enum": [
                           "token"
@@ -695,7 +769,7 @@
                       },
                       "overLimit": {
                         "backendName": "overLimit",
-                        "description_en": "Indicates whether the quota is exceeded in the current period. This field is read-only and returned by the backend",
+                        "description_en": "Indicates whether the quota is exceeded in the current cycle. This parameter is read-only and returned by the backend",
                         "description_zh": "当前周期是否已超出配额；只读，由后端返回",
                         "example": "false",
                         "title_en": "当前周期是否已超出配额；只读，由后端返回",
@@ -721,7 +795,7 @@
                       },
                       "ruleStatus": {
                         "backendName": "ruleStatus",
-                        "description_en": "The gateway quota rule status. This field is read-only and returned by the backend",
+                        "description_en": "The gateway quota rule status. This parameter is read-only and returned by the backend",
                         "description_zh": "网关配额规则状态；只读，由后端返回",
                         "example": "ACTIVE",
                         "title_en": "网关配额规则状态；只读，由后端返回",
@@ -730,7 +804,7 @@
                       },
                       "usageLimit": {
                         "backendName": "usageLimit",
-                        "description_en": "The maximum number of tokens allowed to be consumed in a single period",
+                        "description_en": "The maximum number of tokens allowed to be consumed in a single cycle",
                         "description_zh": "单个周期内允许消耗的 Token 上限",
                         "example": "1000000",
                         "format": "int64",
@@ -740,7 +814,7 @@
                       },
                       "usedAmount": {
                         "backendName": "usedAmount",
-                        "description_en": "The number of tokens consumed in the current period. This field is read-only and returned by the backend",
+                        "description_en": "The number of tokens consumed in the current cycle. This parameter is read-only and returned by the backend",
                         "description_zh": "当前周期已消耗的 Token 数；只读，由后端返回",
                         "example": "12345",
                         "format": "int64",
@@ -758,7 +832,7 @@
               },
               "modelSource": {
                 "backendName": "modelSource",
-                "description_en": "The source of the model configuration. PLATFORM indicates that the platform parses and delivers the model configuration. RUNTIME indicates that the external runtime manages the model, and the model parameter cannot be passed at the same time. Valid values: PLATFORM (platform model) and RUNTIME (runtime model)",
+                "description_en": "The source of the model configuration. PLATFORM indicates that the platform parses and delivers the model configuration. RUNTIME indicates that the external runtime manages the model itself, and the model parameter cannot be passed at the same time. Valid values: PLATFORM (platform model) and RUNTIME (runtime model)",
                 "description_zh": "模型配置来源。PLATFORM 表示由平台解析并下发 model 配置；RUNTIME 表示由外部运行时自行管理模型，不能同时传入 model。枚举值：PLATFORM（平台模型）、RUNTIME（运行时模型）",
                 "enum": [
                   "PLATFORM",
@@ -802,7 +876,7 @@
                   "properties": {
                     "appliedVersion": {
                       "backendName": "appliedVersion",
-                      "description_en": "The version applied at runtime. This field is read-only",
+                      "description_en": "The effective runtime version. This field is read-only",
                       "description_zh": "运行时已生效版本，只读",
                       "example": "1.0.0",
                       "title_en": "运行时已生效版本，只读",
@@ -811,7 +885,7 @@
                     },
                     "fromTemplate": {
                       "backendName": "fromTemplate",
-                      "description_en": "Indicates whether the skill is from a fixed template. This field is read-only, and template items cannot be removed",
+                      "description_en": "Specifies whether the skill is from a fixed template. This field is read-only. Template items cannot be removed",
                       "description_zh": "是否来自固定模板，只读；模板项不可移除",
                       "example": "false",
                       "title_en": "是否来自固定模板，只读；模板项不可移除",
@@ -838,7 +912,7 @@
                     },
                     "sourceType": {
                       "backendName": "sourceType",
-                      "description_en": "The skill source type. REFERENCE references AI Registry, and STATIC is statically provided with the package",
+                      "description_en": "The skill source type. REFERENCE references the AI Registry. STATIC is statically provided with the deployment package",
                       "description_zh": "Skill 来源类型：REFERENCE 引用 AI Registry、STATIC 随包静态提供",
                       "enum": [
                         "REFERENCE",
@@ -864,12 +938,12 @@
                     },
                     "versionSelector": {
                       "backendName": "versionSelector",
-                      "description_en": "The skill reference version selector, which supports LABEL tags and VERSION specific versions. If omitted, LABEL/latest is used. STATIC sources do not provide a selector",
+                      "description_en": "The skill reference version selector. Supports LABEL tags and VERSION specific versions. Defaults to LABEL/latest if omitted. Selectors are not provided for STATIC sources",
                       "description_zh": "Skill 引用版本选择器，支持 LABEL 标签与 VERSION 具体版本；省略时使用 LABEL/latest。STATIC 来源不提供选择器",
                       "properties": {
                         "type": {
                           "backendName": "type",
-                          "description_en": "The version selector type. LABEL selects by tag, and VERSION selects by specific version",
+                          "description_en": "The version selector type. LABEL selects by tag. VERSION selects by specific version",
                           "description_zh": "版本选择器类型：LABEL 按标签、VERSION 按具体版本",
                           "enum": [
                             "LABEL",
@@ -905,7 +979,7 @@
               },
               "status": {
                 "backendName": "status",
-                "description_en": "The status of the managed agent. Valid values:\nCreating: The agent is being created.\nRunning: The agent is running.\nFailed: The operation failed.\nUpdating: The agent is being updated.\nDeleting: The agent is being deleted.\nDeleted: The agent is deleted",
+                "description_en": "The status of the managed agent. Valid values:\nCreating: The agent is being created.\nRunning: The agent is running.\nFailed: The agent failed.\nUpdating: The agent is being updated.\nDeleting: The agent is being deleted.\nDeleted: The agent is deleted",
                 "description_zh": "纳管 Agent状态。枚举值：Creating（创建中）、Running（运行中）、Failed（失败）、Updating（更新中）、Deleting（删除中）、Deleted（已删除）",
                 "enum": [
                   "Creating",
@@ -938,7 +1012,7 @@
                     "properties": {
                       "name": {
                         "backendName": "name",
-                        "description_en": "The name of the template in AI Registry",
+                        "description_en": "The name of the template in the AI Registry",
                         "description_zh": "AI Registry 中模板的名称",
                         "example": "code-review-template",
                         "required": true,
@@ -946,7 +1020,7 @@
                       },
                       "version": {
                         "backendName": "version",
-                        "description_en": "The version of the template in AI Registry",
+                        "description_en": "The version of the template in the AI Registry",
                         "description_zh": "AI Registry 中模板的版本",
                         "example": "1.0.0",
                         "required": true,
@@ -1012,7 +1086,7 @@
           },
           "httpStatusCode": {
             "backendName": "httpStatusCode",
-            "description_en": "The HTTP status code. The value is 200 if the request is successful",
+            "description_en": "The HTTP status code. A value of 200 indicates success",
             "description_zh": "HTTP 状态码。成功时为 200",
             "example": "200",
             "format": "int32",
