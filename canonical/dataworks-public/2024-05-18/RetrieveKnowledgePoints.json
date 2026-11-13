@@ -1,11 +1,11 @@
 {
-  "camel_example": "",
+  "camel_example": "aliyun dataworks-public RetrieveKnowledgePoints --region cn-hangzhou --Query '销售额如何计算，来自哪些表？'",
   "cmd_full_name": "dataworks-public retrieve-knowledge-points",
   "cmd_name": "retrieve-knowledge-points",
   "deprecated": false,
-  "description_en": "Retrieves knowledge points in one or more authorized knowledge bases and returns summaries, relationship paths, and ambiguity candidates",
+  "description_en": "Searches one or more authorized knowledge bases for knowledge points and returns summaries, relationship paths, and candidates for ambiguous references",
   "description_zh": "在授权的一个或多个知识库中检索知识点，返回摘要、关系路径和歧义候选",
-  "kebab_example": "",
+  "kebab_example": "aliyun dataworks-public retrieve-knowledge-points --query '销售额如何计算，来自哪些表？' --api-version 2024-05-18 --region cn-hangzhou",
   "method": "POST",
   "multi_version": true,
   "name": "RetrieveKnowledgePoints",
@@ -40,7 +40,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The list of knowledge base IDs to restrict the search. You can specify 1 to 50 unique IDs. If this parameter is omitted, knowledge bases are discovered within the authorization scope of the current caller. If you explicitly specify knowledge bases, each is authenticated individually. If the caller lacks permissions for any specified knowledge base, the entire request fails",
+      "help_en": "A list of 1 to 50 unique knowledge base IDs that restricts the search. If you omit this parameter, the operation discovers knowledge bases within the caller’s authorized scope. If you provide IDs, the operation checks access to each knowledge base and the entire request fails if the caller lacks access to any of them",
       "help_zh": "限定检索的知识库 ID 列表，1～50 个且不能重复。省略时在当前调用者授权范围内发现；显式指定的知识库逐一鉴权，任一无权限则整次请求失败",
       "location": "formData",
       "name": "knowledge_base_ids",
@@ -54,7 +54,7 @@
     },
     {
       "example": "10",
-      "help_en": "The maximum number of hits across all knowledge bases combined. Default value: 10. Valid values: 1 to 50. This is not a quota for each knowledge base, nor is it a page size",
+      "help_en": "The maximum number of hits across all knowledge bases. Default value: 10. Valid values: 1 to 50. This parameter does not specify the quota for each knowledge base or the page size",
       "help_zh": "所有知识库合并后的最多命中数量，默认 10，取值 1～50；不是每个知识库的配额，也不是翻页大小",
       "location": "formData",
       "maximum": "50",
@@ -128,12 +128,12 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The successful response",
+        "description_en": "The successful response of the operation",
         "description_zh": "接口成功响应",
         "properties": {
           "Code": {
             "backendName": "data.Code",
-            "description_en": "The business error code. This field can be omitted when the request is successful. If the request fails, the common error response protocol is followed",
+            "description_en": "The business error code. This field may be omitted if the request succeeds. If the request fails, the common error response protocol applies",
             "description_zh": "业务错误代码。成功时可省略；失败遵循公共错误响应协议",
             "example": "InvalidParameter",
             "type": "string"
@@ -155,7 +155,7 @@
                   "properties": {
                     "Candidates": {
                       "backendName": "Candidates",
-                      "description_en": "The candidate graph nodes when ambiguity exists. The candidates carry KnowledgeBaseId, Type, and Id for reading details, which does not indicate that the user has confirmed the selection",
+                      "description_en": "The candidate graph nodes when ambiguity exists. Each candidate carries the KnowledgeBaseId, Type, and Id for reading details, which does not indicate that the user has confirmed the selection",
                       "description_zh": "存在歧义时的候选图节点。候选携带可读取详情的 KnowledgeBaseId、Type、Id，不表示用户已确认选择",
                       "itemName": "Candidates",
                       "items": {
@@ -199,7 +199,7 @@
                     },
                     "Mention": {
                       "backendName": "Mention",
-                      "description_en": "The name or description of the object that is not yet determined in the query",
+                      "description_en": "The name or description of the object whose referent is not yet determined in the query",
                       "description_zh": "查询中尚未确定所指对象的名称或描述",
                       "example": "销售额",
                       "type": "string"
@@ -213,7 +213,7 @@
               },
               "Paths": {
                 "backendName": "Paths",
-                "description_en": "The object relationship paths matched in the current search. These paths do not correspond to the Results array by index. The system does not guarantee that all relationships are exhausted",
+                "description_en": "The relationship paths matched by the search. Path indexes do not correspond to indexes in the Results array. The paths may cover only a subset of relationships",
                 "description_zh": "本次检索匹配的对象关系路径，与 Results 不按数组下标配对；不承诺穷尽全部关系",
                 "itemName": "Paths",
                 "items": {
@@ -238,7 +238,7 @@
                           },
                           "RelationType": {
                             "backendName": "RelationType",
-                            "description_en": "The public relationship type directed from the start node to the end node. For example, CALCULATED_FROM indicates that the start node is calculated based on the end node. You cannot infer the complete formula based solely on the type",
+                            "description_en": "The public relationship type directed from the start node to the end node. For example, CALCULATED_FROM indicates that the start node is calculated based on the end node. You cannot infer the complete formula based solely on the relationship type",
                             "description_zh": "从起点指向终点的公开关系类型。例如 CALCULATED_FROM 表示起点基于终点计算；不能仅凭类型推断完整公式",
                             "example": "CALCULATED_FROM",
                             "type": "string"
@@ -259,7 +259,7 @@
                     },
                     "Nodes": {
                       "backendName": "Nodes",
-                      "description_en": "The graph nodes in the current relationship path. You can read the details of each node by using KnowledgeBaseId, Type, and Id",
+                      "description_en": "The graph nodes in the relationship path. You can read the details of each node by using its KnowledgeBaseId, Type, and Id",
                       "description_zh": "本条关系路径中的图节点。每个节点可通过 KnowledgeBaseId、Type、Id 读取详情",
                       "itemName": "Nodes",
                       "items": {
@@ -310,7 +310,7 @@
               },
               "Results": {
                 "backendName": "Results",
-                "description_en": "The knowledge point summaries returned by unified relevance. The total number of results across knowledge bases does not exceed MaxResults. The results can include GRAPH, WIKI, and KNOWLEDGE_CONTENT",
+                "description_en": "Knowledge point summaries ranked by relevance across all knowledge bases. The total number of results does not exceed MaxResults. Results can include GRAPH, WIKI, and KNOWLEDGE_CONTENT",
                 "description_zh": "按统一相关性返回的知识点摘要，跨库总数不超过 MaxResults。可包含 GRAPH、WIKI 和 KNOWLEDGE_CONTENT",
                 "itemName": "Results",
                 "items": {
@@ -333,7 +333,7 @@
                     },
                     "Sources": {
                       "backendName": "Sources",
-                      "description_en": "The download information of the uploaded original documents explicitly associated with the current content. This field is omitted if no reliable source exists or if you do not have read permissions for the original files. The ability to search for knowledge points does not imply the ability to download the complete original files",
+                      "description_en": "The download information of the uploaded original documents explicitly associated with the current content. This parameter is omitted if no reliable source is available or if the caller lacks read permissions for the original files. The ability to retrieve knowledge points does not imply the permission to download the complete original files",
                       "description_zh": "当前内容明确关联的上传原文档下载信息。无可靠来源或无原文件读取权限时省略；可检索知识点不代表可以下载完整原文件",
                       "itemName": "Sources",
                       "items": {
@@ -342,7 +342,7 @@
                         "properties": {
                           "DownloadUrl": {
                             "backendName": "DownloadUrl",
-                            "description_en": "The temporary HTTPS download URL of the original file. The URL is valid for 2 hours. This field is returned only when the source can be reliably located and the caller has read permissions for the original file. Do not forward this URL publicly or store it for a long time",
+                            "description_en": "The temporary HTTPS download URL of the original file. The URL is valid for 2 hours. This parameter is returned only when the source can be reliably located and the caller has read permissions for the original file. Do not forward the URL publicly or store it for a long time",
                             "description_zh": "原文件的 HTTPS 临时下载地址，有效期为 2 小时。仅在来源可可靠定位且调用者有原文件读取权限时返回；请勿公开转发或长期保存",
                             "example": "https://example.com/sales-policy.pdf",
                             "type": "string"
@@ -430,7 +430,7 @@
           },
           "Message": {
             "backendName": "data.Message",
-            "description_en": "The readable description of the business error. This field can be omitted when the request is successful. When troubleshooting a failure, provide the RequestId at the same time",
+            "description_en": "A human-readable description of the business error. This field may be omitted if the request succeeds. Provide the RequestId when troubleshooting failures",
             "description_zh": "业务错误的可读说明，成功时可省略。失败定位时请同时提供 RequestId",
             "example": "The request parameters are invalid.",
             "type": "string"

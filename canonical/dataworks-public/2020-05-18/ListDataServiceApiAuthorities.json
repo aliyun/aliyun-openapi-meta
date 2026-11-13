@@ -2,7 +2,7 @@
   "cmd_full_name": "dataworks-public list-data-service-api-authorities",
   "cmd_name": "list-data-service-api-authorities",
   "deprecated": false,
-  "description_en": "Queries the list of APIs authorized to other users",
+  "description_en": "Lists APIs that have been granted to other users",
   "description_zh": "调用ListDataServiceApiAuthorities获取授权给他人的API列表",
   "kebab_example": "aliyun dataworks-public list-data-service-api-authorities --project-id 10000 --api-version 2020-05-18 --region cn-hangzhou",
   "method": "POST",
@@ -24,7 +24,7 @@
     {
       "doc_required": true,
       "example": "10000",
-      "help_en": "The ID of the workspace.\n\nYou can call the ListProjects operation to obtain a valid workspace ID or view the ID in the workspace settings of the DataWorks console. Before you call the ListProjects operation, make sure that the DataWorks service is activated and you have the required RAM permissions",
+      "help_en": "The ID of the workspace. You can call the ListProjects operation to obtain a valid workspace ID or view it in the workspace configurations in the DataWorks console. Before calling ListProjects, ensure that the DataWorks service and RAM permissions are configured",
       "help_zh": "工作空间的ID。\n\n可通过 ListProjects 获取有效工作空间 ID，也可在 DataWorks 控制台的工作空间配置中查看；调用 ListProjects 前需确认 DataWorks 服务和 RAM 权限已就绪",
       "location": "formData",
       "name": "project_id",
@@ -81,7 +81,7 @@
     },
     {
       "example": "我的API名称",
-      "help_en": "The keyword in the API name. This parameter is used to filter and retrieve APIs whose names contain the keyword",
+      "help_en": "The keyword in the API name. This parameter is used to filter APIs whose names contain the keyword",
       "help_zh": "API名称的关键词，通过过滤获取API名称包含该关键词的API",
       "location": "formData",
       "name": "api_name_keyword",
@@ -91,6 +91,19 @@
       "raw_name": "ApiNameKeyword",
       "required": false,
       "type": "string"
+    },
+    {
+      "example": "1",
+      "help_en": "The gateway version. Valid values: 1: API Gateway. 2: Cloud-native API Gateway",
+      "help_zh": "网关版本，1：API网关；2：云原生API网关",
+      "location": "formData",
+      "name": "apigw_version",
+      "options": [
+        "--apigw-version"
+      ],
+      "raw_name": "ApigwVersion",
+      "required": false,
+      "type": "int"
     }
   ],
   "pathPattern": "",
@@ -104,7 +117,7 @@
         "properties": {
           "Data": {
             "backendName": "data",
-            "description_en": "The list of APIs authorized to other users",
+            "description_en": "The list of APIs authorized to others",
             "description_zh": "授权给他人的API列表",
             "nullToEmpty": true,
             "properties": {
@@ -147,7 +160,7 @@
                     },
                     "ApiStatus": {
                       "backendName": "apiStatus",
-                      "description_en": "The status of the API. Valid values:\n0: Unpublished.\n1: Published",
+                      "description_en": "The status of the API. Valid values: 0: Unpublished. 1: Published",
                       "description_zh": "API的状态，可选枚举值包括0（未发布）和1（已发布）",
                       "example": "0",
                       "format": "int32",
@@ -157,16 +170,24 @@
                     },
                     "AuthorizationRecords": {
                       "backendName": "authorizationDetails",
-                      "description_en": "The list of authorization details for the APIs authorized to other users",
+                      "description_en": "The list of authorization details for APIs authorized to others",
                       "description_zh": "授权给他人的授权详情列表",
                       "itemName": "AuthorizationRecord",
                       "items": {
                         "description_en": "The response structure",
                         "description_zh": "返回数据结构",
                         "properties": {
+                          "ConsumerAuthorizationRuleId": {
+                            "backendName": "consumerAuthorizationRuleId",
+                            "description_en": "The ID of the cloud-native API gateway authorization rule",
+                            "description_zh": "云原生API网关授权规则 ID",
+                            "example": "car-xxxx",
+                            "type": "string",
+                            "visibility": "Public"
+                          },
                           "CreatedTime": {
                             "backendName": "createTime",
-                            "description_en": "The time when the authorization was granted, in the yyyy-MM-dd'T'HH:mm:ssZ format (example time zone: +0800)",
+                            "description_en": "The authorization time. The time is in the yyyy-MM-dd'T'HH:mm:ssZ format (example time zone: +0800)",
                             "description_zh": "授权时间，格式为 yyyy-MM-dd'T'HH:mm:ssZ（示例时区为 +0800）",
                             "example": "2020-06-23T00:21:01+0800",
                             "nullToEmpty": true,
@@ -184,7 +205,7 @@
                           },
                           "EndTime": {
                             "backendName": "endTime",
-                            "description_en": "The end time of the authorization validity period, in the yyyy-MM-dd'T'HH:mm:ssZ format (example time zone: +0800)",
+                            "description_en": "The end time of the authorization validity period. The time is in the yyyy-MM-dd'T'HH:mm:ssZ format (example time zone: +0800)",
                             "description_zh": "授权有效期的截止时间，格式为 yyyy-MM-dd'T'HH:mm:ssZ（示例时区为 +0800）",
                             "example": "2020-06-24T00:21:01+0800",
                             "nullToEmpty": true,
@@ -193,7 +214,7 @@
                           },
                           "ProjectId": {
                             "backendName": "projectId",
-                            "description_en": "The ID of the workspace that is granted the authorization",
+                            "description_en": "The ID of the authorized workspace",
                             "description_zh": "获得授权的工作空间ID",
                             "example": "10004",
                             "format": "int64",
@@ -210,7 +231,7 @@
                     },
                     "CreatedTime": {
                       "backendName": "gmtCreate",
-                      "description_en": "The time when the API was created, in the yyyy-MM-dd'T'HH:mm:ssZ format (example time zone: +0800)",
+                      "description_en": "The time when the API was created. The time is in the yyyy-MM-dd'T'HH:mm:ssZ format (example time zone: +0800)",
                       "description_zh": "API的创建时间，格式为 yyyy-MM-dd'T'HH:mm:ssZ（示例时区为 +0800）",
                       "example": "2020-06-23T00:21:01+0800",
                       "nullToEmpty": true,
@@ -237,7 +258,7 @@
                     },
                     "ModifiedTime": {
                       "backendName": "gmtModified",
-                      "description_en": "The time when the API was last updated, in the yyyy-MM-dd'T'HH:mm:ssZ format (example time zone: +0800)",
+                      "description_en": "The time when the API was last updated. The time is in the yyyy-MM-dd'T'HH:mm:ssZ format (example time zone: +0800)",
                       "description_zh": "API的最近更新时间，格式为 yyyy-MM-dd'T'HH:mm:ssZ（示例时区为 +0800）",
                       "example": "2020-06-23T00:21:01+0800",
                       "nullToEmpty": true,
@@ -335,7 +356,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID, which uniquely identifies the request",
+            "description_en": "The ID of the request",
             "description_zh": "请求ID，一次请求的唯一标识",
             "example": "0000-ABCD-EFG****",
             "nullToEmpty": true,
