@@ -17,7 +17,7 @@
               "properties": {
                 "field": {
                   "backendName": "field",
-                  "description_en": "The JSON path of the event field. Dot-notation nesting is supported",
+                  "description_en": "The JSON path of the event field, which supports dot notation for nested fields",
                   "description_zh": "事件字段的 JSON 路径，支持点号嵌套",
                   "example": "labels.alertname\t",
                   "title": "字段",
@@ -38,7 +38,7 @@
                 },
                 "value": {
                   "backendName": "value",
-                  "description_en": "The matching value. Separate multiple values with commas when using IN or NOT_IN",
+                  "description_en": "The matching value. Separate multiple values with commas when the operator is IN or NOT_IN",
                   "description_zh": "匹配值，IN/NOT_IN 时逗号分隔多个值",
                   "example": "CRITICAL",
                   "title": "值",
@@ -47,13 +47,13 @@
               },
               "type": "object"
             },
-            "maxItems": 10,
+            "maxItems": 100,
             "title": "订阅条件",
             "type": "array"
           },
           "expression": {
             "backendName": "expression",
-            "description_en": "Use either expression or relation. If expression is not empty, it takes precedence and relation is ignored. If expression is empty or not specified, relation (AND or OR) is used to perform a simple AND/OR operation on all conditions. Condition numbers correspond to the indexes of the conditions array (starting from 1). Each condition evaluates whether a single event field matches by using field (the event field path, which supports dot-notation nesting such as resource.tags.pod), op (the operator, such as CONTAIN, EQ, or IN), and value (the matching value)",
+            "description_en": "The expression. Specify either expression or relation. If expression is not empty, it takes precedence and relation is ignored. If expression is empty or not specified, relation (AND or OR) is used to perform a simple logical AND or OR operation on all conditions. The condition number corresponds to the index of the conditions array, starting from 1. Each condition evaluates whether a single event field matches based on field (the event field path, which supports dot notation for nested fields such as resource.tags.pod), op (the operator, such as CONTAIN, EQ, or IN), and value (the matching value)",
             "description_zh": "expression 和 relation 二选一使用。如果 expression 非空，它优先生效，relation 被忽略；如果 expression 为空或不传，则用 relation（AND 或 OR）对所有条件做简单全量与/或运算。条件编号对应 conditions 数组的下标（从 1 开始），每个条件通过 field（事件字段路径，支持点号嵌套如 resource.tags.pod）、op（操作符，如 CONTAIN、EQ、IN 等）、value（匹配值）来评估单个事件字段是否匹配",
             "example": "1 and 2 or 3",
             "title": "表达式",
@@ -251,7 +251,7 @@
   "parameters": [
     {
       "example": "silence-for-release",
-      "help_en": "Policy Name of the silence policy. Fuzzy match is used (a match occurs if Policy Name contains the specified value). If you do not specify this parameter, results are not filtered by name",
+      "help_en": "Policy Name of the silence policy. Fuzzy matching is used, where a match occurs if Policy Name contains the specified value. If you do not specify this parameter, the policies are not filtered by name",
       "help_zh": "静默策略名称，模糊匹配（包含即命中）。不传表示不按名称过滤",
       "location": "query",
       "name": "maintain_window_name",
@@ -264,7 +264,7 @@
     },
     {
       "example": "3ff3fbd0-8a0b-4b31-9b1c-8e3f0a2c5d71",
-      "help_en": "The ID of the silence policy. Exact match is used. If you do not specify this parameter, results are not filtered by ID",
+      "help_en": "The ID of the silence policy. Exact matching is used. If you do not specify this parameter, the policies are not filtered by ID",
       "help_zh": "静默策略 ID，精确匹配。不传表示不按 ID 过滤",
       "location": "query",
       "name": "maintain_window_id",
@@ -277,7 +277,7 @@
     },
     {
       "example": "true",
-      "help_en": "Filters results by enabled status. Valid values:\n\ntrue: Returns only enabled silence policies.\nfalse: Returns only paused silence policies.\n\nIf you do not specify this parameter, results are not filtered by enabled status",
+      "help_en": "Filters by enabled status. Valid values:\n\ntrue: Returns only enabled silence policies.\nfalse: Returns only paused silence policies.\n\nIf you do not specify this parameter, the policies are not filtered by enabled status",
       "help_zh": "按启用状态过滤。取值：\n\ntrue：仅返回已启用的静默策略。\nfalse：仅返回已暂停的静默策略。\n\n不传表示不按启用状态过滤",
       "location": "query",
       "name": "enable",
@@ -290,7 +290,7 @@
     },
     {
       "example": "default-cms-xxxx-cn-hangzhou",
-      "help_en": "The workspace name. This parameter is required by the backend and is used to isolate silence policy resources across different business workspaces",
+      "help_en": "The name of the workspace. This parameter is required by the backend and is used to isolate silence policy resources across different business workspaces",
       "help_zh": "工作空间名称。后端要求必填，用于隔离不同业务空间的静默策略资源",
       "location": "query",
       "name": "workspace",
@@ -303,7 +303,7 @@
     },
     {
       "example": "Y21zRXZlbnRCYXNlUGFnZT0x",
-      "help_en": "The pagination token. You do not need to specify this parameter for the first query. For subsequent queries, set this parameter to the non-empty nextToken value returned in the previous response. This value does not guarantee that the next page contains data",
+      "help_en": "The pagination cursor. You do not need to specify this parameter for the first query. For subsequent queries, you can specify the non-empty nextToken returned in the previous response. This value does not guarantee that the next page contains data",
       "help_zh": "分页游标。首次查询无需传入；后续查询可传入上一次响应中的非空 nextToken。该值不保证下一页一定包含数据",
       "location": "query",
       "name": "next_token",
@@ -316,7 +316,7 @@
     },
     {
       "example": "20",
-      "help_en": "The maximum number of records to return in this request. Default value: 20",
+      "help_en": "The maximum number of records to return for this request. Default value: 20",
       "help_zh": "本次请求返回的最大记录条数，默认值为 20",
       "location": "query",
       "name": "max_results",
@@ -329,7 +329,7 @@
     },
     {
       "example": "desc",
-      "help_en": "The sort direction. Valid values:\n\nasc: ascending order.\ndesc: descending order (default)",
+      "help_en": "The sort order. Valid values:\n\nasc: Ascending order.\ndesc: Descending order. This is the default value",
       "help_zh": "排序方向。取值：\n\nasc：正序。\ndesc：倒序（默认值）",
       "location": "query",
       "name": "direction",
@@ -342,7 +342,7 @@
     },
     {
       "example": "createTime",
-      "help_en": "The field by which to sort results. Default value: createTime. Valid values:\n\ncreateTime: creation time.\nupdateTime: update time.\nenable: enabled status.\n\nIf you specify any other value, results are sorted by creation time",
+      "help_en": "The field by which to sort. By default, the policies are sorted by creation time. Valid values:\n\ncreateTime: Creation time.\nupdateTime: Update time.\nenable: Enabled status.\n\nIf you specify other values, the policies are sorted by creation time",
       "help_zh": "排序字段，默认按创建时间排序。取值：\n\ncreateTime：创建时间。\nupdateTime：更新时间。\nenable：是否启用。\n\n传入其他值时按创建时间排序",
       "location": "query",
       "name": "order_by",
@@ -360,24 +360,24 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response body structure",
+        "description_en": "The response structure",
         "description_zh": "响应内容结构",
         "properties": {
           "maintainWindowList": {
             "backendName": "dataList",
-            "description_en": "The list of silence policies. An empty list is returned when no items match. The list items do not include workspaceFilterSetting",
+            "description_en": "The list of silence policies. An empty list is returned if no matches are found. List items do not include workspaceFilterSetting",
             "description_zh": "静默策略列表。没有匹配项时返回空列表；列表项不包含 workspaceFilterSetting",
             "itemName": "数据节点",
             "items": {
               "$ref": "#/components/schemas/MaintainWindowForView",
-              "description_en": "The silence policy details object. The fields have the same meanings as those in the maintainWindow object returned by GetMaintainWindow",
+              "description_en": "The silence policy details object. The field definitions are the same as those of the maintainWindow object returned by GetMaintainWindow",
               "description_zh": "静默策略详情对象，字段含义与 GetMaintainWindow 返回的 maintainWindow 一致"
             },
             "type": "array"
           },
           "maxResults": {
             "backendName": "maxResults",
-            "description_en": "The maximum number of records returned in this request",
+            "description_en": "The maximum number of records returned for this request",
             "description_zh": "本次请求返回的最大记录条数",
             "example": "20",
             "format": "int32",
@@ -387,14 +387,14 @@
           },
           "nextToken": {
             "backendName": "nextToken",
-            "description_en": "The pagination token for the next page. A non-empty value indicates that more results may be available, but the next page may still be empty. An empty value indicates the end of pagination",
+            "description_en": "The starting cursor for the next page. If this value is not empty, you can continue to query, but the next page may still be empty. An empty value indicates the end of pagination",
             "description_zh": "下一页起始游标。非空时可以继续查询，但下一页仍可能为空；为空表示分页结束",
             "example": "Y21zRXZlbnRCYXNlUGFnZT0y",
             "type": "string"
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The unique ID of this request, used for troubleshooting and ticket tracking",
+            "description_en": "The unique ID of the request, which is used for troubleshooting and ticket tracking",
             "description_zh": "本次请求的唯一 ID，用于问题排查与工单定位",
             "example": "8FDE2569-626B-5176-9844-28877A0D1C36",
             "title_en": "Id of the request",
