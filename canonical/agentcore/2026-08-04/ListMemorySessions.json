@@ -3,8 +3,8 @@
   "cmd_full_name": "agentcore list-memory-sessions",
   "cmd_name": "list-memory-sessions",
   "deprecated": false,
-  "description_en": "Performs a paging query for sessions in a MemoryStore. You can filter sessions independently by user ID and agent ID",
-  "description_zh": "分页查询 MemoryStore 中的 Session，可独立按 UserId 和 AgentId 过滤",
+  "description_en": "Performs a paging query of sessions in a memory store. You can filter the sessions by user, team, or agent. Unspecified dimensions are not used for filtering",
+  "description_zh": "分页查询记忆库中的会话，可按用户、团队或智能体筛选。未指定的维度不参与筛选",
   "kebab_example": "aliyun agentcore list-memory-sessions --workspace-id ws-2f5f9c5a8d0e4c3b --memory-store-name customer-memory --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
@@ -35,7 +35,7 @@
     },
     {
       "example": "customer-memory",
-      "help_en": "The name of the MemoryStore",
+      "help_en": "The MemoryStore name",
       "help_zh": "MemoryStore 名称",
       "location": "path",
       "name": "memory_store_name",
@@ -48,7 +48,7 @@
     },
     {
       "example": "user-001",
-      "help_en": "The user ID. If you do not specify this parameter, all users are matched. The length is limited to 1 to 128 UTF-8 bytes. The value cannot contain a forward slash (/) or an asterisk (*)",
+      "help_en": "The user ID. If you do not specify this parameter, all users are matched. The value must be 1 to 128 UTF-8 bytes in length and cannot contain a forward slash (/) or an asterisk (*)",
       "help_zh": "用户 ID，不传时匹配全部用户，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *",
       "location": "query",
       "name": "user_id",
@@ -60,8 +60,21 @@
       "type": "string"
     },
     {
+      "example": "team-001",
+      "help_en": "The business team ID defined by the caller",
+      "help_zh": "由调用方定义的业务团队标识",
+      "location": "query",
+      "name": "team_id",
+      "options": [
+        "--team-id"
+      ],
+      "raw_name": "teamId",
+      "required": false,
+      "type": "string"
+    },
+    {
       "example": "agent-001",
-      "help_en": "The agent ID. If you do not specify this parameter, all agents are matched. The length is limited to 1 to 128 UTF-8 bytes. The value cannot contain a forward slash (/) or an asterisk (*)",
+      "help_en": "The agent ID. If you do not specify this parameter, all agents are matched. The value must be 1 to 128 UTF-8 bytes in length and cannot contain a forward slash (/) or an asterisk (*)",
       "help_zh": "Agent ID，不传时匹配全部 Agent，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *",
       "location": "query",
       "name": "agent_id",
@@ -77,8 +90,6 @@
       "help_en": "The maximum number of records per page. Default value: 100. Valid values: 1 to 100",
       "help_zh": "单页最大记录数，默认 100，取值范围 1～100",
       "location": "query",
-      "maximum": "100",
-      "minimum": "1",
       "name": "max_results",
       "options": [
         "--max-results"
@@ -113,8 +124,8 @@
             "description_en": "The business status code",
             "description_zh": "业务状态码",
             "example": "SUCCESS",
-            "title_en": "业务状态码",
-            "title_zh": "业务状态码",
+            "title_en": "结果代码",
+            "title_zh": "结果代码",
             "type": "string"
           },
           "httpStatusCode": {
@@ -131,7 +142,6 @@
             "backendName": "items",
             "description_en": "The list of sessions",
             "description_zh": "Session 列表",
-            "itemName": "items",
             "items": {
               "description_en": "The memory session",
               "description_zh": "单个 Memory Session",
@@ -141,17 +151,62 @@
                   "description_en": "The agent ID. This field is not returned if the session is not associated with an agent ID",
                   "description_zh": "Agent ID，该 Session 未关联 Agent ID 时此字段不返回",
                   "example": "agent-001",
-                  "title_en": "Agent ID，该 Session 未关联 Agent ID 时此字段不返回",
-                  "title_zh": "Agent ID，该 Session 未关联 Agent ID 时此字段不返回",
+                  "title_en": "智能体标识",
+                  "title_zh": "智能体标识",
                   "type": "string"
+                },
+                "createdAt": {
+                  "backendName": "createdAt",
+                  "description_en": "The creation time in RFC 3339 format with time zone",
+                  "description_zh": "创建时间，采用带时区的 RFC 3339 格式",
+                  "example": "2026-09-23T10:00:00Z",
+                  "title_en": "创建时间",
+                  "title_zh": "创建时间",
+                  "type": "string"
+                },
+                "metadata": {
+                  "additionalProperties": {
+                    "description_en": "The metadata tag value set by the caller",
+                    "description_zh": "调用方设置的元数据标签值",
+                    "example": "hiking",
+                    "title_en": "标签值",
+                    "title_zh": "标签值",
+                    "type": "string"
+                  },
+                  "backendName": "metadata",
+                  "description_en": "The string key-value tags set by the caller. A maximum of 16 tags are supported. A key can be up to 64 Unicode characters in length, and a value can be up to 1,024 Unicode characters in length. Empty strings are allowed. Nested objects or arrays are not supported",
+                  "description_zh": "调用方设置的字符串键值标签，最多 16 项；键最多 64 个 Unicode 字符，值最多 1024 个 Unicode 字符，允许空字符串，不支持嵌套对象或数组",
+                  "example": "{\"topic\":\"hiking\"}",
+                  "sensitive": true,
+                  "title_en": "元数据标签",
+                  "title_zh": "元数据标签",
+                  "type": "object"
                 },
                 "sessionId": {
                   "backendName": "sessionId",
                   "description_en": "The session ID",
                   "description_zh": "会话 ID",
                   "example": "session-001",
-                  "title_en": "Session ID，该 Session 未关联 Session ID 时此字段不返回",
-                  "title_zh": "Session ID，该 Session 未关联 Session ID 时此字段不返回",
+                  "title_en": "会话标识",
+                  "title_zh": "会话标识",
+                  "type": "string"
+                },
+                "teamId": {
+                  "backendName": "teamId",
+                  "description_en": "The business team ID defined by the caller. If specified, the value cannot be empty and can be up to 128 UTF-8 bytes in length",
+                  "description_zh": "由调用方定义的业务团队标识。提供时不能为空，最多 128 个 UTF-8 字节",
+                  "example": "team-001",
+                  "title_en": "业务团队标识",
+                  "title_zh": "业务团队标识",
+                  "type": "string"
+                },
+                "title": {
+                  "backendName": "title",
+                  "description_en": "The session title",
+                  "description_zh": "会话标题",
+                  "example": "旅行计划",
+                  "title_en": "会话标题",
+                  "title_zh": "会话标题",
                   "type": "string"
                 },
                 "userId": {
@@ -159,27 +214,27 @@
                   "description_en": "The user ID. This field is not returned if the session is not associated with a user ID",
                   "description_zh": "用户 ID，该 Session 未关联用户 ID 时此字段不返回",
                   "example": "user-001",
-                  "title_en": "用户 ID，该 Session 未关联用户 ID 时此字段不返回",
-                  "title_zh": "用户 ID，该 Session 未关联用户 ID 时此字段不返回",
+                  "title_en": "业务用户标识",
+                  "title_zh": "业务用户标识",
                   "type": "string"
                 }
               },
-              "title_en": "单个 Memory Session",
               "title_zh": "单个 Memory Session",
               "type": "object"
             },
-            "title_en": "Session 列表",
-            "title_zh": "Session 列表",
+            "title_en": "当前页记录",
+            "title_zh": "当前页记录",
             "type": "array"
           },
           "maxResults": {
             "backendName": "maxResults",
+            "default": "100",
             "description_en": "The maximum number of records per page",
             "description_zh": "单页最大记录数",
             "example": "100",
             "format": "int32",
-            "title_en": "单页最大记录数",
-            "title_zh": "单页最大记录数",
+            "title_en": "每页最大记录数",
+            "title_zh": "每页最大记录数",
             "type": "integer"
           },
           "message": {
@@ -187,8 +242,8 @@
             "description_en": "The response message",
             "description_zh": "响应消息",
             "example": "success",
-            "title_en": "响应消息",
-            "title_zh": "响应消息",
+            "title_en": "结果说明",
+            "title_zh": "结果说明",
             "type": "string"
           },
           "nextToken": {
@@ -196,8 +251,8 @@
             "description_en": "The pagination token for the next page",
             "description_zh": "下一页分页令牌",
             "example": "eyJvZmZzZXQiOjEwMH0=",
-            "title_en": "下一页分页令牌",
-            "title_zh": "下一页分页令牌",
+            "title_en": "下一页令牌",
+            "title_zh": "下一页令牌",
             "type": "string"
           },
           "requestId": {
@@ -205,8 +260,8 @@
             "description_en": "The request ID",
             "description_zh": "请求 ID",
             "example": "01A00000-0000-0000-0000-000000000001",
-            "title_en": "请求 ID",
-            "title_zh": "请求 ID",
+            "title_en": "请求标识",
+            "title_zh": "请求标识",
             "type": "string"
           },
           "success": {
@@ -216,6 +271,16 @@
             "title_en": "请求是否成功",
             "title_zh": "请求是否成功",
             "type": "boolean"
+          },
+          "totalCount": {
+            "backendName": "totalCount",
+            "description_en": "The total number of records",
+            "description_zh": "记录总数",
+            "example": "null",
+            "format": "int64",
+            "title_en": "记录总数",
+            "title_zh": "记录总数",
+            "type": "integer"
           }
         },
         "type": "object"

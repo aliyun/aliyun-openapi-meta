@@ -3,8 +3,8 @@
     "AddMemories": {
       "cmd_name": "add-memories",
       "deprecated": false,
-      "description_en": "Writes messages or text to a memory store. By default, sync is set to true, which synchronously waits for extraction and returns only memories (an empty array is allowed). If sync is set to false, it returns only a taskId that can be queried by using GetMemoryTask",
-      "description_zh": "向记忆空间写入消息或文本。sync 缺省为 true，同步等待抽取并仅返回 memories（允许空数组）；sync=false 仅返回 taskId，通过 GetMemoryTask 查询"
+      "description_en": "Extracts memories from text or messages, or directly writes organized memories. When the extract parameter is omitted or set to true, either the text parameter or non-empty messages must be provided. When the extract parameter is set to false, the memories parameter is used. When the sync parameter is omitted or set to true, the operation waits for processing to complete and returns memory references. An empty array is returned if no new memories are generated. When the sync parameter is set to false, a task ID is returned, and you can use GetMemoryTask to query the result. Direct writes do not create extraction tasks",
+      "description_zh": "支持从文本或消息中提取记忆，也支持直接写入整理好的记忆。extract 省略或为 true 时，text 与非空 messages 二选一；extract=false 时使用 memories。sync 省略或为 true 时等待处理完成并返回记忆引用，未产生新记忆时可返回空数组；sync=false 时返回任务标识，使用 GetMemoryTask 查询结果。直接写入不创建抽取任务"
     },
     "BatchDeleteModels": {
       "cmd_name": "batch-delete-models",
@@ -60,6 +60,12 @@
       "description_en": "Creates a custom code or image agent in a specified workspace. Supports code package, ACR image, and custom image deployments, and executes the deployment asynchronously",
       "description_zh": "在指定工作空间创建自定义代码 / 镜像 Agent，支持代码包、ACR 镜像和自定义镜像部署，并异步执行部署"
     },
+    "CreateEvents": {
+      "cmd_name": "create-events",
+      "deprecated": false,
+      "description_en": "Writes messages, summaries, or session fork events in batches. Each batch supports 1 to 100 events and returns the write results one by one in the same order as the request. A successful request does not indicate that every event is written successfully, nor does it indicate that memory extraction is complete. The session title and metadata are set only when the session is created for the first time. Subsequent writes do not update existing session information",
+      "description_zh": "批量写入消息、摘要或会话分支事件。每批支持 1～100 条，逐条返回写入结果，顺序与请求一致。请求成功不表示每条事件均写入成功，也不表示记忆提取已经完成。session 仅在首次创建会话时设置标题和元数据，后续写入不更新已有会话信息"
+    },
     "CreateExternalAgent": {
       "cmd_name": "create-external-agent",
       "deprecated": false,
@@ -75,7 +81,7 @@
     "CreateIdentityProvider": {
       "cmd_name": "create-identity-provider",
       "deprecated": false,
-      "description_en": "Binds an external identity provider such as DingTalk, Lark, or a custom identity source to a workspace for enterprise account logon and user synchronization",
+      "description_en": "Integrates an external identity provider such as DingTalk, Lark, or a custom identity source into a workspace for enterprise account logon and user synchronization",
       "description_zh": "为工作空间接入钉钉、飞书或自定义身份源，用于企业账号登录和用户同步"
     },
     "CreateIdentityProviderSCIMCredential": {
@@ -107,6 +113,12 @@
       "deprecated": false,
       "description_en": "Creates an MCP service in a specified workspace. The creation process is asynchronous. You can check the returned status or call a query operation to verify whether the service is ready",
       "description_zh": "在指定工作空间中创建 MCP 服务。创建为异步过程，可通过返回的状态或查询接口确认服务是否就绪"
+    },
+    "CreateMemoryRule": {
+      "cmd_name": "create-memory-rule",
+      "deprecated": false,
+      "description_en": "Creates an extraction rule for a memory store, specifying the rule name, enabling status, and extraction strategy. After the rule is enabled, extraction is triggered when 8 pending extraction events accumulate in a session or when no new pending extraction events are added for 60 consecutive seconds",
+      "description_zh": "为记忆库创建抽取规则，指定规则名称、启用状态和抽取策略。规则启用后，会话中累计 8 条待提取事件或连续 60 秒没有新增待提取事件时触发抽取"
     },
     "CreateMemoryStore": {
       "cmd_name": "create-memory-store",
@@ -204,6 +216,12 @@
       "description_en": "Deletes a custom code or image agent in a specified workspace and asynchronously cleans up its associated platform resources",
       "description_zh": "删除指定工作空间中的自定义代码 / 镜像 Agent，并异步清理其平台关联资源"
     },
+    "DeleteEvents": {
+      "cmd_name": "delete-events",
+      "deprecated": false,
+      "description_en": "Deletes events written by a specified session in batches, supporting 1 to 100 event IDs per batch. Returns the deletion results for each event. Events inherited from a parent session cannot be deleted in a child session. Deleting events does not delete extracted memories",
+      "description_zh": "批量删除指定会话自身写入的事件，每批支持 1～100 个事件标识。逐条返回删除结果；不能在子会话中删除从父会话继承的事件。删除事件不会删除已提取的记忆"
+    },
     "DeleteExternalAgent": {
       "cmd_name": "delete-external-agent",
       "deprecated": false,
@@ -213,7 +231,7 @@
     "DeleteIdentityProvider": {
       "cmd_name": "delete-identity-provider",
       "deprecated": false,
-      "description_en": "Disconnects the identity source integration of a workspace. For CustomSSO, this operation clears the shared user pool and related SAML and SCIM resources. To disable only logon or synchronization, use the corresponding API operations",
+      "description_en": "Disconnects the identity source integration for a workspace. For CustomSSO, this operation clears the shared user pool and related SAML and SCIM resources. To disable only logon or synchronization, use the corresponding API operations",
       "description_zh": "整体断开工作空间的身份源集成。CustomSSO 会清理共享用户池及相关 SAML、SCIM 资源；只关闭登录或同步时应使用对应开关接口"
     },
     "DeleteIdentityProviderSCIMCredential": {
@@ -243,13 +261,25 @@
     "DeleteMemory": {
       "cmd_name": "delete-memory",
       "deprecated": false,
-      "description_en": "Deletes a long-term memory by memory ID",
+      "description_en": "Deletes a long-term memory based on the memory ID",
       "description_zh": "根据 Memory ID 删除一条长期记忆"
+    },
+    "DeleteMemoryRule": {
+      "cmd_name": "delete-memory-rule",
+      "deprecated": false,
+      "description_en": "Deletes a specified memory rule. The system no longer uses this rule to extract subsequent new content. Existing memories are retained. Deleting the same rule multiple times returns a success response",
+      "description_zh": "删除指定记忆规则，后续新增内容不再使用该规则抽取。已经生成的记忆保留；重复删除同一规则返回成功"
+    },
+    "DeleteMemorySession": {
+      "cmd_name": "delete-memory-session",
+      "deprecated": false,
+      "description_en": "删除记忆会话",
+      "description_zh": "删除指定关联范围中的会话及其可查询事件历史。再次以相同关联范围和 sessionId 写入时创建新的会话，不能查询到已删除会话的历史内容。已经提取的记忆不随会话删除"
     },
     "DeleteMemoryStore": {
       "cmd_name": "delete-memory-store",
       "deprecated": false,
-      "description_en": "Asynchronously deletes a MemoryStore and all its long-term memory",
+      "description_en": "Asynchronously deletes a MemoryStore and all long-term memory within it",
       "description_zh": "异步删除 MemoryStore 及其中全部长期记忆"
     },
     "DeleteModel": {
@@ -441,7 +471,7 @@
     "GetIdentityProviderServiceProvider": {
       "cmd_name": "get-identity-provider-service-provider",
       "deprecated": false,
-      "description_en": "Queries the SAML service provider (SP) information of CustomSSO, including the Entity ID, ACS URL, and SP metadata XML, for users to configure an external IdP",
+      "description_en": "Queries the SAML service provider (SP) information for CustomSSO, including the Entity ID, ACS URL, and SP metadata XML, to help users configure an external IdP",
       "description_zh": "查询 CustomSSO 的 SAML SP 信息，包括 Entity ID、ACS URL 和 SP Metadata XML，供用户配置外部 IdP"
     },
     "GetIdentityProviderSyncJob": {
@@ -489,8 +519,14 @@
     "GetMemory": {
       "cmd_name": "get-memory",
       "deprecated": false,
-      "description_en": "Queries a long-term memory by memory ID",
-      "description_zh": "根据 Memory ID 查询一条长期记忆"
+      "description_en": "Queries the content, associated scope, metadata, source, type, and validity status based on the memory ID",
+      "description_zh": "根据记忆标识查询正文、关联范围、元数据、来源、类型及有效状态"
+    },
+    "GetMemoryRule": {
+      "cmd_name": "get-memory-rule",
+      "deprecated": false,
+      "description_en": "查询记忆规则详情",
+      "description_zh": "查询指定记忆规则的配置及其任务统计，包括任务数量和最近一次执行情况"
     },
     "GetMemoryStore": {
       "cmd_name": "get-memory-store",
@@ -501,8 +537,8 @@
     "GetMemoryTask": {
       "cmd_name": "get-memory-task",
       "deprecated": false,
-      "description_en": "Queries the memory extraction task by using the taskId returned by the asynchronous AddMemories operation",
-      "description_zh": "查询异步 AddMemories 返回的 taskId"
+      "description_en": "Queries the status, input, execute results, and error message of a memory extraction node. A successful node may not generate new memories. If a fault occurs, check the error field for the cause",
+      "description_zh": "查询记忆抽取任务的状态、输入、执行结果和错误信息。任务成功时可能没有产生新记忆；发生错误时可查看 error 获取原因"
     },
     "GetModel": {
       "cmd_name": "get-model",
@@ -654,6 +690,12 @@
       "description_en": "Performs a paging query for the identifiers, deployment methods, and status summaries of custom code or image agents in a workspace",
       "description_zh": "分页查询工作空间内自定义代码 / 镜像 Agent的标识、部署方式和状态摘要"
     },
+    "ListEvents": {
+      "cmd_name": "list-events",
+      "deprecated": false,
+      "description_en": "查询会话事件",
+      "description_zh": "按事件发生时间从旧到新分页查询指定会话的事件，包括创建会话分支时引用的父会话历史。必须提供 sessionId，其余范围维度需与写入时一致。分页期间写入或删除事件可能影响后续页的结果"
+    },
     "ListExternalAgents": {
       "cmd_name": "list-external-agents",
       "deprecated": false,
@@ -711,26 +753,38 @@
     "ListMemories": {
       "cmd_name": "list-memories",
       "deprecated": false,
-      "description_en": "Performs a paged query for long-term memory and supports independent paging and filtering by UserId, AgentId, and SessionId",
-      "description_zh": "分页查询长期记忆，可独立按 UserId、AgentId 和 SessionId 过滤；"
+      "description_en": "Performs a paged query on memories in a memory store. Supports paging and filtering by associate scope, content type, source, validity status, and update time. Unspecified scope dimensions are excluded from filtering. If valid is omitted, only valid memories are returned. If valid is set to false, revoked memories are returned",
+      "description_zh": "分页查询记忆库中的记忆，可按关联范围、内容类型、来源、有效状态和更新时间筛选。未指定的范围维度不参与筛选。valid 省略时仅返回有效记忆，false 返回已撤销的记忆"
+    },
+    "ListMemoryRules": {
+      "cmd_name": "list-memory-rules",
+      "deprecated": false,
+      "description_en": "查询记忆规则列表",
+      "description_zh": "分页查询记忆库中的抽取规则。支持按名称和启用状态筛选，返回规则配置"
     },
     "ListMemorySessionMessages": {
       "cmd_name": "list-memory-session-messages",
       "deprecated": false,
-      "description_en": "Performs a paged query of raw messages by exact scope through paging. SessionId is required, and at least one of UserId or AgentId must be provided",
+      "description_en": "Performs a paging query for raw messages by exact scope. SessionId is required, and at least one of UserId or AgentId must be provided",
       "description_zh": "按精确 Scope 分页查询原始消息。SessionId 必填，UserId 和 AgentId 至少提供一个"
     },
     "ListMemorySessions": {
       "cmd_name": "list-memory-sessions",
       "deprecated": false,
-      "description_en": "Performs a paging query for sessions in a MemoryStore. You can filter sessions independently by user ID and agent ID",
-      "description_zh": "分页查询 MemoryStore 中的 Session，可独立按 UserId 和 AgentId 过滤"
+      "description_en": "Performs a paging query of sessions in a memory store. You can filter the sessions by user, team, or agent. Unspecified dimensions are not used for filtering",
+      "description_zh": "分页查询记忆库中的会话，可按用户、团队或智能体筛选。未指定的维度不参与筛选"
     },
     "ListMemoryStores": {
       "cmd_name": "list-memory-stores",
       "deprecated": false,
       "description_en": "Queries MemoryStores in a specified workspace by using paging",
       "description_zh": "分页查询指定工作空间中的 MemoryStore"
+    },
+    "ListMemoryTasks": {
+      "cmd_name": "list-memory-tasks",
+      "deprecated": false,
+      "description_en": "Performs a paging query on the memory extraction nodes for a specified rule. The ruleId parameter is required. You can further filter nodes by status. If the specified rule does not exist or is deleted, a success response with an empty list is returned",
+      "description_zh": "分页查询指定规则的记忆抽取任务。ruleId 必填，可进一步按任务状态筛选。指定规则不存在或已删除时返回成功及空列表"
     },
     "ListModelConnections": {
       "cmd_name": "list-model-connections",
@@ -864,11 +918,23 @@
       "description_en": "Resubmits the creation request for an ACR image cache in a specified workspace",
       "description_zh": "重新提交指定工作空间中 ACR 镜像缓存的制作请求"
     },
+    "RetryMemoryTask": {
+      "cmd_name": "retry-memory-task",
+      "deprecated": false,
+      "description_en": "Retries a failed memory task by reusing the original task ID, input, and extraction configuration. Only tasks in the FAILED state can be retried. You can query the progress by calling GetMemoryTask after the retry",
+      "description_zh": "重新执行失败的记忆任务，沿用原任务标识、输入和抽取配置。仅 FAILED 状态支持重试，重试后可通过 GetMemoryTask 查询进度"
+    },
+    "RevokeMemory": {
+      "cmd_name": "revoke-memory",
+      "deprecated": false,
+      "description_en": "撤销记忆",
+      "description_zh": "将指定记忆设为无效并保留正文。撤销后，该记忆不再作为有效记忆参与检索；可通过 ListMemories 的 valid=false 查询。重复撤销返回成功"
+    },
     "SearchMemories": {
       "cmd_name": "search-memories",
       "deprecated": false,
-      "description_en": "Retrieves long-term memory from a MemoryStore based on semantics",
-      "description_zh": "根据语义查询检索 MemoryStore 中的长期记忆"
+      "description_en": "Retrieves relevant memories based on the query text. Supports filtering by association scope, type, and metadata, and sets result thresholds through similarity and relevance scores. If topK is omitted or set to 0, the default value 10 is used, with a maximum of 200",
+      "description_zh": "根据查询文本检索相关记忆。支持按关联范围、类型和元数据筛选，并通过相似度及相关性得分设置结果下限。topK 省略或为 0 时使用默认值 10，最大为 200"
     },
     "SubmitAgentSpecVersion": {
       "cmd_name": "submit-agent-spec-version",
@@ -933,8 +999,8 @@
     "UpdateIdentityProvider": {
       "cmd_name": "update-identity-provider",
       "deprecated": false,
-      "description_en": "Modifies the logon configuration of a bound identity provider in a specified workspace. DingTalk and Lark support the logon switch, incremental synchronization switch, application configuration, and synchronization scope. CustomSSO supports SAML configuration and the logon switch. Updates take effect asynchronously. Call GetIdentityProvider to query the status",
-      "description_zh": "修改指定工作空间已绑定身份源的登录配置。DingTalk、Feishu 支持登录开关、增量同步开关、应用配置和同步范围；CustomSSO 支持 SAML 配置和登录开关。实际更新异步生效，请通过 GetIdentityProvider 查询状态"
+      "description_en": "Modifies the configuration of a bound identity provider in a specified workspace. DingTalk and Feishu support login switches, address book synchronization switches, application configurations, and synchronization scopes. CustomSSO supports SAML or OIDC login configurations and login switches. SCIM user synchronization is configured independently. Updates take effect asynchronously. You can query the status by calling GetIdentityProvider",
+      "description_zh": "修改指定工作空间已绑定身份源的配置。DingTalk、Feishu 支持登录开关、通讯录同步开关、应用配置和同步范围；CustomSSO 支持 SAML 或 OIDC 登录配置及登录开关。SCIM 用户同步独立配置。更新异步生效，通过 GetIdentityProvider 查询状态"
     },
     "UpdateIdentityProviderSCIM": {
       "cmd_name": "update-identity-provider-scim",
@@ -963,8 +1029,14 @@
     "UpdateMemory": {
       "cmd_name": "update-memory",
       "deprecated": false,
-      "description_en": "Updates the long-term memory text or metadata based on the memory ID",
-      "description_zh": "根据 Memory ID 更新长期记忆文本或元数据"
+      "description_en": "Updates the content or metadata of a specified memory. At least one field must be provided for the update, and unprovided fields retain their original values. The metadata is fully replaced. Pass an empty object to clear the metadata",
+      "description_zh": "更新指定记忆的正文或元数据。至少提供一个更新字段；未提供的字段保持原值。metadata 为完整替换，传入空对象可清空元数据"
+    },
+    "UpdateMemoryRule": {
+      "cmd_name": "update-memory-rule",
+      "deprecated": false,
+      "description_en": "更新记忆规则",
+      "description_zh": "更新记忆规则的名称、描述、启用状态或抽取策略。至少提供一个更新字段；未提供的字段保持原值"
     },
     "UpdateMemoryStore": {
       "cmd_name": "update-memory-store",

@@ -3,8 +3,8 @@
   "cmd_full_name": "agentcore search-memories",
   "cmd_name": "search-memories",
   "deprecated": false,
-  "description_en": "Retrieves long-term memory from a MemoryStore based on semantics",
-  "description_zh": "根据语义查询检索 MemoryStore 中的长期记忆",
+  "description_en": "Retrieves relevant memories based on the query text. Supports filtering by association scope, type, and metadata, and sets result thresholds through similarity and relevance scores. If topK is omitted or set to 0, the default value 10 is used, with a maximum of 200",
+  "description_zh": "根据查询文本检索相关记忆。支持按关联范围、类型和元数据筛选，并通过相似度及相关性得分设置结果下限。topK 省略或为 0 时使用默认值 10，最大为 200",
   "kebab_example": "aliyun agentcore search-memories --workspace-id ws-2f5f9c5a8d0e4c3b --memory-store-name customer-memory --biz-body '{\"query\":\"用户喜欢哪些运动？\"}' --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
@@ -62,7 +62,8 @@
           "type": "bool"
         },
         {
-          "help_en": "The string key-value metadata for exact matching. You can specify up to 16 keys. The maximum length of a key is 64 characters, and the maximum length of a value is 1,024 characters",
+          "example": "{\"topic\":\"hiking\"}",
+          "help_en": "The string key-value metadata for exact matching. A maximum of 16 keys are supported. Each key can be up to 64 characters in length, and each value can be up to 1,024 characters in length",
           "help_zh": "精确匹配的字符串键值元数据；最多 16 个键，键最长 64 字符，值最长 1024 字符",
           "name": "metadata",
           "options": [
@@ -77,10 +78,8 @@
         },
         {
           "example": "0.2",
-          "help_en": "The minimum relevance score. Valid values: 0 to 1. Default value: 0.2. If both minScore and minSimilarity are specified, the AND logic is applied for filtering",
+          "help_en": "The minimum relevance score. Default value: 0.2. Valid values: 0 to 1. If both minScore and minSimilarity are specified, the results are filtered based on the AND logic",
           "help_zh": "最小相关性得分，默认 0.2，范围 0～1；与 minSimilarity 同时设置时按 AND 过滤",
-          "maximum": "1",
-          "minimum": "0",
           "name": "min_score",
           "options": [
             "--min-score"
@@ -91,10 +90,8 @@
         },
         {
           "example": "0.3",
-          "help_en": "The minimum similarity. Valid values: 0 to 1. Default value: 0.3. If both minSimilarity and minScore are specified, the AND logic is applied for filtering",
+          "help_en": "The minimum similarity score. Default value: 0.3. Valid values: 0 to 1. If both minSimilarity and minScore are specified, the results are filtered based on the AND logic",
           "help_zh": "最小相似度，默认 0.3，范围 0～1；与 minScore 同时设置时按 AND 过滤",
-          "maximum": "1",
-          "minimum": "0",
           "name": "min_similarity",
           "options": [
             "--min-similarity"
@@ -105,7 +102,7 @@
         },
         {
           "example": "用户喜欢哪些运动？",
-          "help_en": "The query text. The maximum length is 8,192 characters",
+          "help_en": "The query text for retrieval, up to 8,192 characters",
           "help_zh": "检索文本，最多 8192 个字符",
           "name": "query",
           "options": [
@@ -142,6 +139,18 @@
               "type": "string"
             },
             {
+              "example": "team-001",
+              "help_en": "The business team ID defined by the caller. If provided, it cannot be empty and can be up to 128 UTF-8 bytes in length",
+              "help_zh": "由调用方定义的业务团队标识。提供时不能为空，最多 128 个 UTF-8 字节",
+              "name": "team_id",
+              "options": [
+                "--team-id"
+              ],
+              "raw_name": "teamId",
+              "required": false,
+              "type": "string"
+            },
+            {
               "example": "user-001",
               "help_en": "The user ID. The length is limited to 1 to 128 UTF-8 bytes. The value cannot contain a forward slash (/) or an asterisk (*). This field is not returned if the memory is not associated with a user ID",
               "help_zh": "用户 ID，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *；记忆未关联用户 ID 时此字段不返回",
@@ -154,7 +163,7 @@
               "type": "string"
             }
           ],
-          "help_en": "The search scope. UserId, AgentId, and SessionId are all optional",
+          "help_en": "The retrieval scope. UserId, AgentId, and SessionId are all optional",
           "help_zh": "检索范围，UserId、AgentId、SessionId 均可选",
           "name": "scope",
           "options": [
@@ -168,8 +177,6 @@
           "example": "10",
           "help_en": "The number of results to return",
           "help_zh": "返回结果数量",
-          "maximum": "50",
-          "minimum": "0",
           "name": "topk",
           "options": [
             "--topk"
@@ -177,9 +184,23 @@
           "raw_name": "topK",
           "required": false,
           "type": "int"
+        },
+        {
+          "element": {
+            "type": "string"
+          },
+          "help_en": "The list of memory content types. Supported types include semantic, skill, user_profile, and session_summary. If omitted or left as an empty array, no type restriction is applied",
+          "help_zh": "记忆内容类型列表，支持 semantic、skill、user_profile、session_summary；省略或空数组表示不限制类型",
+          "name": "types",
+          "options": [
+            "--types"
+          ],
+          "raw_name": "types",
+          "required": false,
+          "type": "array"
         }
       ],
-      "help_en": "The semantic search request",
+      "help_en": "The semantic retrieval request",
       "help_zh": "语义检索请求",
       "location": "formData",
       "name": "body",
@@ -204,20 +225,19 @@
             "description_en": "The business status code",
             "description_zh": "业务状态码",
             "example": "SUCCESS",
-            "title_en": "业务状态码",
-            "title_zh": "业务状态码",
+            "title_en": "结果代码",
+            "title_zh": "结果代码",
             "type": "string"
           },
           "data": {
             "backendName": "data",
-            "description_en": "The search results",
+            "description_en": "The retrieval result",
             "description_zh": "检索结果",
             "properties": {
               "memories": {
                 "backendName": "memories",
-                "description_en": "The list of search results",
+                "description_en": "The list of retrieval results",
                 "description_zh": "检索结果列表",
-                "itemName": "memories",
                 "items": {
                   "properties": {
                     "memory": {
@@ -235,15 +255,16 @@
                               "description_en": "The memory text",
                               "description_zh": "记忆文本",
                               "example": "用户喜欢徒步旅行。",
+                              "required": true,
                               "sensitive": true,
-                              "title_en": "记忆文本",
-                              "title_zh": "记忆文本",
+                              "title_en": "文本内容",
+                              "title_zh": "文本内容",
                               "type": "string"
                             }
                           },
                           "sensitive": true,
-                          "title_en": "记忆内容",
-                          "title_zh": "记忆内容",
+                          "title_en": "正文内容",
+                          "title_zh": "正文内容",
                           "type": "object"
                         },
                         "createdAt": {
@@ -260,8 +281,8 @@
                           "description_en": "The long-term memory ID",
                           "description_zh": "长期记忆 ID",
                           "example": "mem-2f5f9c5a8d0e4c3b",
-                          "title_en": "Memory ID",
-                          "title_zh": "Memory ID",
+                          "title_en": "记忆标识",
+                          "title_zh": "记忆标识",
                           "type": "string"
                         },
                         "metadata": {
@@ -269,16 +290,17 @@
                             "description_en": "The metadata value",
                             "description_zh": "元数据值",
                             "example": "hiking",
-                            "title_en": "元数据值",
-                            "title_zh": "元数据值",
+                            "title_en": "标签值",
+                            "title_zh": "标签值",
                             "type": "string"
                           },
                           "backendName": "metadata",
                           "description_en": "The memory metadata",
                           "description_zh": "记忆元数据",
+                          "example": "{\"topic\":\"hiking\"}",
                           "sensitive": true,
-                          "title_en": "记忆元数据",
-                          "title_zh": "记忆元数据",
+                          "title_en": "元数据标签",
+                          "title_zh": "元数据标签",
                           "type": "object"
                         },
                         "scope": {
@@ -291,8 +313,8 @@
                               "description_en": "The agent ID. The length is limited to 1 to 128 UTF-8 bytes. The value cannot contain a forward slash (/) or an asterisk (*). This field is not returned if the memory is not associated with an agent ID",
                               "description_zh": "Agent ID，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *；记忆未关联 Agent ID 时此字段不返回",
                               "example": "agent-001",
-                              "title_en": "Agent ID，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *；记忆未关联 Agent ID 时此字段不返回",
-                              "title_zh": "Agent ID，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *；记忆未关联 Agent ID 时此字段不返回",
+                              "title_en": "智能体标识",
+                              "title_zh": "智能体标识",
                               "type": "string"
                             },
                             "sessionId": {
@@ -300,8 +322,17 @@
                               "description_en": "The session ID. The length is limited to 1 to 128 UTF-8 bytes. The value cannot contain a forward slash (/) or an asterisk (*). This field is not returned if the memory is not associated with a session ID",
                               "description_zh": "Session ID，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *；记忆未关联 Session ID 时此字段不返回",
                               "example": "session-001",
-                              "title_en": "Session ID，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *；记忆未关联 Session ID 时此字段不返回",
-                              "title_zh": "Session ID，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *；记忆未关联 Session ID 时此字段不返回",
+                              "title_en": "会话标识",
+                              "title_zh": "会话标识",
+                              "type": "string"
+                            },
+                            "teamId": {
+                              "backendName": "teamId",
+                              "description_en": "The business team ID defined by the caller. If provided, it cannot be empty and can be up to 128 UTF-8 bytes in length",
+                              "description_zh": "由调用方定义的业务团队标识。提供时不能为空，最多 128 个 UTF-8 字节",
+                              "example": "team-001",
+                              "title_en": "业务团队标识",
+                              "title_zh": "业务团队标识",
                               "type": "string"
                             },
                             "userId": {
@@ -309,27 +340,65 @@
                               "description_en": "The user ID. The length is limited to 1 to 128 UTF-8 bytes. The value cannot contain a forward slash (/) or an asterisk (*). This field is not returned if the memory is not associated with a user ID",
                               "description_zh": "用户 ID，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *；记忆未关联用户 ID 时此字段不返回",
                               "example": "user-001",
-                              "title_en": "用户 ID，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *；记忆未关联用户 ID 时此字段不返回",
-                              "title_zh": "用户 ID，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *；记忆未关联用户 ID 时此字段不返回",
+                              "title_en": "业务用户标识",
+                              "title_zh": "业务用户标识",
                               "type": "string"
                             }
                           },
-                          "title_en": "记忆范围",
-                          "title_zh": "记忆范围",
+                          "title_en": "业务关联范围",
+                          "title_zh": "业务关联范围",
                           "type": "object"
+                        },
+                        "source": {
+                          "backendName": "source",
+                          "description_en": "The memory source. Valid values: session_extraction (extracted from session events), content_extraction (extracted from text or messages), and direct (written directly)",
+                          "description_zh": "记忆来源：session_extraction 表示从会话事件提取，content_extraction 表示从文本或消息提取，direct 表示直接写入",
+                          "enum": [
+                            "session_extraction",
+                            "content_extraction",
+                            "direct"
+                          ],
+                          "example": "session_extraction",
+                          "title_en": "记忆来源",
+                          "title_zh": "记忆来源",
+                          "type": "string"
+                        },
+                        "type": {
+                          "backendName": "type",
+                          "description_en": "The memory content type. Valid values: semantic (semantic memory), skill (skill), user_profile (user preference), and session_summary (session summary)",
+                          "description_zh": "记忆内容类型：semantic 为语义记忆，skill 为技能，user_profile 为用户偏好，session_summary 为会话摘要",
+                          "enum": [
+                            "session_summary",
+                            "semantic",
+                            "user_profile",
+                            "skill"
+                          ],
+                          "example": "semantic",
+                          "title_en": "记忆类型",
+                          "title_zh": "记忆类型",
+                          "type": "string"
                         },
                         "updatedAt": {
                           "backendName": "updatedAt",
-                          "description_en": "The last update time. The time is in RFC 3339 format. The Z at the end of the example indicates the UTC time zone",
+                          "description_en": "The last updated time. The time is in RFC 3339 format. The Z at the end of the example indicates the UTC time zone",
                           "description_zh": "最后更新时间。采用 RFC 3339 格式；示例末尾的 Z 表示 UTC 时区",
                           "example": "2026-09-23T10:05:00Z",
-                          "title_en": "最后更新时间",
-                          "title_zh": "最后更新时间",
+                          "title_en": "最近更新时间",
+                          "title_zh": "最近更新时间",
                           "type": "string"
+                        },
+                        "valid": {
+                          "backendName": "valid",
+                          "description_en": "Indicates whether the memory is valid. A value of false indicates that the memory is revoked and is not included in valid memory retrieval",
+                          "description_zh": "记忆是否有效。false 表示已撤销，不参与有效记忆检索",
+                          "title_en": "记忆是否有效",
+                          "title_zh": "记忆是否有效",
+                          "type": "boolean"
                         }
                       },
-                      "title_en": "命中的记忆",
-                      "title_zh": "命中的记忆",
+                      "required": true,
+                      "title_en": "memory",
+                      "title_zh": "memory",
                       "type": "object"
                     },
                     "score": {
@@ -338,6 +407,7 @@
                       "description_zh": "相关性得分",
                       "example": "0.86",
                       "format": "float",
+                      "required": true,
                       "title_en": "相关性得分",
                       "title_zh": "相关性得分",
                       "type": "number"
@@ -348,21 +418,22 @@
                       "description_zh": "向量相似度",
                       "example": "0.91",
                       "format": "float",
-                      "title_en": "向量相似度",
-                      "title_zh": "向量相似度",
+                      "required": true,
+                      "title_en": "内容相似度",
+                      "title_zh": "内容相似度",
                       "type": "number"
                     }
                   },
                   "type": "object"
                 },
-                "title_en": "检索结果列表",
-                "title_zh": "检索结果列表",
+                "required": true,
+                "title_en": "记忆列表",
+                "title_zh": "记忆列表",
                 "type": "array"
               }
             },
-            "sensitive": true,
-            "title_en": "检索结果",
-            "title_zh": "检索结果",
+            "title_en": "处理结果",
+            "title_zh": "处理结果",
             "type": "object"
           },
           "httpStatusCode": {
@@ -380,8 +451,8 @@
             "description_en": "The response message",
             "description_zh": "响应消息",
             "example": "success",
-            "title_en": "响应消息",
-            "title_zh": "响应消息",
+            "title_en": "结果说明",
+            "title_zh": "结果说明",
             "type": "string"
           },
           "requestId": {
@@ -389,8 +460,8 @@
             "description_en": "The request ID",
             "description_zh": "请求 ID",
             "example": "01A00000-0000-0000-0000-000000000001",
-            "title_en": "请求 ID",
-            "title_zh": "请求 ID",
+            "title_en": "请求标识",
+            "title_zh": "请求标识",
             "type": "string"
           },
           "success": {

@@ -3,8 +3,8 @@
   "cmd_full_name": "agentcore add-memories",
   "cmd_name": "add-memories",
   "deprecated": false,
-  "description_en": "Writes messages or text to a memory store. By default, sync is set to true, which synchronously waits for extraction and returns only memories (an empty array is allowed). If sync is set to false, it returns only a taskId that can be queried by using GetMemoryTask",
-  "description_zh": "向记忆空间写入消息或文本。sync 缺省为 true，同步等待抽取并仅返回 memories（允许空数组）；sync=false 仅返回 taskId，通过 GetMemoryTask 查询",
+  "description_en": "Extracts memories from text or messages, or directly writes organized memories. When the extract parameter is omitted or set to true, either the text parameter or non-empty messages must be provided. When the extract parameter is set to false, the memories parameter is used. When the sync parameter is omitted or set to true, the operation waits for processing to complete and returns memory references. An empty array is returned if no new memories are generated. When the sync parameter is set to false, a task ID is returned, and you can use GetMemoryTask to query the result. Direct writes do not create extraction tasks",
+  "description_zh": "支持从文本或消息中提取记忆，也支持直接写入整理好的记忆。extract 省略或为 true 时，text 与非空 messages 二选一；extract=false 时使用 memories。sync 省略或为 true 时等待处理完成并返回记忆引用，未产生新记忆时可返回空数组；sync=false 时返回任务标识，使用 GetMemoryTask 查询结果。直接写入不创建抽取任务",
   "kebab_example": "aliyun agentcore add-memories --workspace-id ws-2f5f9c5a8d0e4c3b --memory-store-name customer-memory --biz-body '{\"metadata\":{\"key\":\"hiking\"},\"referenceTime\":\"2023-05-08T13:56:00+08:00\",\"scope\":{\"agentId\":\"agent-001\",\"sessionId\":\"session-001\",\"userId\":\"user-001\"},\"messages\":[{\"role\":\"user\",\"content\":\"用户喜欢徒步旅行。\"}],\"text\":\"用户喜欢徒步旅行。\",\"sync\":true}' --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
@@ -37,7 +37,7 @@
     },
     {
       "example": "customer-memory",
-      "help_en": "The MemoryStore name",
+      "help_en": "The name of the memory store",
       "help_zh": "MemoryStore 名称",
       "location": "path",
       "name": "memory_store_name",
@@ -51,11 +51,83 @@
     {
       "fields": [
         {
+          "help_en": "Specifies whether to extract memories. If omitted or set to true, memories are extracted from text or messages. If set to false, memories are directly written",
+          "help_zh": "是否提取记忆。省略或 true 表示从 text 或 messages 提取；false 表示直接写入 memories",
+          "name": "extract",
+          "options": [
+            "--extract"
+          ],
+          "raw_name": "extract",
+          "required": false,
+          "type": "bool"
+        },
+        {
+          "element": {
+            "fields": [
+              {
+                "example": "{\"topic\":\"hiking\"}",
+                "help_en": "The string key-value tags set by the caller. A maximum of 16 tags are supported. A key can be up to 64 Unicode characters in length, and a value can be up to 1,024 Unicode characters in length. Empty strings are allowed. Nested objects or arrays are not supported",
+                "help_zh": "调用方设置的字符串键值标签，最多 16 项；键最多 64 个 Unicode 字符，值最多 1024 个 Unicode 字符，允许空字符串，不支持嵌套对象或数组",
+                "name": "metadata",
+                "options": [
+                  "--metadata"
+                ],
+                "raw_name": "metadata",
+                "required": false,
+                "type": "map",
+                "value": {
+                  "type": "string"
+                }
+              },
+              {
+                "example": "用户喜欢徒步旅行。",
+                "help_en": "The content of the memory to be directly written. It cannot be empty and can be up to 32,000 UTF-8 bytes in length",
+                "help_zh": "直接写入的记忆正文，不能为空，最多 32000 UTF-8 字节",
+                "name": "text",
+                "options": [
+                  "--text"
+                ],
+                "raw_name": "text",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "enum": [
+                  "session_summary",
+                  "semantic",
+                  "user_profile",
+                  "skill"
+                ],
+                "example": "semantic",
+                "help_en": "The content type of the memory. Valid values: semantic for semantic memory, skill for skill, user_profile for user preference, and session_summary for session summary",
+                "help_zh": "记忆内容类型：semantic 为语义记忆，skill 为技能，user_profile 为用户偏好，session_summary 为会话摘要",
+                "name": "type",
+                "options": [
+                  "--type"
+                ],
+                "raw_name": "type",
+                "required": false,
+                "type": "string"
+              }
+            ],
+            "type": "object"
+          },
+          "help_en": "The list of memories to be directly written when extract is set to false. The list can contain 1 to 100 memories. You cannot provide text, messages, referenceTime, or request-level metadata at the same time",
+          "help_zh": "extract=false 时直接写入的记忆列表，长度为 1～100；不能同时提供 text、messages、referenceTime 或请求级 metadata",
+          "name": "memories",
+          "options": [
+            "--memories"
+          ],
+          "raw_name": "memories",
+          "required": false,
+          "type": "array"
+        },
+        {
           "element": {
             "fields": [
               {
                 "example": "用户喜欢徒步旅行。",
-                "help_en": "The message content",
+                "help_en": "The content of the message",
                 "help_zh": "消息内容",
                 "name": "content",
                 "options": [
@@ -66,8 +138,20 @@
                 "type": "string"
               },
               {
+                "example": "2023-05-08T13:56:00+08:00",
+                "help_en": "The reference time of the message in RFC 3339 format with a time zone. If omitted, the request-level referenceTime is used. If both are omitted, the time of the current request is used",
+                "help_zh": "本条消息的参考时间，采用带时区的 RFC 3339 格式；省略时使用请求级 referenceTime，二者均省略时使用本次请求时间",
+                "name": "reference_time",
+                "options": [
+                  "--reference-time"
+                ],
+                "raw_name": "referenceTime",
+                "required": false,
+                "type": "string"
+              },
+              {
                 "example": "user",
-                "help_en": "The message role",
+                "help_en": "The role of the message",
                 "help_zh": "消息角色",
                 "name": "role",
                 "options": [
@@ -80,7 +164,7 @@
             ],
             "type": "object"
           },
-          "help_en": "The message list. You must provide either this parameter or Text, but not both. The list can contain 1 to 20 messages, and the total size of Content cannot exceed 32,000 UTF-8 bytes",
+          "help_en": "The list of messages. You must provide either text or messages, but not both. The list can contain 1 to 20 messages, and the total length of the content cannot exceed 32,000 UTF-8 bytes",
           "help_zh": "消息列表，与 Text 必须且只能提供一个；1～20 条，Content 合计不超过 32000 UTF-8 字节",
           "name": "messages",
           "options": [
@@ -91,7 +175,8 @@
           "type": "array"
         },
         {
-          "help_en": "The string key-value metadata. You can specify up to 16 keys. The maximum length of a key is 64 characters, and the maximum length of a value is 1,024 characters",
+          "example": "{\"topic\":\"hiking\"}",
+          "help_en": "The string key-value metadata. A maximum of 16 keys are supported. A key can be up to 64 characters in length, and a value can be up to 1,024 characters in length",
           "help_zh": "字符串键值元数据；最多 16 个键，键最长 64 字符，值最长 1024 字符",
           "name": "metadata",
           "options": [
@@ -106,7 +191,7 @@
         },
         {
           "example": "2023-05-08T13:56:00+08:00",
-          "help_en": "The time reference point for this batch of messages or text. The time must be in RFC 3339 format with a time zone and support fractional seconds",
+          "help_en": "The time reference point for the batch of messages or text. It uses the RFC 3339 format with a time zone and supports fractional seconds",
           "help_zh": "本批消息或文本的时间参考点；采用带时区的 RFC 3339 格式并支持小数秒",
           "name": "reference_time",
           "options": [
@@ -120,7 +205,7 @@
           "fields": [
             {
               "example": "agent-001",
-              "help_en": "The agent ID. The length is limited to 1 to 128 UTF-8 bytes. The ID cannot contain a forward slash (/) or an asterisk (*)",
+              "help_en": "The agent ID. The length is limited to 1 to 128 UTF-8 bytes. It cannot contain a forward slash (/) or an asterisk (*)",
               "help_zh": "Agent ID，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *",
               "name": "agent_id",
               "options": [
@@ -132,7 +217,7 @@
             },
             {
               "example": "session-001",
-              "help_en": "The session ID. The length is limited to 1 to 128 UTF-8 bytes. The ID cannot contain a forward slash (/) or an asterisk (*)",
+              "help_en": "The session ID. The length is limited to 1 to 128 UTF-8 bytes. It cannot contain a forward slash (/) or an asterisk (*)",
               "help_zh": "Session ID，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *",
               "name": "session_id",
               "options": [
@@ -143,8 +228,20 @@
               "type": "string"
             },
             {
+              "example": "team-001",
+              "help_en": "The business team ID defined by the caller. It cannot be empty when provided and can be up to 128 UTF-8 bytes in length",
+              "help_zh": "由调用方定义的业务团队标识。提供时不能为空，最多 128 个 UTF-8 字节",
+              "name": "team_id",
+              "options": [
+                "--team-id"
+              ],
+              "raw_name": "teamId",
+              "required": false,
+              "type": "string"
+            },
+            {
               "example": "user-001",
-              "help_en": "The user ID. The length is limited to 1 to 128 UTF-8 bytes. The ID cannot contain a forward slash (/) or an asterisk (*)",
+              "help_en": "The user ID. The length is limited to 1 to 128 UTF-8 bytes. It cannot contain a forward slash (/) or an asterisk (*)",
               "help_zh": "用户 ID，长度限制 1 - 128 UTF-8 字节，不允许包含 / 或使用 *",
               "name": "user_id",
               "options": [
@@ -166,7 +263,7 @@
           "type": "object"
         },
         {
-          "help_en": "Specifies whether to synchronously wait for memory extraction to complete. Default value: true",
+          "help_en": "Specifies whether to synchronously wait for the memory extraction to complete. Default value: true",
           "help_zh": "是否同步等待记忆抽取完成，缺省为 true",
           "name": "sync",
           "options": [
@@ -178,7 +275,7 @@
         },
         {
           "example": "用户喜欢徒步旅行。",
-          "help_en": "The text to write directly. You must provide either this parameter or Messages, but not both. The size cannot exceed 32,000 UTF-8 bytes",
+          "help_en": "The text to be directly written. You must provide either text or messages, but not both. The text cannot exceed 32,000 UTF-8 bytes",
           "help_zh": "直接写入的文本，与 Messages 必须且只能提供一个；不超过 32000 UTF-8 字节",
           "name": "text",
           "options": [
@@ -189,7 +286,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The memory write request",
+      "help_en": "The write memory request",
       "help_zh": "写入记忆请求",
       "location": "formData",
       "name": "body",
@@ -214,8 +311,8 @@
             "description_en": "The business status code",
             "description_zh": "业务状态码",
             "example": "SUCCESS",
-            "title_en": "业务状态码",
-            "title_zh": "业务状态码",
+            "title_en": "结果代码",
+            "title_zh": "结果代码",
             "type": "string"
           },
           "data": {
@@ -225,9 +322,8 @@
             "properties": {
               "memories": {
                 "backendName": "memories",
-                "description_en": "The memory references. This parameter is returned only when sync is set to true, and an empty array is allowed. It is not returned together with taskId",
+                "description_en": "The memory references returned only when sync is set to true. An empty array is allowed. It is not returned together with taskId",
                 "description_zh": "仅 sync=true 返回的记忆引用，允许空数组；不与 taskId 同时返回",
-                "itemName": "memories",
                 "items": {
                   "properties": {
                     "memoryId": {
@@ -235,30 +331,46 @@
                       "description_en": "The long-term memory ID",
                       "description_zh": "长期记忆 ID",
                       "example": "mem-2f5f9c5a8d0e4c3b",
-                      "title_en": "Memory ID",
-                      "title_zh": "Memory ID",
+                      "required": true,
+                      "title_en": "记忆标识",
+                      "title_zh": "记忆标识",
                       "type": "string"
                     }
                   },
                   "type": "object"
                 },
-                "title_en": "仅 sync=true 返回的记忆引用，允许空数组；不与 taskId 同时返回",
-                "title_zh": "仅 sync=true 返回的记忆引用，允许空数组；不与 taskId 同时返回",
+                "title_en": "记忆列表",
+                "title_zh": "记忆列表",
                 "type": "array"
               },
               "taskId": {
                 "backendName": "taskId",
-                "description_en": "The task ID. This parameter is returned only when sync is set to false. It is not returned together with memories",
+                "description_en": "The task ID returned only when sync is set to false. It is not returned together with memories",
                 "description_zh": "仅 sync=false 返回的任务 ID；不与 memories 同时返回",
                 "example": "task-2f5f9c5a8d0e4c3b",
-                "title_en": "仅 sync=false 返回的任务 ID；不与 memories 同时返回",
-                "title_zh": "仅 sync=false 返回的任务 ID；不与 memories 同时返回",
+                "title_en": "抽取任务标识",
+                "title_zh": "抽取任务标识",
                 "type": "string"
+              },
+              "taskIds": {
+                "backendName": "taskIds",
+                "description_en": "The list of extraction task IDs. Multiple tasks may be returned when multiple rules are enabled. It is not returned for direct writes",
+                "description_zh": "抽取任务标识列表；启用多条规则时可能返回多个任务。直接写入不返回",
+                "items": {
+                  "description_en": "The extraction task ID",
+                  "description_zh": "抽取任务标识",
+                  "example": "task-2f5f9c5a8d0e4c3b",
+                  "title_en": "任务标识",
+                  "title_zh": "任务标识",
+                  "type": "string"
+                },
+                "title_en": "抽取任务标识列表",
+                "title_zh": "抽取任务标识列表",
+                "type": "array"
               }
             },
-            "sensitive": true,
-            "title_en": "写入结果",
-            "title_zh": "写入结果",
+            "title_en": "处理结果",
+            "title_zh": "处理结果",
             "type": "object"
           },
           "httpStatusCode": {
@@ -276,8 +388,8 @@
             "description_en": "The response message",
             "description_zh": "响应消息",
             "example": "success",
-            "title_en": "响应消息",
-            "title_zh": "响应消息",
+            "title_en": "结果说明",
+            "title_zh": "结果说明",
             "type": "string"
           },
           "requestId": {
@@ -285,8 +397,8 @@
             "description_en": "The request ID",
             "description_zh": "请求 ID",
             "example": "01A00000-0000-0000-0000-000000000001",
-            "title_en": "请求 ID",
-            "title_zh": "请求 ID",
+            "title_en": "请求标识",
+            "title_zh": "请求标识",
             "type": "string"
           },
           "success": {
