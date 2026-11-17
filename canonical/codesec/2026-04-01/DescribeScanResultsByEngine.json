@@ -65,7 +65,7 @@
     },
     {
       "example": "eyJ0IjoiMjAyNi0wNy0xNlQwNzo1MzozOC4wMjFaIiwiaSI6MTAwMDQ0OH0",
-      "help_en": "The pagination token. To query the first page, leave this parameter empty or do not specify it. To query the next page, pass the nextToken value returned in the previous response without modification. If the nextToken value in the response is empty, the last page is reached",
+      "help_en": "The pagination token. To query the first page, leave this parameter empty or do not specify it. To query the next page, pass the nextToken value returned in the previous response without any modification. If the nextToken value in the response is empty, the last page is reached",
       "help_zh": "分页 Token，首页不传 nextToken 省略或为空字符串，翻页原样回传把上一次响应的 nextToken 值不做任何修改地传入下一次请求，响应中 nextToken 为空，已到最后一页",
       "location": "query",
       "name": "next_token",
@@ -125,7 +125,7 @@
     },
     {
       "example": "zh",
-      "help_en": "The language. Valid values:\nzh: Chinese (default)\nen: English",
+      "help_en": "The language. Valid values:\nzh: Chinese. Default value.\nen: English",
       "help_zh": "语言取值：\nzh：中文（默认 ）\nen：英文",
       "location": "query",
       "name": "lang",
@@ -133,6 +133,57 @@
         "--lang"
       ],
       "raw_name": "lang",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "new,recurrent",
+      "help_en": "The lifecycle status. This parameter is valid only for SAST. It accepts a comma-separated set of new, recurrent, and fixed. If fixed is included, the items fixed in the current snapshot are added to the reverse lookup. If this parameter is specified for SCA, left empty, duplicated in the query, or passed when the feature is disabled, an InvalidFilter error is returned",
+      "help_zh": "仅 SAST 合法，逗号分隔的 new/recurrent/fixed 集合；包含 fixed 时加入当前快照反查的本次修复项，SCA/空值/重复 query 键/开关关闭时传入为 InvalidFilter",
+      "location": "query",
+      "name": "lifecycle_status",
+      "options": [
+        "--lifecycle-status"
+      ],
+      "raw_name": "lifecycleStatus",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "enum": [
+        "pending",
+        "confirmed",
+        "ignored"
+      ],
+      "example": "pending",
+      "help_en": "Filters results by the current manual disposition status of project vulnerabilities. This parameter is valid only for SAST. If this parameter is specified for SCA, an InvalidFilter error is returned",
+      "help_zh": "仅 SAST 合法，按项目漏洞当前人工处置过滤；SCA 传入返回 InvalidFilter",
+      "location": "query",
+      "name": "disposition_status",
+      "options": [
+        "--disposition-status"
+      ],
+      "raw_name": "dispositionStatus",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "enum": [
+        "CRITICAL",
+        "HIGH",
+        "MEDIUM",
+        "LOW",
+        "other"
+      ],
+      "example": "HIGH",
+      "help_en": "Filters results by a single severity bucket. This parameter is case-sensitive and valid only for SAST. If this parameter is specified for SCA, an InvalidFilter error is returned",
+      "help_zh": "仅 SAST 合法，严重度桶单值筛选，区分大小写；SCA 传入返回 InvalidFilter",
+      "location": "query",
+      "name": "severity",
+      "options": [
+        "--severity"
+      ],
+      "raw_name": "severity",
       "required": false,
       "type": "string"
     }
@@ -175,21 +226,21 @@
                 },
                 "category": {
                   "backendName": "category",
-                  "description_en": "The category. PDS classifies files based on their file name extensions and MIME types. The main categories include doc, image, audio, and video",
+                  "description_en": "The category. PDS categorizes files based on their file name extensions and MIME types. Main categories include doc, image, audio, and video",
                   "description_zh": "分类， pds 会根据文件的后缀名和 mime-type 对文件进行分类，主要分类有 doc, image, audio, video",
                   "example": "SQL Injection",
                   "type": "string"
                 },
                 "codeSnippet": {
                   "backendName": "code_snippet",
-                  "description_en": "The code snippet near the primary display location in SAST",
+                  "description_en": "The code snippet near the main display location in SAST",
                   "description_zh": "主展示位置附近代码片段（SAST）",
                   "example": "1",
                   "type": "string"
                 },
                 "confidence": {
                   "backendName": "confidence",
-                  "description_en": "The rule confidence score, ranging from 0 to 1. This field is common in SAST and is omitted if unavailable",
+                  "description_en": "The rule confidence score, which ranges from 0 to 1. This parameter is common in SAST and is omitted if no value is available",
                   "description_zh": "规则置信度 0–1，SAST 常见，无则省略",
                   "example": "1",
                   "format": "double",
@@ -197,7 +248,7 @@
                 },
                 "createdAt": {
                   "backendName": "created_at",
-                  "description_en": "The time when the finding record was created, in RFC 3339 format",
+                  "description_en": "The time when the finding record was created. The time follows the RFC 3339 standard",
                   "description_zh": "发现记录创建时间（RFC3339）",
                   "example": "2026-07-28T03:36:31.573Z",
                   "type": "string"
@@ -216,9 +267,46 @@
                   "example": "User input is directly concatenated into an SQL statement, which may lead to SQL injection.",
                   "type": "string"
                 },
+                "detectedInScan": {
+                  "backendName": "detected_in_scan",
+                  "description_en": "Indicates whether the item was actually detected in the current scan. A value of true indicates that the item was detected in the current task. A value of false indicates that the item is a fixed item returned from the project snapshot for a lifecycle_status=fixed query. If the value is false, do not open the finding details of the current task. This parameter is only returned in SAST responses and is omitted when the feature is disabled",
+                  "description_zh": "true=本任务实际检出项，false=lifecycle_status=fixed 查询返回的项目快照修复项；false 不应打开本任务 finding 详情，仅 SAST 响应，开关关闭时省略",
+                  "example": "true",
+                  "type": "boolean"
+                },
+                "displayId": {
+                  "backendName": "display_id",
+                  "description_en": "The display ID of the project in the format SAST-{project_finding_id}. This value is null or omitted when no association exists and is only returned in SAST responses",
+                  "description_zh": "项目显示编号 SAST-{project_finding_id}；无关联时为 null 或省略，仅 SAST 响应",
+                  "example": "SAST-123456",
+                  "nullable": true,
+                  "type": "string"
+                },
+                "dispositionRevision": {
+                  "backendName": "disposition_revision",
+                  "description_en": "The current disposition version of the associated project vulnerability. Valid versions start from 1 and are used for If-Match. This value is null or omitted when no association exists and is only returned in SAST responses",
+                  "description_zh": "关联项目漏洞当前处置版本；有效版本从 1 开始，用于 If-Match，无关联为 null 或省略，仅 SAST 响应",
+                  "example": "1",
+                  "format": "int64",
+                  "nullable": true,
+                  "type": "integer"
+                },
+                "dispositionStatus": {
+                  "backendName": "disposition_status",
+                  "description_en": "The current manual disposition status of the associated project vulnerability, which is not the historical task disposition. This value is null or omitted when no association exists and is only returned in SAST responses",
+                  "description_zh": "关联项目漏洞的当前人工处置（不是历史任务处置）；无关联为 null 或省略，仅 SAST 响应",
+                  "enum": [
+                    "pending",
+                    "confirmed",
+                    "ignored"
+                  ],
+                  "example": "pending",
+                  "nullable": true,
+                  "type": "string"
+                },
                 "endLine": {
                   "backendName": "end_line",
-                  "description_en": "The ending line number",
+                  "description_en": "The end line number",
                   "description_zh": "结束行号",
                   "example": "1",
                   "format": "int64",
@@ -241,9 +329,22 @@
                 },
                 "itemSummary": {
                   "backendName": "item_summary",
-                  "description_en": "The brief summary of the finding. Unlike the description, this field is more conclusion-oriented",
+                  "description_en": "The brief summary of the finding. Unlike the description, this summary is more oriented towards a concluding sentence",
                   "description_zh": "该条 finding 的简短总结。与 description 区分，更偏向结论句",
                   "example": "User input is used to construct SQL queries without sanitization",
+                  "type": "string"
+                },
+                "lifecycleStatus": {
+                  "backendName": "lifecycle_status",
+                  "description_en": "The lifecycle status of the finding. For actually detected items, the value is new or recurrent for the current task. For fixed queries, the value is reverse-queried from the current project snapshot. A null or omitted value indicates that the item is not online, not merged, or the identity is unavailable. This does not replace status or baseline_state and is only returned in SAST responses",
+                  "description_zh": "实际检出项为本任务 new/recurrent；fixed 查询为当前项目快照反查。null/省略表示上线前、尚未合并或身份不可用，不替代 status/baseline_state，仅 SAST 响应",
+                  "enum": [
+                    "new",
+                    "recurrent",
+                    "fixed"
+                  ],
+                  "example": "new",
+                  "nullable": true,
                   "type": "string"
                 },
                 "owaspCategory": {
@@ -252,6 +353,15 @@
                   "description_zh": "OWASP 类目",
                   "example": "A01:2021-Broken Access Control",
                   "type": "string"
+                },
+                "projectFindingId": {
+                  "backendName": "project_finding_id",
+                  "description_en": "The primary key of the associated project vulnerability. This value is null or omitted when the vulnerability is not merged, not online, or the identity is unavailable. This is not the task finding.id and is only returned in SAST responses",
+                  "description_zh": "关联项目漏洞主键，未合并/上线前/身份不可用时为 null 或省略；不是任务 finding.id，仅 SAST 响应",
+                  "example": "123456",
+                  "format": "int64",
+                  "nullable": true,
+                  "type": "integer"
                 },
                 "projectName": {
                   "backendName": "project_name",
@@ -283,7 +393,7 @@
                 },
                 "scaComponent": {
                   "backendName": "sca_component",
-                  "description_en": "The SCA component information. This field is returned only when engine is set to sca",
+                  "description_en": "The SCA component information. This parameter is only returned when engine is set to sca",
                   "description_zh": "SCA 组件信息（仅 engine=sca）",
                   "properties": {
                     "componentType": {
@@ -334,7 +444,7 @@
                           },
                           "cweId": {
                             "backendName": "cwe_id",
-                            "description_en": "The associated CWE ID. This field can be empty or an empty string",
+                            "description_en": "The associated CWE ID. This value can be empty or an empty string",
                             "description_zh": "关联 CWE 编号（可无或空串）",
                             "example": "CWE-79",
                             "type": "string"
@@ -348,7 +458,7 @@
                           },
                           "fixedVersion": {
                             "backendName": "fixed_version",
-                            "description_en": "The target fixed version. This field can be empty or an empty string",
+                            "description_en": "The target fixed version. This value can be empty or an empty string",
                             "description_zh": "修复目标版本（可无或空串）",
                             "example": "1",
                             "type": "string"
@@ -380,7 +490,7 @@
                     },
                     "declaredIn": {
                       "backendName": "declared_in",
-                      "description_en": "The manifest file that declares the dependency",
+                      "description_en": "The manifest file where the dependency is declared",
                       "description_zh": "声明该依赖的清单文件",
                       "example": "node_modules/semver",
                       "type": "string"
@@ -394,7 +504,7 @@
                     },
                     "introPaths": {
                       "backendName": "intro_paths",
-                      "description_en": "The list of dependency introduction paths in the SCA component information. This field is returned only when engine is set to sca",
+                      "description_en": "The list of dependency introduction paths in the SCA component information. This parameter is only returned in SCA responses",
                       "description_zh": "SCA 组件信息中的依赖引入路径列表。（仅engine=sca 响应中出现）",
                       "itemName": "data",
                       "items": {
@@ -419,7 +529,7 @@
                       "properties": {
                         "concluded": {
                           "backendName": "concluded",
-                          "description_en": "The final accepted license expression, which is an SPDX expression that may contain OR or AND. This field contains only the identifier string, without the full name or OSI/FSF annotations",
+                          "description_en": "The final accepted license expression, which is an SPDX expression and can contain OR or AND. This value is only an identifier string and does not include the full name or OSI/FSF labels",
                           "description_zh": "最终采信的许可证表达式（SPDX 表达式，可含 OR / AND）；仅标识串，不带全称与 OSI / FSF 标注",
                           "example": "AFL-2.1 OR BSD-3-Clause",
                           "type": "string"
@@ -435,14 +545,14 @@
                             "properties": {
                               "isFsfLibre": {
                                 "backendName": "isFsfLibre",
-                                "description_en": "Indicates whether the license is listed as a free license by the FSF. The absence of this key indicates that it is not annotated, which is different from an explicit false value",
+                                "description_en": "Indicates whether the license is listed as a free license by FSF. If the entire key is missing, it indicates that the license is not labeled, which is different from an explicit false value",
                                 "description_zh": "是否被 FSF 列为自由许可证。整键缺失表示未标注，与显式 false 含义不同",
                                 "example": "true",
                                 "type": "boolean"
                               },
                               "isOsiApproved": {
                                 "backendName": "isOsiApproved",
-                                "description_en": "Indicates whether the license is approved by the OSI",
+                                "description_en": "Indicates whether the license is approved by OSI",
                                 "description_zh": "是否经 OSI 批准",
                                 "example": "true",
                                 "type": "boolean"
@@ -456,7 +566,7 @@
                               },
                               "spdxId": {
                                 "backendName": "licenseId",
-                                "description_en": "The SPDX license identifier. If it cannot be determined, the value is NOASSERTION. Non-standard formats such as Apache 2.0 may be used",
+                                "description_en": "The SPDX license identifier. If the license cannot be determined, the value is NOASSERTION. The value may be a non-standard format, such as Apache 2.0",
                                 "description_zh": "SPDX 许可证标识（无法判定为 NOASSERTION；可能是非规范写法如 Apache 2.0）",
                                 "example": "AFL-2.1",
                                 "type": "string"
@@ -471,14 +581,14 @@
                     },
                     "packageName": {
                       "backendName": "package_name",
-                      "description_en": "The component coordinate",
+                      "description_en": "The component coordinates",
                       "description_zh": "组件坐标",
                       "example": "org.apache.logging.log4j:log4j-core",
                       "type": "string"
                     },
                     "purl": {
                       "backendName": "purl",
-                      "description_en": "The Package URL, which is the unique coordinate of the component in the scan",
+                      "description_en": "The Package URL, which is the unique coordinate of the component in the current scan",
                       "description_zh": "Package URL（组件在该次扫描内的唯一坐标）",
                       "example": "pkg:npm/glob-parent@3.1.0",
                       "type": "string"
@@ -522,6 +632,14 @@
                   "example": "high",
                   "type": "string"
                 },
+                "similarityId": {
+                  "backendName": "similarity_id",
+                  "description_en": "The persisted original value of AgentRun findings[].id, which is currently an opaque upstream ID with an actual length of 72 characters. Valid values are 1 to 128 characters in length. The similarity_id is only a field name for storage compatibility. It does not use the upstream similarity_id and is not hashed, truncated, or used as a fallback based on the title. This value is null or omitted when the identity is missing or invalid and is only returned in SAST responses",
+                  "description_zh": "原值持久化的 AgentRun findings[].id，当前实际长度为 72 字符的 opaque 上游 ID，有效值为 1–128 字符；similarity_id 仅为存储兼容字段名，不使用上游 similarity_id，不 hash、不截断或按标题等 fallback。缺失或非法身份为 null 或省略，仅 SAST 响应",
+                  "example": "9e107d9d372bb6826bd81d3542a419d6",
+                  "nullable": true,
+                  "type": "string"
+                },
                 "source": {
                   "backendName": "source",
                   "description_en": "The source",
@@ -531,7 +649,7 @@
                 },
                 "startLine": {
                   "backendName": "start_line",
-                  "description_en": "The starting line number",
+                  "description_en": "The start line number",
                   "description_zh": "起始行号",
                   "example": "1",
                   "format": "int64",
@@ -539,14 +657,14 @@
                 },
                 "status": {
                   "backendName": "status",
-                  "description_en": "The status. Valid values:\nrunning: The task is running.\ncompleted: The task is completed.\nfailed: The task has failed",
+                  "description_en": "The status. Valid values:\nrunning: The task is running.\ncompleted: The task is completed.\nfailed: The task failed",
                   "description_zh": "状态取值：\nrunning：运行中\ncompleted：已完成\nfailed：失败",
                   "example": "completed",
                   "type": "string"
                 },
                 "taintFlow": {
                   "backendName": "taint_flow",
-                  "description_en": "The SAST taint analysis call chain, which describes the complete propagation path of sensitive data from the source to the sink. This field is returned only when engine is set to sast",
+                  "description_en": "The taint analysis call chain in SAST, which describes the complete propagation path of sensitive data from the source to the sink. This parameter is only returned when engine is set to sast",
                   "description_zh": "SAST 污点分析调用链，描述敏感数据从污染源（source）到危险汇聚点（sink）的完整传播路径。（仅engine=sast ）",
                   "itemName": "data",
                   "items": {
@@ -569,7 +687,7 @@
                       },
                       "kind": {
                         "backendName": "kind",
-                        "description_en": "The role type in the taint propagation chain. Valid values:\nsource: The taint source.\npropagator: The propagation node.\nvalidation: The validation or scrubbing center.\nsink: The dangerous sink",
+                        "description_en": "The role type in the taint propagation chain. Valid values:\nsource: The pollution source.\npropagator: The propagation node.\nvalidation: The validation or scrubbing center.\nsink: The dangerous sink",
                         "description_zh": "污点传播链中的角色类型：\nsource：污染源\npropagator：传播节点\nvalidation：校验/清洗节点\nsink：危险汇聚点",
                         "example": "source",
                         "type": "string"
@@ -584,14 +702,14 @@
                       },
                       "note": {
                         "backendName": "note",
-                        "description_en": "The remarks",
+                        "description_en": "The note information",
                         "description_zh": "备注信息",
                         "example": "Sink: SQL query executed",
                         "type": "string"
                       },
                       "step": {
                         "backendName": "step",
-                        "description_en": "The step sequence number, incrementing from 0",
+                        "description_en": "The step sequence number, which increments from 0",
                         "description_zh": "步骤序号，从 0 开始递增",
                         "example": "1",
                         "format": "int32",
@@ -604,7 +722,7 @@
                 },
                 "taintFlowSummary": {
                   "backendName": "taint_flow_summary",
-                  "description_en": "The text summary of the taint call chain. This field is returned only when engine is set to sast",
+                  "description_en": "The text summary of the taint call chain. This parameter is only returned when engine is set to sast",
                   "description_zh": "污点调用链的文字总结（仅 engine=sast ）",
                   "example": "User input flows from HTTP parameter into SQL query executio",
                   "type": "string"
@@ -631,7 +749,7 @@
           },
           "nextToken": {
             "backendName": "data.next_token",
-            "description_en": "The pagination token. To query the first page, leave this parameter empty or do not specify it. To query the next page, pass the nextToken value returned in the previous response without modification. If the nextToken value in the response is empty, the last page is reached",
+            "description_en": "The pagination token. To query the first page, leave this parameter empty or do not specify it. To query the next page, pass the nextToken value returned in the previous response without any modification. If the nextToken value in the response is empty, the last page is reached",
             "description_zh": "分页 Token，首页不传 nextToken 省略或为空字符串，翻页原样回传把上一次响应的 nextToken 值不做任何修改地传入下一次请求，响应中 nextToken 为空，已到最后一页",
             "example": "eyJ0IjoiMjAyNi0wNy0xNlQwNzo1MzozOC4wMjFaIiwiaSI6MTAwMDQ0OH0",
             "type": "string"

@@ -3,7 +3,7 @@
   "cmd_full_name": "codesec describe-projects",
   "cmd_name": "describe-projects",
   "deprecated": false,
-  "description_en": "Lists projects under a tenant with pagination and supports fuzzy search by name or prompt",
+  "description_en": "Queries projects under a tenant in a paginated manner and supports fuzzy search by name or prompt",
   "description_zh": "分页列出租户下的项目（Project），支持按名称/提示词模糊搜索",
   "kebab_example": "aliyun codesec describe-projects --max-results 20 --next-token eyJ0IjoiMjAyNi0wNy0xNlQwNzo1MzozOC4wMjFaIiwiaSI6MTAwMDQ0OH0 --query project --sort-by lastScanTime --sort-order desc --region cn-hangzhou",
   "method": "GET",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "20",
-      "help_en": "The number of entries per page. Default value: 10. Maximum value: 20",
+      "help_en": "The maximum number of entries to return per page. Default value: 10. Maximum value: 20",
       "help_zh": "每页数量。默认10，最大支持20",
       "location": "query",
       "maximum": "20",
@@ -37,7 +37,7 @@
     },
     {
       "example": "eyJ0IjoiMjAyNi0wNy0xNlQwNzo1MzozOC4wMjFaIiwiaSI6MTAwMDQ0OH0",
-      "help_en": "The pagination token. To retrieve the first page, leave this parameter empty or do not specify it. To retrieve the next page, pass the nextToken value returned in the previous response without any modifications. If the nextToken value in the response is empty, the last page is reached",
+      "help_en": "The pagination token. To query the first page, leave this parameter empty or do not specify it. To query the next page, pass the token returned from the previous response without any modifications. If the token in the response is empty, the last page is returned",
       "help_zh": "分页Token，首页不传nextToken省略或为空字符串，翻页原样回传把上一次响应的nextToken值不做任何修改地传入下一次请求，响应中nextToken 为空，已到最后一页",
       "location": "query",
       "name": "next_token",
@@ -50,7 +50,7 @@
     },
     {
       "example": "project",
-      "help_en": "The keyword used to perform a fuzzy search by project name or prompt",
+      "help_en": "The keyword used for fuzzy search by project name or prompt",
       "help_zh": "可按项目名称、提示词模糊查询",
       "location": "query",
       "name": "query",
@@ -68,7 +68,7 @@
         "lastScanTime"
       ],
       "example": "lastScanTime",
-      "help_en": "The field by which to sort the results. Default value: lastScanTime. Valid values:\nlastScanTime: the time when the last task was created\ncreatedAt: the time when the project was created\nupdatedAt: the time when the project was updated",
+      "help_en": "The field by which to sort the results. Default value: lastScanTime. Valid values:\nlastScanTime: The time when the last task was created.\ncreatedAt: The time when the project was created.\nupdatedAt: The time when the project was updated",
       "help_zh": "排序的字段，默认值 lastScanTime\n取值如下：\nlastScanTime 最近一次创建任务时间\ncreatedAt 创建项目的时间\nupdatedAt 修改项目的时间",
       "location": "query",
       "name": "sort_by",
@@ -85,7 +85,7 @@
         "desc"
       ],
       "example": "desc",
-      "help_en": "The sort order. Default value: desc. Valid values:\ndesc: descending order\nasc: ascending order",
+      "help_en": "The sort order. Default value: desc. Valid values:\ndesc: Descending order.\nasc: Ascending order",
       "help_zh": "指定排序顺序，默认值desc。\n取值如下：\ndesc 倒序\nasc 正序",
       "location": "query",
       "name": "sort_order",
@@ -93,6 +93,29 @@
         "--sort-order"
       ],
       "raw_name": "sortOrder",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "enum": [
+        "unknown",
+        "gitlab",
+        "jenkins",
+        "yunxiao",
+        "hand",
+        "console",
+        "qoder",
+        "cli"
+      ],
+      "example": "gitlab",
+      "help_en": "The access method. Valid values:\ngitlab\njenkins\nyunxiao\ncli\nconsole \nunknown\n\nIf an invalid or empty value is specified, the 400 InvalidAccessType error is returned. If this parameter is explicitly specified when the vulnerability snapshot switch is turned off, the 503 FindingSnapshotDisabled error is returned",
+      "help_zh": "接入方式，取值如下：\ngitlab\njenkins\nyunxiao\ncli\nconsole \nunknown\n\n非法或空值返回 400 InvalidAccessType；漏洞快照开关关闭时显式传入返回 503 FindingSnapshotDisabled",
+      "location": "query",
+      "name": "access_type",
+      "options": [
+        "--access-type"
+      ],
+      "raw_name": "accessType",
       "required": false,
       "type": "string"
     }
@@ -115,6 +138,13 @@
               "description_en": "The project information",
               "description_zh": "项目信息",
               "properties": {
+                "accessType": {
+                  "backendName": "access_type",
+                  "description_en": "The access method. Valid values: gitlab, jenkins, yunxiao, cli, console, and unknown",
+                  "description_zh": "接入方式（gitlab/jenkins/yunxiao/cli/console/unknown）；",
+                  "example": "gitlab",
+                  "type": "string"
+                },
                 "configRevision": {
                   "backendName": "config_revision",
                   "description_en": "The project configuration version number",
@@ -222,6 +252,125 @@
                   "description_zh": "项目名称",
                   "example": "manual-hDecBn",
                   "type": "string"
+                },
+                "riskSnapshotDate": {
+                  "backendName": "risk_snapshot_date",
+                  "description_en": "The date (YYYY-MM-DD) in the configured time zone for the latest daily SAST statistics. A value of null indicates that the daily row has not been generated. The risk is 0 for the tenant or project list. For the project overview, if the underlying project identity exists, SAST is displayed immediately and polling continues. Otherwise, 0 and a rescan prompt are displayed for existing projects. This is not the task completion date",
+                  "description_zh": "最新 SAST 每日统计的配置时区日期（YYYY-MM-DD）；null 表示尚未形成每日行。租户/项目列表风险为 0；项目概览若已有底层项目身份则立即展示 SAST 并继续轮询，否则按存量项目显示 0 与重新扫描提示。不是任务完成日期",
+                  "example": "2026-11-13",
+                  "format": "date",
+                  "nullable": true,
+                  "type": "string"
+                },
+                "sastRisk": {
+                  "backendName": "sast_risk",
+                  "description_en": "The SAST risk count. For a project or tenant, the count is based on the current new and recurrent identities. Fixed vulnerabilities are not included, but ignored vulnerabilities are still included. All counts are 0 when no snapshot is available. For the daily task list, the count is based on the actual findings of the task. The disposition buckets are currently 0 and cannot be used to infer the project disposition distribution",
+                  "description_zh": "SAST 风险计数；项目/租户为当前 new+recurrent 身份，fixed 不计入，ignored 仍计入。无快照时所有计数为 0；当日任务列表使用本任务实际检出项计数，处置桶当前为 0，不能据其推导项目处置分布",
+                  "properties": {
+                    "byDisposition": {
+                      "backendName": "by_disposition",
+                      "description_en": "The manual disposition distribution. The current risk includes ignored vulnerabilities. The value is 0 when no data is available for each field. For a project or tenant, the count is based on the current identity. For task reports, the count is deduplicated based on the project identity associated with the findings",
+                      "description_zh": "人工处置分布；当前风险含 ignored，各字段无数据时为 0。项目/租户以当前身份计数，任务报告按检出项关联的项目身份去重计数",
+                      "properties": {
+                        "confirmed": {
+                          "backendName": "confirmed",
+                          "description_en": "The number of project vulnerabilities confirmed for remediation",
+                          "description_zh": "已确认需要修复的项目漏洞数",
+                          "example": "12",
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "ignored": {
+                          "backendName": "ignored",
+                          "description_en": "The number of ignored project vulnerabilities, which are still included in the current risk",
+                          "description_zh": "已忽略的项目漏洞数，仍计入当前风险",
+                          "example": "5",
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "pending": {
+                          "backendName": "pending",
+                          "description_en": "The number of project vulnerabilities pending confirmation",
+                          "description_zh": "待确认项目漏洞数",
+                          "example": "40",
+                          "format": "int64",
+                          "type": "integer"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "bySeverity": {
+                      "additionalProperties": {
+                        "description_en": "The non-negative count for the severity bucket. The unit for SAST is vulnerabilities, and the unit for SCA is components with known vulnerabilities",
+                        "description_zh": "该严重度桶的非负计数；SAST 单位为漏洞，SCA 单位为有已知漏洞的组件",
+                        "example": "12",
+                        "format": "int64",
+                        "mumRange": [
+                          {
+                            "minimum": "0"
+                          }
+                        ],
+                        "type": "integer"
+                      },
+                      "backendName": "by_severity",
+                      "description_en": "The severity count mapping. The fixed output includes CRITICAL, HIGH, MEDIUM, LOW, and other. Each bucket is 0 (not null) when no risks are present. After UPPER(TRIM(severity)) is applied, other values are classified into other. The sum of all buckets equals the total number of corresponding risks",
+                      "description_zh": "严重度计数映射；固定输出 CRITICAL/HIGH/MEDIUM/LOW/other，缺少风险时各桶为 0（不是 null）。UPPER(TRIM(severity)) 后其他值归 other；各桶之和等于对应风险总数",
+                      "example": "CRITICAL",
+                      "type": "object"
+                    },
+                    "total": {
+                      "backendName": "total",
+                      "description_en": "The total number of SAST vulnerabilities. For a project or tenant, the current risk is counted by identity. For the daily task list, the count is based on actual findings",
+                      "description_zh": "SAST 漏洞总数；项目/租户当前风险按身份计数，当日任务列表按实际检出项计数",
+                      "example": "57",
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                },
+                "scaRisk": {
+                  "backendName": "sca_risk",
+                  "description_en": "The risk of SCA components with known vulnerabilities (not the number of CVEs). Each component is counted in a bucket based on its highest severity. For a project or tenant, the latest complete daily SCA statistics are used. The count is 0 and null is not returned when no complete results or snapshots are available",
+                  "description_zh": "有已知漏洞的 SCA 组件风险（不是 CVE 条数），每个组件按其最高严重度计入一个桶。项目/租户取最新完整 SCA 每日统计，无完整结果或无快照时计数为 0，不返回 null",
+                  "properties": {
+                    "bySeverity": {
+                      "additionalProperties": {
+                        "description_en": "The non-negative count for the severity bucket. The unit for SAST is vulnerabilities, and the unit for SCA is components with known vulnerabilities",
+                        "description_zh": "该严重度桶的非负计数；SAST 单位为漏洞，SCA 单位为有已知漏洞的组件",
+                        "example": "2",
+                        "format": "int64",
+                        "mumRange": [
+                          {
+                            "minimum": "0"
+                          }
+                        ],
+                        "type": "integer"
+                      },
+                      "backendName": "by_severity",
+                      "description_en": "The severity count mapping. The fixed output includes CRITICAL, HIGH, MEDIUM, LOW, and other. Each bucket is 0 (not null) when no risks are present. After UPPER(TRIM(severity)) is applied, other values are classified into other. The sum of all buckets equals the total number of corresponding risks",
+                      "description_zh": "严重度计数映射；固定输出 CRITICAL/HIGH/MEDIUM/LOW/other，缺少风险时各桶为 0（不是 null）。UPPER(TRIM(severity)) 后其他值归 other；各桶之和等于对应风险总数",
+                      "example": "HIGH",
+                      "type": "object"
+                    },
+                    "vulnerableComponentCount": {
+                      "backendName": "vulnerable_component_count",
+                      "description_en": "The number of components with known vulnerabilities. The component inventory with vuln_count > 0 takes precedence. If no inventory is available, the count is deduplicated based on the (package_name, version) of the task findings",
+                      "description_zh": "有已知漏洞的组件数；优先组件清单 vuln_count>0，无清单时按任务 findings 的 (package_name, version) 去重",
+                      "example": "4",
+                      "format": "int64",
+                      "type": "integer"
+                    }
+                  },
+                  "type": "object"
+                },
+                "scanCount": {
+                  "backendName": "scan_count",
+                  "description_en": "The number of existing non-failed tasks in the project, including queued, running, interactive, and canceled tasks. Failed tasks are not included, and invalid tasks are temporarily included. The value is 0 if no tasks exist",
+                  "description_zh": "项目现存非失败任务数，含排队、运行中、交互式与已取消任务；failed 不计入，invalid 暂计入。无任务为 0",
+                  "example": "3",
+                  "format": "int64",
+                  "type": "integer"
                 },
                 "source": {
                   "backendName": "source",
