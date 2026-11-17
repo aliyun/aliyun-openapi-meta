@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "zh",
-      "help_en": "The language of the request and response. Valid values:\n\nzh (default): Chinese\n\nen: English",
+      "help_en": "The language of the request and response. Valid values:\nzh (default): Chinese.\nen: English",
       "help_zh": "请求和接收消息的语言类型。取值：\n\nzh（默认）：中文\n\nen：英文",
       "location": "query",
       "name": "lang",
@@ -48,7 +48,7 @@
     },
     {
       "example": "open",
-      "help_en": "The security protection switch. Valid values:\n\nopen: Enables security protection.\n\nclose: Disables security protection",
+      "help_en": "The security protection switch. Valid values:\nopen: Enabled.\nclose: Disabled",
       "help_zh": "安全防护开关。取值：\nopen：打开\nclose：关闭",
       "location": "query",
       "name": "switch",
@@ -58,6 +58,85 @@
       "raw_name": "Switch",
       "required": true,
       "type": "string"
+    },
+    {
+      "example": "divert",
+      "help_en": "Makes incremental traffic redirection changes to the route entry passed in this request. Other redirected route tables in the list are not affected. Valid values: divert (enables traffic redirection for the passed route entry) and undivert (shutdown of traffic redirection for the passed route entry). This parameter is active only when the firewall is in the traffic redirection state (normal). This parameter and Switch are mutually exclusive and cannot be both set to non-empty values at the same time. If this parameter is not specified or is set to an empty string, the incremental semantics are not used",
+      "help_zh": "对本次传入的路由条目做增量引流变更，列表中其余已引流的路由表不受影响。取值：divert（对传入条目开启引流）、undivert（对传入条目关闭引流）。仅在防火墙处于引流状态（normal）时可用；与 Switch 互斥，二者不可同时传非空值；不传或传空串表示不使用增量语义",
+      "location": "query",
+      "name": "route_action",
+      "options": [
+        "--route-action"
+      ],
+      "raw_name": "RouteAction",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "element": {
+        "fields": [
+          {
+            "example": "0.0.0.0/0",
+            "help_en": "The destination CIDR block of the route entry. When RouteAction is specified, only the default route 0.0.0.0/0 is supported. If other CIDR blocks are passed, a parameter error is returned",
+            "help_zh": "路由条目的目标网段；传入 RouteAction 时仅支持默认路由 0.0.0.0/0，传其他网段返回参数错误",
+            "name": "destination_cidr",
+            "options": [
+              "--destination-cidr"
+            ],
+            "raw_name": "DestinationCidr",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "example": "ngw-bp1a2b3c4d5e6f7g8h9i0",
+            "help_en": "The ID of the NAT gateway to which the route entry pointed before traffic redirection. You can obtain the ID by calling the DescribeSecurityProxyResources operation. When RouteAction is specified, this value must be consistent with the NAT gateway involved in the current operation. When traffic redirection is disabled, you must still pass this NAT gateway ID instead of the current next hop ID of the firewall",
+            "help_zh": "路由条目引流前指向的 NAT 网关 ID，可通过 DescribeSecurityProxyResources 获取。传入 RouteAction 时必须与本次操作的 NAT 网关一致；取消引流时仍传该 NAT 网关 ID，不传当前防火墙下一跳 ID",
+            "name": "next_hop_id",
+            "options": [
+              "--next-hop-id"
+            ],
+            "raw_name": "NextHopId",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "example": "NatGateway",
+            "help_en": "The next hop type of the route entry before traffic redirection. When RouteAction is specified, this value is fixed to NatGateway and must be passed in pairs with NextHopId. If other values are passed, a parameter error is returned",
+            "help_zh": "路由条目引流前的下一跳类型；传入 RouteAction 时固定取 NatGateway，须与 NextHopId 成对传入，传其他值返回参数错误",
+            "name": "next_hop_type",
+            "options": [
+              "--next-hop-type"
+            ],
+            "raw_name": "NextHopType",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "example": "vtb-bp1a2b3c4d5e6f7g8h9i0",
+            "help_en": "The ID of the route table to which the route entry belongs. The route table must exist in the user's VPC. This parameter and DestinationCidr are used together to locate a route. If the route does not exist, the task fails and a message indicating that the route entry does not exist is returned",
+            "help_zh": "路由条目所属的路由表 ID，须为用户 VPC 内实际存在的路由表；与 DestinationCidr 共同定位一条路由，路由不存在时任务失败并提示路由条目不存在",
+            "name": "route_table_id",
+            "options": [
+              "--route-table-id"
+            ],
+            "raw_name": "RouteTableId",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "type": "object"
+      },
+      "help_en": "The route entry list for routing to be redirected or un-redirected. Maximum number of entries: 10,000. When RouteAction (divert or undivert) is specified, a non-empty list must be provided and used according to the incremental semantics. Each entry must include the RouteTableId, DestinationCidr, NextHopId, and NextHopType fields, and the combination of RouteTableId and DestinationCidr must be unique. In the Gateway Load Balancer (GWLB) architecture, when committed together with Switch=open, this parameter is used to specify the route entry for which traffic redirection is enabled in the current request. If no list is provided, the saved list is used. If no active list exists, a parameter error is returned",
+      "help_zh": "要引流或取消引流的路由条目列表，最多 10000 条。传入 RouteAction（divert 或 undivert）时必须提供非空列表，按增量语义使用；每个条目必须提供 RouteTableId、DestinationCidr、NextHopId、NextHopType 四个字段，且 RouteTableId 与 DestinationCidr 的组合不得重复。GWLB 架构下与 Switch=open 一同提交时用于指定本次开启引流的路由条目；未传列表时沿用已保存的列表，无可用列表时返回参数错误",
+      "location": "query",
+      "name": "nat_route_entry_list",
+      "options": [
+        "--nat-route-entry-list"
+      ],
+      "param_style": "repeatList",
+      "raw_name": "NatRouteEntryList",
+      "required": false,
+      "type": "array"
     }
   ],
   "pathPattern": "",
@@ -69,7 +148,7 @@
         "properties": {
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The ID of the request",
+            "description_en": "The request ID",
             "description_zh": "结果的请求ID",
             "example": "F1E55690-3ABA-58FA-90E3-593EF******",
             "type": "string"

@@ -61,7 +61,7 @@
     },
     {
       "example": "vpc-uf6b5lyul0x******",
-      "help_en": "The VPC-connected instance ID",
+      "help_en": "The instance ID of the VPC",
       "help_zh": "VPC实例ID",
       "location": "query",
       "name": "vpc_id",
@@ -87,7 +87,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to use the automatic mode for the vSwitch. Valid values:\ntrue: automatic mode.\nfalse: manual mode.\nDefault value: true. If VswitchAuto is set to true, VswitchCidr is required and must be a valid CIDR block. If VswitchAuto is set to false, VswitchId is required",
+      "help_en": "Specifies whether to use the automatic mode for the vSwitch. Valid values:\n\ntrue: automatic mode.\nfalse: manual mode.\n\nDefault value: true. If VswitchAuto is set to true, VswitchCidr is required and must be a valid CIDR block. If VswitchAuto is set to false, VswitchId is required",
       "help_zh": "是否使用交换机自动模式。取值：\ntrue：自动模式\nfalse：手动模式\nVswitchAuto 默认 true。VswitchAuto=true 时 VswitchCidr 必填（且须为合法 CIDR）；VswitchAuto=false 时 VswitchId 必填",
       "location": "query",
       "name": "vswitch_auto",
@@ -112,6 +112,19 @@
       "type": "string"
     },
     {
+      "example": "gwlb",
+      "help_en": "The architecture type of the NAT firewall. Valid values: eni (traditional ENI architecture) and gwlb (new GWLB architecture). If this parameter is omitted or left empty, the firewall is created by using the ENI architecture, and no implicit selection is performed on the server side. You can obtain the recommended architecture from the response of the DescribeNatFirewallArchitecture operation and pass it back when you create the firewall",
+      "help_zh": "NAT 防火墙架构类型。eni：传统 ENI 架构；gwlb：GWLB 新架构。省略或空串按 eni 创建，不做服务端隐式选型；推荐架构可通过 DescribeNatFirewallArchitecture 的返回结果获取并在创建时回传",
+      "location": "query",
+      "name": "nat_mode",
+      "options": [
+        "--nat-mode"
+      ],
+      "raw_name": "NatMode",
+      "required": false,
+      "type": "string"
+    },
+    {
       "element": {
         "fields": [
           {
@@ -128,7 +141,7 @@
           },
           {
             "example": "ngw-bp1okz6******",
-            "help_en": "The next hop address of the original NAT gateway",
+            "help_en": "The next hop ID of the original NAT gateway",
             "help_zh": "原NAT网关下一跳转地址",
             "name": "next_hop_id",
             "options": [
@@ -152,7 +165,7 @@
           },
           {
             "example": "vtb-2ze1******",
-            "help_en": "The route table to which the default route of the NAT gateway belongs",
+            "help_en": "The ID of the route table to which the default route of the NAT gateway belongs",
             "help_zh": "NAT网关默认路由所在路由表",
             "name": "route_table_id",
             "options": [
@@ -174,12 +187,12 @@
       ],
       "param_style": "repeatList",
       "raw_name": "NatRouteEntryList",
-      "required": true,
+      "required": false,
       "type": "array"
     },
     {
       "example": "close",
-      "help_en": "The security protection switch. Valid values:\nopen: enable\nclose: disable",
+      "help_en": "The security protection switch. Valid values:\n\nopen: enabled.\nclose: disabled",
       "help_zh": "安全防护开关。取值：\nopen：打开\nclose：关闭",
       "location": "query",
       "name": "firewall_switch",
@@ -192,7 +205,7 @@
     },
     {
       "example": "0",
-      "help_en": "Specifies whether to enable strict mode. Valid values:\n\n1: Enable strict mode.\n0: Disable strict mode",
+      "help_en": "Specifies whether to enable strict mode. Valid values:\n\n1: enables strict mode.\n0: disables strict mode",
       "help_zh": "是否启用严格模式\n\n1：启用严格模式\n0：禁用严格模式",
       "location": "query",
       "name": "strict_mode",
@@ -218,7 +231,7 @@
     },
     {
       "example": "PrimaryStandby",
-      "help_en": "The deployment mode of the firewall service. Valid values:\n\nPrimaryStandby: primary/secondary mode\nMultiPrimary: active-active mode",
+      "help_en": "The deployment mode of the firewall service. Valid values:\n\nPrimaryStandby: primary/secondary mode.\nMultiPrimary: active-active mode",
       "help_zh": "防火墙服务部署模式。取值：\n\nPrimaryStandby：主备模式\nMultiPrimary：双活模式",
       "location": "query",
       "name": "firewall_service_mode",
@@ -255,6 +268,123 @@
         "--fw-vswitch-zone-id"
       ],
       "raw_name": "FwVswitchZoneId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "cn-hangzhou-h",
+      "help_en": "The ID of the primary zone. This parameter applies only to NAT firewalls that use the GWLB architecture. For the GWLB architecture, this parameter is required along with MasterVSwitchCidr, StandbyZoneId, and StandbyVSwitchCidr. If any of these parameters is missing, ErrorParameters is returned. The value must be the same as the zone where the NAT gateway resides. This parameter is not read for the ENI architecture",
+      "help_zh": "主可用区 ID。仅 GWLB 架构的 NAT 防火墙适用，该架构下与 MasterVSwitchCidr、StandbyZoneId、StandbyVSwitchCidr 四参缺一不可，缺失时返回 ErrorParameters；取值必须与 NAT 网关所在可用区一致。ENI 架构不读取本参数",
+      "location": "query",
+      "name": "master_zone_id",
+      "options": [
+        "--master-zone-id"
+      ],
+      "raw_name": "MasterZoneId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "192.168.0.0/24",
+      "help_en": "The vSwitch CIDR block of the GWLB endpoint (GWLBe) in the active zone. This parameter applies only to NAT firewalls that use the GWLB architecture. For the GWLB architecture, this parameter is required along with MasterZoneId, StandbyZoneId, and StandbyVSwitchCidr. If any of these parameters is missing, ErrorParameters is returned. The vSwitch is created by the firewall creation node based on this vSwitch CIDR block. This parameter is not read for the ENI architecture",
+      "help_zh": "主可用区 gwlbe 交换机网段。仅 GWLB 架构的 NAT 防火墙适用，该架构下与 MasterZoneId、StandbyZoneId、StandbyVSwitchCidr 四参缺一不可，缺失时返回 ErrorParameters；交换机由开墙任务按该网段现建。ENI 架构不读取本参数",
+      "location": "query",
+      "name": "master_vswitch_cidr",
+      "options": [
+        "--master-vswitch-cidr"
+      ],
+      "raw_name": "MasterVSwitchCidr",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "cn-hangzhou-i",
+      "help_en": "The ID of the secondary zone. This parameter applies only to NAT firewalls that use the GWLB architecture. For the GWLB architecture, this parameter is required along with MasterZoneId, MasterVSwitchCidr, and StandbyVSwitchCidr. If any of these parameters is missing, ErrorParameters is returned. The value cannot be the same as MasterZoneId. If they are the same, ErrorZoneIdInvalid is returned. This parameter is not read for the ENI architecture",
+      "help_zh": "备可用区 ID。仅 GWLB 架构的 NAT 防火墙适用，该架构下与 MasterZoneId、MasterVSwitchCidr、StandbyVSwitchCidr 四参缺一不可，缺失时返回 ErrorParameters；不得与 MasterZoneId 相同，相同时返回 ErrorZoneIdInvalid。ENI 架构不读取本参数",
+      "location": "query",
+      "name": "standby_zone_id",
+      "options": [
+        "--standby-zone-id"
+      ],
+      "raw_name": "StandbyZoneId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "192.168.1.0/24",
+      "help_en": "The vSwitch CIDR block of the GWLBe in the standby zone. This parameter applies only to NAT firewalls that use the GWLB architecture. For the GWLB architecture, this parameter is required along with MasterZoneId, MasterVSwitchCidr, and StandbyZoneId. If any of these parameters is missing, ErrorParameters is returned. The vSwitch is created by the firewall creation node based on this vSwitch CIDR block. This parameter is not read for the ENI architecture",
+      "help_zh": "备可用区 gwlbe 交换机网段。仅 GWLB 架构的 NAT 防火墙适用，该架构下与 MasterZoneId、MasterVSwitchCidr、StandbyZoneId 四参缺一不可，缺失时返回 ErrorParameters；交换机由开墙任务按该网段现建。ENI 架构不读取本参数",
+      "location": "query",
+      "name": "standby_vswitch_cidr",
+      "options": [
+        "--standby-vswitch-cidr"
+      ],
+      "raw_name": "StandbyVSwitchCidr",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "1",
+      "help_en": "The IPS defense mode. This parameter is supported only by NAT firewalls that use the GWLB architecture. If this parameter is not specified, the system default (Block Mode) is used. Valid values:\n\n0: monitor mode. Only alerting is triggered, and traffic is not blocked.\n1: Block Mode",
+      "help_zh": "IPS 防护模式，仅 GWLB 架构的 NAT 防火墙支持。不传则沿用系统默认（拦截模式）。取值：\n0：观察模式，仅告警不拦截。\n1：拦截模式",
+      "location": "query",
+      "name": "run_mode",
+      "options": [
+        "--run-mode"
+      ],
+      "raw_name": "RunMode",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "2",
+      "help_en": "The level of the IPS rule group. This parameter is valid only in block mode. If this parameter is not specified, the system default (medium) is used. Valid values:\n\n0: none. The value is forced to 0 in monitor mode.\n1: loose.\n2: medium.\n3: strict",
+      "help_zh": "IPS 规则组等级，仅拦截模式下有意义。不传则沿用系统默认（中等）。取值：\n0：无，观察模式下被强制归零。\n1：宽松。\n2：中等。\n3：严格",
+      "location": "query",
+      "name": "rule_class",
+      "options": [
+        "--rule-class"
+      ],
+      "raw_name": "RuleClass",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "1",
+      "help_en": "Specifies whether to enable the basic protection policies of the IPS. If this parameter is not specified, the system default (enabled) is used. Valid values:\n\n0: disabled.\n1: enabled",
+      "help_zh": "IPS 基础防御规则开关，不传则沿用系统默认（开启）。取值：\n0：关闭。\n1：开启",
+      "location": "query",
+      "name": "basic_defense_enabled",
+      "options": [
+        "--basic-defense-enabled"
+      ],
+      "raw_name": "BasicDefenseEnabled",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "1",
+      "help_en": "Specifies whether to enable the Virtual Patches of the IPS. If this parameter is not specified, the system default (enabled) is used. Valid values:\n\n0: disabled.\n1: enabled",
+      "help_zh": "IPS 虚拟补丁规则开关，不传则沿用系统默认（开启）。取值：\n0：关闭。\n1：开启",
+      "location": "query",
+      "name": "virtual_patch_enabled",
+      "options": [
+        "--virtual-patch-enabled"
+      ],
+      "raw_name": "VirtualPatchEnabled",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "1",
+      "help_en": "Specifies whether to enable the threat intelligence rules of the IPS. If this parameter is not specified, the system default (enabled) is used. Valid values:\n\n0: disabled.\n1: enabled",
+      "help_zh": "IPS 威胁情报规则开关，不传则沿用系统默认（开启）。取值：\n0：关闭。\n1：开启",
+      "location": "query",
+      "name": "threat_intel_enabled",
+      "options": [
+        "--threat-intel-enabled"
+      ],
+      "raw_name": "ThreatIntelEnabled",
       "required": false,
       "type": "string"
     }
