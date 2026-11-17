@@ -64,9 +64,9 @@
       "type": "string"
     },
     {
-      "example": "{\"userId\":\"alice\"}",
-      "help_en": "The structured filter conditions. The key is the field name, and the value is the expected match value",
-      "help_zh": "结构化过滤条件，key 为字段名，value 为期望匹配的值",
+      "example": "{\"scene\":\"incident-recovery\",\"__agentloopControl\":{\"fields\":[\"when_to_use\",\"summary\"],\"channels\":[\"vector\",\"fulltext\"],\"minQualityScore\":0.6,\"expansion\":false,\"debug\":true}}",
+      "help_en": "The structured filter conditions. The experience store supports scene. When __agentloopControl.mode is set to direct, hybrid, or agentic, multi-strategy recall with auditing is used, and you can pass source, callId, application, fields, channels, and budget simultaneously. The management plane can additionally pass contentStatus=all, active, candidate, gray, or deprecated to perform content retrieval, which includes disabled or unreviewed content and is not affected by store-level runtime switches. The API key runtime entry prohibits contentStatus and retains the original governance thresholds. The maximum value of timeoutMs is 60000. If mode is not passed, the existing semantics of fields, channels, minQualityScore, expansion, and debug are retained. When query is *, you can use includeCandidates, cursor, and offset to browse experiences (management plane only)",
+      "help_zh": "结构化过滤条件。经验库支持 scene；__agentloopControl.mode 为 direct/hybrid/agentic 时使用带审计的多策略召回，可同时传 source、callId、application、fields、channels、budget；管理面可另传 contentStatus=all/active/candidate/gray/deprecated 执行内容检索，包含未启用或未审核内容，不受库级运行时开关影响。API Key 运行时入口禁止 contentStatus 并保留原有治理门槛。timeoutMs 最大 60000。未传 mode 时保留既有 fields/channels/minQualityScore/expansion/debug 语义；query 为 * 时可使用 includeCandidates/cursor/offset 浏览经验（仅管理面）",
       "location": "body",
       "name": "filter",
       "options": [
@@ -96,7 +96,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to include memories with sourceState=inactive. Default value: false",
+      "help_en": "Specifies whether to include memories with sourceState set to inactive. Default value: false",
       "help_zh": "是否包含 sourceState=inactive 的记忆，默认 false",
       "location": "body",
       "name": "include_inactive",
@@ -110,7 +110,7 @@
     },
     {
       "example": "10",
-      "help_en": "The maximum number of returned results based on the top-N similarity",
+      "help_en": "The maximum number of returned results (Top-N similarity)",
       "help_zh": "返回结果数量上限（相似度 Top-N）",
       "location": "body",
       "name": "limit",
@@ -137,9 +137,9 @@
       "type": "string"
     },
     {
-      "example": "semantic",
-      "help_en": "The retrieval options used to control the retrieval strategy",
-      "help_zh": "检索选项，控制检索策略",
+      "example": "normal",
+      "help_en": "The retrieval options. The experience store supports normal and reranker (deterministic reranking). The memory store uses its own retrieval strategy. For real-time recall in the experience store, the limit ranges from 1 to 20",
+      "help_zh": "检索选项。经验库支持 normal 和 reranker（确定性重排）；记忆库沿用其检索策略。经验库实时召回 limit 范围为 1-20",
       "location": "body",
       "name": "retrieval_option",
       "options": [
@@ -201,7 +201,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The recall scope. If a field with the same name exists in the filter, a 400 ScopeFilterConflict error is returned",
+      "help_en": "The recall scope. If this field conflicts with a field of the same name in filter, a 400 ScopeFilterConflict error is returned",
       "help_zh": "召回 scope；与 filter 中同名字段冲突时返回 400 ScopeFilterConflict",
       "location": "body",
       "name": "scope",
@@ -218,7 +218,7 @@
         "type": "string"
       },
       "example": "[\"preferences\",\"profile\"]",
-      "help_en": "Filters results by extraction strategy IDs. Multiple IDs in the list are evaluated with an OR logic. If this parameter is not specified, all strategies are recalled. An empty list returns a 400 error. Valid IDs with no matches return empty results. Historical removed strategy IDs are supported",
+      "help_en": "Filters results by extraction strategy IDs. The conditions in the list are combined by using the OR operator. If this parameter is not passed, all strategies are recalled. An empty list returns a 400 error. If the format is valid but no matching IDs are found, an empty result is returned. Historical removed strategy IDs are supported",
       "help_zh": "按提取策略 Id 过滤，列表内 OR；不传召回所有策略，空列表返回 400；格式合法但无匹配的 Id 返回空结果，支持历史已移除策略 Id",
       "location": "body",
       "name": "strategy_ids",
@@ -232,7 +232,7 @@
     },
     {
       "example": "0.5",
-      "help_en": "The similarity threshold. Results with a similarity score below this value are filtered out. Valid values: 0 to 1",
+      "help_en": "The similarity threshold. Results with a score lower than this value are filtered out. Valid values: 0 to 1",
       "help_zh": "相似度阈值，低于该值的结果将被过滤，取值范围 0-1",
       "location": "body",
       "name": "threshold",
@@ -261,7 +261,7 @@
             "type": "string"
           },
           "callId": {
-            "description_en": "The call ID for the multi-strategy recall of the experience store",
+            "description_en": "The call ID for multi-strategy recall in the experience store",
             "description_zh": "经验库多策略召回的调用 ID",
             "example": "550e8400-e29b-41d4-a716-446655440000",
             "title_en": "经验库多策略召回的调用 ID",
@@ -279,12 +279,13 @@
             },
             "description_en": "The diagnostics information for the current experience recall, including duration, model call volume, and filtering. The actual diagnostics items are determined by the running mode",
             "description_zh": "本次经验召回的耗时、模型调用量及筛选等诊断信息，实际诊断项由运行模式决定",
+            "example": "{\n\t\"durationMs\": 386.5,\n\t\"modelCalls\": 2,\n\t\"relevanceValidation\": \"semantic\",\n\t\"candidateCount\": 1,\n\t\"filtering\": {\n\t\t\"model_not_relevant\": 0\n\t}\n}",
             "title_en": "本次经验召回的耗时、模型调用量及筛选等诊断信息，实际诊断项由运行模式决定",
             "title_zh": "本次经验召回的耗时、模型调用量及筛选等诊断信息，实际诊断项由运行模式决定",
             "type": "object"
           },
           "mode": {
-            "description_en": "The actual experience recall mode used for the current request. Valid values: direct, agentic, and hybrid",
+            "description_en": "The experience recall mode actually used for the current request. Valid values: direct, agentic, and hybrid",
             "description_zh": "本次实际使用的经验召回模式：direct、agentic 或 hybrid",
             "example": "agentic",
             "title_en": "本次实际使用的经验召回模式：direct、agentic 或 hybrid",
@@ -292,7 +293,7 @@
             "type": "string"
           },
           "recallEventId": {
-            "description_en": "The ID of the recall event. You can use this ID to call the GetContextStoreRecall operation to view audit details",
+            "description_en": "The ID of the recall event. You can use this ID to call GetContextStoreRecall to view audit details",
             "description_zh": "召回事件 Id，可用于 GetContextStoreRecall 查看审计明细",
             "example": "0190f1c2-7d3e-7a1b-9c4d-2e5f6a7b8c9d",
             "title_en": "召回事件 Id，可用于 GetContextStoreRecall 查看审计明细",
@@ -302,7 +303,11 @@
           "relevance": {
             "description_en": "The list of relevance judgment results for candidate experiences",
             "description_zh": "候选经验的相关性判定结果列表",
+            "example": "[\n  {\n    \"contextId\": \"a:1\",\n    \"judgment\": \"relevant\",\n    \"reason\": \"这条经验说明了如何跳过输入未变化的任务，与检索问题相关。\"\n  }\n]",
             "items": {
+              "description_en": "The relevance judgment result for a candidate experience",
+              "description_zh": "候选经验的相关性判定结果",
+              "example": "  {\n    \"contextId\": \"a:1\",\n    \"judgment\": \"relevant\",\n    \"reason\": \"这条经验说明了如何跳过输入未变化的任务，与检索问题相关。\"\n  }",
               "type": "object"
             },
             "title_en": "候选经验的相关性判定结果列表",
@@ -310,7 +315,7 @@
             "type": "array"
           },
           "requestId": {
-            "description_en": "The ID of the request. You can use this ID to locate the request for troubleshooting",
+            "description_en": "The ID of the request. You can use this ID to locate the request when troubleshooting issues",
             "description_zh": "请求 Id，用于排查问题时定位本次请求",
             "example": "9ACFB10A-1B2C-3D4E-5F6G-7H8I9J0K1L2M",
             "title_en": "请求 Id，用于排查问题时定位本次请求",
@@ -318,8 +323,9 @@
             "type": "string"
           },
           "results": {
-            "description_en": "The list of retrieval results, sorted by similarity in descending order",
-            "description_zh": "检索结果列表，按相似度从高到低排序",
+            "description_en": "The list of retrieval results, sorted by similarity in descending order. Each item contains contextId, context, metadata, score, rank, revision, strategyVersion, and strategyId",
+            "description_zh": "检索结果列表，按相似度从高到低排序；每项含 contextId、context、metadata、score、rank、revision、strategyVersion、strategyId",
+            "example": "[{\"contextId\":\"01a1cf08-c368-7c83******\",\"strategyId\":\"default\",\"context\":\"助手推荐蒸汽海鲜，因为新鲜且不辣，符合用户对海鲜的喜好及不吃辣的约束\",\"metadata\":{\"contextType\":\"memory\",\"memoryType\":\"long\",\"userId\":\"test_user_002\",\"agentId\":\"95273000000000\",\"appId\":\"mm_480d961******\",\"runId\":\"jr-80ded1d6******\",\"strategyId\":\"default\",\"category\":\"recommendation\",\"kind\":\"state\",\"sourceKind\":\"api\",\"sourceId\":\"addctx:75395808-cb81-54cd******\",\"revision\":1,\"reviewStatus\":\"unreviewed\",\"sourceState\":\"active\",\"factKey\":\"assistant:recommendation:dish******\",\"sessionId\":\"test_session_001\"},\"score\":0.6617179,\"rank\":1,\"revision\":1,\"strategyVersion\":1}]",
             "itemName": "results",
             "items": {
               "additionalProperties": {
@@ -332,6 +338,7 @@
               },
               "description_en": "A single retrieval result. The structure aligns with the storage fields of the context store",
               "description_zh": "单条检索结果，结构与上下文库存储字段对齐",
+              "example": "{\"contextId\":\"01a1cf08-c368-7c83******\",\"strategyId\":\"default\",\"context\":\"助手推荐蒸汽海鲜，因为新鲜且不辣，符合用户对海鲜的喜好及不吃辣的约束\",\"metadata\":{\"contextType\":\"memory\",\"memoryType\":\"long\",\"userId\":\"test_user_002\",\"agentId\":\"95273000000000\",\"appId\":\"mm_480d961******\",\"runId\":\"jr-80ded1d6******\",\"strategyId\":\"default\",\"category\":\"recommendation\",\"kind\":\"state\",\"sourceKind\":\"api\",\"sourceId\":\"addctx:75395808-cb81-54cd******\",\"revision\":1,\"reviewStatus\":\"unreviewed\",\"sourceState\":\"active\",\"factKey\":\"assistant:recommendation:dish******\",\"sessionId\":\"test_session_001\"},\"score\":0.6617179,\"rank\":1,\"revision\":1,\"strategyVersion\":1}",
               "title_en": "单条检索结果，结构与上下文库存储字段对齐",
               "title_zh": "单条检索结果，结构与上下文库存储字段对齐",
               "type": "object"
@@ -343,6 +350,7 @@
           "rewrittenQueries": {
             "description_en": "The list of rewritten queries generated based on the original retrieval query. The original query is not included",
             "description_zh": "围绕原始检索问题生成的改写查询列表，不包含原始查询",
+            "example": "[\"如何避免重复执行未变更的输入\"]",
             "items": {
               "description_en": "A rewritten query used to retrieve candidate experiences",
               "description_zh": "一条用于检索候选经验的改写查询",
@@ -364,7 +372,7 @@
             "type": "string"
           },
           "strategyVersion": {
-            "description_en": "The strategy implementation version used for the current experience recall. This is used for auditing and result tracing",
+            "description_en": "The implementation version of the strategy used for the current experience recall. This is used for auditing and result tracing",
             "description_zh": "本次经验召回使用的策略实现版本，用于审计和结果追溯",
             "example": "experience-recall-20261031-v5",
             "title_en": "本次经验召回使用的策略实现版本，用于审计和结果追溯",
