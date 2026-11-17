@@ -3,7 +3,7 @@
   "cmd_full_name": "dm config-set-create",
   "cmd_name": "config-set-create",
   "deprecated": false,
-  "description_en": "Creates a configuration set. You can create up to 100 configuration sets",
+  "description_en": "Creates a configuration set. The maximum number of configuration sets is 100",
   "description_zh": "创建配置集，上限100个",
   "kebab_example": "aliyun dm config-set-create --name XXX --ip-pool-id XXX --description XXX --is-public-channel-backoff true --validation-option '{\"ForbiddenSubStatusList\":[\"DISPOSABLE\"],\"Enabled\":true,\"ForbiddenStatusList\":[\"INVALID\"]}' --region cn-hangzhou",
   "method": "GET|POST",
@@ -21,7 +21,7 @@
   },
   "parameters": [
     {
-      "example": "XXX",
+      "example": "demo-config",
       "help_en": "The name of the configuration set. This parameter is required. The name can be up to 50 characters in length and must be unique",
       "help_zh": "配置名称：必填。最多 50 个字符，名称不允许重复",
       "location": "query",
@@ -34,8 +34,8 @@
       "type": "string"
     },
     {
-      "example": "XXX",
-      "help_en": "The ID of the IP pool to associate. This parameter is optional",
+      "example": "55xxxcff-ff22-4c00-854b-899xxxxxxe3a",
+      "help_en": "The ID of the associated IP pool. This parameter is optional",
       "help_zh": "关联IP池ID，选填",
       "location": "query",
       "name": "ip_pool_id",
@@ -47,8 +47,8 @@
       "type": "string"
     },
     {
-      "example": "XXX",
-      "help_en": "The description. The description can be up to 50 characters in length",
+      "example": "这是一个示例配置集。",
+      "help_en": "The description of the configuration set. The description can be up to 50 characters in length",
       "help_zh": "描述，最多50个字符",
       "location": "query",
       "name": "description",
@@ -60,7 +60,7 @@
       "type": "string"
     },
     {
-      "help_en": "Specifies whether to fall back to the public channel for sending when the associated dedicated IP pool encounters issues.\n\ntrue (fall back): The system excludes dedicated IPs that are currently throttled or blacklisted by the target mailbox provider during each delivery attempt, and preferentially uses the remaining available IPs in the pool. When all IPs in the pool are throttled or blacklisted by the mailbox provider, the system automatically switches to the public channel to ensure delivery success rates. After the throttling or blacklisting is lifted, the system automatically resumes using the dedicated IPs.\nfalse (do not fall back): Only the associated dedicated IP pool is used for sending. When IPs in the pool are throttled or blacklisted, the system continues to use these IPs for delivery, which may cause delivery failures or delays. However, this ensures that the sending IPs are always your dedicated IPs",
+      "help_en": "Specifies whether to fall back to the public channel when an issue occurs with the associated dedicated IP pool.\n\ntrue: Falls back to the public channel. During each delivery attempt, the system excludes dedicated IPs that are throttled or blacklisted by the target mailbox provider and prioritizes other available IPs in the pool. If all IPs in the pool are throttled or blacklisted by the mailbox provider, the system automatically uses the public channel to ensure the delivery success rate. The system automatically resumes using dedicated IPs after the throttling or blacklisting is lifted.\nfalse: Does not fall back to the public channel. The system uses only the associated dedicated IP pool. If IPs in the pool are throttled or blacklisted, the system continues to use them, which may cause delivery failures or delays but ensures that the sender IP is always your dedicated IP",
       "help_zh": "关联的独立 IP 池出现问题时，是否退避使用公共通道发送。\n\ntrue（退避）：系统在每次投递时会剔除当前对目标邮箱服务商被流控或列黑的独立 IP，优先使用池内其余可用 IP 发送；当池内 IP 对该邮箱服务商全部被流控或列黑时，自动改用公共通道发送，保障投递成功率。流控或列黑解除后自动恢复使用独立 IP。\nfalse（不退避）：仅使用关联的独立 IP 池发送；池内 IP 被流控或列黑时仍继续使用这些 IP 投递，可能导致投递失败或延迟，但可确保发信 IP 始终为您的独立 IP",
       "location": "query",
       "name": "is_public_channel_backoff",
@@ -74,7 +74,7 @@
     {
       "fields": [
         {
-          "help_en": "Specifies whether to enable the address validation feature.\n\ntrue: Enabled. This is equivalent to the BASIC_ONLY mode of the ValidateEmail operation.\nfalse: Disabled",
+          "help_en": "Specifies whether to enable the email address validation feature.\n\ntrue: Enables the feature. This is equivalent to the BASIC_ONLY mode of the ValidateEmail operation.\nfalse: Disables the feature",
           "help_zh": "地址校验功能是否启用。\n\ntrue：启用。是地址校验接口ValidateEmail 接口的BASIC_ONLY模式。\nfalse：不启用",
           "name": "enabled",
           "options": [
@@ -88,7 +88,7 @@
           "element": {
             "type": "string"
           },
-          "help_en": "The list of recipient address validation primary statuses to block. Before sending, the system pre-validates the recipient address. Emails whose validation primary status matches an entry in this list are rejected",
+          "help_en": "The list of primary validation statuses for recipient addresses to block. The system pre-validates recipient addresses before sending emails. Emails with a primary validation status in this list are rejected",
           "help_zh": "需要拦截的收件人地址校验主状态列表。发信前系统对收件人地址做预校验，校验结果主状态命中本列表的邮件将被拒绝发送",
           "name": "forbidden_status_list",
           "options": [
@@ -102,7 +102,7 @@
           "element": {
             "type": "string"
           },
-          "help_en": "The list of recipient address validation sub-statuses to block. This provides finer-grained blocking control than the primary statuses. It takes effect as a union with ForbiddenStatusList, meaning that an email is blocked if it matches either list",
+          "help_en": "The list of sub-validation statuses for recipient addresses to block. This list provides finer-grained blocking control than the primary status list. It takes effect as a union with ForbiddenStatusList. An email is blocked if its status matches any value in either list",
           "help_zh": "需要拦截的收件人地址校验子状态列表，提供比主状态更细粒度的拦截控制，与 ForbiddenStatusList 取并集生效（命中任一列表即拦截）",
           "name": "forbidden_sub_status_list",
           "options": [
@@ -113,7 +113,7 @@
           "type": "array"
         }
       ],
-      "help_en": "The address validation options",
+      "help_en": "The options for the email address validation feature",
       "help_zh": "地址校验功能选项",
       "location": "query",
       "name": "validation_option",
@@ -137,16 +137,16 @@
         "properties": {
           "Id": {
             "backendName": "id",
-            "description_en": "The configuration set ID",
+            "description_en": "The ID of the configuration set",
             "description_zh": "配置集ID",
-            "example": "XXX",
+            "example": "a3xxxfee-f95e-459c-a15e-fd5xxxxxx1ba",
             "type": "string"
           },
           "RequestId": {
             "backendName": "acsReqId",
-            "description_en": "The request ID",
+            "description_en": "The ID of the request",
             "description_zh": "请求ID",
-            "example": "XXX",
+            "example": "019F5E66-965D-5803-A16D-286C254A4B6E",
             "title_en": "Id of the request",
             "title_zh": "Id of the request",
             "type": "string"
