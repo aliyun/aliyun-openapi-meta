@@ -21,8 +21,47 @@
   },
   "parameters": [
     {
+      "example": "Enabled",
+      "help_en": "The display status filter. Valid values: Enabled (enabled and not expired), Disabled (disabled regardless of expiration), and Expired (enabled and expired). If this parameter is not specified, all statuses are included and intersected with other filter conditions",
+      "help_zh": "展示状态筛选：Enabled 已启用且未过期、Disabled 已停用（不论是否过期）、Expired 已启用且过期。未传表示全部，与其它筛选条件取交集",
+      "location": "query",
+      "name": "status",
+      "options": [
+        "--status"
+      ],
+      "raw_name": "status",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "Expired,AboutToExpire",
+      "help_en": "The validity status filter. Valid values: Permanent, InEffect, AboutToExpire, and Expired. You can specify multiple values separated by commas to form a union. If this parameter is not specified, all statuses are included and intersected with the name and display status filters",
+      "help_zh": "有效期状态筛选：Permanent、InEffect、AboutToExpire、Expired。可用英文逗号连接多个值取并集；未传表示全部，与名称及展示状态取交集",
+      "location": "query",
+      "name": "expire_status",
+      "options": [
+        "--expire-status"
+      ],
+      "raw_name": "expireStatus",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "true",
+      "help_en": "Specifies whether to return the full expiration reminder count. Default value: false. The statistical scope is limited only by the current account and gatewayType",
+      "help_zh": "是否返回全量到期提醒计数，缺省 false。统计范围只受当前账号与 gatewayType 限制",
+      "location": "query",
+      "name": "include_expiration_summary",
+      "options": [
+        "--include-expiration-summary"
+      ],
+      "raw_name": "includeExpirationSummary",
+      "required": false,
+      "type": "bool"
+    },
+    {
       "example": "UI-test",
-      "help_en": "The keyword used to perform a fuzzy search for APIs by name",
+      "help_en": "The keyword used for fuzzy search by API name",
       "help_zh": "按接口名称模糊搜索接口",
       "location": "query",
       "name": "name_like",
@@ -61,7 +100,7 @@
     },
     {
       "example": "AI",
-      "help_en": "The gateway type used for filtering. Valid values: AI and API",
+      "help_en": "The gateway type used for filtering. Currently, AI and API gateway types are supported",
       "help_zh": "网关类型过滤，目前支持AI、API两种网关类型",
       "location": "query",
       "name": "gateway_type",
@@ -92,8 +131,35 @@
             "description_en": "The response data",
             "description_zh": "响应数据",
             "properties": {
+              "expirationSummary": {
+                "description_en": "The expiration reminder count for all consumers under the same account and gateway type. This count is not affected by name filters, status filters, or pagination. This field is returned only when includeExpirationSummary is set to true",
+                "description_zh": "同账号、同网关类型全部消费者的到期提醒计数，不受名称、状态筛选或分页影响。仅 includeExpirationSummary=true 时返回",
+                "properties": {
+                  "aboutToExpire": {
+                    "description_en": "The number of unexpired consumers with a remaining validity period of no more than seven days, including those that are manually disabled",
+                    "description_zh": "未过期且剩余时间不超过七天的消费者数量，包括手动停用者",
+                    "example": "1",
+                    "format": "int64",
+                    "title_en": "未过期且剩余时间不超过七天的消费者数量，包括手动停用者。",
+                    "title_zh": "未过期且剩余时间不超过七天的消费者数量，包括手动停用者。",
+                    "type": "integer"
+                  },
+                  "expired": {
+                    "description_en": "The number of expired consumers, including those that are manually disabled",
+                    "description_zh": "已过期的消费者数量，包括手动停用者",
+                    "example": "2",
+                    "format": "int64",
+                    "title_en": "已过期的消费者数量，包括手动停用者。",
+                    "title_zh": "已过期的消费者数量，包括手动停用者。",
+                    "type": "integer"
+                  }
+                },
+                "title_en": "同账号、同网关类型全部消费者的到期提醒计数，不受名称、状态筛选或分页影响。仅 includeExpirationSummary=true 时返回。",
+                "title_zh": "同账号、同网关类型全部消费者的到期提醒计数，不受名称、状态筛选或分页影响。仅 includeExpirationSummary=true 时返回。",
+                "type": "object"
+              },
               "items": {
-                "description_en": "The list of consumers",
+                "description_en": "The list of consumer information",
                 "description_zh": "消费者信息列表",
                 "itemName": "item",
                 "items": {
@@ -126,10 +192,27 @@
                       "type": "string"
                     },
                     "enable": {
-                      "description_en": "Indicates whether the consumer is enabled",
+                      "description_en": "Specifies whether the consumer is enabled",
                       "description_zh": "是否启用",
                       "example": "true",
                       "type": "boolean"
+                    },
+                    "expireAt": {
+                      "description_en": "The expiration time of the consumer, in UTC UNIX seconds. A null value indicates that the consumer is permanently valid",
+                      "description_zh": "消费者失效时间，UTC Unix 秒。空值表示永久有效",
+                      "example": "1893456000",
+                      "format": "int64",
+                      "title_en": "消费者失效时间，UTC Unix 秒。空值表示永久有效。",
+                      "title_zh": "消费者失效时间，UTC Unix 秒。空值表示永久有效。",
+                      "type": "integer"
+                    },
+                    "expireStatus": {
+                      "description_en": "The validity status. Valid values: Permanent, InEffect, AboutToExpire, and Expired. The status is accurate to the second. A remaining time of exactly seven days is classified as AboutToExpire, and an exact expiration time is classified as Expired",
+                      "description_zh": "有效期状态：Permanent、InEffect、AboutToExpire 或 Expired。精确到秒；恰好七天属于 AboutToExpire，到点属于 Expired",
+                      "example": "InEffect",
+                      "title_en": "有效期状态：Permanent、InEffect、AboutToExpire 或 Expired。精确到秒；恰好七天属于 AboutToExpire，到点属于 Expired。",
+                      "title_zh": "有效期状态：Permanent、InEffect、AboutToExpire 或 Expired。精确到秒；恰好七天属于 AboutToExpire，到点属于 Expired。",
+                      "type": "string"
                     },
                     "name": {
                       "description_en": "The consumer name",
