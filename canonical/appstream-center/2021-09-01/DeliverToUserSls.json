@@ -2,8 +2,8 @@
   "cmd_full_name": "appstream-center deliver-to-user-sls",
   "cmd_name": "deliver-to-user-sls",
   "deprecated": false,
-  "description_en": "Configures Simple Log Service (SLS) log delivery",
-  "description_zh": "配置SLS日志投递",
+  "description_en": "Configures operation log delivery for specified products and writes the logs to a Simple Log Service (SLS) project and Logstore of the current account",
+  "description_zh": "为指定产品配置操作日志投递，将日志写入当前账号的 SLS Project 和 Logstore",
   "kebab_example": "aliyun appstream-center deliver-to-user-sls --sls-region-id cn-hangzhou --delivery-scopes ProductType=CloudBrowser --api-version 2021-09-01 --region cn-hangzhou",
   "method": "POST",
   "multi_version": true,
@@ -22,9 +22,9 @@
   },
   "parameters": [
     {
-      "example": "elastic-desktop-xxx",
-      "help_en": "The name of the SLS project. You must specify either this parameter or ExistedProjectName",
-      "help_zh": "SLS Project名称，与ExistedProjectName二选一必填",
+      "example": "elastic-desktop-audit",
+      "help_en": "The name of the SLS project to be created or reused. The name must start with `elastic-desktop-`.\n\nSpecify either this parameter or `ExistedProjectName`. If the project does not exist, it is created. If the project already exists, it is reused",
+      "help_zh": "待创建或复用的 SLS Project 名称，必须以 `elastic-desktop-` 开头。\n\n与 `ExistedProjectName` 选择一个填写。Project 不存在时创建，已存在时复用",
       "location": "formData",
       "name": "project_name",
       "options": [
@@ -35,9 +35,9 @@
       "type": "string"
     },
     {
-      "example": "elastic_desktop_xxx",
-      "help_en": "The name of the Logstore",
-      "help_zh": "LogStore名称",
+      "example": "elastic_desktop_audit",
+      "help_en": "The name of the destination Logstore. The name must start with `elastic_desktop_`. If the Logstore does not exist, it is created. If the Logstore already exists, it is reused.\n\nIf this parameter is not specified, the part after `elastic-desktop-` in the selected project name is used as a suffix to generate a name that starts with `elastic_desktop_`. For example, if the project name is `elastic-desktop-audit`, the default Logstore name is `elastic_desktop_audit`",
+      "help_zh": "投递目标 Logstore 名称，必须以 `elastic_desktop_` 开头。不存在时创建，已存在时复用。\n\n省略时，使用所选 Project 名称中 `elastic-desktop-` 后的部分作为后缀，生成 `elastic_desktop_` 开头的名称。例如 Project 为 `elastic-desktop-audit` 时，默认为 `elastic_desktop_audit`",
       "location": "formData",
       "name": "log_store_name",
       "options": [
@@ -49,8 +49,8 @@
     },
     {
       "example": "30",
-      "help_en": "The data retention period in days. Default value: 30",
-      "help_zh": "数据保留时间（天），默认30",
+      "help_en": "The data retention period of the new Logstore. Unit: days.\n\nValid values: 1 to 3650.\n\nDefault value: 30.\n\nIf an existing Logstore is reused, this operation does not update its data retention period",
+      "help_zh": "新建 Logstore 的数据保留时长，单位为天。\n\n取值范围： 1～3650。\n\n默认值： 30。\n\n复用已有 Logstore 时，本接口不更新其数据保留时长",
       "location": "formData",
       "name": "ttl",
       "options": [
@@ -61,9 +61,9 @@
       "type": "int"
     },
     {
-      "example": "elastic-desktop-xxx",
-      "help_en": "The name of the existing SLS project. You must specify either this parameter or ProjectName",
-      "help_zh": "已有的SLS Project名称，与ProjectName二选一必填",
+      "example": "elastic-desktop-audit",
+      "help_en": "The name of an existing SLS project. The name must start with `elastic-desktop-` and the project must already exist in the specified SLS region of the current account.\n\nSpecify either this parameter or `ProjectName`",
+      "help_zh": "已有的 SLS Project 名称，必须以 `elastic-desktop-` 开头，且在当前账号指定的 SLS 地域中已存在。\n\n与 `ProjectName` 选择一个填写",
       "location": "formData",
       "name": "existed_project_name",
       "options": [
@@ -75,8 +75,8 @@
     },
     {
       "example": "cn-hangzhou",
-      "help_en": "The region ID of SLS",
-      "help_zh": "SLS所在地域ID",
+      "help_en": "The ID of the region where the destination SLS project is located. This parameter is required",
+      "help_zh": "投递目标 SLS Project 所在的地域标识，必填",
       "location": "formData",
       "name": "sls_region_id",
       "options": [
@@ -91,8 +91,8 @@
         "fields": [
           {
             "example": "CloudBrowser",
-            "help_en": "The product type",
-            "help_zh": "产品类型",
+            "help_en": "The product type to which the logs belong. Specify the product type for which you want to enable log delivery. For example, `CloudBrowser` indicates Cloud Browser",
+            "help_zh": "日志所属的产品类型。应填写需要启用日志投递的产品类型，例如 `CloudBrowser` 表示云浏览器",
             "name": "product_type",
             "options": [
               "--product-type"
@@ -104,9 +104,9 @@
         ],
         "type": "object"
       },
-      "example": "[{\"productType\":\"China_China\"}]",
-      "help_en": "The list of delivery scopes",
-      "help_zh": "投递范围列表",
+      "example": "[{\"ProductType\":\"CloudBrowser\"}]",
+      "help_en": "The list of product scopes for which delivery needs to be configured. Specify at least one item. You cannot create duplicate enabled delivery configurations for the same account and product type",
+      "help_zh": "需要配置投递的产品范围列表，至少填写一项。同一账号、同一产品类型不能重复创建已启用的投递配置",
       "location": "formData",
       "name": "delivery_scopes",
       "options": [
@@ -124,13 +124,13 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "Schema of Response",
-        "description_zh": "Schema of Response",
+        "description_en": "The processing result of the delivery configuration",
+        "description_zh": "投递配置处理结果",
         "properties": {
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID",
-            "description_zh": "请求ID",
+            "description_en": "The ID of the request. It is used to troubleshoot call issues",
+            "description_zh": "本次请求的标识，用于定位调用问题",
             "example": "1CBAFFAB-B697-4049-A9B1-67E1FC5F****",
             "title_en": "请求ID",
             "title_zh": "请求ID",
