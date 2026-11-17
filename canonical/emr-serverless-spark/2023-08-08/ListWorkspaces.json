@@ -3,7 +3,7 @@
   "cmd_full_name": "emr-serverless-spark list-workspaces",
   "cmd_name": "list-workspaces",
   "deprecated": false,
-  "description_en": "Queries a list of workspaces",
+  "description_en": "Retrieves a list of workspaces",
   "description_zh": "调用ListWorkspaces获取工作空间列表",
   "kebab_example": "aliyun emr-serverless-spark list-workspaces --next-token 1 --max-results 20 --name test_workspace --state running --biz-region-id cn-hangzhou --tag '[{\"value\":\"iphone磁盘空间剩余率\",\"key\":\"cn-shenzhen-finance.edas.config.server\"}]' --resource-group-id rg-aek2thxggoqhmhq --region cn-hangzhou",
   "method": "GET",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "1",
-      "help_en": "The pagination token that specifies the starting position for the current read operation",
+      "help_en": "The pagination token that specifies the starting position for the query",
       "help_zh": "标记当前开始读取的位置",
       "location": "query",
       "name": "next_token",
@@ -61,7 +61,7 @@
     },
     {
       "example": "running",
-      "help_en": "The state of the workspace. Valid values:\nStarting: The workspace is starting.\nRunning: The workspace is running.\nStopping: The workspace is stopping.\nStopped: The workspace is stopped.\nError: The workspace has failed",
+      "help_en": "The state of the workspace. Valid values:\nStarting: Starting.\nRunning: Running.\nStopping: Stopping.\nStopped: Stopped.\nError: Failed",
       "help_zh": "工作空间状态",
       "location": "query",
       "name": "state",
@@ -162,7 +162,7 @@
           },
           "nextToken": {
             "backendName": "nextToken",
-            "description_en": "The next token",
+            "description_en": "The token for the next page",
             "description_zh": "下一页TOKEN",
             "example": "1",
             "title_en": "下一页TOKEN。",
@@ -218,7 +218,7 @@
                 },
                 "autoRenewPeriodUnit": {
                   "backendName": "autoRenewPeriodUnit",
-                  "description_en": "The auto-renewal cycle. This parameter is required for the subscription billing method",
+                  "description_en": "The auto-renewal epoch. This parameter is required for the subscription billing method",
                   "description_zh": "自动续费周期（pre付费类型必填）",
                   "example": "YEAR, MONTH, WEEK, DAY, HOUR, MINUTE",
                   "title_en": "自动续费周期(pre付费类型必须)。",
@@ -251,7 +251,7 @@
                 },
                 "duration": {
                   "backendName": "duration",
-                  "description_en": "The length of the subscription period. This parameter is required for the subscription billing method",
+                  "description_en": "The duration of the subscription period. This parameter is required for the subscription billing method",
                   "description_zh": "订购周期数量（pre付费类型必填）",
                   "example": "1",
                   "format": "int32",
@@ -269,12 +269,30 @@
                 },
                 "failReason": {
                   "backendName": "failReason",
-                  "description_en": "The cause of the failure",
+                  "description_en": "The reason for the failure",
                   "description_zh": "失败原因",
                   "example": "out of stock",
                   "title_en": "失败原因。",
                   "title_zh": "失败原因。",
                   "type": "string"
+                },
+                "features": {
+                  "backendName": "features",
+                  "description_en": "The workspace features",
+                  "description_zh": "工作空间特性",
+                  "properties": {
+                    "fineGrainedAuthz": {
+                      "backendName": "fineGrainedAuthz",
+                      "description_en": "Indicates whether fine-grained access control is enabled for the workspace",
+                      "description_zh": "是否启用工作空间细粒度权限",
+                      "title_en": "是否启用工作空间细粒度权限",
+                      "title_zh": "是否启用工作空间细粒度权限",
+                      "type": "boolean"
+                    }
+                  },
+                  "title_en": "工作空间特性",
+                  "title_zh": "工作空间特性",
+                  "type": "object"
                 },
                 "gpuSpec": {
                   "backendName": "gpuSpec",
@@ -282,7 +300,7 @@
                   "description_zh": "gpu机型列表",
                   "itemName": "gpuSpec",
                   "items": {
-                    "description_en": "The GPU instance type",
+                    "description_en": "The GPU model",
                     "description_zh": "gpu机型",
                     "example": "ecs.gn7i-c8g1.2xlarge",
                     "title_en": "gpu机型。",
@@ -295,11 +313,11 @@
                 },
                 "ipWhiteList": {
                   "backendName": "ipWhiteList",
-                  "description_en": "The IP whitelist of the workspace",
+                  "description_en": "The workspace IP whitelist",
                   "description_zh": "工作空间ip白名单",
                   "itemName": "ipWhiteList",
                   "items": {
-                    "description_en": "The IP whitelist of the workspace",
+                    "description_en": "The workspace IP whitelist",
                     "description_zh": "工作空间ip白名单",
                     "example": "0.0.0.1",
                     "title_en": "工作空间ip白名单。",
@@ -351,7 +369,7 @@
                     },
                     "autoRenewal": {
                       "backendName": "autoRenewal",
-                      "description_en": "Specifies whether auto-renewal is enabled for the resource. Valid values:\ntrue: Auto-renewal is enabled. The resource is automatically renewed upon expiration.\nfalse: Auto-renewal is disabled. The resource stops working upon expiration",
+                      "description_en": "Specifies whether auto-renewal is enabled for the resource. Valid values:\ntrue: Auto-renewal is enabled. The resource is automatically renewed upon expiration.\nfalse: Auto-renewal is disabled. The resource is stopped upon expiration",
                       "description_zh": "资源是否开启了自动续费功能。\n\ntrue：开启自动续费，资源到期后会自动续订。\nfalse：未开启自动续费，资源到期后将停止使用",
                       "example": "true",
                       "type": "boolean"
@@ -366,7 +384,7 @@
                     },
                     "expireTime": {
                       "backendName": "expireTime",
-                      "description_en": "The time when the resource quota expires. The value is a UNIX timestamp in milliseconds",
+                      "description_en": "The expiration time of the resource quota. The value is a UNIX timestamp in milliseconds",
                       "description_zh": "资源配额的过期时间。采用 Unix 时间戳，单位为毫秒",
                       "example": "1740537153000",
                       "format": "int64",
@@ -449,7 +467,7 @@
                       },
                       "expireTime": {
                         "backendName": "expireTime",
-                        "description_en": "The time when the GPU subscription quota expires. The value is a UNIX timestamp in milliseconds",
+                        "description_en": "The expiration time of the GPU subscription quota. The value is a UNIX timestamp in milliseconds",
                         "description_zh": "GPU 预付费配额过期时间，采用 Unix 时间戳，单位为毫秒",
                         "example": "1782292772000",
                         "format": "int64",
@@ -495,7 +513,7 @@
                       },
                       "gpuSpec": {
                         "backendName": "gpuSpec",
-                        "description_en": "The GPU instance type",
+                        "description_en": "The GPU model",
                         "description_zh": "gpu机型",
                         "example": "ecs.gn7i-c8g1.2xlarge",
                         "title_en": "gpu机型。",

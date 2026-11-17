@@ -150,7 +150,7 @@
     }
   },
   "deprecated": false,
-  "description_en": "Retrieves the details of a Spark job run by calling GetJobRun",
+  "description_en": "Retrieves the details of a job run",
   "description_zh": "调用GetJobRun获取任务详情",
   "kebab_example": "aliyun emr-serverless-spark get-job-run --workspace-id w-d2d82aa091510000 --job-run-id jr-93d98d2f70610000 --region cn-hangzhou",
   "method": "GET",
@@ -223,7 +223,7 @@
             "properties": {
               "codeType": {
                 "backendName": "codeType",
-                "description_en": "The job code type. Valid values:\n\nSQL\n\nJAR\n\nPYTHON",
+                "description_en": "The code type of the job run. Valid values:\n\nSQL\n\nJAR\n\nPYTHON",
                 "description_zh": "任务代码类型。可能值：\n\nSQL\n\nJAR\n\nPYTHON",
                 "example": "SQL",
                 "title_en": "作业代码类型。",
@@ -232,12 +232,12 @@
               },
               "configurationOverrides": {
                 "backendName": "configOverrides",
-                "description_en": "The Spark job configuration",
+                "description_en": "The configuration overrides for the Spark job run",
                 "description_zh": "Spark任务配置",
                 "properties": {
                   "configurations": {
                     "backendName": "applicationConfigs",
-                    "description_en": "The configuration list",
+                    "description_en": "The list of configurations",
                     "description_zh": "配置列表",
                     "itemName": "Configuration",
                     "items": {
@@ -259,7 +259,7 @@
               },
               "endTime": {
                 "backendName": "endTime",
-                "description_en": "The job end time. The value is a Unix timestamp in milliseconds",
+                "description_en": "The end time of the job run. The value is a UNIX timestamp in milliseconds",
                 "description_zh": "任务结束时间。采用 Unix 时间戳，单位为毫秒",
                 "example": "1684122914000",
                 "format": "int64",
@@ -284,6 +284,16 @@
                 "title_zh": "运行超时时间。",
                 "type": "integer"
               },
+              "firstReportTime": {
+                "backendName": "firstReportTime",
+                "description_en": "The timestamp in milliseconds when the resources become ready, indicating the first report time. The first report time takes precedence. If it is empty, the job report time is used as a fallback. If neither has a value, null is returned",
+                "description_zh": "资源就绪（首次上报）时刻的毫秒时间戳。优先取首次上报时间，为空时回退为作业上报时间；两者均无值时返回 null",
+                "example": "1684119314000",
+                "format": "int64",
+                "title_en": "资源就绪时间",
+                "title_zh": "资源就绪时间",
+                "type": "integer"
+              },
               "fusion": {
                 "backendName": "fusion",
                 "description_en": "Specifies whether the Fusion engine acceleration is enabled",
@@ -294,7 +304,7 @@
               "jobDriver": {
                 "$ref": "#/components/schemas/JobDriver",
                 "backendName": "jobDriver",
-                "description_en": "The Spark Driver information",
+                "description_en": "The information about the Spark driver",
                 "description_zh": "Spark Driver相关信息"
               },
               "jobRunId": {
@@ -309,12 +319,12 @@
               "log": {
                 "$ref": "#/components/schemas/RunLog",
                 "backendName": "runLog",
-                "description_en": "The path of the run log",
+                "description_en": "The execution log path",
                 "description_zh": "运行日志路径"
               },
               "name": {
                 "backendName": "runName",
-                "description_en": "The job name",
+                "description_en": "The job run name",
                 "description_zh": "任务名称",
                 "example": "jobName",
                 "title_en": "作业实例名称。",
@@ -323,7 +333,7 @@
               },
               "notebookAccessUrl": {
                 "backendName": "notebookAccessUrl",
-                "description_en": "The download URL of the NOTEBOOK file. This parameter is returned only if the job type is NOTEBOOK",
+                "description_en": "The download URL of the notebook file. This parameter is returned only when the job type is NOTEBOOK",
                 "description_zh": "如果Job类型为NOTEBOOK，此参数返回NOTEBOOK文件的下载链接",
                 "example": "http://workflow-ide-cn-hangzhou.oss-cn-hangzhou.aliyuncs.com/spark-notebook-output/w-xxxxxxxxx/xxxxxxx",
                 "title_en": "如果Job类型为NOTEBOOK，此参数返回NOTEBOOK文件的下载链接",
@@ -332,7 +342,7 @@
               },
               "priority": {
                 "backendName": "priority",
-                "description_en": "The job priority",
+                "description_en": "The priority of the job run",
                 "description_zh": "任务优先级",
                 "example": "5",
                 "title_en": "任务优先级。",
@@ -341,14 +351,14 @@
               },
               "releaseVersion": {
                 "backendName": "releaseVersion",
-                "description_en": "The Spark DPI engine version used to run the node",
+                "description_en": "The database engine version of the Spark DPI engine for the node",
                 "description_zh": "运行任务的Spark引擎版本",
                 "example": "esr-3.3.1",
                 "type": "string"
               },
               "resourceOwnerId": {
                 "backendName": "creator",
-                "description_en": "The UID of the user who created the job",
+                "description_en": "The UID of the user who created the job run",
                 "description_zh": "创建用户UID",
                 "example": "150978934701****",
                 "title_en": "创建用户Uid。",
@@ -357,14 +367,34 @@
               },
               "resourceQueueId": {
                 "backendName": "resourceQueueId",
-                "description_en": "The name of the queue used to run the job",
+                "description_en": "The name of the resource queue for the job run",
                 "description_zh": "运行任务的队列名称",
                 "example": "root_queue",
                 "type": "string"
               },
+              "resourceStartupDurationMs": {
+                "backendName": "resourceStartupDurationMs",
+                "description_en": "The resource startup duration in milliseconds, which is calculated by subtracting the first submission time from the resource ready time. If the first submission time or the resource ready time is missing, or if the calculation result is negative, null is returned instead of 0",
+                "description_zh": "资源启动时长，单位毫秒，等于资源就绪时间减去首次提交时间。首次提交时间或资源就绪时间缺失、或计算结果为负时返回 null，不会返回 0",
+                "example": "60000",
+                "format": "int64",
+                "title_en": "资源启动时长",
+                "title_zh": "资源启动时长",
+                "type": "integer"
+              },
+              "runDurationMs": {
+                "backendName": "runDurationMs",
+                "description_en": "The job run duration in milliseconds, which is calculated by subtracting the resource ready time from the job end time. If the job has not ended, the current time is used. If the resource ready time is missing or the calculation result is negative, null is returned instead of 0",
+                "description_zh": "任务运行时长，单位毫秒，等于作业结束时间（未结束时取当前时间）减去资源就绪时间。资源就绪时间缺失、或计算结果为负时返回 null，不会返回 0",
+                "example": "120000",
+                "format": "int64",
+                "title_en": "任务运行时长",
+                "title_zh": "任务运行时长",
+                "type": "integer"
+              },
               "state": {
                 "backendName": "runState",
-                "description_en": "The job status",
+                "description_en": "The state of the job run",
                 "description_zh": "任务状态",
                 "example": "Running",
                 "title_en": "作业状态。",
@@ -373,7 +403,7 @@
               },
               "stateChangeReason": {
                 "backendName": "stateChangeReason",
-                "description_en": "The reason for the status change",
+                "description_en": "The reason for the state change",
                 "description_zh": "状态变化原因",
                 "properties": {
                   "code": {
@@ -395,7 +425,7 @@
               },
               "submitTime": {
                 "backendName": "submitTime",
-                "description_en": "The job submission time. The value is a Unix timestamp in milliseconds",
+                "description_en": "The submission time of the job run. The value is a UNIX timestamp in milliseconds",
                 "description_zh": "任务提交时间。采用 Unix 时间戳，单位为毫秒",
                 "example": "1684119314000",
                 "format": "int64",
@@ -405,7 +435,7 @@
               },
               "tags": {
                 "backendName": "tags",
-                "description_en": "The tag list",
+                "description_en": "The list of tags",
                 "description_zh": "标签列表",
                 "itemName": "Tag",
                 "items": {
@@ -419,11 +449,11 @@
               },
               "tokenDetails": {
                 "backendName": "tokenDetails",
-                "description_en": "The details of token consumption",
+                "description_en": "The details of the tokens consumed",
                 "description_zh": "消耗的Token数量详细信息",
                 "itemName": "tokenDetails",
                 "items": {
-                  "description_en": "The details of token consumption",
+                  "description_en": "The details of the tokens consumed",
                   "description_zh": "消耗的Token数量详细信息",
                   "properties": {
                     "enableThinking": {
@@ -464,7 +494,7 @@
                     },
                     "tokenSource": {
                       "backendName": "tokenSource",
-                      "description_en": "The token source. Valid values: input and output",
+                      "description_en": "The source of the tokens, such as input or output",
                       "description_zh": "Token来源，input/output",
                       "example": "input",
                       "title_en": "Token来源，input/output。",
@@ -502,7 +532,7 @@
               },
               "webUI": {
                 "backendName": "webUI",
-                "description_en": "The web UI of the job",
+                "description_en": "The Web UI of the job run",
                 "description_zh": "作业Web UI",
                 "example": "http://spark-ui",
                 "title_en": "作业web ui。",
