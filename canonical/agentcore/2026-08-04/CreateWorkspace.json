@@ -3,7 +3,7 @@
   "cmd_full_name": "agentcore create-workspace",
   "cmd_name": "create-workspace",
   "deprecated": false,
-  "description_en": "Creates an AgentCore workspace as a resource scope for organizing agents, models, MCP services, and collaboration configurations",
+  "description_en": "Creates an AgentCore workspace as a resource scope to organize agents, models, MCP services, and collaboration configurations",
   "description_zh": "创建 AgentCore 工作空间，作为组织 Agent、模型、MCP 服务和协作配置的资源范围",
   "kebab_example": "aliyun agentcore create-workspace --biz-body '{\"networkConfiguration\":{\"publicEgressEnabled\":true,\"vpc\":{\"vpcId\":\"vpc-bp1234567890\",\"vSwitchIds\":[\"vsw-bp1234567890\"],\"enabled\":true},\"publicIngressEnabled\":true},\"cmsWorkspace\":\"my-cms-workspace\",\"name\":\"production-agents\",\"storageType\":\"PRIVATE\",\"agentSpace\":\"my-agent-space\"}' --client-token workspace-create-20260805-001 --region cn-hangzhou",
   "method": "POST",
@@ -26,7 +26,7 @@
       "fields": [
         {
           "example": "my-agent-space",
-          "help_en": "If this parameter is specified, the workspace is directly bound to the specified AgentSpace, and a new one is not created. The CMS workspace to which it belongs is determined by the server reverse lookup result, and CmsWorkspace does not need to be verified. When the workspace is deleted, it is only unbound, and the AgentSpace is not deleted. The value must match the current account and region, and the associated CMS workspace must be found through reverse lookup. Otherwise, InvalidParameter is returned",
+          "help_en": "If specified, the workspace is directly bound to this AgentSpace, and a new one is not created. The CMS workspace to which it belongs is determined by the server reverse lookup result, and CmsWorkspace does not need to be verified. When the workspace is deleted, it is only unbound, and the AgentSpace is not deleted. It must match the current account and region, and the associated CMS workspace must be found through reverse lookup. Otherwise, InvalidParameter is returned",
           "help_zh": "传入后工作空间将直接绑定该 AgentSpace（不再新建），其所属的 CMS 工作空间以服务端反查结果为准，此时无需校验 CmsWorkspace。工作空间删除时仅解除绑定，不会删除该 AgentSpace。必须与当前账号和地域匹配，且反查得到所属 CMS 工作空间，否则返回 InvalidParameter",
           "name": "agent_space",
           "options": [
@@ -38,7 +38,7 @@
         },
         {
           "example": "my-cms-workspace",
-          "help_en": "If this parameter is specified, the workspace is bound to the specified CMS workspace, and the platform does not create a new one. When the workspace is deleted, it is only unbound, and the CMS workspace is not deleted. The value must match the current account and region. Otherwise, InvalidParameter is returned",
+          "help_en": "If specified, the workspace is bound to this CMS workspace, and the platform does not create a new one. When the workspace is deleted, it is only unbound, and the CMS workspace is not deleted. The CMS workspace must match the current account and region. Otherwise, InvalidParameter is returned",
           "help_zh": "传入后工作空间将绑定该 CMS 工作空间，平台不再新建；工作空间删除时仅解除绑定，不会删除该 CMS 工作空间。必须与当前账号和地域匹配，否则返回 InvalidParameter",
           "name": "cms_workspace",
           "options": [
@@ -50,7 +50,7 @@
         },
         {
           "example": "production-agents",
-          "help_en": "The workspace name",
+          "help_en": "The name of the workspace",
           "help_zh": "工作空间名称",
           "name": "name",
           "options": [
@@ -64,7 +64,7 @@
           "fields": [
             {
               "example": "true",
-              "help_en": "Specifies whether to allow public egress access from the platform. If this parameter is not specified, the default value is true. This parameter only controls whether the latest versions of managed and custom agents use the public egress of the platform. It does not control fixed historical versions, model or MCP proxy egress, or the public egress of the user VPC",
+              "help_en": "Specifies whether to allow public egress access from the platform. Default value: true. This parameter only controls whether the latest versions of managed and custom agents use the public egress of the platform. It does not control fixed historical versions, model or MCP proxy egress, or the public egress of the user VPC",
               "help_zh": "未传时默认开启。仅控制托管及自定义 Agent 最新版本使用平台公网出口；不控制固定历史版本、模型/MCP 代理出口和用户 VPC 自身公网出口",
               "name": "public_egress_enabled",
               "options": [
@@ -76,7 +76,7 @@
             },
             {
               "example": "true",
-              "help_en": "Specifies whether to allow public ingress access. If this parameter is not specified, the default value is true. If this parameter is set to false, the public ingress of all agent endpoints in the workspace is disabled. If this parameter is set to true again, the original public ingress is restored. INNER_DIRECT and user VPC ingress are not affected. Collaboration and Element Web ingress are not controlled by this parameter. If this parameter is set to false, the workspace VPC must be enabled",
+              "help_en": "Specifies whether to allow public ingress access. Default value: true. If set to false, the public ingress for all agent endpoints in the workspace is disabled. If set back to true, the original public ingress is restored. INNER_DIRECT and user VPC ingress are not affected. Collaboration and Element Web ingress are not controlled by this parameter. If this parameter is set to false, the workspace VPC must be enabled",
               "help_zh": "未传时默认开启。关闭后工作空间内所有 Agent Endpoint 的公网入口关闭，重新开启后恢复原公网入口；INNER_DIRECT 和用户 VPC 入口不受影响，协作及 Element Web 入口不在控制范围内。设置为 false 时，工作空间 VPC 必须已启用",
               "name": "public_ingress_enabled",
               "options": [
@@ -149,12 +149,24 @@
           "type": "object"
         },
         {
+          "example": "{\"enabled\":false,\"minBlockRiskLevel\":\"medium\",\"maxSkipRatio\":0.8}",
+          "help_en": "The optional JSON string for the workspace skill security scan policy. If omitted, the existing compatibility behavior is maintained",
+          "help_zh": "可选的 Workspace Skill 安全扫描策略 JSON 字符串。省略时保持存量兼容行为",
+          "name": "scan_policy",
+          "options": [
+            "--scan-policy"
+          ],
+          "raw_name": "scanPolicy",
+          "required": false,
+          "type": "string"
+        },
+        {
           "enum": [
             "PLATFORM",
             "PRIVATE"
           ],
           "example": "PRIVATE",
-          "help_en": "The storage type of the workspace. PLATFORM indicates platform-managed storage, and PRIVATE indicates user private OSS storage",
+          "help_en": "The storage type of the workspace. PLATFORM indicates platform-managed storage. PRIVATE indicates user private OSS storage",
           "help_zh": "工作空间存储类型。PLATFORM 表示平台托管存储，PRIVATE 表示用户私有 OSS 存储",
           "name": "storage_type",
           "options": [
@@ -266,7 +278,7 @@
               },
               "createTime": {
                 "backendName": "createTime",
-                "description_en": "The time when the workspace was created. The time follows the ISO-8601 standard",
+                "description_en": "The time when the workspace was created. The time is displayed in the ISO 8601 format",
                 "description_zh": "工作空间创建时间，使用 ISO-8601 格式",
                 "example": "2026-08-28T10:00:00+08:00",
                 "required": true,
@@ -276,7 +288,7 @@
               },
               "name": {
                 "backendName": "name",
-                "description_en": "The workspace name",
+                "description_en": "The name of the workspace",
                 "description_zh": "工作空间名称",
                 "example": "production-agents",
                 "title_en": "工作空间名称",
@@ -290,7 +302,7 @@
                 "properties": {
                   "publicEgressEnabled": {
                     "backendName": "publicEgressEnabled",
-                    "description_en": "Returns the target configuration value. Updating indicates that the modification is still in progress, and UpdateFailed indicates that the current modification failed. This setting only controls whether the latest versions of managed and custom agents use the public network egress of the platform. It does not control fixed historical versions, model or MCP proxy egresses, or the public network egress of the user VPC",
+                    "description_en": "Returns the target configuration value. Updating indicates that the change is still being executed, and UpdateFailed indicates that the current change failed. This parameter only controls the use of the platform public egress for the latest versions of managed and custom agents. It does not control fixed historical versions, model or MCP proxy egress, or the public egress of the user VPC",
                     "description_zh": "返回配置目标值；Updating 表示变更仍在执行，UpdateFailed 表示本轮变更失败。仅控制托管及自定义 Agent 最新版本使用平台公网出口；不控制固定历史版本、模型/MCP 代理出口和用户 VPC 自身公网出口",
                     "example": "true",
                     "title_en": "是否允许平台公网出访问",
@@ -299,7 +311,7 @@
                   },
                   "publicIngressEnabled": {
                     "backendName": "publicIngressEnabled",
-                    "description_en": "Returns the target configuration value. Updating indicates that the modification is in progress, and UpdateFailed indicates that the modification failed. After this setting is disabled, the public network ingress for all agent endpoints in the workspace is closed, and the original public network ingress is restored after it is re-enabled. INNER_DIRECT and user VPC ingress are not affected. Collaboration and Element Web ingress are not controlled by this setting",
+                    "description_en": "Returns the target configuration value. Updating indicates that the change is in progress, and UpdateFailed indicates that the change failed. When disabled, the public ingress for all agent endpoints in the workspace is closed, and the original public ingress is restored when re-enabled. INNER_DIRECT and user VPC ingress are not affected. Collaboration and Element Web ingress are not controlled by this parameter",
                     "description_zh": "返回配置目标值；Updating 表示变更中，UpdateFailed 表示变更失败。关闭后工作空间内所有 Agent Endpoint 的公网入口关闭，重新开启后恢复原公网入口；INNER_DIRECT 和用户 VPC 入口不受影响，协作及 Element Web 入口不在控制范围内",
                     "example": "true",
                     "title_en": "是否允许公网入访问",
@@ -322,7 +334,7 @@
                       },
                       "vSwitchIds": {
                         "backendName": "vSwitchIds",
-                        "description_en": "The list of vSwitch IDs",
+                        "description_en": "The vSwitch IDs",
                         "description_zh": "交换机 ID 列表",
                         "itemName": "vSwitchIds",
                         "items": {
@@ -461,7 +473,7 @@
               },
               "tenantId": {
                 "backendName": "tenantId",
-                "description_en": "The ID of the tenant",
+                "description_en": "The tenant ID",
                 "description_zh": "所属租户 ID",
                 "example": "tenant-123456",
                 "title_en": "所属租户 ID",
