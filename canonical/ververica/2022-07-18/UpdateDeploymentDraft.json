@@ -466,7 +466,7 @@
     }
   },
   "deprecated": false,
-  "description_en": "Updates the draft of an SQL or data ingestion job",
+  "description_en": "Updates an SQL or data ingestion job draft",
   "description_zh": "更新SQL、数据摄入作业草稿",
   "kebab_example": "aliyun ververica update-deployment-draft --workspace 'edcef******b4f' --namespace default-namespace --deployment-draft-id '00000000-0000-0000-0000-00000012****' --name test-draft --parent-id '00000000-0000-0000-0000-00000013****' --referenced-deployment-id '00000000-0000-0000-0000-0000012312****' --execution-mode STREAMING --artifact '{\"sqlArtifact\":{\"additionalDependencies\":[\"https://oss/bucket/addition.jar\"],\"sqlScript\":\"CREATE TEMPORARY TABLE datagen_source(   name VARCHAR ) WITH (   '\"'\"'connector'\"'\"' = '\"'\"'datagen'\"'\"' ); CREATE TEMPORARY TABLE blackhole_sink(   name  VARCHAR ) with (   '\"'\"'connector'\"'\"' = '\"'\"'blackhole'\"'\"' ); INSERT INTO blackhole_sink SELECT name from datagen_source;\"},\"jarArtifact\":{\"mainArgs\":\"start from main\",\"additionalDependencies\":[\"https://oss/bucket/addition.jar\"],\"entryClass\":\"org.apapche.flink.test\",\"jarUri\":\"https://oss/bucket/test.jar\"},\"kind\":\"SQLSCRIPT\",\"pythonArtifact\":{\"mainArgs\":\"start from main\",\"pythonArtifactUri\":\"https://oss/bucket/test.py\",\"additionalPythonLibraries\":[\"https://oss/bucket/additionlib.py\"],\"additionalDependencies\":[\"https://oss/bucket/addition.py\"],\"additionalPythonArchives\":[\"https://oss/bucket/additionArchives.zip\"],\"entryModule\":\"test.py\"},\"cdcYamlArtifact\":{\"cdcYaml\":\"source:\\n  type: mysql\\n  name: MySQL Source\\n  host: localhost\\n  port: 3306\\n  username: admin\\n  password: <yourPassword>\\n  tables: mydb.orders\\nsink:\\n  type: paimon\\n  name: Paimon Sink\\n  catalog.properties.metastore: filesystem\\n  catalog.properties.warehouse: /path/warehouse\",\"additionalDependencies\":[\"https://oss/bucket/addition.jar\"]}}' --engine-version vvr-6.0.7-flink-1.15 --local-variables name=test value=datagen --labels '{\"environment\":\"production\"}' --lock '{\"workspace\":\"a14bd5d90a****\",\"holderName\":\"userA\",\"namespace\":\"default-namespace\",\"id\":\"stt-fu1658tbk6mnkk2****\",\"holderId\":\"18389966****\"}' --creator '27846363877456****' --creator-name '****@streamcompute.onaliyun.com' --modifier '27846363877456****' --modifier-name '****@streamcompute.onaliyun.com' --created-at 1723537978 --modified-at 1723537978 --region cn-hangzhou",
   "method": "PATCH",
@@ -506,7 +506,7 @@
   "parameters": [
     {
       "example": "a14bd5d90a****",
-      "help_en": "The ID of the workspace",
+      "help_en": "The workspace ID",
       "help_zh": "工作空间ID",
       "location": "header",
       "name": "workspace",
@@ -519,7 +519,7 @@
     },
     {
       "example": "default-namespace",
-      "help_en": "The name of the namespace",
+      "help_en": "The namespace name",
       "help_zh": "项目空间名称",
       "location": "path",
       "name": "namespace",
@@ -532,7 +532,7 @@
     },
     {
       "example": "c84d73be-40ad-4627-8bdd-fa1eba51b234",
-      "help_en": "The ID of the job draft. You can get the ID by calling the ListDeploymentDrafts operation",
+      "help_en": "The ID of the job draft. You can call the ListDeploymentDrafts operation to query the ID",
       "help_zh": "作业草稿ID，可通过ListDeploymentDrafts接口获取",
       "location": "path",
       "name": "deployment_draft_id",
@@ -1092,18 +1092,18 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The updated job draft. This parameter is returned if \\`success\\` is \\`true\\`. If \\`success\\` is \\`false\\`, this parameter is empty",
+        "description_en": "If success is true, the created job is returned. If success is false, this value is null",
         "description_zh": "当success为true，返回创建的作业；当success为false，该值为空",
         "properties": {
           "data": {
             "$ref": "#/components/schemas/DeploymentDraft",
             "backendName": "data",
-            "description_en": "The resulting job draft",
+            "description_en": "The job draft result",
             "description_zh": "返回作业草稿结果"
           },
           "errorCode": {
             "backendName": "errorCode",
-            "description_en": "If the request fails, an error code is returned.\n\nIf the request is successful, this parameter is empty",
+            "description_en": "If success is false, the business error code is returned.\n \nIf success is true, a null value is returned",
             "description_zh": "当success为false，返回业务错误码。\n \n当success为true，返回空值",
             "example": "\"\"",
             "title_en": "当success为false时，该值不为空，表示业务错误码；当success为true时，该值为空。",
@@ -1112,7 +1112,7 @@
           },
           "errorMessage": {
             "backendName": "errorMessage",
-            "description_en": "If the request fails, an error message is returned.\n\nIf the request is successful, this parameter is empty",
+            "description_en": "If success is false, the business error message is returned.\n\nIf success is true, a null value is returned",
             "description_zh": "当success为false，返回业务错误信息。\n\n当success为true，返回空值",
             "example": "\"\"",
             "title_en": "当success为false时，该值不为空，表示业务错误信息；当success为true时，该值为空。",
@@ -1121,7 +1121,7 @@
           },
           "httpCode": {
             "backendName": "httpCode",
-            "description_en": "The HTTP status code. A value other than 200 indicates that the request failed",
+            "description_en": "The business status code. If the value is not empty and is not 200, the business processing failed",
             "description_zh": "业务成功与否。如果非空且不是200，那么表示业务处理失败",
             "example": "200",
             "format": "int32",
@@ -1140,7 +1140,7 @@
           },
           "success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful",
+            "description_en": "Indicates whether the business request is successful",
             "description_zh": "表示业务请求是否成功",
             "example": "True",
             "title_en": "表示业务请求是否成功。",
@@ -1156,7 +1156,7 @@
   },
   "v1_body_parameters": [
     {
-      "help_en": "The information to update the job draft",
+      "help_en": "The job draft information to update",
       "help_zh": "更新作业草稿信息",
       "name": "body",
       "param_style": "json",
