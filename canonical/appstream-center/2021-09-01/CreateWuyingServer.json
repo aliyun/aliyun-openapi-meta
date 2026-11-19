@@ -23,7 +23,7 @@
   "parameters": [
     {
       "example": "exampleServerName",
-      "help_en": "The name of the workstation. When you create multiple workstations, a numeric suffix is automatically added",
+      "help_en": "The name of the workstation. When multiple workstations are created, a numeric suffix is automatically added",
       "help_zh": "工作站名称，创建多台时自动增加数字后缀",
       "location": "formData",
       "name": "wuying_server_name",
@@ -36,8 +36,8 @@
     },
     {
       "example": "1",
-      "help_en": "The number of workstations",
-      "help_zh": "数量",
+      "help_en": "The number of workstations to create. Default value: 1. Valid values: 1 to 100",
+      "help_zh": "创建工作站的数量，默认值为 `1`。取值范围：1～100",
       "location": "formData",
       "name": "amount",
       "options": [
@@ -49,8 +49,8 @@
     },
     {
       "example": "eds.proworkstation_flagship_elite_ne.96c384g.192g4x",
-      "help_en": "The instance type of the workstation",
-      "help_zh": "工作站规格",
+      "help_en": "The workstation specification. This parameter is required. If this parameter is not specified, InvalidParameter.serverInstanceType is returned.\n\nYou can call [ListNodeInstanceType](~~ListNodeInstanceType~~) to query the specifications available for purchase in the target region and confirm that the specification supports the selected billing method",
+      "help_zh": "工作站规格。必须提供。 未提供时返回 `InvalidParameter.serverInstanceType`。\n\n可调用 [ListNodeInstanceType](~~ListNodeInstanceType~~) 查询目标地域可购买的规格，并确认其支持所选付费方式",
       "location": "formData",
       "name": "server_instance_type",
       "options": [
@@ -62,8 +62,8 @@
     },
     {
       "example": "100",
-      "help_en": "The size of the system cloud disk. Unit: GB",
-      "help_zh": "系统盘大小，单位GB",
+      "help_en": "The size of the system cloud disk. Unit: GiB. Default value: 200. The value must be a multiple of 10. The general validation range is 20 to 65536. The value must also meet the capacity limits of the selected cloud disk type and performance level.\n\nThe size of a basic cloud disk cannot exceed 2,000 GiB. The size of a standard SSD or ultra disk cannot exceed 32,768 GiB. If the system cloud disk capacity required by the selected image is greater than the requested value, the capacity required by the image is used during creation",
+      "help_zh": "系统盘大小，单位：GiB。默认值为 `200`。必须为 10 的整数倍，通用校验范围为 20～65536；还须满足所选云盘类型及性能等级的容量限制。\n\n普通云盘不超过 2000 GiB；SSD 云盘和高效云盘不超过 32768 GiB。若所选镜像要求的系统盘容量大于请求值，创建时会采用镜像要求的容量",
       "location": "formData",
       "name": "system_disk_size",
       "options": [
@@ -75,11 +75,15 @@
     },
     {
       "enum": [
-        "cloud_auto"
+        "cloud",
+        "cloud_auto",
+        "cloud_efficiency",
+        "cloud_essd",
+        "cloud_ssd"
       ],
       "example": "cloud_auto",
-      "help_en": "The category of the system cloud disk",
-      "help_zh": "系统盘类型",
+      "help_en": "The type of the system cloud disk. Default value: `cloud_auto`.\n\n`cloud`: basic cloud disk.\n`cloud_efficiency`: ultra disk.\n`cloud_ssd`: standard SSD.\n`cloud_essd`: ESSD.\n`cloud_auto`: ESSD AutoPL cloud disk.\n\nWhen you use `cloud_essd`, you must specify SystemDiskPerformanceLevel. The final availability is subject to the limits of the specification, region, and cloud disk capacity",
+      "help_zh": "系统盘类型，默认值为 `cloud_auto`。\n\n`cloud`：普通云盘。\n`cloud_efficiency`：高效云盘。\n`cloud_ssd`：SSD 云盘。\n`cloud_essd`：ESSD 云盘。\n`cloud_auto`：ESSD AutoPL 云盘。\n\n使用 `cloud_essd` 时必须提供 `SystemDiskPerformanceLevel`。最终可用性受规格、地域及云盘容量限制",
       "location": "formData",
       "name": "system_disk_category",
       "options": [
@@ -91,8 +95,8 @@
     },
     {
       "example": "PL0",
-      "help_en": "The performance level of the system cloud disk",
-      "help_zh": "系统盘性能等级",
+      "help_en": "The performance level of the ESSD system cloud disk. This parameter is required when SystemDiskCategory is set to cloud_essd.\n\nPL0: ESSD performance level 0.\nPL1: ESSD performance level 1.\nPL2: ESSD performance level 2.\nPL3: ESSD performance level 3.\n\nThe capacity must also meet the 10 GiB increment of the system cloud disk. PL0 and PL1 require at least 20 GiB. PL2 requires at least 470 GiB. PL3 requires at least 1,270 GiB",
+      "help_zh": "ESSD 系统盘性能等级，`SystemDiskCategory=cloud_essd` 时必填。\n\n`PL0`：ESSD 性能等级 0。\n`PL1`：ESSD 性能等级 1。\n`PL2`：ESSD 性能等级 2。\n`PL3`：ESSD 性能等级 3。\n\n容量还须满足系统盘的 10 GiB 步长：PL0、PL1 至少 20 GiB；PL2 至少 470 GiB；PL3 至少 1270 GiB",
       "location": "formData",
       "name": "system_disk_performance_level",
       "options": [
@@ -107,11 +111,15 @@
         "fields": [
           {
             "enum": [
-              "cloud_auto"
+              "cloud",
+              "cloud_auto",
+              "cloud_efficiency",
+              "cloud_essd",
+              "cloud_ssd"
             ],
             "example": "cloud_auto",
-            "help_en": "The category of the data cloud disk",
-            "help_zh": "数据盘类型",
+            "help_en": "The type of the data cloud disk.\n\n`cloud`: basic cloud disk.\n`cloud_efficiency`: ultra disk.\n`cloud_ssd`: standard SSD.\n`cloud_essd`: ESSD.\n`cloud_auto`: ESSD AutoPL cloud disk.\n\nIf this parameter is not specified, the default value `cloud` is used. The final availability is subject to the limits of the specification, region, and cloud disk capacity",
+            "help_zh": "数据盘类型。\n\n`cloud`：普通云盘。\n`cloud_efficiency`：高效云盘。\n`cloud_ssd`：SSD 云盘。\n`cloud_essd`：ESSD 云盘。\n`cloud_auto`：ESSD AutoPL 云盘。\n\n未提供时按 `cloud` 处理。最终可用性受规格、地域及云盘容量限制",
             "name": "data_disk_category",
             "options": [
               "--data-disk-category"
@@ -122,8 +130,8 @@
           },
           {
             "example": "PL0",
-            "help_en": "The performance level of the data cloud disk",
-            "help_zh": "数据盘性能等级",
+            "help_en": "The performance level of the ESSD data cloud disk. This parameter takes effect when `cloud_essd` is used. If this parameter is not specified, the default value `PL1` is used.\n\n`PL0`: ESSD performance level 0.\n`PL1`: ESSD performance level 1.\n`PL2`: ESSD performance level 2.\n`PL3`: ESSD performance level 3.\n\nBased on the 10 GiB step size of the data cloud disk, PL0 requires at least 10 GiB, PL1 requires at least 20 GiB, PL2 requires at least 470 GiB, and PL3 requires at least 1270 GiB",
+            "help_zh": "ESSD 数据盘性能等级，使用 `cloud_essd` 时生效。未填写时默认为 `PL1`。\n\n`PL0`：ESSD 性能等级 0。\n`PL1`：ESSD 性能等级 1。\n`PL2`：ESSD 性能等级 2。\n`PL3`：ESSD 性能等级 3。\n\n按数据盘的 10 GiB 步长，PL0 至少 10 GiB，PL1 至少 20 GiB，PL2 至少 470 GiB，PL3 至少 1270 GiB",
             "name": "data_disk_performance_level",
             "options": [
               "--data-disk-performance-level"
@@ -134,8 +142,8 @@
           },
           {
             "example": "100",
-            "help_en": "The size of the data cloud disk",
-            "help_zh": "数据盘大小",
+            "help_en": "The size of the data cloud disk. Unit: GiB. This parameter is required when you configure a data cloud disk. The value must be a positive integer and a multiple of 10, and cannot exceed 65,536.\n\nThe value must also fall within the capacity range of the selected cloud disk type. The size of a basic cloud disk cannot exceed 2,000 GiB. The size of a standard SSD or ultra disk ranges from 20 to 32,768 GiB. The size of an ESSD must also meet the minimum capacity requirement of the performance level",
+            "help_zh": "数据盘大小，单位：GiB。填写数据盘配置时必填，必须为正数且为 10 的整数倍，不超过 65536。\n\n还须符合所选云盘类型的容量范围：普通云盘不超过 2000 GiB；SSD 云盘和高效云盘为 20～32768 GiB；ESSD 云盘还须满足性能等级的最低容量要求",
             "name": "data_disk_size",
             "options": [
               "--data-disk-size"
@@ -147,8 +155,8 @@
         ],
         "type": "object"
       },
-      "help_en": "The list of data cloud disks",
-      "help_zh": "数据盘列表",
+      "help_en": "The list of data cloud disks. This parameter is optional. You can specify up to 16 data cloud disks, and the number cannot exceed the maximum number supported by the selected workstation specification. The data cloud disk types and performance levels in the same request must be the same. The capacity of each data cloud disk is validated separately",
+      "help_zh": "数据盘列表，可选。最多 16 块，且不能超过所选工作站规格支持的数量。同一次请求中的数据盘类型和性能等级必须一致；每块数据盘的容量分别校验",
       "location": "formData",
       "name": "data_disk",
       "options": [
@@ -161,8 +169,8 @@
     },
     {
       "example": "img-bp13mu****",
-      "help_en": "The image ID",
-      "help_zh": "镜像ID",
+      "help_en": "The ID of the workstation image. This parameter is required when you create a workstation by calling this operation. If this parameter is not specified, InvalidParameter.imageId is returned.\n\nYou can call [ListImage](~~ListImage~~) to obtain the image ID applicable to the target workstation",
+      "help_zh": "工作站镜像 ID。通过本接口创建工作站时必须提供。 未提供时返回 `InvalidParameter.imageId`。\n\n可调用 [ListImage](~~ListImage~~) 获取适用于目标工作站的镜像 ID",
       "location": "formData",
       "name": "image_id",
       "options": [
@@ -187,8 +195,8 @@
     },
     {
       "example": "cn-hangzhou+dir-643067****",
-      "help_en": "The office network ID",
-      "help_zh": "办公网络ID",
+      "help_en": "The ID of the office network. To specify an office network, specify the ID of an available office network for the current account in the target region.\n\nIf this parameter is not specified, the service attempts to reuse a valid office network configured for the current account in the region. If no reusable network is available, a default office network is created. If this process fails, the workstation creation fails.\n\nThe office network ID is different from the region ID and zone ID. You cannot use the zone ID returned by [ListZones](~~ListZones~~) as a substitute",
+      "help_zh": "办公网络 ID。如需指定办公网络，请填写当前账号在目标地域内可用的办公网络 ID。\n\n未传入时，服务会尝试复用当前账号在该地域已配置的有效办公网络；没有可复用网络时，会创建默认办公网络。该过程失败时，工作站创建失败。\n\n办公网络 ID 与地域 ID、可用区 ID 不同，不能使用 [ListZones](~~ListZones~~) 返回的可用区 ID 代替",
       "location": "formData",
       "name": "office_site_id",
       "options": [
@@ -200,8 +208,8 @@
     },
     {
       "example": "YourPassword123",
-      "help_en": "The logon password of the workstation",
-      "help_zh": "工作站登录密码",
+      "help_en": "The logon password of the workstation. This parameter is required when you create a workstation by calling this operation. If this parameter is not specified, InvalidParameter.password is returned.\n\nThe password must be 8 to 30 characters in length and must contain at least three of the following character types: uppercase letters, lowercase letters, digits, and special characters. Spaces, Chinese characters, backslashes, and double quotation marks are not supported. The supported special characters are:\n\n~~~text\n()`~!@#$%^&*-_+=|{}[]:;'<>,.?/\n~~~\n\nThe password of a Windows workstation cannot start with a forward slash /",
+      "help_zh": "工作站登录密码。通过本接口创建工作站时必须提供。 未提供时返回 `InvalidParameter.password`。\n\n长度为 8～30 个字符，须至少包含大写字母、小写字母、数字、特殊字符中的三类。不支持空格、中文、反斜线和双引号；支持的特殊字符为：\n\n~~~text\n()`~!@#$%^&*-_+=|{}[]:;'<>,.?/\n~~~\n\nWindows 工作站的密码不能以正斜线 `/` 开头",
       "location": "formData",
       "name": "password",
       "options": [
@@ -213,11 +221,12 @@
     },
     {
       "enum": [
+        "PostPaid",
         "PrePaid"
       ],
       "example": "PrePaid",
-      "help_en": "The billing method",
-      "help_zh": "付费类型",
+      "help_en": "The billing method. This parameter is required. If this parameter is not specified or an unrecognized value is specified, InvalidParameter.chargeType is returned.\n\n`PrePaid`: subscription. You must specify both Period and PeriodUnit, and use the matching SubPayType=prePaid.\n`PostPaid`: pay-as-you-go. The sub-billing method and specification must support the corresponding sales method",
+      "help_zh": "付费类型。必须提供。 未提供或传入无法识别的值时返回 `InvalidParameter.chargeType`。\n\n`PrePaid`：包年包月，必须同时提供 `Period` 和 `PeriodUnit`，并使用匹配的 `SubPayType=prePaid`。\n`PostPaid`：按量付费，子付费类型及规格必须支持相应售卖方式",
       "location": "formData",
       "name": "charge_type",
       "options": [
@@ -229,8 +238,8 @@
     },
     {
       "example": "1",
-      "help_en": "The subscription duration",
-      "help_zh": "购买时长",
+      "help_en": "The numeric part of the subscription duration, used together with PeriodUnit.\n\nThis parameter is required when ChargeType is set to PrePaid, and PeriodUnit must be specified at the same time. This parameter has no default value. If this parameter is not specified, InvalidParameter.period is returned (HTTP status code: 400). For example, Period=1 and PeriodUnit=Month indicate a subscription duration of one month.\n\nThe numeric value and unit are validated as a combination based on the request and are not automatically converted to other periods. The subscription duration must comply with the sales rules of the target workstation product. If the order validation determines that the combination exceeds the allowed range, OrderPeriod.Invalid is returned (HTTP status code: 400)",
+      "help_zh": "购买时长的数量部分，与 `PeriodUnit` 一起使用。\n\n当 `ChargeType=PrePaid` 时必填，且必须同时填写 `PeriodUnit`。本参数没有默认值。 未传入时返回 `InvalidParameter.period`（HTTP 状态码：400）。例如，`Period=1`、`PeriodUnit=Month` 表示购买 1 个月。\n\n数量与单位按请求组合进行校验，不会自动换算为其他周期。购买时长须符合目标工作站商品的售卖规则；订单校验判定该组合超出允许范围时，返回 `OrderPeriod.Invalid`（HTTP 状态码：400）",
       "location": "formData",
       "name": "period",
       "options": [
@@ -242,12 +251,15 @@
     },
     {
       "enum": [
+        "Day",
+        "Hour",
         "Month",
+        "Week",
         "Year"
       ],
       "example": "Month",
-      "help_en": "The unit of the subscription duration",
-      "help_zh": "时间单位",
+      "help_en": "The unit of the subscription duration, used together with Period.\n\nThis parameter is required when ChargeType is set to PrePaid, and Period must be specified at the same time. If this parameter is not specified or an unrecognized unit is specified, InvalidParameter.periodUnit is returned (HTTP status code: 400). The value is case-sensitive.\n\nThe following units are recognized by this operation:\n\n`Hour`: hour.\n`Day`: day.\n`Week`: week.\n`Month`: month.\n`Year`: year.\n\nThe actual combinations of units and numeric values that can be purchased must comply with the sales rules of the target workstation product. The fact that a unit is recognized does not mean that the combination can definitely be purchased",
+      "help_zh": "购买时长单位，与 `Period` 一起使用。\n\n当 `ChargeType=PrePaid` 时必填，且必须同时填写 `Period`。 未传入或传入无法识别的单位时返回 `InvalidParameter.periodUnit`（HTTP 状态码：400）。取值区分大小写。\n\n本接口可识别的单位如下：\n\n`Hour`：小时。\n`Day`：天。\n`Week`：周。\n`Month`：月。\n`Year`：年。\n\n实际可购买的单位与数量组合须符合目标工作站商品的售卖规则。单位可识别不代表该组合一定可以购买",
       "location": "formData",
       "name": "period_unit",
       "options": [
@@ -259,8 +271,8 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to enable automatic payment",
-      "help_zh": "自动支付",
+      "help_en": "Specifies whether to enable automatic payment. Default value: `false`.\n\n`true`: The system attempts to automatically pay the order when the order is placed.\n`false`: You must manually pay the order after it is created.\n\nA returned workstation ID does not indicate that the resource has been created. You must still confirm that the order payment is completed and query the workstation status",
+      "help_zh": "是否自动支付。默认值为 `false`。\n\n`true`：下单时尝试自动支付。\n`false`：创建订单后手动支付。\n\n返回工作站 ID 不代表资源已创建，仍需确认订单支付完成并查询工作站状态",
       "location": "formData",
       "name": "auto_pay",
       "options": [
@@ -272,8 +284,8 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to enable auto-renewal",
-      "help_zh": "自动续费",
+      "help_en": "Specifies whether to enable auto-renewal. Default value: `false`.\n\n`true`: Auto-renewal is enabled.\n`false`: Auto-renewal is not enabled.\n\nWhether this parameter can be configured depends on the sales rules of the selected billing method",
+      "help_zh": "是否自动续费。默认值为 `false`。\n\n`true`：请求开启自动续费。\n`false`：不开启自动续费。\n\n是否可设置取决于所选付费方式的售卖规则",
       "location": "formData",
       "name": "auto_renew",
       "options": [
@@ -285,7 +297,7 @@
     },
     {
       "example": "17440009****",
-      "help_en": "The promotion ID.\n\n\nIf PromotionId is specified, the system attempts to apply the corresponding discount",
+      "help_en": "The ID of the discount.\n\nIf PromotionId is specified, the system attempts to apply the corresponding discount",
       "help_zh": "折扣ID。\n\n\n如果设置了PromotionId，则会尝试应用相应的折扣优惠",
       "location": "formData",
       "name": "promotion_id",
@@ -314,8 +326,8 @@
     },
     {
       "example": "vnp-0b************gyw",
-      "help_en": "The virtual node pool ID",
-      "help_zh": "虚拟节点池ID",
+      "help_en": "The ID of the existing virtual node pool. This parameter is optional. If this parameter is specified, the node pool must exist and belong to the current account.\n\nThis operation associates the workstation with an existing node pool and does not create a node pool. If this parameter is not specified, this association is not established",
+      "help_zh": "已有虚拟节点池 ID，可选。提供时，节点池必须存在且属于当前账号。\n\n本接口将工作站与已有节点池关联，不会创建节点池。未提供时不建立该关联",
       "location": "formData",
       "name": "virtual_node_pool_id",
       "options": [
@@ -327,7 +339,7 @@
     },
     {
       "example": "DirectIp",
-      "help_en": "The network policy type. This feature is in invitational preview",
+      "help_en": "The type of the network policy (invitational preview)",
       "help_zh": "网络策略类型（邀测）",
       "location": "formData",
       "name": "network_strategy_type",
@@ -340,8 +352,8 @@
     },
     {
       "example": "10",
-      "help_en": "The bandwidth value. This parameter takes effect only when NetworkStrategyType is set to DirectIp. Unit: Mbit/s. Valid values: 2 to 100",
-      "help_zh": "带宽值，NetworkStrategyType为DirectIp有效，单位：Mbps，范围2～100",
+      "help_en": "The bandwidth. Unit: Mbit/s. If this parameter is specified, the value must be greater than 0 and cannot exceed 1000.\n\nThis parameter is required when NetworkStrategyType is set to DirectIp. The value must also meet the actual available configurations of the target region and office network",
+      "help_zh": "带宽，单位：Mbps。提供时必须大于 0 且不超过 1000。\n\n`NetworkStrategyType=DirectIp` 时必填。还须满足目标地域和办公网络的实际可用配置",
       "location": "formData",
       "maximum": "1000",
       "minimum": "2",
@@ -355,7 +367,7 @@
     },
     {
       "example": "6a1b8c3d",
-      "help_en": "The idempotence token that is used to ensure the uniqueness of the operation",
+      "help_en": "The idempotency token to ensure the uniqueness of the operation",
       "help_zh": "幂等性令牌，确保操作唯一性",
       "location": "formData",
       "name": "idempotence_token",
@@ -381,7 +393,7 @@
     },
     {
       "example": "spn-ce3f5b4fk**46CY",
-      "help_en": "The savings plan ID",
+      "help_en": "The ID of the savings plan",
       "help_zh": "节省计划ID",
       "location": "formData",
       "name": "saving_plan_id",
@@ -394,7 +406,7 @@
     },
     {
       "example": "grid19",
-      "help_en": "The version of the GPU driver, such as grid19",
+      "help_en": "The configuration version of the GPU driver, such as grid19",
       "help_zh": "GPU驱动配置版本，例如grid19",
       "location": "formData",
       "name": "gpu_driver_version",
@@ -407,7 +419,7 @@
     },
     {
       "example": "testhost",
-      "help_en": "The hostname. The hostname must meet the following requirements:\n\nThe hostname cannot start or end with a period (.) or a hyphen (-). The hostname cannot contain consecutive periods (.) or hyphens (-).\n\nFor a Windows workstation: The hostname must be 2 to 15 characters in length. It cannot contain periods (.) or consecutive hyphens (-), and cannot contain only digits. It can contain uppercase and lowercase letters, digits, and hyphens (-).\n\nFor a Linux workstation:\n\nThe hostname must be 2 to 64 characters in length. It can contain multiple periods (.). The string between two consecutive periods is a segment. Each segment can contain uppercase and lowercase letters, digits, and hyphens (-).\n\nYou can use the `${instance_id}` placeholder to pass the instance ID to the HostName parameter. For example, if you set HostName to `k8s-${instance_id}` and the created ECS instance ID is `i-123abc****`, the hostname of the instance is `k8s-i-123abc****`.\n\nWhen you create multiple workstations at a time, you can use the `name_prefix[begin_number,bits]name_suffix` naming format to name the workstations in a unified manner. For example, if you set HostName to `ecd-[1,4]-test`, the hostname of the first workstation is `ecd-0001-test`, the hostname of the second workstation is `ecd-0002-test`, and so on.\n\n`name_prefix`: the prefix of the hostname.\n\n`[begin_number,bits]`: the sequential number in the hostname.\n\n    - `begin_number`: the start number. Valid values: 0 to 999999. Default value: 0. If the specified value is invalid, the default value 0 is used.\n\n    - `bits`: the number of digits. Valid values: 1 to 6. Default value: 6. If the specified value is invalid, the default value 6 is used.\n\n`name_suffix`: the suffix of the hostname",
+      "help_en": "The hostname. The limits are as follows:\n\nA period (.) and a hyphen (-) cannot be used as the first or last character, and cannot be used consecutively.\n\nWindows workstation: The hostname must be 2 to 15 characters in length. Periods (.) are not supported. Hyphens cannot be used consecutively. The hostname cannot contain only digits. It can contain uppercase and lowercase letters, digits, and hyphens (-).\n\nLinux workstation:\n\nThe hostname must be 2 to 64 characters in length. Multiple periods (.) are supported. The string between two periods is a segment, and each segment can contain uppercase and lowercase letters, digits, and hyphens (-).\n\nYou can use the `${instance_id}` placeholder to write the instance ID into the HostName parameter. For example, if HostName is set to `k8s-${instance_id}` and the created ECS instance ID is `i-123abc****`, the hostname of the instance is `k8s-i-123abc****`.\n\nWhen you create multiple workstation instances at a time, you can use the `name_prefix[begin_number,bits]name_suffix` naming format to name the workstations uniformly. For example, if HostName is set to `ecd-[1,4]-test`, the hostname of the first workstation is `ecd-0001-test`, the hostname of the second workstation is `ecd-0002-test`, and so on.\n\n`name_prefix`: the prefix of the hostname.\n\n`[begin_number,bits]`: the sequential number in the hostname.\n\n    - `begin_number`: the starting number. Valid values: 0 to 999999. Default value: 0. If the value is invalid, it is set to 0.\n\n    - `bits`: the number of digits. Valid values: 1 to 6. Default value: 6. If the value is invalid, it is set to 6.\n\n`name_suffix`: the suffix of the hostname",
       "help_zh": "主机名称。限制说明如下：\n\n半角句号（.）和短划线（-）不能作为首尾字符，更不能连续使用。\n\nwindows工作站：字符长度为2~15，不支持半角句号（.），不能连续使用短划线，不能全是数字。允许包含大小写英文字母、数字和短划线（-）。\n\nLinux工作站：\n\n字符长度为2~64，支持多个半角句号（.），点之间为一段，每段允许包含大小写英文字母、数字和短划线（-）。\n\n支持通过占位符`${instance_id}`将实例ID 写入HostName参数。例如：`HostName=k8s-${instance_id}`，并且创建的 ECS 实例 ID 为`i-123abc****`，则该实例的主机名为`k8s-i-123abc****`。\n\n一次创建多台工作站实例时，可以使用`name_prefix[begin_number,bits]name_suffix`的命名格式为多台工作站统一命名。例如，设置Hostname 的取值为`ecd-[1,4]-test`，则第一台工作站主机名称为`ecd-0001-test`，第二台工作站主机名称为`ecd-0002-test`，依次类推。\n\n`name_prefix`：主机名称的前缀。\n\n`[begin_number,bits]`：主机名称中的有序数字。\n\n    - `begin_number`：起始数字，取值支持0~999999，默认值为 0，若取值非法也设置为0。\n\n    - `bits`：数字位数，取值支持1~6，默认值为 6，若取值非法也设置为6。\n\n`name_suffix`：主机名称的后缀",
       "location": "formData",
       "name": "host_name",
@@ -427,9 +439,9 @@
         "prePaid",
         "spot"
       ],
-      "example": "postPaid",
-      "help_en": "The sub-billing method",
-      "help_zh": "子付费类型",
+      "example": "prePaid",
+      "help_en": "The sub-billing method. This parameter must match ChargeType and the sales method of the target specification.\n\nBilling combinations for Enterprise Edition workstations:\n\nChargeType=PrePaid: Use prePaid, which indicates subscription. It cannot be combined with postPaid.\nChargeType=PostPaid: Usually use postPaid, which indicates pay-as-you-go. If you use spot for preemptible billing, you must also specify MaxPrice, and the target specification must support this method.\n\nIf this parameter is not specified, the default value for PrePaid is prePaid, and the default value for PostPaid is postPaid. Incompatible combinations may return InvalidOrder.CommodityCodeNotMatch.\n\nThe enum values are as follows. The actual availability is subject to the sales method of the target resource. You cannot arbitrarily combine different billing methods.\n\n`prePaid`: subscription.\n`postPaid`: pay-as-you-go.\n`spot`: preemptible.\n`duration`: duration plan.\n`mau`: pay-as-you-go based on monthly active users (MAU).\n`monthPackage`: monthly plan",
+      "help_zh": "子付费类型，需要与 `ChargeType` 及目标规格的售卖方式匹配。\n\n企业版工作站的付费组合：\n\n`ChargeType=PrePaid`：使用 `prePaid`，表示包年包月；不能搭配 `postPaid`。\n`ChargeType=PostPaid`：通常使用 `postPaid`，表示按量付费；使用 `spot` 抢占式付费时，还必须提供 `MaxPrice`，且目标规格须支持该方式。\n\n不传时，`PrePaid` 对应默认值 `prePaid`，`PostPaid` 对应默认值 `postPaid`。不兼容的组合可能返回 `InvalidOrder.CommodityCodeNotMatch`。\n\n枚举含义如下；具体是否可用以目标资源的售卖方式为准，不能在不同付费类型间任意组合。\n\n`prePaid`：包年包月。\n`postPaid`：按量付费。\n`spot`：抢占式付费。\n`duration`：时长包。\n`mau`：按月活跃用户数量后付费。\n`monthPackage`：按月购买",
       "location": "formData",
       "name": "sub_pay_type",
       "options": [
@@ -441,8 +453,8 @@
     },
     {
       "example": "0.05",
-      "help_en": "The maximum price",
-      "help_zh": "最高价格",
+      "help_en": "The maximum bid price for a preemptible workstation. This parameter is required when ChargeType is set to PostPaid and SubPayType is set to spot. If this parameter is not specified, InvalidParameter.maxPrice is returned. Whether the workstation can be purchased depends on the preemptible sales rules of the target specification",
+      "help_zh": "抢占式工作站的出价上限。`ChargeType=PostPaid` 且 `SubPayType=spot` 时必填，未提供时返回 `InvalidParameter.maxPrice`。最终是否可购买取决于目标规格的抢占式售卖规则",
       "location": "formData",
       "name": "max_price",
       "options": [
@@ -454,8 +466,8 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to enable dedicated eRDMA network interfaces",
-      "help_zh": "Specifies whether to enable dedicated eRDMA network interfaces",
+      "help_en": "Specifies whether to enable the dedicated eRDMA NIC.\n\n`true`: Enabled.\n`false`: Disabled",
+      "help_zh": "是否启用专用 eRDMA 网卡。\n\n`true`：启用。\n`false`：不启用",
       "location": "formData",
       "name": "erdma_enabled",
       "options": [
@@ -482,18 +494,18 @@
             "properties": {
               "OrderId": {
                 "backendName": "orderId",
-                "description_en": "The order ID",
+                "description_en": "The ID of the order",
                 "description_zh": "订单ID",
                 "example": "23429322113****",
                 "type": "string"
               },
               "WuyingServerIdList": {
                 "backendName": "wuyingServerIdList",
-                "description_en": "The list of workstation IDs",
-                "description_zh": "工作站ID列表",
+                "description_en": "The list of workstation IDs.\n\nIf AutoPay is set to false and the order is unpaid, these IDs are the workstation IDs pre-allocated for the order. The actual workstations have not been created, and you cannot use these IDs to perform deletion or other resource operations. Pay the order corresponding to the returned OrderId first, and then call [ListWuyingServer](~~ListWuyingServer~~) to confirm that the workstations have been created and check their current status",
+                "description_zh": "工作站 ID 列表。\n\n当 `AutoPay=false` 且订单尚未支付时，这些 ID 为订单预分配的工作站 ID，实际工作站尚未创建，不能据此执行删除或其他资源操作。 请先支付返回的 `OrderId` 对应订单，再调用 [ListWuyingServer](~~ListWuyingServer~~) 确认工作站已创建及其当前状态",
                 "itemName": "wuyingServerIdList",
                 "items": {
-                  "description_en": "The workstation ID",
+                  "description_en": "The ID of the workstation",
                   "description_zh": "工作站ID",
                   "example": "ws-0byd****2lwi",
                   "type": "string"
@@ -505,7 +517,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID",
+            "description_en": "The ID of the request",
             "description_zh": "请求ID",
             "example": "1CBAFFAB-B697-4049-A9B1-67E1FC5F****",
             "title_en": "Id of the request",

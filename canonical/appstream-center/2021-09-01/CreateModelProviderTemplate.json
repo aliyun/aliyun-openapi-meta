@@ -2,7 +2,7 @@
   "cmd_full_name": "appstream-center create-model-provider-template",
   "cmd_name": "create-model-provider-template",
   "deprecated": false,
-  "description_en": "Creates a provider template for model creation",
+  "description_en": "Creates a model creation provider template",
   "description_zh": "创建模型提供商模板",
   "kebab_example": "aliyun appstream-center create-model-provider-template --biz-type 1 --agent-provider OpenClaw --model-template-id mt-xxxx --provider-name bailian --config '{\"api\":\"openai-completions\",\"apiKey\":\"REDACTED_API_KEY\",\"baseUrl\":\"https://dashscope.aliyuncs.com/compatible-mode/v1\"}' --api-version 2021-09-01 --region cn-hangzhou",
   "method": "POST",
@@ -24,8 +24,8 @@
         "1"
       ],
       "example": "1",
-      "help_en": "The business type",
-      "help_zh": "业务类型",
+      "help_en": "The business type, which is used to identify the business to which the model provider template belongs. Set this parameter to `1` for Enterprise Edition. This operation does not provide a default value for this parameter",
+      "help_zh": "业务类型，用于标识模型服务商模板所属业务。企业版传入 `1`；本接口不会为该参数补充默认值",
       "location": "query",
       "name": "biz_type",
       "options": [
@@ -37,12 +37,18 @@
     },
     {
       "enum": [
+        "AGENTIC_COMPUTER",
+        "COMMON",
         "ENTERPRISE",
-        "ENTERPRISE_JVS"
+        "ENTERPRISE_AGENTIC_COMPUTER",
+        "ENTERPRISE_JVS",
+        "ENTERPRISE_SEAT",
+        "FIXED_API_KEY",
+        "JVS"
       ],
       "example": "ENTERPRISE",
-      "help_en": "The agent platform",
-      "help_zh": "Agent平台",
+      "help_en": "The business platform to which the agent belongs. This value must be consistent with the target model group. If this parameter is not provided or an unrecognized value is passed, `ENTERPRISE` is used.\n\nValid values:\n\n`COMMON`: common model group\n`JVS`: JVS Claw business\n`ENTERPRISE`: Enterprise Edition business\n`ENTERPRISE_JVS`: Enterprise Edition JVS Computer business\n`ENTERPRISE_SEAT`: Enterprise Edition seat business\n`ENTERPRISE_AGENTIC_COMPUTER`: AI cloud computer business\n`AGENTIC_COMPUTER`: Agentic Computer business\n`FIXED_API_KEY`: fixed API key call business\n\nThe platform identifier does not automatically supplement the configuration capabilities or system templates for the corresponding agent",
+      "help_zh": "Agent 所属业务平台，应与目标模型分组一致。未提供或传入无法识别的值时，使用 `ENTERPRISE`。\n\n可识别值：\n\n`COMMON`：通用模型分组。\n`JVS`：JVS Claw 业务。\n`ENTERPRISE`：企业版业务。\n`ENTERPRISE_JVS`：企业版 JVS Computer 业务。\n`ENTERPRISE_SEAT`：企业版席位业务。\n`ENTERPRISE_AGENTIC_COMPUTER`：AI 云电脑业务。\n`AGENTIC_COMPUTER`：Agentic Computer 业务。\n`FIXED_API_KEY`：固定 API Key 调用业务。\n\n平台标识不会自动补充对应 Agent 的配置能力或系统模板",
       "location": "query",
       "name": "agent_platform",
       "options": [
@@ -54,11 +60,14 @@
     },
     {
       "enum": [
+        "AgenticComputer",
+        "Common",
+        "HermesAgent",
         "OpenClaw"
       ],
       "example": "OpenClaw",
-      "help_en": "The name of the agent provider",
-      "help_zh": "Agent 提供商名称",
+      "help_en": "The agent type, which must be consistent with the target model group.\n\nWhen you create a custom or managed model connection configuration, the following types are supported:\n\n`OpenClaw`: OpenClaw agent\n`HermesAgent`: Hermes agent\n`AgenticComputer`: Agentic Computer agent\n`Common`: common model group\n\nThe provider configuration for `Common` uses the same field format as `OpenClaw`. The presence of an agent name in other businesses does not mean that this operation supports its model connection configuration",
+      "help_zh": "Agent 类型，应与目标模型分组一致。\n\n创建自定义或托管模型连接配置时，支持以下类型：\n\n`OpenClaw`：OpenClaw 智能体。\n`HermesAgent`：Hermes 智能体。\n`AgenticComputer`：Agentic Computer 智能体。\n`Common`：通用模型分组。\n\n`Common` 的服务商配置采用与 `OpenClaw` 相同的字段格式。不能仅因其他业务中出现某个 Agent 名称，就认为本接口支持其模型连接配置",
       "location": "query",
       "name": "agent_provider",
       "options": [
@@ -83,8 +92,8 @@
     },
     {
       "example": "bailian",
-      "help_en": "The name of the model provider. The name must be unique within the same model template. The naming rules vary based on the ProviderType. For more information, see the description of ProviderType",
-      "help_zh": "模型服务商名称。同一模型模板下不可重复。命名规则因 ProviderType 而异，详见 ProviderType 说明",
+      "help_en": "The name of the model provider. The name must be unique within the same model group.\n\nIf `ProviderType` is `WuyingPlan`, set this parameter to `wuying-plan`.\nIf `ProviderType` is `WuyingCredit`, set this parameter to `wuying-credit`.\nIf `ProviderType` is `Custom`, the name must start with `provider-`.\nIf `ProviderType` is `Managed`, use one of the following provider names. `OpenClaw`, `AgenticComputer`, and `Common` use the values in the list. `HermesAgent` uses the names with the `wuying-` prefix, such as `wuying-bailian`.\n\n`bailian`: Alibaba Cloud Bailian\n`moonshot`: Moonshot\n`siliconflow`: SiliconFlow\n`bailian-coding`: Alibaba Cloud Bailian Coding Plan\n`bailian-token-plan`: Alibaba Cloud Bailian Token Plan\n`kimi-coding`: Kimi Coding Plan\n`zhipu`: Zhipu AI\n`zhipu-coding`: Zhipu AI Coding Plan\n`minimax-token-plan`: MiniMax Token Plan\n\nWhether the provider can be created also depends on whether the corresponding service endpoint and business configuration are available",
+      "help_zh": "模型服务商名称。同一模型分组下不可重复。\n\n`ProviderType=WuyingPlan`：填写 `wuying-plan`。\n`ProviderType=WuyingCredit`：填写 `wuying-credit`。\n`ProviderType=Custom`：名称必须以 `provider-` 开头。\n`ProviderType=Managed`：使用下列服务商名称。`OpenClaw`、`AgenticComputer` 和 `Common` 使用列表中的值；`HermesAgent` 使用加上 `wuying-` 前缀后的名称，例如 `wuying-bailian`。\n\n`bailian`：阿里云百炼。\n`moonshot`：月之暗面。\n`siliconflow`：硅基流动。\n`bailian-coding`：阿里云百炼 Coding Plan。\n`bailian-token-plan`：阿里云百炼 Token Plan。\n`kimi-coding`：Kimi Coding Plan。\n`zhipu`：智谱 AI。\n`zhipu-coding`：智谱 AI Coding Plan。\n`minimax-token-plan`：MiniMax Token Plan。\n\n是否可创建还取决于对应服务地址及业务配置是否可用",
       "location": "query",
       "name": "provider_name",
       "options": [
@@ -98,11 +107,12 @@
       "enum": [
         "Custom",
         "Managed",
-        "WuyingCredit"
+        "WuyingCredit",
+        "WuyingPlan"
       ],
       "example": "Managed",
-      "help_en": "The type of the model provider. Different types have different constraints on ProviderName and Config:\nWuyingCredit: Wuying credit package. The ProviderName must be wuying-credit. The template is created by copying from a system template, and Config is not required.\nManaged: Managed provider. System-reserved names such as wuying-credit cannot be used, and Config is required.\nCustom: Custom provider. The ProviderName must start with the provider- prefix, and Config is required",
-      "help_zh": "模型服务商类型。不同类型对 ProviderName 和 Config 有不同约束：\nWuyingCredit：无影积分包，ProviderName 必须为 wuying-credit，从系统模板复制创建，无需传入 Config\nManaged：托管服务商，不可使用 wuying-credit 等系统保留名称，需传入 Config\nCustom：用户自定义服务商，ProviderName 必须以 provider- 前缀开头，需传入 Config",
+      "help_en": "The access type of the model provider. We recommend that you explicitly pass this parameter. The value is case-sensitive.\n\n`WuyingPlan`: Wuying plan model. `ProviderName` must be `wuying-plan`. The configuration is copied from the system template applicable to the current business and agent type. You do not need to provide `Config`.\n`WuyingCredit`: Wuying credit package model. `ProviderName` must be `wuying-credit`. The configuration is copied from the system template. You do not need to provide `Config`. Set `EnableWuyingProxy` to `true`.\n`Managed`: third-party model provider managed by the platform. You must provide `Config`, and the `ProviderName` and service endpoint must fall within the supported scope of the selected agent.\n`Custom`: custom model provider. `ProviderName` must start with `provider-`. You must provide `Config`.\n\n`WuyingPlan` and `WuyingCredit` rely on the corresponding system templates being configured. If no template is found, `ModelProviderTemplate.NotFound` is returned. If this parameter is not provided, the preceding plan or credit package configuration is not automatically adopted.\n\n`WuyingPreset` indicates the system-preset intelligent models in the common model group. Do not mistake it for the template copying method of `WuyingPlan` or `WuyingCredit`",
+      "help_zh": "模型服务商接入类型。建议显式传入，取值区分大小写。\n\n`WuyingPlan`：无影套餐模型。`ProviderName` 必须为 `wuying-plan`；从适用于当前业务和 Agent 类型的系统模板复制，无需提供 `Config`。\n`WuyingCredit`：无影积分包模型。`ProviderName` 必须为 `wuying-credit`；从系统模板复制，无需提供 `Config`。请同时将 `EnableWuyingProxy` 设为 `true`。\n`Managed`：平台纳管的第三方模型服务商。必须提供 `Config`，且 `ProviderName` 与服务地址须符合所选 Agent 的支持范围。\n`Custom`：自定义模型服务商。`ProviderName` 必须以 `provider-` 开头，必须提供 `Config`。\n\n`WuyingPlan`、`WuyingCredit` 依赖对应系统模板已配置；未找到模板时返回 `ModelProviderTemplate.NotFound`。未提供本参数不会自动采用上述套餐或积分包配置。\n\n`WuyingPreset` 表示通用模型分组中的系统预置智能模型，不能将其误当作 `WuyingPlan` 或 `WuyingCredit` 的模板复制方式",
       "location": "query",
       "name": "provider_type",
       "options": [
@@ -140,8 +150,8 @@
     },
     {
       "example": "{\n\t\"api\": \"openai-completions\",\n\t\"apiKey\": \"REDACTED_API_KEY\",\n\t\"baseUrl\": \"https://dashscope.aliyuncs.com/compatible-mode/v1\"\n}",
-      "help_en": "The JSON configuration of the model provider, which includes connection information such as baseUrl, apiKey, and api. The apiKey is encrypted and stored after creation. When ProviderType is WuyingCredit, this parameter is not required and is copied from the system template",
-      "help_zh": "模型服务商配置 JSON，包含 baseUrl、apiKey、api 等连接信息。apiKey 创建后将加密存储。当 ProviderType 为 WuyingCredit 时无需传入，将从系统模板复制",
+      "help_en": "The connection configuration of the model provider, passed as a JSON string.\n\nWhen `ProviderType` is `Managed` or `Custom`, you must provide the service endpoint and key. The field names depend on `AgentProvider`:\n\n`OpenClaw`, `AgenticComputer`, and `Common`: use `baseUrl` and `apiKey`. The protocol configuration field is `api`.\n`HermesAgent`: use `base_url` and `api_key`. The protocol configuration field is `api_mode`.\n\nDo not mix the two field formats. The key is encrypted and saved after creation. When `ProviderType` is `WuyingPlan` or `WuyingCredit`, the configuration is copied from the system template, and you do not need to pass this parameter.\n\nEndpoint and key verification\n\n`Managed`: The service endpoint must exactly match the available endpoint configured by the platform for the provider. Bailian, Moonshot, and SiliconFlow use the provided key to request the `/models` API under the service endpoint. If the verification request fails, the creation fails and `ApiKey.Invalid` is returned. Invalid, inactive, or mismatched keys, as well as connection failures during the verification request, may trigger this error.\n`Custom`: The provider name must start with `provider-`, and the service endpoint must be a valid public HTTP or HTTPS address. The preceding online key verification for the model list API is not performed during creation.\n\nOther supported managed providers do not perform the preceding `/models` online verification. Successful creation does not replace actual model call verification. The keys in the examples are desensitized. You must use valid keys for actual calls",
+      "help_zh": "模型服务商连接配置，以 JSON 字符串传入。\n\n当 `ProviderType=Managed` 或 `Custom` 时必须提供服务地址和密钥。 字段名取决于 `AgentProvider`：\n\n`OpenClaw`、`AgenticComputer`、`Common`：使用 `baseUrl`、`apiKey`；协议配置字段为 `api`。\n`HermesAgent`：使用 `base_url`、`api_key`；协议配置字段为 `api_mode`。\n\n不要混用两种字段格式。密钥创建后加密保存。`ProviderType=WuyingPlan` 或 `WuyingCredit` 时配置从系统模板复制，无需传入本参数。\n\n地址与密钥校验\n\n`Managed`：服务地址必须与平台为该服务商配置的可用地址完全匹配。百炼、月之暗面和硅基流动会使用所提供的密钥请求服务地址下的 `/models` 接口；校验请求失败时，创建失败并返回 `ApiKey.Invalid`。无效、未激活或与地址不匹配的密钥，以及校验请求的连接失败，都可能触发此错误。\n`Custom`：服务商名称必须以 `provider-` 开头，服务地址须为有效的公网 HTTP 或 HTTPS 地址；创建时不进行上述模型列表接口的在线密钥校验。\n\n其余已支持的纳管服务商不执行上述 `/models` 在线校验。创建成功不能替代实际模型调用验证。示例中的密钥为脱敏示例，实际调用须使用有效密钥",
       "location": "query",
       "name": "config",
       "options": [
@@ -157,8 +167,8 @@
         "true"
       ],
       "example": "true",
-      "help_en": "Specifies whether to enable the Wuying security proxy. This parameter must be set to true when ProviderType is WuyingCredit",
-      "help_zh": "是否启用无影安全代理。当 ProviderType 为 WuyingCredit 时必须为 true",
+      "help_en": "Specifies whether to enable the Wuying secure proxy.\n\n`true`: Yes.\n`false`: No.\n\nWhen `ProviderType` is `Managed` or `Custom`, this parameter takes effect only when the service provides proxy capabilities. If the service does not provide proxy capabilities, setting this parameter to `true` does not enable the proxy.\n\nWhen `ProviderType` is `WuyingPlan` or `WuyingCredit`, the actual proxy configuration is copied with the preset template and is not overridden by this parameter. Set this parameter to `true` when you use `WuyingCredit`. If the service requires the secure proxy to be enabled but the request is not set to `true`, `ModelProviderTemplate.WuyingProxyRequired` is returned",
+      "help_zh": "是否请求启用无影安全代理。\n\n`true`：请求启用。\n`false`：不请求启用。\n\n`ProviderType=Managed` 或 `Custom` 时，仅在服务已提供代理能力时生效；服务未提供代理能力时，设置为 `true` 不会启用代理。\n\n`ProviderType=WuyingPlan` 或 `WuyingCredit` 时，实际代理配置随预置模板复制，不由本参数覆盖。使用 `WuyingCredit` 时请传入 `true`；当服务要求启用安全代理而请求未设置为 `true` 时，返回 `ModelProviderTemplate.WuyingProxyRequired`",
       "location": "query",
       "name": "enable_wuying_proxy",
       "options": [
