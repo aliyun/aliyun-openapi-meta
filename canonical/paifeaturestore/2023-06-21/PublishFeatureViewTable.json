@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun paifeaturestore POST /api/v1/instances/fs-cn-00000000/featureviews/3/action/publishtable --region cn-hangzhou --header \"Content-Type=application/json\"",
+  "camel_example": "aliyun paifeaturestore POST /api/v1/instances/fs-cn-00000000/featureviews/3/action/publishtable --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"Mode\":\"Overwrite\",\"OfflineToOnline\":true}'",
   "cmd_full_name": "paifeaturestore publish-feature-view-table",
   "cmd_name": "publish-feature-view-table",
   "deprecated": false,
   "description_en": "Creates a data synchronization task to synchronize data from a feature view's offline table to its online store",
   "description_zh": "创建特征视图的数据同步任务，把离线表数据同步到对应的在线存储",
-  "kebab_example": "aliyun paifeaturestore publish-feature-view-table --instance-id fs-cn-00000000 --feature-view-id 3 --region cn-hangzhou",
+  "kebab_example": "aliyun paifeaturestore publish-feature-view-table --instance-id fs-cn-00000000 --feature-view-id 3 --biz-mode Overwrite --offline-to-online true --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "PublishFeatureViewTable",
@@ -32,7 +32,7 @@
     {
       "example": "fs-cn-********",
       "help_en": "The ID of the instance. Call the `ListInstances` operation to get this ID",
-      "help_zh": "实例ID，可从接口ListInstances获取",
+      "help_zh": "FeatureStore 实例 ID。可通过 ListInstances 接口获取",
       "location": "path",
       "name": "instance_id",
       "options": [
@@ -45,7 +45,7 @@
     {
       "example": "3",
       "help_en": "The ID of the feature view. Call the `ListFeatureViews` operation to get this ID",
-      "help_zh": "特征视图ID，可从接口ListFeatureViews获取",
+      "help_zh": "特征视图 ID。可通过 ListFeatureViews 接口获取",
       "location": "path",
       "name": "feature_view_id",
       "options": [
@@ -58,7 +58,7 @@
     {
       "example": "{}",
       "help_en": "Custom configurations for the task, provided as a JSON string",
-      "help_zh": "配置",
+      "help_zh": "JSON 格式的扩展配置，需设置的内容随特征视图类型不同。格式：--config '{\"key\":\"value\"}'\n\nStream 类型时需设置：\noffline_datasource_id：要同步的离线 MaxCompute 数据源 ID（必填）\ntable_name：要同步的离线 MaxCompute 表名（必填）\n\n通用可设置：\ntransform：是否应用 Transform 字段（如 LLM_Embedding），默认 true。仅 Stream + FeatureDB + 含 Transform 配置的特征视图生效\n\nSequence + FeatureDB 可设置：\nseq_timestamp_as_ts：是否使用数据自带 timestamp 作为时序 TS，默认 false\ndirect_sync：是否使用直接同步模式，默认 false。设为 true 时跳过分区内去重和多日数据加载逻辑\ndays_to_load：加载历史数据的天数，默认 30",
       "location": "body",
       "name": "config",
       "options": [
@@ -72,7 +72,7 @@
     {
       "example": "2021-12-15T23:24:33.132+08:00",
       "help_en": "The event time of the data to be published, in ISO 8601 format",
-      "help_zh": "事件时间",
+      "help_zh": "增量同步过滤值，可选，属于非典型用法。设置后只同步 EventTime 字段值 >= 该值的行（典型场景下不需要设置）",
       "location": "body",
       "name": "event_time",
       "options": [
@@ -86,7 +86,7 @@
     {
       "example": "Overwrite",
       "help_en": "The synchronization mode. The following values are supported:\n\n`Overwrite`: Overwrites all data in the specified partitions.\n\n`Merge`: Merges the new data with existing data in the specified partitions",
-      "help_zh": "模式，包括以下可选值：\n\nOverwrite：覆盖写\nMerge：合并",
+      "help_zh": "数据写入模式。可选值：\n\nOverwrite：覆盖写入，同步后只保留本次写入的数据，旧数据不再保留\nMerge：合并写入，按主键 upsert，不清理旧数据",
       "location": "body",
       "name": "mode",
       "options": [
@@ -100,7 +100,7 @@
     {
       "example": "true",
       "help_en": "Specifies whether to synchronize data from the offline table to the online store",
-      "help_zh": "是否同步在线特征",
+      "help_zh": "是否实际执行离线到在线的数据同步。可选值：\n\ntrue：创建并运行同步任务（典型场景）\nfalse：仅更新同步分区信息，不实际同步数据",
       "location": "body",
       "name": "offline_to_online",
       "options": [
@@ -113,7 +113,7 @@
     },
     {
       "help_en": "The partitions to publish",
-      "help_zh": "分区表",
+      "help_zh": "分区字段值映射，每个分区字段都必须提供值。键是分区字段名，值是该分区的值对象。示例：\n\n--body '{\"Mode\":\"Overwrite\",\"Partitions\":{\"ds\":{\"value\":\"20260506\"}}}'",
       "location": "body",
       "name": "partitions",
       "options": [
@@ -151,8 +151,9 @@
           },
           "TaskId": {
             "description_en": "The ID of the data synchronization task",
-            "description_zh": "任务ID",
-            "title_en": "Job ID.",
+            "description_zh": "新建的数据同步任务 ID",
+            "example": "41612",
+            "title_en": "任务ID。",
             "title_zh": "任务ID。",
             "type": "string"
           }
