@@ -50,8 +50,13 @@
       "type": "string"
     },
     {
+      "enum": [
+        "AllInOne",
+        "GroupByAccount",
+        "GroupByAggregator"
+      ],
       "example": "GroupByAccount",
-      "help_en": "The aggregation granularity of the report. From the management account perspective, the following values are supported: AllInOne (aggregates all accounts into a single report), GroupByAggregator (aggregates by account group and generates a compressed file), and GroupByAccount (generates a separate report for each account and generates a compressed file). From the member accounts perspective, only GroupByAccount is supported. This parameter is effectively required. If omitted, the server returns Invalid.ReportGranularity.Value (400) and does not use a default value",
+      "help_en": "The aggregation granularity of the report. From the perspective of a management account, the supported values are AllInOne (aggregates all accounts to generate a single report), GroupByAggregator (aggregates by account group and generates a compressed file), and GroupByAccount (generates a separate report for each account and packages them into a compressed file). For member accounts, only GroupByAccount is supported. This parameter is actually required. If it is omitted, the server returns Invalid.ReportGranularity.Value (400) and does not automatically use a default value",
       "help_zh": "报告聚合粒度。管理账号视角支持 AllInOne（所有账号聚合生成一份报告）、GroupByAggregator（按账号组聚合并生成压缩文件）和 GroupByAccount（所有账号分别生成报告并生成压缩文件）；成员账号仅支持 GroupByAccount。此参数实际为必填项，省略时服务端返回 Invalid.ReportGranularity.Value（400），不会自动使用默认值",
       "location": "formData",
       "name": "report_granularity",
@@ -64,7 +69,7 @@
     },
     {
       "example": "excel",
-      "help_en": "The format of the report. Currently, only excel is supported",
+      "help_en": "The format of the report. Currently, only Excel is supported",
       "help_zh": "报告格式，当前仅支持 excel ",
       "location": "formData",
       "name": "report_file_formats",
@@ -77,7 +82,7 @@
     },
     {
       "example": "zh-CN",
-      "help_en": "The language of the report. Valid values: zh-CN and en-US. Default value: en-US",
+      "help_en": "The language of the report. Valid values: zh-CN and en-US. If this parameter is left empty, the default value en-US is used",
       "help_zh": "报告语言。支持 zh-CN、en-US。空值默认 en-US",
       "location": "formData",
       "name": "report_language",
@@ -90,7 +95,7 @@
     },
     {
       "example": "0 0 9 * * ?",
-      "help_en": "The subscription frequency of the report. If this field is not empty, it specifies a Quartz-format cron expression that triggers subscription notifications.\n\nThe format is: second minute hour day month week. The following are common cron expression examples:\nExecute at 00:00 every day: 0 0 0 * * ?\nExecute at 15:30 every Monday: 0 30 15 ? * MON\nExecute at 02:00 on the 1st of every month: 0 0 2 1 * ?\n\nWhere:\n\"*\" indicates any value.\n? is used in the day and week fields to indicate that no specific value is specified.\nMON indicates Monday.\n\nThe trigger time is in UTC+8. Convert the cron expression settings based on your time zone.\n\nThe system attempts to trigger notifications based on the cron expression time, but delays may occur due to report generation status. The cron expression limits notifications to at most once per day for the same template.\n\nIn addition to using MON to represent Monday, you can also use numbers. Note that in the Quartz framework:\n1 represents Sunday, 2 represents Monday, 3 represents Tuesday, 4 represents Wednesday, 5 represents Thursday, 6 represents Friday, and 7 represents Saturday",
+      "help_en": "The subscription frequency of the report. If this field is not empty, it specifies a Quartz-format cron expression that triggers subscription notifications.\n\nThe format is: Seconds Minutes Hours Day-of-month Month Day-of-week. The following are common cron expression examples:\nExecute at 00:00 every day: 0 0 0 * * ?\nExecute at 15:30 every Monday: 0 30 15 ? * MON\nExecute at 02:00 on the first day of every month: 0 0 2 1 * ?\n\nWhere:\n\"*\" indicates any value.\n\"?\" is used in the day-of-month and day-of-week fields to indicate that no specific value is specified.\n\"MON\" indicates Monday.\n\nThe trigger time is in UTC+8. You can convert the cron expression settings based on your time zone.\n\nThe system tries to trigger notifications according to the cron expression, but delays may occur due to the report generation status. The cron expression limits notifications to a maximum of once per day for the same template.\n\nIn addition to using MON for Monday, you can use numbers. Note that in the Quartz framework:\n1 represents Sunday; 2 represents Monday; 3 represents Tuesday; 4 represents Wednesday; 5 represents Thursday; 6 represents Friday; 7 represents Saturday",
       "help_zh": "报告订阅频率。如果此字段非空，则为订阅通知触发的 Quartz 格式的 Cron 表达式。\n\n格式为：秒 分 时 日 月 周。以下是常用的 Cron 表达式示例：\n每天0点执行：0 0 0 * * ?\n每周一15点30执行：0 30 15 ? * MON\n每月1号2点执行：0 0 2 1 * ?\n\n其中：\n\"*\"表示任意值\n? 用于日和周字段，表示不指定具体值\nMON 表示星期一\n\n触发时间为 UTC+8，可自行根据时区转换 cron 表达式的设置。\n\n只能保证尽量按照 cron 表达式时间进行触发，可能由于报告生产状态有所延迟。cron 表达式会限制同一模版每天最多触发一次通知。\n\n除了用 MON 表示星期一以外，也可以用数字。不过需要注意，在 Quartz 框架中：\n1 代表星期日（Sunday）；2 代表星期一（Monday）；3 代表星期二（Tuesday）；4 代表星期三（Wednesday）；5 代表星期四（Thursday）；6 代表星期五（Friday）；7 代表星期六（Saturday）",
       "location": "formData",
       "name": "subscription_frequency",
@@ -105,6 +110,11 @@
       "element": {
         "fields": [
           {
+            "enum": [
+              "AggregatorId",
+              "CompliancePackId",
+              "RuleId"
+            ],
             "example": "RuleId",
             "help_en": "The key of the report scope. Valid values:\nAggregatorId\nCompliancePackId\nRuleId",
             "help_zh": "报告范围的键，当前支持：\nAggregatorId\nCompliancePackId\nRuleId",
@@ -143,7 +153,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The report scope array that specifies the rule scope included in the audit report. The ReportScope items in the array follow OR logic, which means they are additive.\n\nFor example, if the array size is 2, the first ReportScope specifies rule In cr-1, and the second ReportScope specifies rule In cr-2, the rule scope of this report includes both cr-1 and cr-2",
+      "help_en": "The array of report scopes, which is used to select the scope of rules included in the audit report. The logical OR operation, which is an additive logic, is applied between each ReportScope in the array.\n\nFor example, if the array size is 2, the first ReportScope specifies the rule In cr-1, and the second ReportScope specifies the rule In cr-2, the scope of rules defined for this report includes cr-1 and cr-2",
       "help_zh": "报告范围数组，用于选定审计报告中包含的规则范围。数组中每个 ReportScope 之间是或逻辑，也就是加法逻辑。\n\n如数组大小为2，第一个 ReportScope 指定规则 In cr-1，第二个 ReportScope 指定规则 In cr-2，则此报告圈定的规则范围为 cr-1和cr-2",
       "location": "formData",
       "name": "report_scope",
@@ -162,7 +172,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response parameters",
+        "description_en": "The response structure",
         "description_zh": "返回结果",
         "properties": {
           "ReportTemplateId": {
