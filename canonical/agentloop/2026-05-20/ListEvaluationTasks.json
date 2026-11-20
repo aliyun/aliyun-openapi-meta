@@ -87,7 +87,7 @@
         "type": "object"
       },
       "RunStrategies": {
-        "description_en": "The run policy container for evaluation tasks, used to configure historical data backfill evaluation and continuous incremental evaluation",
+        "description_en": "The runtime policy container for evaluation tasks, used to configure historical data backfill evaluation and continuous incremental evaluation",
         "description_zh": "评估任务的运行策略容器，用于配置历史数据回填评估和持续增量评估",
         "example": "{\"backfill\":{\"enabled\":true,\"startTime\":1782816000000,\"endTime\":1782902400000,\"immediate\":false},\"continuous\":{\"enabled\":true,\"intervalUnit\":\"HOUR\",\"intervalValue\":1,\"dataDelayMinutes\":5}}",
         "properties": {
@@ -104,6 +104,51 @@
             "description_en": "The continuous evaluation policy. Continuous evaluation is enabled when the object exists and enabled is not explicitly set to false",
             "description_zh": "持续评估策略。对象存在且 enabled 未显式为 false 时表示启用 continuous",
             "example": "{\"enabled\":true,\"intervalUnit\":\"HOUR\",\"intervalValue\":1,\"dataDelayMinutes\":5}"
+          },
+          "selectedData": {
+            "$ref": "#/components/schemas/SelectedDataStrategy",
+            "backendName": "selectedData",
+            "description_en": "The selection of specified objects for evaluation",
+            "description_zh": "选择指定对象评估",
+            "example": "{\"startTime\":1794542191,\"endTime\":1795146991,\"evalIds\":[\"2646a9380bba3c86371f55a0226322941794983634\"]}"
+          }
+        },
+        "type": "object"
+      },
+      "SelectedDataStrategy": {
+        "description_en": "The selected data IDs",
+        "description_zh": "选择的数据ID",
+        "example": "{\n      \"startTime\": 1794542191,\n      \"endTime\": 1795146991,\n      \"evalIds\": [\n        \"2646a9380bba3c86371f55a0226322941794983634\"\n      ]\n    }",
+        "properties": {
+          "endTime": {
+            "backendName": "to",
+            "description_en": "The end time of the statistical window in UNIX seconds",
+            "description_zh": "统计窗口结束时间，Unix 秒",
+            "example": "1735660800",
+            "format": "int64",
+            "type": "integer"
+          },
+          "evalIds": {
+            "backendName": "evalIds",
+            "description_en": "The list of evaluation IDs",
+            "description_zh": "eval ID 列表",
+            "example": "[\"2646a9380bba3c86371f55a0226322941794983634\"]",
+            "items": {
+              "description_en": "eval ID",
+              "description_zh": "eval ID",
+              "example": "\"2646a9380bba3c86371f55a0226322941794983634\"",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "startTime": {
+            "backendName": "from",
+            "description_en": "The estimated start time in milliseconds.\n\nYou can modify this parameter only when the course is in the preview state",
+            "description_zh": "预计开始时间，单位为毫秒值。\n\n课程必须预告状态才可以修改该项",
+            "example": "1735574400",
+            "format": "int64",
+            "title": "评估任务开始时间，使用 Unix 时间戳（毫秒）。",
+            "type": "integer"
           }
         },
         "type": "object"
@@ -111,7 +156,7 @@
     }
   },
   "deprecated": false,
-  "description_en": "Queries a list of evaluation tasks",
+  "description_en": "Queries the list of evaluation tasks",
   "description_zh": "查询评估任务列表",
   "kebab_example": "aliyun agentloop list-evaluation-tasks --agent-space prod-agentspace --task-name trace_task_completion_eval --task-mode batch --data-type trace --status Running --next-token eyJsYXN0SWQiOjEyMywib2Zmc2V0IjoyMH0= --max-results 20 --channel default --region cn-hangzhou",
   "method": "GET",
@@ -130,7 +175,7 @@
   "parameters": [
     {
       "example": "prod-agentspace",
-      "help_en": "The AgentSpace name",
+      "help_en": "The name of the AgentSpace",
       "help_zh": "AgentSpace 名称",
       "location": "query",
       "name": "agent_space",
@@ -143,7 +188,7 @@
     },
     {
       "example": "trace_task_completion_eval",
-      "help_en": "The fuzzy match condition for the task name",
+      "help_en": "The fuzzy search condition for the task name",
       "help_zh": "任务名称模糊搜索条件",
       "location": "query",
       "name": "task_name",
@@ -159,7 +204,7 @@
         "batch"
       ],
       "example": "batch",
-      "help_en": "The evaluation task mode. If this parameter is not specified, the default value is `batch`",
+      "help_en": "The mode of the evaluation task. If not specified, the backend defaults to batch",
       "help_zh": "评估任务模式。不传时后端默认设置为 `batch`",
       "location": "query",
       "name": "task_mode",
@@ -178,7 +223,7 @@
         "trace"
       ],
       "example": "trace",
-      "help_en": "The data source type of the evaluation object. Set this parameter to `trace` for trace-based evaluation",
+      "help_en": "The data source type of the evaluation object. Use trace for trace evaluation",
       "help_zh": "评估对象的数据来源类型。链路 Trace 评估使用 `trace`",
       "location": "query",
       "name": "data_type",
@@ -226,7 +271,7 @@
     },
     {
       "example": "20",
-      "help_en": "The number of entries per page. Default value: 20. Maximum value: 100",
+      "help_en": "The number of entries to return per page. The default value is 20, and the maximum value is 100",
       "help_zh": "每页返回条数。后端默认 20，最大 100",
       "location": "query",
       "name": "max_results",
@@ -242,7 +287,7 @@
         "default"
       ],
       "example": "default",
-      "help_en": "The filter condition for the task source. If this parameter is not specified, tasks from the default source are queried",
+      "help_en": "The filter condition for the task source. If not specified, tasks from the default source are queried",
       "help_zh": "任务来源过滤条件。不传时查询默认来源任务",
       "location": "query",
       "name": "channel",
@@ -275,7 +320,7 @@
               "properties": {
                 "config": {
                   "additionalProperties": {
-                    "description_en": "The value of a configuration item. The key name is determined by the specific field convention",
+                    "description_en": "The value of a single configuration item. The key name is determined by the specific field convention",
                     "description_zh": "单个配置项的值，键名由具体字段约定决定",
                     "example": "trace",
                     "type": "string"
@@ -286,7 +331,7 @@
                   "type": "object"
                 },
                 "createdAt": {
-                  "description_en": "The creation time, in seconds-level UNIX timestamp",
+                  "description_en": "The creation time, represented as a UNIX timestamp in seconds",
                   "description_zh": "创建时间，秒级 Unix 时间戳",
                   "example": "1782816000",
                   "format": "int64",
@@ -305,20 +350,20 @@
                   "type": "string"
                 },
                 "description": {
-                  "description_en": "The description of the evaluation task",
+                  "description_en": "The evaluation task description",
                   "description_zh": "评估任务描述",
                   "example": "评估线上 Agent 链路任务完成度",
                   "type": "string"
                 },
                 "evaluators": {
-                  "description_en": "The evaluator configuration summary, in JSON string format",
+                  "description_en": "The evaluator configuration summary, as a JSON string",
                   "description_zh": "评估器配置摘要，JSON 字符串",
                   "example": "[{\"evaluatorRef\":\"Builtin.agent_task_completion\"}]",
                   "type": "string"
                 },
                 "runStrategyConfig": {
                   "$ref": "#/components/schemas/RunStrategies",
-                  "description_en": "The structured run strategy configuration, including the parsed backfill strategy and continuous evaluation strategy",
+                  "description_en": "The structured configuration of the run strategy, including the parsed backfill strategy and continuous evaluation strategy",
                   "description_zh": "运行策略结构化配置，解析后的回填策略和持续评估策略",
                   "example": "{\"backfill\":{\"enabled\":true,\"startTime\":1782816000000,\"endTime\":1782902400000},\"continuous\":{\"enabled\":true,\"intervalUnit\":\"HOUR\",\"intervalValue\":1,\"dataDelayMinutes\":5}}"
                 },
@@ -339,12 +384,12 @@
                 },
                 "tags": {
                   "additionalProperties": {
-                    "description_en": "The value of a task tag. The key name is customized based on the business dimension",
+                    "description_en": "A single task tag value. The key name is customized based on the business dimension",
                     "description_zh": "单个任务标签值，键名按业务维度自定义",
                     "example": "prod",
                     "type": "string"
                   },
-                  "description_en": "The key-value pairs of task tags. This parameter is empty if no tags are set",
+                  "description_en": "The key-value pairs of task tags. Empty if not set",
                   "description_zh": "任务标签键值对。未设置时为空",
                   "example": "{\"serviceId\":\"checkout-service\",\"env\":\"prod\"}",
                   "type": "object"
@@ -371,7 +416,7 @@
                   "type": "string"
                 },
                 "updatedAt": {
-                  "description_en": "The last update time, in seconds-level UNIX timestamp",
+                  "description_en": "The last update time, represented as a UNIX timestamp in seconds",
                   "description_zh": "最近更新时间，秒级 Unix 时间戳",
                   "example": "1782816600",
                   "format": "int64",
@@ -383,14 +428,14 @@
             "type": "array"
           },
           "maxResults": {
-            "description_en": "The number of entries per page used in this request",
+            "description_en": "The number of entries per page used for this request",
             "description_zh": "本次请求使用的每页条数",
             "example": "20",
             "format": "int32",
             "type": "integer"
           },
           "nextToken": {
-            "description_en": "The pagination token for the next page. An empty value indicates that no more pages are available",
+            "description_en": "The pagination token for the next page. An empty value indicates that there is no next page",
             "description_zh": "下一页分页 Token。为空表示没有下一页",
             "example": "eyJsYXN0SWQiOjEwMSwib2Zmc2V0IjoyMH0=",
             "type": "string"
@@ -404,7 +449,7 @@
             "type": "string"
           },
           "totalCount": {
-            "description_en": "The total number of records. The total count is calculated only on the first page. This value may be empty on subsequent pages",
+            "description_en": "The total number of records. The backend queries the total count only on the first page, so this field may be empty on subsequent pages",
             "description_zh": "总记录数。后端仅在第一页查询总数，后续页可能为空",
             "example": "126",
             "format": "int32",
