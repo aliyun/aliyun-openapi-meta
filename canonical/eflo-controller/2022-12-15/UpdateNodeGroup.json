@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun eflo-controller UpdateNodeGroup --region cn-hangzhou --NewNodeGroupName 'test-update' --SystemDisk '{\"PerformanceLevel\":\"PL1\"}' --KeyPairName test --FileSystemMountEnabled true --RamRoleName 'xianwen-test-ram-role' --UserData ZWNobyBoZWxsbyBlY3Mh --NodeGroupId i120021051733814190732 --ImageId i1232142432432 --LoginPassword '密码'",
+  "camel_example": "aliyun eflo-controller UpdateNodeGroup --region cn-hangzhou --NewNodeGroupName 'test-update' --SystemDisk '{\"KMSKeyId\":\"de1a73c4-9590-45da-8859-d39b5ec4751e\",\"PerformanceLevel\":\"PL1\",\"Encrypted\":false}' --KeyPairName test --FileSystemMountEnabled true --RamRoleName 'xianwen-test-ram-role' --UserData ZWNobyBoZWxsbyBlY3Mh --NodeGroupId i120021051733814190732 --ImageId i1232142432432 --LoginPassword '密码'",
   "cmd_full_name": "eflo-controller update-node-group",
   "cmd_name": "update-node-group",
   "deprecated": false,
   "description_en": "Updates a node group",
   "description_zh": "更新节点分组",
-  "kebab_example": "aliyun eflo-controller update-node-group --node-group-id i120021051733814190732 --new-node-group-name test-update --user-data ZWNobyBoZWxsbyBlY3Mh --file-system-mount-enabled true --biz-key-pair-name test --biz-ram-role-name xianwen-test-ram-role --image-id i1232142432432 --login-password '密码' --system-disk PerformanceLevel=PL1 --region cn-hangzhou",
+  "kebab_example": "aliyun eflo-controller update-node-group --node-group-id i120021051733814190732 --new-node-group-name test-update --user-data ZWNobyBoZWxsbyBlY3Mh --file-system-mount-enabled true --biz-key-pair-name test --biz-ram-role-name xianwen-test-ram-role --image-id i1232142432432 --login-password '密码' --system-disk KMSKeyId=de1a73c4-9590-45da-8859-d39b5ec4751e PerformanceLevel=PL1 Encrypted=false --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "UpdateNodeGroup",
@@ -50,7 +50,7 @@
     },
     {
       "example": "ZWNobyBoZWxsbyBlY3Mh",
-      "help_en": "The custom executable shell script. It must be Base64-encoded, and the maximum size of the raw data is 16 KB",
+      "help_en": "The custom executable shell script. The script must be Base64-encoded. The maximum size of the raw data is 16 KB",
       "help_zh": "自定义可执行shell脚本，需要以 Base64 方式编码，原始数据最多为 16 KB",
       "location": "formData",
       "name": "user_data",
@@ -89,7 +89,7 @@
     },
     {
       "example": "xianwen-test-ram-role",
-      "help_en": "The name of the RAM role for the node. You can call the ListRoles API operation of RAM to query the RAM roles that you have created. The trusted entity of the role must be Lingjun AI Computing Service. <warning>Submitting an empty string \"\" clears the RAM role of the node group.</warning>",
+      "help_en": "The name of the node RAM role. You can use the RAM API ListRoles to query the node RAM roles that you have created. The trusted entity of the configured role must be Lingjun AI Computing Service.\n<warning>Submitting an empty string \"\" clears the RAM role of the node group.</warning>",
       "help_zh": "节点 RAM 角色名称。您可以使用 RAM API ListRoles 查询您已创建的节点 RAM 角色。设置的角色的信任主体必须为“智能计算灵骏”。\n<warning>提交值为空字符串\"\"表示清空节点组的 RAM 角色。</warning>",
       "location": "formData",
       "max_length": "128",
@@ -103,7 +103,7 @@
     },
     {
       "example": "i1232142432432",
-      "help_en": "The default image ID of the node group. If you do not specify this parameter, the image ID remains unchanged",
+      "help_en": "The default image ID of the node group. If this parameter is not specified, the image ID remains unchanged",
       "help_zh": "节点组的默认镜像id，如果不设置，那么就不会改变",
       "location": "formData",
       "name": "image_id",
@@ -129,6 +129,30 @@
     },
     {
       "fields": [
+        {
+          "example": "false",
+          "help_en": "Specifies whether the system cloud disk is encrypted. Valid values:\ntrue: Encrypted.\nfalse: Not encrypted.\n\nDefault value: false.\n\n\n<notice>When you use a shared encrypted image to create a cloud disk based on an encrypted snapshot, you must specify the request parameter Encrypted=true for the cloud disk to ensure that the created cloud disk uses the key of the account that shares the image.></notice>\n\nSystem cloud disk encryption during instance creation is not active in Hong Kong (China) Zone D and Singapore Zone A",
+          "help_zh": "系统盘是否加密。取值范围：\ntrue：加密。\nfalse：不加密。\n\n默认值：false。\n\n\n<notice>当使用共享加密镜像，创建基于加密快照的云盘时，必须指定该云盘的请求参数 Encrypted=true，以确保创建出的云盘使用的是被共享方自己的密钥。></notice>\n\n中国（香港）D 可用区、新加坡 A 可用区暂不支持在创建实例时加密系统盘",
+          "name": "encrypted",
+          "options": [
+            "--encrypted"
+          ],
+          "raw_name": "Encrypted",
+          "required": false,
+          "type": "bool"
+        },
+        {
+          "example": "de1a73c4-9590-45da-8859-d39b5ec4751e",
+          "help_en": "The KMS key ID for the system cloud disk.\n\nIf the Encrypted Settings is set to true and KMSKeyId is not specified, the default key is used for encryption, and the KMSKeyId value is returned after the instance is created.\nIf the cloud disk is created from a non-shared encrypted snapshot: The encryption key used by the snapshot is used by default.\nIf the cloud disk is created from a shared encrypted snapshot: The service key is used by default.\nIf the cloud disk is created in a region where account-level default encryption for Block Storage is enabled: The specified account-level key is used by default.\nIn other cases: The service key is used by default",
+          "help_zh": "系统盘对应的 KMS 密钥 ID。\n\n若 Encrypted 设置为 true，不指定 KMSKeyId，则使用默认的密钥进行加密，并在创建实例成功后返回 KMSKeyId 值。\n云盘通过非共享而来的加密快照创建：默认使用该快照所使用的加密密钥进行加密。\n云盘通过共享而来的加密快照创建：默认使用服务密钥进行加密。\n在已开启块存储账号级默认加密的地域创建：默认使用指定的账号级密钥进行加密。\n其他情况：默认使用服务密钥进行加密",
+          "name": "kms_key_id",
+          "options": [
+            "--kms-key-id"
+          ],
+          "raw_name": "KMSKeyId",
+          "required": false,
+          "type": "string"
+        },
         {
           "example": "PL1",
           "help_en": "The performance level",
@@ -168,6 +192,7 @@
             "description_en": "The ID of the request",
             "description_zh": "请求id",
             "example": "8F065DDD-6996-5973-9691-9EC57BD0072E",
+            "title_en": "",
             "title_zh": "Id of the request",
             "type": "string"
           },

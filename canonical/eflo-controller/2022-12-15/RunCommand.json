@@ -3,7 +3,7 @@
   "cmd_full_name": "eflo-controller run-command",
   "cmd_name": "run-command",
   "deprecated": false,
-  "description_en": "Runs a Shell script on one or more Lingjun nodes",
+  "description_en": "Executes a shell script on one or more Lingjun nodes",
   "description_zh": "一台或多台灵骏机器中执行一段Shell的脚本",
   "kebab_example": "aliyun eflo-controller run-command --name testName --description testDescription --command-content ZWNobyAxMjM= --timeout 3600 --working-dir /home/user --enable-parameter false --content-encoding Base64 --username root --node-id-list '[\"\\\"i-bp185dy2o3o6neg****\\\"\"]' --repeat-mode Once --client-token 123e4567-e89b-12d3-a456-426655440000 --frequency '0 */20 * * * ?' --parameters '{\"accessKey\":\"REDACTED_ACCESS_KEY_ID\",\"name\":\"Jack\"}' --command-id 'c-e996287206324975b5fbe1d***' --termination-mode ProcessTree --launcher 'python3 -u {{ACS::ScriptFileName|Ext(\".py\")}}' --region cn-hangzhou",
   "method": "POST",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "testName",
-      "help_en": "The command name",
+      "help_en": "The name of the command",
       "help_zh": "命令名称",
       "location": "formData",
       "name": "name",
@@ -37,7 +37,7 @@
     },
     {
       "example": "testDescription",
-      "help_en": "The command description",
+      "help_en": "The description of the command",
       "help_zh": "命令描述",
       "location": "formData",
       "name": "description",
@@ -50,7 +50,7 @@
     },
     {
       "example": "ZWNobyAxMjM=",
-      "help_en": "The command content. Take note of the following:\n\nWhen `EnableParameter` is set to true, you can use custom parameters in the command.\nDefine custom parameters in the {{}} format. Within `{{}}`, the spaces and line feeds before and after the parameter names are ignored.\nYou can specify up to 20 custom parameters.\nA custom parameter name can contain only letters, digits, underscores (_), and hyphens (-). The name is not case-sensitive.\nEach custom parameter name is up to 64 bytes in length",
+      "help_en": "The content of the command. Specify either this parameter or CommandId. The command content can be plaintext or Base64-encoded. Take note of the following items:\n\nSpecify EnableParameter=true to enable the custom parameter feature in the command content.\nDefine custom parameters by enclosing them in braces ({{}}). Spaces and line breaks before and after the parameter names inside {{}} are ignored.\nYou can specify a maximum of 20 custom parameters.\nA custom parameter name can contain only letters, digits, hyphens (-), and underscores (_). Parameter names are not case-sensitive.\nA custom parameter name cannot exceed 64 bytes in length",
       "help_zh": "命令内容。您需要注意：\n\n指定参数`EnableParameter=true`可在命令内容中启用自定义参数功能。\n用{{}}包含的方式定义自定义参数，在`{{}}`内参数名前后的空格以及换行符会被忽略。\n自定义参数个数不能超过20个。\n自定义参数名允许a-zA-Z0-9-_的组合，不支持其余字符，参数名不区分大小写。\n单个自定义参数名不能超过64字节",
       "location": "formData",
       "name": "command_content",
@@ -63,7 +63,7 @@
     },
     {
       "example": "3600\n",
-      "help_en": "The timeout period for the command. Unit: seconds. A timeout error occurs if the command cannot be run because the process slows down or because a specific module or Cloud Assistant Agent does not exist. When the specified timeout period ends, the command process is forcefully terminated. Default value: 60",
+      "help_en": "The timeout period for command execution, in seconds. If the command cannot be executed due to process issues, missing modules, or a missing Cloud Assistant Agent, a timeout occurs. After a timeout, the command process is forcibly terminated. Default value: 60",
       "help_zh": "执行命令的超时时间，单位：秒。当因为进程原因、缺失模块、缺失云助手Agent等原因无法运行命令时，会出现超时现象。超时后，会强制终止命令进程。默认值：60",
       "location": "formData",
       "name": "timeout",
@@ -76,7 +76,7 @@
     },
     {
       "example": "/home/user",
-      "help_en": "The working path of the command. You can specify a custom path. Default path:\n\nLinux instances: By default, the path is in the /home directory of the root user",
+      "help_en": "The custom execution path of the command. Default paths:\n\nLinux instances: The default execution path is the home directory of the root user",
       "help_zh": "您可自定义命令的执行路径。默认路径如下：\n\nLinux实例：执行路径默认在管理员root用户的/home目录下",
       "location": "formData",
       "name": "working_dir",
@@ -89,7 +89,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to use custom parameters in the command.\n\nDefault value: false",
+      "help_en": "Specifies whether the command contains custom parameters.\n\nDefault value: false",
       "help_zh": "命令中是否包含自定义参数。\n\n默认值：false",
       "location": "formData",
       "name": "enable_parameter",
@@ -102,7 +102,7 @@
     },
     {
       "example": "Base64",
-      "help_en": "The encoding mode of the command content. Valid values:\n\nPlainText\nBase64\n\nDefault value: PlainText. If the specified value of this parameter is invalid, PlainText is used by default",
+      "help_en": "The encoding method of the script content. Valid values:\n\nPlainText: The content is not encoded and is transmitted in plaintext.\nBase64: The content is Base64-encoded.\n\nDefault value: PlainText. If an invalid value is specified, the value is processed as PlainText",
       "help_zh": "脚本内容的编码方式。取值范围：\n\nPlainText：不编码，采用明文传输。\nBase64：Base64编码。\n\n默认值：PlainText。乱填或错填时，该取值会当作PlainText处理",
       "location": "formData",
       "name": "content_encoding",
@@ -115,7 +115,7 @@
     },
     {
       "example": "root",
-      "help_en": "The username that you use to run the command. The name can be up to 255 characters in length. For Linux instances, the root user is used by default",
+      "help_en": "The name of the user that executes the command on the instance. The name cannot exceed 255 characters in length.\nFor Linux instances, the command is executed by the root user by default",
       "help_zh": "在实例中执行命令的用户名称。长度不得超过255个字符。\nLinux系统的实例，默认以root用户执行命令",
       "location": "formData",
       "name": "username",
@@ -130,8 +130,8 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The node list",
-      "help_zh": "节点列表",
+      "help_en": "The list of nodes",
+      "help_zh": "节点列表。节点 ID 需为已创建的灵骏节点，可通过 ListClusterNodes 或 ListFreeNodes 查询获取",
       "location": "formData",
       "name": "node_id_list",
       "options": [
@@ -144,7 +144,7 @@
     },
     {
       "example": "Once",
-      "help_en": "The mode to run the command. Valid values:\n\nOnce: runs the command immediately.\nPeriod: runs the command based on a schedule. When set to `Period`, `Frequency` is required.\nNextRebootOnly: runs the command the next time the instances is started.\nEveryReboot: runs the command every time the instance is started.\n\nDefault value:\n\nIf you do not specify `Frequency`, the default value is `Once`.\nIf you specify `Frequency`, RepeatMode is set to `Period` regardless of whether a value is already specified",
+      "help_en": "The execution mode of the command. Valid values:\n\nOnce: Executes the command immediately.\nPeriod: Executes the command on a schedule. If this parameter is set to Period, you must also specify the Frequency parameter.\nNextRebootOnly: Automatically executes the command the next time the instance starts.\nEveryReboot: Automatically executes the command every time the instance starts.\n\nDefault values:\nIf the Frequency parameter is not specified, the default value is Once.\nIf the Frequency parameter is specified, the value is processed as Period regardless of whether this parameter is set",
       "help_zh": "设置命令执行的方式。取值范围：\n\nOnce：立即执行命令。\nPeriod：定时执行命令。当该参数取值为`Period`时，必须同时指定`Frequency`参数。\nNextRebootOnly：当实例下一次启动时，自动执行命令。\nEveryReboot：实例每一次启动都将自动执行命令。\n\n默认值：\n当不指定`Frequency`参数时，默认值为`Once`。\n当指定`Frequency`参数时，无论是否已设置了该参数值，都将按照`Period`处理",
       "location": "formData",
       "name": "repeat_mode",
@@ -157,7 +157,7 @@
     },
     {
       "example": "123e4567-e89b-12d3-a456-426655440000",
-      "help_en": "The client token to ensure the idempotency of the request. Use your client to generate the token that is unique among requests. The token can contain only ASCII characters and cannot exceed 64 characters in length. For more information, see \"How to ensure idempotence\"",
+      "help_en": "The client token that is used to ensure the idempotence of the request. You can use the client to generate the value, but you must ensure that it is unique among different requests. The client token can contain only ASCII characters and cannot exceed 64 characters in length. For more information, see How to ensure idempotence",
       "help_zh": "保证请求幂等性。从您的客户端生成一个参数值，确保不同请求间该参数值唯一。ClientToken只支持ASCII字符，且不能超过64个字符。更多信息，请参见如何保证幂等性",
       "location": "formData",
       "name": "client_token",
@@ -170,7 +170,7 @@
     },
     {
       "example": "0 */20 * * * ?",
-      "help_en": "The schedule to run the command. Supported schedule types: at a fixed interval based on a rate expression, run only once at a specific time, or run at specific times based on a cron expression.\n\nTo run the command at a fixed interval, use a rate expression to specify the interval. The interval can be in seconds, minutes, hours, or days. This option is suitable for scenarios in which tasks need to be executed at a fixed interval. Format: rate(\\<Execution interval value> \\<Execution interval unit>). For example, rate(5m) means to run the command every 5 minutes. When you specify an interval, take note of the following limits:\n\n    *   The interval can be anywhere from 60 seconds to 7 days, but must be longer than the timeout period of the scheduled task.\n    *   The interval is the time between two consecutive executions, irrelevant of the time required to run the command. For example, assume that you set the interval to 5 minutes and that it takes 2 minutes to run the command each time. The system waits 3 minutes before running the command again.\n    *   The command is not immediately executed after the task is created. For example, assume that you set the interval to 5 minutes. The task begins to be executed 5 minutes after it is created.\n\nTo run a command only once at a specific point in time, specify a point in time and a time zone. Format: at(yyyy-MM-dd HH:mm:ss \\<Time zone>). If you do not specify a time zone, the Coordinated Universal Time (UTC) time zone is used by default. The time zone name supports the following formats: Full name, such as Asia/Shanghai and America/Los_Angeles. The time offset from GMT. Examples: GMT+8:00 (UTC+8) and GMT-7:00 (UTC-7). If you use the GMT format, you cannot add leading zeros to the hour value. The time zone abbreviation. Only UTC is supported. For example, to configure a command to run only once at 13:15:30 on June 6, 2022 (Shanghai time), set the time to at(2022-06-06 13:15:30 Asia/Shanghai). To configure a command to run only once at 13:15:30 on June 6, 2022 (UTC-7), set the time to at(2022-06-06 13:15:30 GMT-7:00).\n\nTo run a command at designated points in time, use a cron expression to define the schedule. Format: \\<Cron expression> \\<Time zone>. Example: \\<Seconds> \\<Minutes> \\<Hours> \\<Day of the month> \\<Month> \\<Day of the week> \\<Year (optional)> \\<Time zone>. The system calculates the execution times of the command based on the specified cron expression and time zone and runs the command as scheduled. If you do not specify a time zone, the system time zone of the instance is used by default. For more information, see Cron expressions. The time zone name supports the following formats:\n\n    *   Full name, such as Asia/Shanghai and America/Los_Angeles.\n    *   The time offset from GMT. Examples: GMT+8:00 (UTC+8) and GMT-7:00 (UTC-7). If you use the GMT format, you cannot add leading zeros to the hour value.\n    *   The time zone abbreviation. Only UTC is supported.\n\n    For example, if you specify a command to run at 10:15:00 every day in 2022 in China/Shanghai time, set the time to 0 15 10 ? * * 2022 Asia/Shanghai. To configure a command to run every half an hour from 10:00:00 to 11:30:00 every day in 2022 (UTC+8), set the schedule to 0 0/30 10-11 * * ? 2022 GMT+8:00. To configure a command to run every 5 minutes from 14:00:00 to 14:55:00 every October every two years from 2022 in UTC, set the schedule to 0 0/5 14 * 10 ? 2022/2 UTC",
+      "help_en": "The scheduled execution time of the command. Three scheduled execution methods are supported: execution at fixed time intervals (based on rate expressions), one-time execution at a specified time, and clock-based scheduled execution (based on cron expressions).\n\nExecution at fixed time intervals: Based on rate expressions, the command is executed at the specified time interval. The time interval can be specified in seconds (s), minutes (m), hours (h), or days (d). This method is suitable for scenarios where tasks are executed at fixed time intervals. The format is rate(<interval value><interval unit>). For example, to execute the command every 5 minutes, use rate(5m). Limits on execution at fixed time intervals: \n    - The specified time interval must not exceed 7 days, must not be less than 60 seconds, and must be greater than the timeout period of the scheduled task. \n    - The execution interval is based only on the fixed frequency and is independent of the actual time required to execute the task. For example, if the command is executed every 5 minutes and the task takes 2 minutes to complete, the next execution starts 3 minutes after the task is completed. \n    - The task is not executed immediately upon creation. For example, if the command is executed every 5 minutes, it is not executed immediately when the task is created. Instead, the first execution starts 5 minutes after the task is created.\n \nOne-time execution at a specified time: The command is executed once at the specified time in the specified time zone. The format is at(yyyy-MM-dd HH:mm:ss <time zone>). If no time zone is specified, the UTC time zone is used by default. The time zone can be specified in the following three formats: \n    - Full name of the time zone: such as Asia/Shanghai and America/Los_Angeles. \n    - Offset of the time zone relative to Greenwich Mean Time (GMT): such as GMT+8:00 and GMT-7:00. When the GMT format is used, leading zeros are not supported for the hour. \n    - Time zone abbreviation: Only UTC is supported.\nIf you want to execute the command once at 13:15:30 on June 6, 2022 in the Asia/Shanghai time zone, use at(2022-06-06 13:15:30 Asia/Shanghai). If you want to execute the command once at 13:15:30 on June 6, 2022 in the GMT-7:00 time zone, use at(2022-06-06 13:15:30 GMT-7:00).\n\nClock-based scheduled execution (based on cron expressions): Based on cron expressions, the command is executed according to the scheduled task. The format is <seconds> <minutes> <hours> <day of month> <month> <day of week> <year (optional)> <time zone>, which is <cron expression> <time zone>. The scheduled task execution time is calculated and executed based on the cron expression in the specified time zone. If no time zone is specified, the internal system time zone of the instance where the scheduled task is executed is used by default. For more information about cron expressions, see Cron expressions. The time zone can be specified in the following three formats: \n    - Full name of the time zone: such as Asia/Shanghai and America/Los_Angeles. \n    - Offset of the time zone relative to GMT: such as GMT+8:00 and GMT-7:00. When the GMT format is used, leading zeros are not supported for the hour. \n    - Time zone abbreviation: Only UTC is supported.\n\n    For example, to execute the command once at 10:15 every day in 2022 in the Asia/Shanghai time zone, use 0 15 10 ? * * 2022 Asia/Shanghai. To execute the command every half hour from 10:00 to 11:30 every day in 2022 in the GMT+8:00 time zone, use 0 0/30 10-11 * * ? 2022 GMT+8:00. To execute the command every 5 minutes from 14:00 to 14:55 every day in October every two years starting from 2022 in the UTC time zone, use 0 0/5 14 * 10 ? 2022/2 UTC",
       "help_zh": "定时执行命令的执行时间。目前支持三种定时执行方式：固定时间间隔执行（基于 Rate 表达式）、仅在指定时间执行一次、基于时钟定时执行（基于 Cron 表达式）。\n\n固定时间间隔执行：基于 Rate 表达式，按照设置的时间间隔执行命令。时间间隔支持按秒（s） 、分钟（m） 、小时（h）和天（d）来选择，适用于在固定时间间隔执行任务的场景。格式为 rate(<执行间隔数值><执行间隔单位>)，如 5 分钟执行一次，格式为 rate(5m)。使用固定时间间隔执行有以下限制： \n    - 设置的时间间隔不大于 7 天、不小于 60 秒，且需大于定时任务的超时时间。 \n    - 执行间隔只基于固定频率，与任务实际执行需要的时间无关。例如设置每 5 分钟执行一次命令，任务需要 2 分钟执行完成，则在任务完成 3 分钟后继续执行下一轮。 \n    - 创建任务时不会立即执行。例如设置每 5 分钟执行一次命令，创建任务时不会立即执行一次命令，而是在任务创建完成后的 5 分钟后开始执行。\n \n仅在指定时间执行一次：按照设置的时区和执行时间点执行一次命令。格式为 at(yyyy-MM-dd HH:mm:ss <时区>)，即 at(年-月-日 时:分:秒 <时区>)。如果不指定时区，默认为 UTC 时区。时区支持以下三种形式： 时区全称： 如 Asia/Shanghai（中国/上海时间）、America/Los_Angeles（美国/洛杉矶时间）等。 时区相对于格林威治时间的偏移量： 如 GMT+8:00（东八区）、GMT-7:00（西七区）等。使用 GMT 格式时，小时位不支持添加前导零。 时区缩写： 仅支持 UTC（协调世界时间）。\n如果指定在中国/上海时间 2022 年 06 月 06 日 13 时 15 分 30 秒执行一次，格式为：at(2022-06-06 13:15:30 Asia/Shanghai)；如果指定在西七区 2022 年 06 月 06 日 13 时 15 分 30 秒执行一次，格式为：at(2022-06-06 13:15:30 GMT-7:00)。\n\n基于时钟定时执行（基于 Cron 表达式）：基于 Cron 表达式，按照设置的定时任务执行命令。格式为<秒> <分钟> <小时> <日期> <月份> <星期> <年份（可选）> <时区>，即<Cron 表达式> <时区>。在指定的时区下，根据 Cron 表达式推算定时任务执行时间并执行。若不指定时区，默认为执行定时任务实例的系统内部时区。关于 Cron 表达式的更多信息，请参见 Cron 表达式。时区支持以下三种形式： \n    - 时区全称：如 Asia/Shanghai（中国/上海时间）、America/Los_Angeles（美国/洛杉矶时间）等。 \n    - 时区相对于格林威治时间的偏移量：如 GMT+8:00（东八区）、GMT-7:00（西七区）等。使用 GMT 格式时，小时位不支持添加前导零。 \n    - 时区缩写：仅支持 UTC（协调世界时间）。\n\n    例如，在中国/上海时间，2022 年每天上午 10:15 执行一次命令，格式为 0 15 10 ? * * 2022 Asia/Shanghai；在东八区时间，2022 年每天上午 10:00 到 11:30 每隔半小时执行，格式为 0 0/30 10-11 * * ? 2022 GMT+8:00；在 UTC 时间，从 2022 年开始，每隔两年的 10 月每天下午 14:00 到下午 14:55 时间段内每隔 5 分钟执行，格式为 0 0/5 14 * 10 ? 2022/2 UTC",
       "location": "formData",
       "name": "frequency",
@@ -183,7 +183,7 @@
     },
     {
       "example": "{\"name\":\"Jack\", \"accessKey\":\"REDACTED_ACCESS_KEY_ID\"}",
-      "help_en": "The key-value pairs of custom parameters to pass in when the command includes custom parameters. For example, the command content is `echo {{name}}`. You can use `Parameters` to pass in the `{\"name\":\"Jack\"}` key-value pair. The `name` key of the custom parameter is automatically replaced by the paired Jack value to generate a new command. As a result, the `echo Jack` command is run.\n\nYou can specify 0 to 10 custom parameters. Take note of the following:\n\nThe key of a custom parameter can be up to 64 characters in length, and cannot be an empty string.\nThe value of a custom parameter can be an empty string.\nIf you want to retain a command, make sure that the command after Base64 encoding, including custom parameters and original command content, does not exceed 18 KB in size. If you do not want to retain the command, make sure that the command after Base64 encoding does not exceed 24 KB in size. You can set `KeepCommand` to specify whether to retain the command.\nThe specified custom parameter names must be included in the custom parameter names that you specify when you create the command. You can use empty strings to represent the parameters that are not passed in.\n\nThis parameter is left empty by default, which indicates that the custom parameter feature is disabled",
+      "help_en": "The key-value pairs of custom parameters that are passed when the command is executed, if the command contains custom parameters. For example, if the command content is `echo {{name}}`, you can pass the key-value pair `{\"name\":\"Jack\"}` by using the Parameters parameter. The custom parameter automatically replaces the variable value `name`, resulting in a new command. The actual command executed is `echo Jack`.\n\nThe number of custom parameters ranges from 0 to 10. Take note of the following items:\n\nThe key cannot be an empty string and can contain a maximum of 64 characters.\nThe value can be an empty string.\nAfter the custom parameters and the original command content are Base64-encoded, if the command is saved, the size of the Base64-encoded command content cannot exceed 18 KB. If the command is not saved, the size of the Base64-encoded command content cannot exceed 24 KB. You can use KeepCommand to specify whether to retain the command.\nThe set of custom parameter names specified must be a subset of the parameter set defined when the command is created. For parameters that are not passed, you can use an empty string instead.\n\nDefault value: empty. An empty value indicates that this parameter is not specified and the custom parameter feature is disabled",
       "help_zh": "命令中包含自定义参数时，执行命令时传入的自定义参数的键值对。例如，命令内容为`echo {{name}}`，则可以通过`Parameter`参数传入键值对`{\"name\":\"Jack\"}`。自定义参数将自动替换变量值`name`，得到一条新的命令，实际执行的是`echo Jack`。\n\n自定义参数的个数范围为0~10，且您需要注意：\n\n键不允许为空字符串，最多支持64个字符。\n值允许为空字符串。\n自定义参数与原始命令内容在Base64编码后，若保存命令，命令内容在Base64编码后的大小不能超过18 KB；若不保存命令，命令内容在Base64编码后的大小不能超过24 KB。您可通过`KeepCommand`设置是否保留命令。\n设置的自定义参数名集合必须为创建命令时定义的参数集的子集。对于未传入的参数，您可以使用空字符串代替。\n\n默认值为空，表示取消设置该参数从而禁用自定义参数",
       "location": "formData",
       "name": "parameters",
@@ -200,7 +200,7 @@
     },
     {
       "example": "c-e996287206324975b5fbe1d***",
-      "help_en": "The ID of the command",
+      "help_en": "The command ID",
       "help_zh": "命令ID",
       "location": "formData",
       "name": "command_id",
@@ -213,7 +213,7 @@
     },
     {
       "example": "ProcessTree",
-      "help_en": "Indicates how the command task is stopped when a command execution is manually stopped or times out. Valid values:\n\nProcess: The process of the command is stopped. ProcessTree: The process tree of the command is stopped. In this case, the process of the command and all subprocesses are stopped",
+      "help_en": "The mode used when a task is stopped, either manually or due to an execution timeout. Valid values:\n\nProcess: Stops the current script process.\nProcessTree: Stops the current process tree, which includes the script process and all child processes created by it",
       "help_zh": "停止任务（手动停止或执行超时打断）时的模式。可能值：\n\nProcess：停止当前脚本进程。\nProcessTree：停止当前进程树（脚本进程以及它创建的所有子进程的集合）",
       "location": "formData",
       "name": "termination_mode",
@@ -226,7 +226,7 @@
     },
     {
       "example": "python3 -u {{ACS::ScriptFileName|Ext(\".py\")}}",
-      "help_en": "The launcher for script execution. Cannot exceed 1 KB",
+      "help_en": "The launcher for script execution. The size cannot exceed 1 KB",
       "help_zh": "脚本执行的引导程序。长度不能超过 1 KB",
       "location": "formData",
       "name": "launcher",
@@ -248,7 +248,7 @@
         "description_zh": "",
         "properties": {
           "InvokeId": {
-            "description_en": "The ID of the execution",
+            "description_en": "The command execution ID",
             "description_zh": "命令执行ID",
             "example": "t-7d2a745b412b4601b2d47f6a768d*",
             "type": "string"
@@ -257,6 +257,7 @@
             "description_en": "Id of the request",
             "description_zh": "Id of the request",
             "example": "2FE2B22C-CF9D-59DE-BF63-DC9B9B33A9D1",
+            "title_en": "",
             "title_zh": "Id of the request",
             "type": "string"
           }

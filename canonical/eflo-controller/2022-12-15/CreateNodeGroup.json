@@ -62,8 +62,8 @@
         },
         {
           "example": "test-keypair",
-          "help_en": "The key pair name",
-          "help_zh": "密钥对名称",
+          "help_en": "The name of the key pair",
+          "help_zh": "密钥对名称。LoginPassword 与 KeyPairName 至少需提供其一，两者均未提供时接口返回 InvalidParameter",
           "name": "key_pair_name",
           "options": [
             "--key-pair-name"
@@ -74,8 +74,8 @@
         },
         {
           "example": "test-LoginPassword",
-          "help_en": "The logon password",
-          "help_zh": "密码",
+          "help_en": "The password",
+          "help_zh": "密码。LoginPassword 与 KeyPairName 至少需提供其一，两者均未提供时接口返回 InvalidParameter",
           "name": "login_password",
           "options": [
             "--login-password"
@@ -86,7 +86,7 @@
         },
         {
           "example": "mock-machine-type3",
-          "help_en": "The machine type",
+          "help_en": "The instance type",
           "help_zh": "机型",
           "name": "machine_type",
           "options": [
@@ -98,7 +98,7 @@
         },
         {
           "example": "节点分组描述",
-          "help_en": "The node group description",
+          "help_en": "The description of the node group",
           "help_zh": "节点组描述",
           "name": "node_group_description",
           "options": [
@@ -110,7 +110,7 @@
         },
         {
           "example": "PAI-LINGJUN",
-          "help_en": "The node group name",
+          "help_en": "The name of the node group",
           "help_zh": "节点组名称",
           "name": "node_group_name",
           "options": [
@@ -122,7 +122,7 @@
         },
         {
           "example": "xianwen-test-ram-role",
-          "help_en": "The RAM role name of the node. You can call the RAM API ListRoles to query the RAM roles you have created. The trusted entity of the role must be set to Lingjun AI Computing Service.\nNote: Clearing an existing role is not currently supported",
+          "help_en": "The name of the Resource Access Management (RAM) role for the node. You can call the ListRoles operation of RAM to query the RAM roles that you have created. The trusted entity of the specified role must be Lingjun Intelligent Computing.\nNote: You cannot clear an existing role",
           "help_zh": "节点 RAM 角色名称。您可以使用 RAM API ListRoles 查询您已创建的节点 RAM 角色。设置的角色的信任主体必须为“智能计算灵骏”。\n注意：当前暂不支持将已有角色清空",
           "max_length": "128",
           "name": "ram_role_name",
@@ -137,7 +137,7 @@
           "fields": [
             {
               "example": "clou_essd",
-              "help_en": "The cloud disk type. Valid values:\n\ncloud_essd: Enterprise SSD (ESSD) cloud disk",
+              "help_en": "The cloud disk type. Valid values:\n\ncloud_essd: ESSD",
               "help_zh": "磁盘类型。取值范围：\n\ncloud_essd：ESSD云盘",
               "name": "category",
               "options": [
@@ -148,8 +148,32 @@
               "type": "string"
             },
             {
+              "example": "false",
+              "help_en": "Specifies whether to encrypt the system cloud disk. Valid values:\ntrue: Encrypts the system cloud disk.\nfalse: Does not encrypt the system cloud disk.\n\nDefault value: false.\n\n\n<notice>When you use a shared encrypted image to create a cloud disk based on an encrypted snapshot, you must set the Encrypted parameter to true for the cloud disk to ensure that the created cloud disk is encrypted by using the key of the recipient.></notice>\n\nEncrypting the system cloud disk during instance creation is not supported in Zone D of China (Hong Kong) and Zone A of Singapore",
+              "help_zh": "系统盘是否加密。取值范围：\ntrue：加密。\nfalse：不加密。\n\n默认值：false。\n\n\n<notice>当使用共享加密镜像，创建基于加密快照的云盘时，必须指定该云盘的请求参数 Encrypted=true，以确保创建出的云盘使用的是被共享方自己的密钥。></notice>\n\n中国（香港）D 可用区、新加坡 A 可用区暂不支持在创建实例时加密系统盘",
+              "name": "encrypted",
+              "options": [
+                "--encrypted"
+              ],
+              "raw_name": "Encrypted",
+              "required": false,
+              "type": "bool"
+            },
+            {
+              "example": "2ae0a815-a877-4bce-b5ec-4becb8ab4d89",
+              "help_en": "The KMS key ID corresponding to the system cloud disk.\n\nIf Encrypted is set to true but KMSKeyId is not specified, the default key is used for encryption, and the KMSKeyId value is returned after the instance is created.\nIf the cloud disk is created from a non-shared encrypted snapshot, the encryption key used by the snapshot is used by default.\nIf the cloud disk is created from a shared encrypted snapshot, the service key is used by default.\nIf the cloud disk is created in a region where account-level default encryption for Elastic Block Storage (EBS) is enabled, the specified account-level key is used by default.\nIn other cases, the service key is used by default",
+              "help_zh": "系统盘对应的 KMS 密钥 ID。\n\n若 Encrypted 设置为 true，不指定 KMSKeyId，则使用默认的密钥进行加密，并在创建实例成功后返回 KMSKeyId 值。\n云盘通过非共享而来的加密快照创建：默认使用该快照所使用的加密密钥进行加密。\n云盘通过共享而来的加密快照创建：默认使用服务密钥进行加密。\n在已开启块存储账号级默认加密的地域创建：默认使用指定的账号级密钥进行加密。\n其他情况：默认使用服务密钥进行加密",
+              "name": "kms_key_id",
+              "options": [
+                "--kms-key-id"
+              ],
+              "raw_name": "KMSKeyId",
+              "required": false,
+              "type": "string"
+            },
+            {
               "example": "PL1",
-              "help_en": "The performance level (PL) of the ESSD cloud disk used as the system disk. Valid values:\nPL0: a maximum of 10,000 random read/write IOPS per cloud disk.\nPL1: a maximum of 50,000 random read/write IOPS per cloud disk",
+              "help_en": "The performance level of the ESSD when it is used as the system cloud disk. Valid values:\nPL0: A single disk can deliver up to 10,000 random read/write IOPS.\nPL1: A single disk can deliver up to 50,000 random read/write IOPS",
               "help_zh": "创建ESSD云盘作为系统盘使用时，设置云盘的性能等级。取值范围：\nPL0：单盘最高随机读写IOPS 1万。\nPL1：单盘最高随机读写IOPS 5万",
               "name": "performance_level",
               "options": [
@@ -161,7 +185,7 @@
             },
             {
               "example": "1000",
-              "help_en": "The disk size. Unit: GB",
+              "help_en": "The size. Unit: GB",
               "help_zh": "单位GB",
               "name": "size",
               "options": [
@@ -172,7 +196,7 @@
               "type": "int"
             }
           ],
-          "help_en": "The system disk configuration of the node",
+          "help_en": "The system cloud disk configuration details of the node",
           "help_zh": "节点系统盘配置详情",
           "name": "system_disk",
           "options": [
@@ -184,7 +208,7 @@
         },
         {
           "example": "ZWNobyBoZWxsbyBlY3Mh",
-          "help_en": "A custom executable shell script that must be Base64-encoded. The maximum size of the raw data is 16 KB",
+          "help_en": "The custom executable shell script. The script must be Base64-encoded. The maximum size of the raw data is 16 KB",
           "help_zh": "自定义可执行shell脚本，需要以 Base64 方式编码，原始数据最多为 16 KB",
           "name": "user_data",
           "options": [
@@ -196,7 +220,7 @@
         },
         {
           "example": "false",
-          "help_en": "Specifies whether GPU virtualization splitting is enabled",
+          "help_en": "Specifies whether to enable GPU virtualization splitting",
           "help_zh": "是否开启GPU虚拟化切分",
           "name": "virtual_gpu_enabled",
           "options": [
@@ -233,7 +257,7 @@
       "type": "string"
     },
     {
-      "example": "{\\\"NodeUnitId\\\":\\\"3c2999a8-2b95-4409-93c5-ad3985fc5c9f\\\",\\\"ResourceGroupId\\\":\\\"\\\",\\\"MaxNodes\\\":0,\\\"NodeUnitName\\\":\\\"asi_cn-serverless-sale_e01-lingjun-psale\\\"}",
+      "example": "{\"NodeUnitId\":\"3c2999a8-2b95-4409-93c5-ad3985fc5c9f\",\"ResourceGroupId\":\"\",\"MaxNodes\":0,\"NodeUnitName\":\"asi_cn-serverless-sale_e01-lingjun-psale\"}",
       "help_en": "The node information",
       "help_zh": "节点信息",
       "location": "formData",
@@ -266,7 +290,7 @@
             "type": "string"
           },
           "NodeGroupName": {
-            "description_en": "The node group name",
+            "description_en": "The name of the node group",
             "description_zh": "节点组名称",
             "example": "emr-default",
             "type": "string"
@@ -275,6 +299,7 @@
             "description_en": "Id of the request",
             "description_zh": "Id of the request",
             "example": "887FA855-89F4-5DB3-B305-C5879EC480E6",
+            "title_en": "",
             "title_zh": "Id of the request",
             "type": "string"
           }
