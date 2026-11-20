@@ -3,7 +3,7 @@
   "cmd_full_name": "agentcore list-models",
   "cmd_name": "list-models",
   "deprecated": false,
-  "description_en": "Performs a paging query for models in a specified workspace and supports filtering by model connection and model name",
+  "description_en": "Performs a paged query for models in a specified workspace and supports filtering by model connection and model name during paging",
   "description_zh": "分页查询指定工作空间中的模型，支持按模型连接和模型名称筛选",
   "kebab_example": "aliyun agentcore list-models --workspace-id ws-1 --region cn-hangzhou",
   "method": "GET",
@@ -48,7 +48,7 @@
     },
     {
       "example": "bW9kZWwtbWFuYWdlbWVudC1vZmZzZXQ6bW9kZWw6MTA",
-      "help_en": "The pagination token. Specify the token returned from the previous query. An empty response indicates that no more pages are available",
+      "help_en": "The pagination token. Pass the token returned by the previous query in the request. An empty value in the response indicates that no more pages are available",
       "help_zh": "分页令牌。请求时传入上一次查询返回的令牌；响应为空表示没有下一页",
       "location": "query",
       "name": "next_token",
@@ -92,19 +92,19 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The model text response returned when the model is debugged successfully. This field is empty if the debugging fails",
+        "description_en": "The text response returned by the model when model debugging succeeds. This field is empty when debugging fails",
         "description_zh": "模型调试成功时返回的模型文本响应；调试失败时为空",
         "properties": {
           "code": {
             "backendName": "code",
-            "description_en": "The business status code. A value of SUCCESS indicates success",
+            "description_en": "The business status code. The value is SUCCESS if the request is successful",
             "description_zh": "业务状态码。成功时为 SUCCESS",
             "example": "SUCCESS",
             "type": "string"
           },
           "httpStatusCode": {
             "backendName": "httpStatusCode",
-            "description_en": "The HTTP status code. A value of 200 indicates success",
+            "description_en": "The HTTP status code. The value is 200 if the request is successful",
             "description_zh": "HTTP 状态码。成功时为 200",
             "example": "200",
             "format": "int32",
@@ -125,49 +125,49 @@
                   "properties": {
                     "audio": {
                       "backendName": "audio",
-                      "description_en": "Indicates whether the model supports audio input or output",
+                      "description_en": "Specifies whether the model supports audio input or output",
                       "description_zh": "模型是否支持音频输入或输出",
                       "type": "boolean"
                     },
                     "document": {
                       "backendName": "document",
-                      "description_en": "Indicates whether the model supports document input",
+                      "description_en": "Specifies whether the model supports document input",
                       "description_zh": "模型是否支持文档输入",
                       "type": "boolean"
                     },
                     "multiToolCall": {
                       "backendName": "multiToolCall",
-                      "description_en": "Specifies whether the model supports multiple tool calls in a single response",
+                      "description_en": "Specifies whether the model is able to invoke multiple tool calling operations in a single response",
                       "description_zh": "模型是否支持在一次响应中发起多个工具调用",
                       "type": "boolean"
                     },
                     "reasoning": {
                       "backendName": "reasoning",
-                      "description_en": "Indicates whether the model supports reasoning capabilities",
+                      "description_en": "Specifies whether the model supports reasoning capabilities",
                       "description_zh": "模型是否支持推理能力",
                       "type": "boolean"
                     },
                     "streamToolCall": {
                       "backendName": "streamToolCall",
-                      "description_en": "Specifies whether the model supports streaming tool calls",
+                      "description_en": "Specifies whether the model is able to invoke tool calling in a streaming manner",
                       "description_zh": "模型是否支持流式工具调用",
                       "type": "boolean"
                     },
                     "toolCall": {
                       "backendName": "toolCall",
-                      "description_en": "Indicates whether the model supports tool calling",
+                      "description_en": "Specifies whether the model supports tool calling",
                       "description_zh": "模型是否支持工具调用",
                       "type": "boolean"
                     },
                     "video": {
                       "backendName": "video",
-                      "description_en": "Indicates whether the model supports video input",
+                      "description_en": "Specifies whether the model supports video input",
                       "description_zh": "模型是否支持视频输入",
                       "type": "boolean"
                     },
                     "vision": {
                       "backendName": "vision",
-                      "description_en": "Indicates whether the model supports image input",
+                      "description_en": "Specifies whether the model supports image input",
                       "description_zh": "模型是否支持图像输入",
                       "type": "boolean"
                     }
@@ -191,14 +191,14 @@
                 },
                 "createdAt": {
                   "backendName": "createdAt",
-                  "description_en": "The time when the resource was created, in RFC 3339 UTC format",
+                  "description_en": "The time when the resource was created. The time is in RFC 3339 UTC format",
                   "description_zh": "资源创建时间，采用 RFC 3339 UTC 格式",
                   "example": "2026-08-09T00:00:00Z",
                   "type": "string"
                 },
                 "description": {
                   "backendName": "description",
-                  "description_en": "The model description, which can be up to 255 characters in length",
+                  "description_en": "The model description. The description can be up to 255 characters in length",
                   "description_zh": "模型描述，最长 255 个字符",
                   "example": "description",
                   "type": "string"
@@ -227,9 +227,23 @@
                   "example": "qwen-max",
                   "type": "string"
                 },
+                "supportedThinkingLevels": {
+                  "backendName": "supportedThinkingLevels",
+                  "description_en": "The explicit thinking levels supported by the model. An empty list indicates that only the default setting is supported. If this field is omitted, no level information is available",
+                  "description_zh": "模型支持的显式思考强度。空列表表示仅支持默认设置，字段缺省表示暂无档位信息",
+                  "items": {
+                    "description_en": "An explicit thinking level supported by the model, such as high",
+                    "description_zh": "模型支持的一个显式思考强度档位，例如 high",
+                    "example": "high",
+                    "type": "string"
+                  },
+                  "title_en": "模型支持的显式思考强度。空列表表示仅支持默认设置，字段缺省表示暂无档位信息。",
+                  "title_zh": "模型支持的显式思考强度。空列表表示仅支持默认设置，字段缺省表示暂无档位信息。",
+                  "type": "array"
+                },
                 "updatedAt": {
                   "backendName": "updatedAt",
-                  "description_en": "The time when the resource was last updated, in RFC 3339 UTC format",
+                  "description_en": "The time when the resource was last updated. The time is in RFC 3339 UTC format",
                   "description_zh": "资源最后更新时间，采用 RFC 3339 UTC 格式",
                   "example": "2026-08-09T00:00:00Z",
                   "type": "string"
@@ -263,7 +277,7 @@
           },
           "nextToken": {
             "backendName": "nextToken",
-            "description_en": "The pagination token. Specify the token returned from the previous query. An empty response indicates that no more pages are available",
+            "description_en": "The pagination token. Pass the token returned by the previous query in the request. An empty value in the response indicates that no more pages are available",
             "description_zh": "分页令牌。请求时传入上一次查询返回的令牌；响应为空表示没有下一页",
             "example": "bW9kZWwtbWFuYWdlbWVudC1vZmZzZXQ6bW9kZWw6MTA",
             "type": "string"

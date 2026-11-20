@@ -93,7 +93,7 @@
                   "type": "string"
                 }
               ],
-              "help_en": "The caller API key authentication configuration for code-deployed MCP",
+              "help_en": "The caller API key authentication configuration for a code-deployed MCP",
               "help_zh": "代码部署 MCP 的调用方 API Key 认证配置",
               "name": "code_package",
               "options": [
@@ -237,7 +237,7 @@
               "type": "array"
             }
           ],
-          "help_en": "The backend authentication configuration. When enabled is set to true: for DIRECT_PROXY, specify directProxy (name and value); for HTTP_TO_MCP, specify the httpToMcp array (each item includes id, type, and credential, and apiKey also requires position and name). Multiple authentication objects are supported, and the first one is the default upstream credential. HTTP_TO_MCP credentials are merged into the securitySchemes of Swagger",
+          "help_en": "The backend authentication configuration. When enabled is set to true: for DIRECT_PROXY, specify directProxy (name/value); for HTTP_TO_MCP, specify the httpToMcp array (each item includes id, type, and credential, and apiKey also requires position and name). Multiple authentication objects are supported, and the first one is the default upstream credential. HTTP_TO_MCP credentials are merged into the securitySchemes of Swagger",
           "help_zh": "后端认证配置。enabled=true 时：DIRECT_PROXY 填写 directProxy（name/value），HTTP_TO_MCP 填写 httpToMcp 数组（每项 id/type/credential，apiKey 还需 position/name），支持多个认证对象，第一个为默认上游凭证；HTTP_TO_MCP 凭证会合并进 swagger 的 securitySchemes",
           "name": "auth",
           "options": [
@@ -248,10 +248,26 @@
           "type": "object"
         },
         {
+          "enum": [
+            "legacy",
+            "modern"
+          ],
+          "example": "modern",
+          "help_en": "Optional. Valid values: legacy and modern. This parameter is used only for DIRECT_PROXY. If omitted for direct connection, the current value is retained and validated against the existing protocol of the resource. The modern value is incompatible with SSE. Updates are rejected if they break existing client access contracts. For CODE_PACKAGE, this parameter is not required. Valid inputs are ignored, existing field values are not changed, and no publication or Function Compute (FC) session affinity changes are triggered. FC session affinity is configured only based on protocol and DeploymentConfig.McpConfiguration.SessionMode. The gateway protocol is determined by the result of successful probing after FC deployment. For HTTP_TO_MCP, valid values are ignored and not saved",
+          "help_zh": "可选，取值 legacy 或 modern，仅用于 DIRECT_PROXY 直连。直连省略时保留当前值，按资源现有 protocol 校验，modern 与 SSE 不兼容；破坏已有客户端访问契约时拒绝更新。CODE_PACKAGE 无需传入，合法输入忽略，不改变已有字段值，不触发发布或改变 FC 会话亲和；FC 会话亲和仅按 protocol 和 DeploymentConfig.McpConfiguration.SessionMode 配置，网关协议由 FC 部署后成功探测的结果决定。HTTP_TO_MCP 合法值忽略且不保存",
+          "name": "backend_mcp_protocol",
+          "options": [
+            "--backend-mcp-protocol"
+          ],
+          "raw_name": "backendMcpProtocol",
+          "required": false,
+          "type": "string"
+        },
+        {
           "element": {
             "type": "string"
           },
-          "help_en": "The custom tags. You can specify multiple tags. Pass an empty list to clear the tags",
+          "help_en": "The custom tags. Multiple tags are supported. Pass an empty list to clear the tags",
           "help_zh": "自定义标签，支持多个；传空列表可清空",
           "name": "custom_tags",
           "options": [
@@ -278,7 +294,7 @@
                   "type": "string"
                 },
                 {
-                  "help_en": "Specifies whether to enable ingress access control",
+                  "help_en": "Specifies whether to enable entry access control",
                   "help_zh": "是否启用入口访问控制",
                   "name": "enabled",
                   "options": [
@@ -294,7 +310,7 @@
                     "CREDENTIAL"
                   ],
                   "example": "CREDENTIAL",
-                  "help_en": "The access control mode. ANONYMOUS indicates anonymous access, and CREDENTIAL indicates authentication by using AgentCore access credentials",
+                  "help_en": "The access control mode. Valid values:\nANONYMOUS: anonymous access\nCREDENTIAL: AgentCore credential authentication",
                   "help_zh": "ANONYMOUS 表示匿名访问，CREDENTIAL 表示使用 AgentCore 访问凭证",
                   "name": "mode",
                   "options": [
@@ -305,7 +321,7 @@
                   "type": "string"
                 }
               ],
-              "help_en": "The MCP ingress access control configuration",
+              "help_en": "The MCP entry access control",
               "help_zh": "MCP 入口访问控制",
               "name": "access_control",
               "options": [
@@ -318,7 +334,7 @@
             {
               "fields": [
                 {
-                  "help_en": "Specifies whether authorization is enabled",
+                  "help_en": "Specifies whether to enable authorization",
                   "help_zh": "是否启用授权",
                   "name": "authorization_enabled",
                   "options": [
@@ -357,7 +373,7 @@
                   "type": "string"
                 },
                 {
-                  "help_en": "Specifies whether agent identity is enabled",
+                  "help_en": "Specifies whether to enable agent identity",
                   "help_zh": "是否启用 Agent Identity",
                   "name": "enabled",
                   "options": [
@@ -412,7 +428,7 @@
                   "element": {
                     "type": "string"
                   },
-                  "help_en": "The complete startup command, passed sequentially by parameter boundaries. For example, when using supergateway to start a stdio MCP, pass supergateway, --stdio, the complete subcommand, and the remaining parameters",
+                  "help_en": "The complete startup command, passed sequentially as separate arguments. For example, when using supergateway to start a stdio MCP, pass supergateway, --stdio, the complete subcommand, and the remaining parameters",
                   "help_zh": "完整启动命令，按参数边界依次传入。例如使用 supergateway 启动 stdio MCP 时传入 supergateway、--stdio、完整子命令和其余参数",
                   "name": "command",
                   "options": [
@@ -429,7 +445,7 @@
                     "java17"
                   ],
                   "example": "python3.13",
-                  "help_en": "The runtime of the code package. Valid values: python3.13, nodejs22, and java17",
+                  "help_en": "The code package runtime. Valid values: python3.13, nodejs22, or java17",
                   "help_zh": "代码包运行时：python3.13、nodejs22 或 java17",
                   "name": "language",
                   "options": [
@@ -482,7 +498,7 @@
                   "element": {
                     "type": "string"
                   },
-                  "help_en": "The container entrypoint parameters",
+                  "help_en": "The container entrypoint arguments",
                   "help_zh": "容器入口参数",
                   "name": "entrypoint",
                   "options": [
@@ -526,7 +542,7 @@
                     "SELF_HOSTED"
                   ],
                   "example": "SELF_HOSTED",
-                  "help_en": "The MCP runtime mode. Custom containers must currently expose the standard MCP themselves. Set the value to SELF_HOSTED",
+                  "help_en": "The MCP runtime mode. Custom containers must currently expose standard MCP themselves. Set the value to SELF_HOSTED",
                   "help_zh": "自定义容器当前需自行暴露标准 MCP，取值为 SELF_HOSTED",
                   "name": "mcp_runtime_mode",
                   "options": [
@@ -661,7 +677,7 @@
                     ],
                     "type": "object"
                   },
-                  "help_en": "The ordered list of hooks. The PRE_LIST_TOOLS, PRE_CALL_TOOL, POST_LIST_TOOLS, and POST_CALL_TOOL hooks are executed in the order of the array",
+                  "help_en": "The list of hooks executed in array order, including PRE_LIST_TOOLS, PRE_CALL_TOOL, POST_LIST_TOOLS, and POST_CALL_TOOL hooks",
                   "help_zh": "按数组顺序执行 PRE_LIST_TOOLS、PRE_CALL_TOOL、POST_LIST_TOOLS 和 POST_CALL_TOOL Hook",
                   "name": "hooks",
                   "options": [
@@ -802,6 +818,22 @@
                   "raw_name": "sessionMaxLifetimeSeconds",
                   "required": false,
                   "type": "int"
+                },
+                {
+                  "enum": [
+                    "STATEFUL",
+                    "STATELESS"
+                  ],
+                  "example": "STATEFUL",
+                  "help_en": "The session mode. This parameter applies only to StreamableHTTP. Default value: STATEFUL. If omitted during an update, the original value is retained. STATELESS disables Function Compute session affinity, and the stdio gateway does not enable stateful mode. Native HTTP services must support stateless MCP themselves",
+                  "help_zh": "仅适用于 StreamableHTTP。创建时默认 STATEFUL，更新时省略表示保持原值。STATELESS 关闭 FC 会话亲和，且 stdio 网关不启用有状态模式；原生 HTTP 服务需自身支持无状态 MCP",
+                  "name": "session_mode",
+                  "options": [
+                    "--session-mode"
+                  ],
+                  "raw_name": "sessionMode",
+                  "required": false,
+                  "type": "string"
                 }
               ],
               "help_en": "The MCP session configuration",
@@ -818,7 +850,7 @@
               "fields": [
                 {
                   "example": "1000",
-                  "help_en": "The group ID",
+                  "help_en": "The user group ID",
                   "help_zh": "运行用户组 ID",
                   "name": "group_id",
                   "options": [
@@ -1061,7 +1093,7 @@
             {
               "fields": [
                 {
-                  "help_en": "Specifies whether parameter transformation and result enhancement is enabled",
+                  "help_en": "Specifies whether to enable parameter transformation and result enhancement",
                   "help_zh": "是否启用参数转换和结果增强",
                   "name": "enabled",
                   "options": [
@@ -1134,7 +1166,7 @@
               "fields": [
                 {
                   "example": "0.25",
-                  "help_en": "The CPU specifications in cores. Default value: 0.25",
+                  "help_en": "The CPU specification in cores. Default value: 0.25",
                   "help_zh": "单位为核，默认 0.25",
                   "name": "cpu",
                   "options": [
@@ -1146,7 +1178,7 @@
                 },
                 {
                   "example": "512",
-                  "help_en": "The temporary disk size in MB. Valid values: 512 and 10240",
+                  "help_en": "The ephemeral disk size in MB. Valid values: 512 or 10240",
                   "help_zh": "单位为 MB，支持 512 或 10240",
                   "name": "disk_size",
                   "options": [
@@ -1172,7 +1204,7 @@
                 },
                 {
                   "example": "acs:ram::1234567890123456:role/agentcore-mcp-execution",
-                  "help_en": "The ARN of the RAM role used when user code accesses downstream Alibaba Cloud resources",
+                  "help_en": "The ARN of the RAM role used by user code to access downstream Alibaba Cloud resources",
                   "help_zh": "用户代码访问下游阿里云资源时使用的 RAM 角色 ARN",
                   "name": "execution_role_arn",
                   "options": [
@@ -1196,7 +1228,7 @@
                 },
                 {
                   "example": "512",
-                  "help_en": "The memory specifications in MB. Default value: 512",
+                  "help_en": "The memory specification in MB. Default value: 512",
                   "help_zh": "单位为 MB，默认 512",
                   "name": "memory",
                   "options": [
@@ -1242,7 +1274,7 @@
               "type": "object"
             }
           ],
-          "help_en": "The deployment configuration patch for CODE_PACKAGE MCP. Object fields are merged hierarchically. Omit CodeConfiguration.CodePackageToken to retain the current code package, and the server reuses the currently deployed code package. Provide a new non-empty token to replace the code package. CodePackageUrl is only supported in CreateMcp and is not supported during updates",
+          "help_en": "The deployment configuration patch for CODE_PACKAGE MCP. Object fields are merged hierarchically. If you do not replace the code package, omit CodeConfiguration.CodePackageToken, and the server reuses the currently deployed code package. If you replace the code package, pass a new non-empty token. CodePackageUrl is supported only for CreateMcp and is not supported for updates",
           "help_zh": "CODE_PACKAGE MCP 的部署配置补丁，对象字段按层级合并。不替换代码包时省略 CodeConfiguration.CodePackageToken，服务端复用当前已部署代码包；替换代码包时传入新的非空 Token。CodePackageUrl 仅支持 CreateMcp，更新时不支持",
           "name": "deployment_config",
           "options": [
@@ -1265,12 +1297,24 @@
           "type": "string"
         },
         {
+          "example": "2025-03-26",
+          "help_en": "Optional. The format is YYYY-MM-DD. This parameter can be specified during creation and modified during updates. If omitted during an update, the current value is retained. It only saves and displays the origin protocol date metadata. It is not a software version, does not restrict the external gateway protocol, does not control backend requests, does not indicate that real-time verification has passed, and does not trigger deployment. No default value is set, and the date is not restricted by legacy or modern. For HTTP_TO_MCP, valid dates are ignored and not saved",
+          "help_zh": "可选，格式为 YYYY-MM-DD；创建时可填写，更新时可修改，更新省略时保留当前值。仅保存和展示源站协议日期元信息，不是软件版本，不限制网关对外协议，不控制后端请求，也不表示实时验证通过，不触发部署。不设置默认值，不按 legacy/modern 限制日期。HTTP_TO_MCP 忽略合法日期且不保存",
+          "name": "origin_protocol_version",
+          "options": [
+            "--origin-protocol-version"
+          ],
+          "raw_name": "originProtocolVersion",
+          "required": false,
+          "type": "string"
+        },
+        {
           "enum": [
             "PUBLIC",
             "CONTROLLED"
           ],
           "example": "CONTROLLED",
-          "help_en": "The access permission mode. PUBLIC indicates public access. CONTROLLED indicates that access is controlled based on permission rules",
+          "help_en": "PUBLIC indicates public access. CONTROLLED indicates that access is controlled based on permission rules",
           "help_zh": "PUBLIC 表示公开访问；CONTROLLED 表示根据权限规则控制访问",
           "name": "permission_mode",
           "options": [
@@ -1281,8 +1325,20 @@
           "type": "string"
         },
         {
+          "example": "StreamableHTTP",
+          "help_en": "Optional. Valid values: SSE and StreamableHTTP. If this parameter is omitted or set to the current value, the original protocol is retained. Actual modifications are allowed only when the initial origin probing for a CODE_PACKAGE fails and the status is CREATE_PROBE_FAILED. After the server verifies that there are no successfully published versions, no gateway publications, and no pending tasks, a new compute deployment and origin probing are initiated, and the status returns to CREATING. Protocol modifications are not allowed for update failures after a successful publication",
+          "help_zh": "可选，取值 SSE 或 StreamableHTTP。省略或传入当前值时保持原协议；实际修改仅允许 CODE_PACKAGE 首次创建源站探测失败且状态为 CREATE_PROBE_FAILED，服务端复核无成功发布版本、无网关发布和未完成任务后，启动新的计算部署与源站探测，状态回到 CREATING。成功发布后的更新失败不允许修改协议",
+          "name": "protocol",
+          "options": [
+            "--protocol"
+          ],
+          "raw_name": "protocol",
+          "required": false,
+          "type": "string"
+        },
+        {
           "example": "{\"type\":\"object\"}",
-          "help_en": "The Swagger configuration. Specify this field if the type is HTTP_TO_MCP",
+          "help_en": "If Type is set to HTTP_TO_MCP, specify this field",
           "help_zh": "如果Type=HTTP_TO_MCP，填写该字段",
           "name": "swagger_config",
           "options": [
@@ -1307,7 +1363,7 @@
     },
     {
       "example": "123e4567-e89b-12d3-a456-426614174000",
-      "help_en": "The reserved query request identifier. The current console backend does not read this parameter and does not provide idempotency guarantees for deduplication or restoring the original acceptance result based on this identifier",
+      "help_en": "The reserved query request identifier. The console backend does not read this parameter and does not provide idempotency guarantees for deduplication or restoring original results based on this identifier",
       "help_zh": "预留 Query 请求标识，当前控制台后端不读取此参数，不提供按此标识去重或恢复原受理结果的幂等保证",
       "location": "query",
       "name": "client_token",
