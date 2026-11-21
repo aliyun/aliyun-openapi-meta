@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun hologram POST /api/v1/instances/hgpostcn-cn-lbj335xxxx/createModelService --region cn-hangzhou --header \"Content-Type=application/json\"",
+  "camel_example": "aliyun hologram POST /api/v1/instances/hgpostcn-cn-lbj335xxxx/createModelService --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"modelType\":\"qwen3.5-plus\",\"modelServiceName\":\"my_model\"}'",
   "cmd_full_name": "hologram create-model-service",
   "cmd_name": "create-model-service",
   "deprecated": false,
-  "description_en": "Creates a model service that allows AI functions to invoke models. You can create a service for two types of models: a model from Alibaba Cloud Model Studio or a model on a Hologres AI node. If you use a Hologres AI node, you must purchase the AI node resources separately",
+  "description_en": "Creates a model service that enables AI functions to invoke models and supports the creation of two types of models: Alibaba Cloud Model Studio models and Hologres AI nodes. If you use Hologres AI, you must separately purchase AI node resources",
   "description_zh": "创建模型服务，支持AI function调用模型。支持创建两类模型：1）阿里云百炼模型；2）Hologres AI节点。如果是Hologres AI，需要另外购买AI节点资源",
-  "kebab_example": "aliyun hologram create-model-service --instance-id hgpostcn-cn-lbj335xxxx --region cn-hangzhou",
+  "kebab_example": "aliyun hologram create-model-service --instance-id hgpostcn-cn-lbj335xxxx --model-type qwen3.5-plus --model-service-name my_model --api-version 2022-06-01 --region cn-hangzhou",
   "method": "POST",
   "multi_version": true,
   "name": "CreateModelService",
@@ -37,7 +37,7 @@
   "parameters": [
     {
       "example": "hgpostcn-cn-lbj335xxxx",
-      "help_en": "The ID of the instance",
+      "help_en": "The instance ID",
       "help_zh": "实例id",
       "location": "path",
       "name": "instance_id",
@@ -49,8 +49,8 @@
       "type": "string"
     },
     {
-      "example": "api-key-xxx",
-      "help_en": "The API key for Alibaba Cloud Model Studio. This parameter is required only for Model Studio models. You can obtain this key from the Model Studio console or by calling an API",
+      "example": "REDACTED_API_KEY",
+      "help_en": "The API key for Alibaba Cloud Model Studio. Log on to the Model Studio console or use the API to obtain the key. This parameter is required only for Alibaba Cloud Model Studio models",
       "help_zh": "百炼API Key，请登陆百炼控制台或通过API获取。此参数仅百炼模型需要",
       "location": "body",
       "name": "api_key",
@@ -64,7 +64,7 @@
     },
     {
       "example": "16",
-      "help_en": "The number of vCPUs. This parameter is required only for a Hologres AI node",
+      "help_en": "The CPU specifications. This parameter is required only for Hologres AI nodes",
       "help_zh": "CPU，此参数仅Hologres AI节点需要",
       "location": "body",
       "name": "cpu",
@@ -78,7 +78,7 @@
     },
     {
       "example": "1",
-      "help_en": "The number of GPUs. This parameter is required only for a Hologres AI node",
+      "help_en": "The GPU specifications. This parameter is required only for Hologres AI nodes",
       "help_zh": "GPU规格，此参数仅Hologres AI节点需要",
       "location": "body",
       "name": "gpu",
@@ -92,7 +92,7 @@
     },
     {
       "example": "64",
-      "help_en": "The GPU memory size in GB. This parameter is required only for a Hologres AI node",
+      "help_en": "The GPU memory specifications. This parameter is required only for Hologres AI nodes",
       "help_zh": "GPU 内存规格，此参数仅 Hologres AI 节点需要",
       "location": "body",
       "name": "gpu_memory",
@@ -106,7 +106,7 @@
     },
     {
       "example": "64",
-      "help_en": "The memory size in GB. This parameter is required only for a Hologres AI node",
+      "help_en": "The memory specifications. This parameter is required only for Hologres AI nodes",
       "help_zh": "内存规格，此参数仅Hologres AI节点需要",
       "location": "body",
       "name": "memory",
@@ -120,7 +120,7 @@
     },
     {
       "example": "{\"timeout\":600,\"max_retries\":10,\"max_retry_delay\":8,\"initial_retry_delay\":0.5}",
-      "help_en": "The model parameters, required only for Model Studio models. You can provide the default parameters returned by the `ListModelCatalog` operation or a modified version of them",
+      "help_en": "The model parameters. Refer to the default parameters returned by ListModelCatalog. You can pass the parameters directly or modify them as needed before passing. This parameter is required only for Alibaba Cloud Model Studio models",
       "help_zh": "模型参数，请参考ListModelCatalog返回的默认参数，直接传入，有必要则修改后再传入。此参数仅百炼模型需要",
       "location": "body",
       "name": "model_params",
@@ -134,7 +134,7 @@
     },
     {
       "example": "my_model",
-      "help_en": "A custom name for the model service",
+      "help_en": "The custom service name",
       "help_zh": "自定义的服务名称",
       "location": "body",
       "name": "model_service_name",
@@ -148,7 +148,7 @@
     },
     {
       "example": "qwen3.5-plus",
-      "help_en": "The name of the model. To find the name, call `ListModelCatalog` for a model from Alibaba Cloud Model Studio, or `GetAvailableModelsResource` for a model on a Hologres AI node",
+      "help_en": "The model name. To query Alibaba Cloud Model Studio models, call ListModelCatalog. To query Hologres AI nodes, call GetAvailableModelsResource",
       "help_zh": "模型名称。如果是百炼模型，请调用ListModelCatalog查询；如果是Hologres AI节点，请调用GetAvailableModelsResource查询",
       "location": "body",
       "name": "model_type",
@@ -161,9 +161,13 @@
       "type": "string"
     },
     {
+      "enum": [
+        "bailian",
+        "hologres"
+      ],
       "example": "bailian",
-      "help_en": "The provider of the underlying model",
-      "help_zh": "底层模型提供方",
+      "help_en": "The underlying model provider",
+      "help_zh": "底层模型提供方。取值：holo_bailian（阿里云百炼集成模型，与 ListModelCatalog 返回的 provider 一致）、hologres（Hologres AI 节点）。百炼集成模型建议使用 holo_bailian",
       "location": "body",
       "name": "provider",
       "options": [
@@ -176,7 +180,7 @@
     },
     {
       "example": "2",
-      "help_en": "The number of replicas. This parameter is required only for a Hologres AI node",
+      "help_en": "The number of service replicas. This parameter is required only for Hologres AI nodes",
       "help_zh": "服务副本数，此参数仅 Hologres AI 节点需要",
       "location": "body",
       "name": "service_count",
@@ -190,7 +194,7 @@
     },
     {
       "example": "embedding",
-      "help_en": "The type of task the model performs, such as `chat/completions` or `embedding`. To find the supported task types, see the output of the `ListModelCatalog` operation",
+      "help_en": "The model type, such as chat/completions or embedding. Refer to the types returned by ListModelCatalog and create the model as needed",
       "help_zh": "模型类型，比如chat/completions，embedding。请参考ListModelCatalog返回的类型，按需创建",
       "location": "body",
       "name": "task_type",
@@ -209,19 +213,19 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response schema",
+        "description_en": "Schema of Response",
         "description_zh": "Schema of Response",
         "properties": {
           "data": {
             "backendName": "data",
-            "description_en": "Indicates whether the operation was successful. A value of `true` indicates success, and `false` indicates failure",
+            "description_en": "Indicates whether the request is successful. Valid values: true: Successful. false: Failed",
             "description_zh": "true:成功；false：失败",
             "example": "true",
             "type": "boolean"
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The ID of the request",
+            "description_en": "Id of the request",
             "description_zh": "Id of the request",
             "example": "819A7F0F-2951-540F-BD94-6A41ECF0281F",
             "title_en": "Id of the request",
