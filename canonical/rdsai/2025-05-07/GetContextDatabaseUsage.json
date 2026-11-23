@@ -1,0 +1,149 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "rdsai get-context-database-usage",
+  "cmd_name": "get-context-database-usage",
+  "deprecated": false,
+  "description_en": "Queries the context database usage of the caller account within a specified time range. If WorkspaceId is specified, queries a single workspace. If omitted, aggregates all workspaces under the account. Returns fixed metering items with their units and quantities, filling zero for items with no data. This operation does not return a separate credit amount field. To query amounts, call ListContextDatabaseCreditUsageRecords or GetContextDatabaseCreditUsageSummary",
+  "description_zh": "查询调用方账号在指定时间区间内的上下文数据库用量。指定 `WorkspaceId` 时查询单个 Workspace，省略时汇总账号下全部 Workspace。返回固定的计量项目及其单位和数量，无数据的项目补零。本接口不返回单独的 Credit 金额字段；如需查询金额，请调用 `ListContextDatabaseCreditUsageRecords` 或 `GetContextDatabaseCreditUsageSummary`",
+  "kebab_example": "",
+  "method": "GET|POST",
+  "multi_version": false,
+  "name": "GetContextDatabaseUsage",
+  "operation": {
+    "action": "GetContextDatabaseUsage",
+    "api_style": "RPC",
+    "api_version": "2025-05-07",
+    "method": "POST",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "get",
+    "url": "/"
+  },
+  "parameters": [
+    {
+      "example": "2026-07-01T00:00:00Z",
+      "help_en": "The start time of the query range, inclusive. Use the ISO 8601 time format, such as 2026-07-01T00:00:00Z (UTC)",
+      "help_zh": "查询区间的开始时间，包含该时刻。使用 ISO 8601 时间格式，例如 `2026-07-01T00:00:00Z`（UTC）",
+      "location": "query",
+      "name": "start_time",
+      "options": [
+        "--start-time"
+      ],
+      "raw_name": "StartTime",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "2026-08-01T00:00:00Z",
+      "help_en": "The end time of the query range, exclusive. It must be later than StartTime. Use the ISO 8601 time format, such as 2026-08-01T00:00:00Z (UTC)",
+      "help_zh": "查询区间的结束时间，不包含该时刻，必须晚于 `StartTime`。使用 ISO 8601 时间格式，例如 `2026-08-01T00:00:00Z`（UTC）",
+      "location": "query",
+      "name": "end_time",
+      "options": [
+        "--end-time"
+      ],
+      "raw_name": "EndTime",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "ws-x9z4ctzed9gfu2w",
+      "help_en": "The ID of the workspace to query. If specified, only the data of this workspace under the caller account is queried. Locked workspaces can also be queried. If omitted, all workspaces under the caller account are queried",
+      "help_zh": "要查询的 Workspace ID。指定时只查询调用方账号下该 Workspace 的数据，已锁定的 Workspace 也可查询；省略时查询调用方账号下的全部 Workspace",
+      "location": "query",
+      "name": "workspace_id",
+      "options": [
+        "--workspace-id"
+      ],
+      "raw_name": "WorkspaceId",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/",
+  "product_code": "RdsAi",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "description_en": "查询成功",
+      "description_zh": "查询成功",
+      "schema": {
+        "description_en": "The query succeeded",
+        "description_zh": "查询成功",
+        "properties": {
+          "Dimension": {
+            "backendName": "data.dimension",
+            "description_en": "The query dimension. A value of Workspace indicates a single workspace. A value of Account indicates all workspaces under the caller account",
+            "description_zh": "查询维度：`Workspace` 表示单个 Workspace；`Account` 表示调用方账号下全部 Workspace",
+            "example": "Workspace",
+            "type": "string"
+          },
+          "EndTime": {
+            "backendName": "data.endTime",
+            "description_en": "The end time of the query range passed in the request, exclusive",
+            "description_zh": "请求中传入的查询区间结束时间，不包含该时刻",
+            "example": "2026-08-01T00:00:00Z",
+            "type": "string"
+          },
+          "Items": {
+            "backendName": "data.items",
+            "description_en": "The usage list. Returns all 7 metering items in a fixed order. If an item has no data within the query range, its usage is 0",
+            "description_zh": "用量列表，按固定顺序返回全部 7 个计量项目；某项在查询区间内没有数据时，其用量为 0",
+            "itemName": "items",
+            "items": {
+              "properties": {
+                "Item": {
+                  "backendName": "item",
+                  "description_en": "The metering item",
+                  "description_zh": "计量项目",
+                  "example": "KnowledgeBaseRead",
+                  "type": "string"
+                },
+                "Quantity": {
+                  "backendName": "quantity",
+                  "description_en": "The usage of the item within the query range. The unit is specified by Unit. Invocations, tokens, and context evolution are accumulated over the range. Storage is calculated by averaging the usage snapshots of each workspace within the range and rounding to the nearest whole byte. For the account dimension, the average values of all workspaces are summed",
+                  "description_zh": "该项目在查询区间内的用量，单位由 `Unit` 指定。次数、Token 和上下文演进按区间累计。存储按每个 Workspace 在区间内的占用快照计算平均值并四舍五入为整字节；账号维度将各 Workspace 的平均值相加",
+                  "example": "15",
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "Unit": {
+                  "backendName": "unit",
+                  "description_en": "The metering unit. A value of Count indicates the number of invocations. A value of Token indicates the number of tokens. A value of MicroCredit indicates one millionth of a credit. A value of Byte indicates bytes",
+                  "description_zh": "计量单位：`Count` 表示次数，`Token` 表示词元数，`MicroCredit` 表示百万分之一 Credit，`Byte` 表示字节",
+                  "example": "Count",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "RequestId": {
+            "backendName": "requestId",
+            "description_en": "The ID of the API request, which is used to troubleshoot invocation issues",
+            "description_zh": "本次 OpenAPI 请求的 ID，用于定位调用问题",
+            "example": "00000000-0000-4000-8000-000000000001",
+            "type": "string"
+          },
+          "StartTime": {
+            "backendName": "data.startTime",
+            "description_en": "The start time of the query range passed in the request, inclusive",
+            "description_zh": "请求中传入的查询区间开始时间，包含该时刻",
+            "example": "2026-07-01T00:00:00Z",
+            "type": "string"
+          },
+          "WorkspaceId": {
+            "backendName": "data.workspaceId",
+            "description_en": "The ID of the queried workspace. This parameter has a value only when Dimension is Workspace. It is empty for the account dimension",
+            "description_zh": "查询的 Workspace ID。仅在 `Dimension` 为 `Workspace` 时有值；账号维度下为空",
+            "example": "ws-x9z4ctzed9gfu2w",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "timeout_ms": 32000
+}
