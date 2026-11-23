@@ -2,9 +2,9 @@
   "cmd_full_name": "appstream-center query-model-usage-list",
   "cmd_name": "query-model-usage-list",
   "deprecated": false,
-  "description_en": "Performs a paging query to retrieve the invoke count, consumed points, success rate, and time to first token (TTFT) latency of each model by business type, statistical window, and model type",
+  "description_en": "Performs a paged query to retrieve the invoke count, consumed points, success rate, and time to first token (TTFT) latency of each model, supporting paging by business type, statistical window, and model type",
   "description_zh": "按业务、统计窗口和模型类型分页查询各模型的调用次数、消耗积分、成功率及首 Token 时延",
-  "kebab_example": "",
+  "kebab_example": "aliyun appstream-center query-model-usage-list --biz-type 1 --stat-date-type 1d --api-version 2021-09-01 --region cn-hangzhou",
   "method": "POST",
   "multi_version": true,
   "name": "QueryModelUsageList",
@@ -21,7 +21,7 @@
   "parameters": [
     {
       "example": "1",
-      "help_en": "The business type. This parameter is required and has no default value. The mapping between business types and values is as follows:\n\n1: Enterprise Edition.\n10: Personal Edition.\n20: Commercial Edition.\n70: Agentic Computer.\n\nThe API operation directly queries the model usage of the current account based on the specified BizType and does not automatically convert or replace the business type. To query the usage of the Agentic Computer business, you must explicitly set BizType to 70. The usage of different business types is counted separately",
+      "help_en": "The business type. This parameter is required and has no default value. The mapping between business types and valid values is as follows:\n\n`1`: Enterprise Edition.\n`10`: Personal Edition.\n`20`: Commercial Edition.\n`70`: Agentic Computer.\n\nThe API operation directly queries the model usage of the current account based on the passed `BizType` and does not automatically convert or replace the business type. When querying the usage of the Agentic Computer business, you must explicitly pass `BizType=70`. The usage of different business types is counted separately",
       "help_zh": "业务类型，必填，无默认值。业务类型与取值的对应关系如下：\n\n`1`：企业版。\n`10`：个人版。\n`20`：商业版。\n`70`：Agentic Computer。\n\n接口直接按传入的 `BizType` 查询当前账号的模型用量，不会自动转换或替换业务类型。 查询 Agentic Computer 业务的用量时，必须显式传入 `BizType=70`。不同业务类型的用量分别统计",
       "location": "query",
       "name": "biz_type",
@@ -41,7 +41,7 @@
         "30d"
       ],
       "example": "1d",
-      "help_en": "The statistical window. This parameter is required and has no default value. The value is case-sensitive and does not support leading or trailing spaces. Time boundaries are calculated based on Asia/Shanghai (UTC+8).\n\n24h: The last 24 hours up to the most recent available statistical cutoff time. The statistical cutoff time corresponds to the current hour or the previous hour.\n1d: Queries the cumulative usage for today if the start and end dates are not specified. Queries the specified natural day range if both StartDate and EndDate are specified.\n1w: The last 7 days up to the day of the request. If the statistical results for the current day are unavailable, the results from the previous day are not used.\n30d: The last 30 days up to the day of the request. If the statistical results for the current day are unavailable, the results from the previous day are not used.\n1y: The statistical results for the last 365 days. If the results for the current year are unavailable, the statistical results for the previous year may be returned. The actual coverage range may be earlier than the day of the request. This API operation does not return the statistical cutoff time for this result. You cannot use this to confirm that the data has been updated to the current day.\n\nOnly 1d supports custom date ranges. Do not specify start and end dates for other windows",
+      "help_en": "The statistical window. This parameter is required, has no default value, is case-sensitive, and does not support leading or trailing spaces. Time boundaries are calculated based on Asia/Shanghai (UTC+8).\n\n`24h`: The last 24 hours up to the most recent available statistical cutoff time. The statistical cutoff time corresponds to the current hour or the previous hour.\n`1d`: If the start and end dates are not passed, the cumulative usage for today is queried. If both `StartDate` and `EndDate` are passed, the specified calendar day range is queried.\n`1w`: The last 7 days up to the day of the request. If the statistical results for the current day are unavailable, the results from the previous day are not used.\n`30d`: The last 30 days up to the day of the request. If the statistical results for the current day are unavailable, the results from the previous day are not used.\n`1y`: The statistical results for the last 365 days. If the results for the current year are unavailable, the statistical results for the previous year may be returned, and the actual coverage range may be earlier than the day of the request. This API operation does not return the statistical cutoff time for this result, so you cannot use it to confirm whether the data has been updated to the current day.\n\nOnly `1d` supports custom date ranges. Do not pass start and end dates for other windows",
       "help_zh": "统计窗口，必填，无默认值，取值区分大小写，且不支持首尾空格。时间边界均按 Asia/Shanghai（UTC+8） 计算。\n\n`24h`：截至最近可用统计截止时刻的近 24 小时。统计截止时刻对应当前小时或前一小时。\n`1d`：不传起止日期时查询今日累计用量；同时传入 `StartDate` 和 `EndDate` 时查询指定自然日范围。\n`1w`：截至请求当天的近 7 天。当天统计结果不可用时，不使用前一天结果。\n`30d`：截至请求当天的近 30 天。当天统计结果不可用时，不使用前一天结果。\n`1y`：近 365 天统计结果；当前年度结果不可用时可能返回上一年度的统计结果，实际覆盖范围可能早于请求当天。本接口不返回该结果的统计截止时刻，不能据此确认数据已更新到当天。\n\n仅 `1d` 支持自定义日期范围；其他窗口不得传入起止日期",
       "location": "query",
       "name": "stat_date_type",
@@ -54,7 +54,7 @@
     },
     {
       "example": "2026-08-01",
-      "help_en": "The start date of the custom query in yyyy-MM-dd format. It is interpreted as a natural day in Asia/Shanghai (UTC+8) and includes the current day. The value is a date string and does not contain hours, minutes, seconds, or time zone suffixes.\n\nThis parameter can be specified only when StatDateType is set to 1d, and it must be specified or omitted together with EndDate. The start date cannot be later than the end date. The total number of days, including the start and end dates, must be between 1 and 90. If both parameters are omitted, the cumulative usage for today is queried. If you do not use custom dates, omit these two parameters directly. Do not pass empty strings or pure whitespace",
+      "help_en": "The start date of the custom query. The format is `yyyy-MM-dd`. It is interpreted as a calendar day in the Asia/Shanghai (UTC+8) time zone and includes the current day. The value is a date string and does not contain hours, minutes, seconds, or a time zone suffix.\n\nThis parameter can be passed only when `StatDateType` is set to `1d`, and it must be passed or omitted together with `EndDate`. The start date cannot be later than the end date. The total number of days, including the start and end dates, must be between 1 and 90. If both are omitted, the cumulative usage for today is queried. When custom dates are not used, omit these two parameters directly. Do not pass empty strings or pure whitespace",
       "help_zh": "自定义查询的开始日期，格式为 `yyyy-MM-dd`，按 Asia/Shanghai（UTC+8）自然日解释，包含当日。该值是日期字符串，不包含时分秒或时区后缀。\n\n仅当 `StatDateType=1d` 时可传，且必须与 `EndDate` 同时传入或同时省略。 开始日期不得晚于结束日期，包含首尾两天的总天数为 1～90 天。两者都省略时查询今日累计用量。 不使用自定义日期时，请直接省略这两个参数，不要传空字符串或纯空白",
       "location": "query",
       "name": "start_date",
@@ -67,7 +67,7 @@
     },
     {
       "example": "2026-08-07",
-      "help_en": "The end date of the custom query in yyyy-MM-dd format. It is interpreted as a natural day in Asia/Shanghai (UTC+8) and includes the current day. The value is a date string and does not contain hours, minutes, seconds, or time zone suffixes.\n\nThis parameter can be specified only when StatDateType is set to 1d, and it must be specified or omitted together with StartDate. The end date cannot be earlier than the start date. The total number of days, including the start and end dates, must not exceed 90. If you do not use custom dates, omit these two parameters directly. Do not pass empty strings or pure whitespace",
+      "help_en": "The end date of the custom query. The format is `yyyy-MM-dd`. It is interpreted as a calendar day in the Asia/Shanghai (UTC+8) time zone and includes the current day. The value is a date string and does not contain hours, minutes, seconds, or a time zone suffix.\n\nThis parameter can be passed only when `StatDateType` is set to `1d`, and it must be passed or omitted together with `StartDate`. The end date cannot be earlier than the start date. The total number of days, including the start and end dates, must not exceed 90. When custom dates are not used, omit these two parameters directly. Do not pass empty strings or pure whitespace",
       "help_zh": "自定义查询的结束日期，格式为 `yyyy-MM-dd`，按 Asia/Shanghai（UTC+8）自然日解释，包含当日。该值是日期字符串，不包含时分秒或时区后缀。\n\n仅当 `StatDateType=1d` 时可传，且必须与 `StartDate` 同时传入或同时省略。 结束日期不得早于开始日期，包含首尾两天的总天数不得超过 90 天。 不使用自定义日期时，请直接省略这两个参数，不要传空字符串或纯空白",
       "location": "query",
       "name": "end_date",
@@ -87,7 +87,7 @@
         "VIDEO"
       ],
       "example": "LLM",
-      "help_en": "The model type filter condition. If this parameter is not specified or an empty string is passed, no filtering by type is performed. The value is case-insensitive:\n\nLLM: Large language model.\nIMAGE: Image model.\nVIDEO: Video model.\nAUDIO: Audio model.\nEMBEDDING: Embedding model.\n\nNon-empty values do not support leading or trailing spaces. Other non-empty values besides the preceding ones cause parameter validation to fail",
+      "help_en": "The model type filter condition. If this parameter is not passed or an empty string is passed, no filtering by type is performed. The value is case-insensitive:\n\n`LLM`: Large language model.\n`IMAGE`: Image model.\n`VIDEO`: Video model.\n`AUDIO`: Audio model.\n`EMBEDDING`: Embedding model.\n\nNon-empty values do not support leading or trailing spaces. Non-empty values other than the preceding values cause parameter validation to fail",
       "help_zh": "模型类型筛选条件。不传或传入空白字符串时不按类型筛选，取值不区分大小写：\n\n`LLM`：大语言模型。\n`IMAGE`：图像模型。\n`VIDEO`：视频模型。\n`AUDIO`：语音模型。\n`EMBEDDING`：向量模型。\n\n非空取值不支持首尾空格。除上述值外的其他非空取值会导致参数校验失败",
       "location": "query",
       "name": "model_type",
@@ -100,7 +100,7 @@
     },
     {
       "example": "qwen",
-      "help_en": "The keyword for the model name or model code. After removing leading and trailing whitespace, a case-insensitive inclusion match is performed. It is not a regular expression. If this parameter is not specified or is entirely whitespace, no filtering by keyword is performed. If it is specified together with ModelType, both conditions take effect simultaneously.\n\nThe translated display names of some models do not participate in name matching. To stably locate a model, we recommend that you use the returned LlmCode as the keyword",
+      "help_en": "The keyword for the model name or model code. After leading and trailing whitespace is removed, a case-insensitive inclusion match is performed. It is not a regular expression. If this parameter is not passed or is completely whitespace, no filtering by keyword is performed. If it is passed together with `ModelType`, both conditions take effect simultaneously.\n\nThe translated display names of some models do not participate in name matching. When you need to stably locate a model, we recommend that you use the returned `LlmCode` as the keyword",
       "help_zh": "模型名称或模型编码的关键词。去除首尾空白后进行不区分大小写的包含匹配，不是正则表达式。未传或全为空白时不按关键词筛选；与 `ModelType` 同时传入时，两项条件同时生效。\n\n部分模型翻译后的展示名称不参与名称匹配。需要稳定定位模型时，建议使用返回的 `LlmCode` 作为关键词",
       "location": "query",
       "name": "keyword",
@@ -119,7 +119,7 @@
         "SUCCESS_RATE_ASC"
       ],
       "example": "CALL_COUNT_DESC",
-      "help_en": "The sorting method. If this parameter is not specified or is empty, the default value is CALL_COUNT_DESC. The value is case-sensitive. Non-empty values do not support leading or trailing spaces:\n\nCALL_COUNT_DESC: Sorts by call count in descending order.\nPOINTS_CONSUMPTION_DESC: Sorts by consumed points in descending order.\nSUCCESS_RATE_ASC: Sorts by call success rate in ascending order. Models with unavailable success rates are ranked last.\nAVG_TTFT_DESC: Sorts by average time to first token (TTFT) latency in descending order. Models with unavailable latencies are ranked last.\n\nWhen sorting values are the same, the models are sorted by model code LlmCode in ascending order. Filtering and sorting are performed before pagination. Other non-empty values besides the preceding ones cause parameter validation to fail",
+      "help_en": "The sorting method. If this parameter is not passed or is empty, the default value is `CALL_COUNT_DESC`. The value is case-sensitive, and non-empty values do not support leading or trailing spaces:\n\n`CALL_COUNT_DESC`: Sort by call count in descending order.\n`POINTS_CONSUMPTION_DESC`: Sort by consumed points in descending order.\n`SUCCESS_RATE_ASC`: Sort by call success rate in ascending order. Models with unavailable success rates are ranked last.\n`AVG_TTFT_DESC`: Sort by average time to first token (TTFT) latency in descending order. Models with unavailable latency are ranked last.\n\nWhen sorting values are the same, sort by model code `LlmCode` in ascending order. Filtering and sorting are performed before pagination. Non-empty values other than the preceding values cause parameter validation to fail",
       "help_zh": "排序方式。未传或为空白时默认为 `CALL_COUNT_DESC`。取值区分大小写，非空取值不支持首尾空格：\n\n`CALL_COUNT_DESC`：按调用次数降序。\n`POINTS_CONSUMPTION_DESC`：按消耗积分降序。\n`SUCCESS_RATE_ASC`：按调用成功率升序，成功率不可用的模型排在最后。\n`AVG_TTFT_DESC`：按平均首 Token 时延降序，时延不可用的模型排在最后。\n\n排序值相同时，按模型编码 `LlmCode` 升序。先筛选、排序，再分页。 除上述值外的其他非空取值会导致参数校验失败",
       "location": "query",
       "name": "sort_type",
@@ -132,7 +132,7 @@
     },
     {
       "example": "1",
-      "help_en": "The page number. It starts from 1 and the default value is 1. It must be an integer greater than or equal to 1. It is used together with PageSize for pagination. If the page number exceeds the range of the filtered results, an empty list is returned",
+      "help_en": "The page number. It starts from `1` and the default value is `1`. It must be an integer greater than or equal to 1. It is used together with `PageSize` for pagination. If the page number exceeds the range of the filtered results, an empty list is returned",
       "help_zh": "页码，从 `1` 开始，默认值为 `1`。必须为大于或等于 1 的整数。与 `PageSize` 配合分页；页码超出筛选结果范围时返回空列表",
       "location": "query",
       "name": "page_number",
@@ -145,7 +145,7 @@
     },
     {
       "example": "1",
-      "help_en": "The maximum number of models to return per page. The default value is 10. Valid values: 1 to 100",
+      "help_en": "The maximum number of models to return per page. The default value is `10`. Valid values: `1` to `100`",
       "help_zh": "每页最多返回的模型数量。默认值为 `10`，取值范围为 `1`～`100`，单位：个",
       "location": "query",
       "name": "page_size",
@@ -164,7 +164,7 @@
         "zh-TW"
       ],
       "example": "zh-CN",
-      "help_en": "The model display language. Valid values:\n\nzh-CN: Simplified Chinese.\nen-US: English.\nja-JP: Japanese.\nzh-TW: Traditional Chinese.\n\nIf this parameter is not specified, is empty, or is an unsupported value, zh-CN is used. It is also compatible with zh_CN, en_US, ja_JP, zh_TW, en, and ja. Case and leading or trailing whitespace are ignored.\n\nThe returned content is not guaranteed to be entirely in the selected language. Some model names and descriptions are provided in Japanese or Traditional Chinese. Other model information, brands, and capability tags use English when ja-JP is selected, and Simplified Chinese when zh-TW is selected. If the corresponding translation is missing, the existing content is retained. If the model name is missing, the model code is returned",
+      "help_en": "The display language for models. Valid values:\n\n`zh-CN`: Simplified Chinese.\n`en-US`: English.\n`ja-JP`: Japanese.\n`zh-TW`: Traditional Chinese.\n\nIf this parameter is not passed, is empty, or is an unsupported value, `zh-CN` is used. It is also compatible with `zh_CN`, `en_US`, `ja_JP`, `zh_TW`, `en`, and `ja`, ignoring case and leading or trailing whitespace.\n\nThe returned content is not guaranteed to be entirely in the selected language. Some model names and descriptions are provided in Japanese or Traditional Chinese. For other model information, brands, and capability tags, English is used when `ja-JP` is selected, and Simplified Chinese is used when `zh-TW` is selected. If the corresponding translation is missing, the existing content is retained. If the model name is missing, the model code is returned",
       "help_zh": "模型展示语言。取值：\n\n`zh-CN`：简体中文。\n`en-US`：英文。\n`ja-JP`：日语。\n`zh-TW`：繁体中文。\n\n未传、空白或不支持的值使用 `zh-CN`。同时兼容 `zh_CN`、`en_US`、`ja_JP`、`zh_TW` 以及 `en`、`ja`，忽略大小写和首尾空白。\n\n返回内容不保证全部为所选语言。部分模型名称和简介提供日语或繁体中文；其他模型资料、品牌和能力标签在选择 `ja-JP` 时使用英文，选择 `zh-TW` 时使用简体中文。缺少对应翻译时保留已有内容；模型名称缺失时返回模型编码",
       "location": "query",
       "name": "language",
@@ -187,7 +187,7 @@
         "properties": {
           "Data": {
             "backendName": "data",
-            "description_en": "The model usage details on the current page. If no models match or the page number exceeds the result range, an empty list is returned. For 24h or 1d queries without specified start and end dates, an empty list is also returned if no statistical results are available. For other windows or custom date ranges, no valid list data is provided if no statistical results are available. The absence of statistical results does not directly indicate that no actual calls were made",
+            "description_en": "The model usage details on the current page. An empty list is returned if no models match the criteria or the page number exceeds the result range. An empty list is also returned for 24h or 1d queries without specified start and end dates when no statistical results are available. For other windows or custom date ranges, no valid list data is provided when no statistical results are available. The absence of statistical results does not necessarily indicate that no actual calls were made",
             "description_zh": "当前页的模型用量明细。没有匹配模型或页码超出结果范围时，返回空列表。未指定起止日期的 `24h` 或 `1d` 查询没有可用统计结果时，也返回空列表；其他窗口或自定义日期范围没有可用统计结果时，不提供有效列表数据。统计结果缺失不能直接解释为没有实际调用",
             "example": "[{\"LlmCode\":\"qwen3-max-2026-01-23\",\"ModelName\":\"Qwen3 Max\",\"CallCount\":12480,\"FailureCount\":180,\"PointsConsumption\":100,\"InputPointsRate\":0.739,\"OutputPointsRate\":0.261,\"SuccessRate\":0.98557692,\"AvgTtftMs\":620,\"CacheHitRate\":0.86}]",
             "itemName": "Data",
@@ -198,7 +198,7 @@
               "properties": {
                 "AvgTtftMs": {
                   "backendName": "avgTtftMs",
-                  "description_en": "The average time to first token (TTFT), calculated by dividing the total duration of valid TTFT samples by the number of samples, in milliseconds, rounded to the nearest integer. This field is empty if no valid samples are available. It does not represent the total time taken for a complete response",
+                  "description_en": "The average time to first token (TTFT), which is the total duration of valid TTFT samples divided by the number of samples, in milliseconds, rounded to the nearest integer. This parameter is empty when no valid samples are available. It does not represent the total time taken for a complete response",
                   "description_zh": "平均首 Token 时延，即有效首 Token 时延样本的总时长除以样本数，单位：毫秒，四舍五入到整数。没有有效样本时为空；不代表完整响应的总耗时",
                   "example": "620",
                   "format": "int64",
@@ -208,7 +208,7 @@
                 },
                 "CacheHitRate": {
                   "backendName": "cacheHitRate",
-                  "description_en": "The proportion of cached input usage to the total input usage, expressed as a decimal between 0 and 1. For example, 0.86 indicates 86%. It is not the proportion of requests that hit the cache. This field is empty if the basic usage is incomplete or the total input usage is 0. The return value is rounded to a maximum of 8 decimal places",
+                  "description_en": "The proportion of cached input usage to the total input usage, represented as a decimal between 0 and 1. For example, 0.86 indicates 86%. It is not the proportion of requests that hit the cache. This parameter is empty when the basic usage is incomplete or the total input usage is 0. The return value is rounded to a maximum of 8 decimal places",
                   "description_zh": "命中缓存的输入用量占总输入用量的比例，为 0～1 的小数，例如 `0.86` 表示 86%。它不是命中缓存的请求次数占比。基础用量不完整或总输入用量为 0 时为空。 返回值四舍五入后最多保留 8 位小数",
                   "example": "0.86",
                   "format": "double",
@@ -228,7 +228,7 @@
                 },
                 "ContextWindow": {
                   "backendName": "contextWindow",
-                  "description_en": "The maximum context length of the model, in tokens. This field is empty if no model information is available",
+                  "description_en": "The maximum context length of the model, in tokens. This parameter is empty when no model information is available",
                   "description_zh": "模型最大上下文长度，单位：Token。没有可用模型资料时为空",
                   "example": "1000000",
                   "format": "int64",
@@ -238,7 +238,7 @@
                 },
                 "CreditMultiplier": {
                   "backendName": "creditMultiplier",
-                  "description_en": "The display range of the credit consumption multiplier, in multiples. It is used to display price hints and is not used to recalculate the PointsConsumption returned by this API operation.\n\nIf Min and Max are equal: fixed multiplier.\nIf Max is greater than Min: multiplier range.\nIf Max is empty: starts from the Min multiplier.\nIf the entire object is empty: the model does not participate in credit billing, or no multiplier information is available. An empty value for this field alone does not indicate whether the model is actually billed",
+                  "description_en": "The display range of the credit consumption multiplier, in multiples. It is used to display price hints and is not used to recalculate the PointsConsumption returned by this API operation.\n\nIf Min and Max are equal, it indicates a fixed multiplier.\nIf Max is greater than Min, it indicates a multiplier range.\nIf Max is empty, it indicates a starting multiplier of Min.\nIf the entire object is empty, it indicates that the model does not participate in credit billing or no multiplier information is available. An empty value for this field alone cannot determine whether actual charges apply",
                   "description_zh": "积分消耗倍率的展示范围，单位：倍。用于展示价格提示，不用于再次计算本接口返回的 `PointsConsumption`。\n\n`Min` 与 `Max` 相等：固定倍率。\n`Max` 大于 `Min`：倍率区间。\n`Max` 为空：从 `Min` 倍起。\n整个对象为空：不参与积分计费，或没有可用倍率资料；仅凭该字段为空不能判断实际是否收费",
                   "example": "{\"Min\":1,\"Max\":3}",
                   "parseType": "struct",
@@ -270,7 +270,7 @@
                 },
                 "Description": {
                   "backendName": "description",
-                  "description_en": "The description of the model. The display language is affected by Language. This field is empty if no description is available",
+                  "description_en": "The description of the model. The display language is affected by Language. This parameter is empty when no description is available",
                   "description_zh": "模型简介，显示语言受 `Language` 影响；没有可用简介时为空",
                   "example": "通义千问大语言模型",
                   "title_en": "模型简介；无法补全时为空",
@@ -279,6 +279,7 @@
                 },
                 "ExplicitCacheCreationPointsRate": {
                   "backendName": "explicitCacheCreationPointsRate",
+                  "description_en": "The proportion of explicit cache creation credits to the total credits. This parameter is empty when it cannot be calculated",
                   "description_zh": "显式缓存创建积分占总积分的比例，无法计算时为空",
                   "example": "0.115",
                   "format": "double",
@@ -288,6 +289,7 @@
                 },
                 "ExplicitCacheHitPointsRate": {
                   "backendName": "explicitCacheHitPointsRate",
+                  "description_en": "The proportion of explicit cache hit credits to the total credits. This parameter is empty when it cannot be calculated",
                   "description_zh": "显式缓存命中积分占总积分的比例，无法计算时为空",
                   "example": "0.043",
                   "format": "double",
@@ -297,7 +299,7 @@
                 },
                 "FailureCount": {
                   "backendName": "failureCount",
-                  "description_en": "The number of failed calls within the query range, including failed calls that are throttled",
+                  "description_en": "The number of failed calls within the query range, including failed calls due to throttling",
                   "description_zh": "查询范围内的失败调用次数，单位：次，包含被限流的失败调用",
                   "example": "180",
                   "format": "int64",
@@ -307,12 +309,12 @@
                 },
                 "FeatureList": {
                   "backendName": "featureList",
-                  "description_en": "The list of model capability tags. The display language is affected by Language. Capabilities without a configured display name retain their original codes. An empty list is returned if no capability information is available. Tags are extensible, not a fixed enumeration, and do not imply that all capabilities can be called through this API operation",
+                  "description_en": "The list of model capability tags. The display language is affected by Language. Capabilities without a configured display name retain their original codes. An empty list is returned when no capability information is available. Tags are extensible, not a fixed enumeration, and do not imply that all capabilities can be called through this API operation",
                   "description_zh": "模型能力标签列表，显示语言受 `Language` 影响。未配置展示名称的能力保留原始编码；没有可用能力资料时返回空列表。标签可扩展，不是固定枚举，也不代表所有能力都可以通过本接口调用",
                   "example": "[\"文本生成\",\"工具调用\"]",
                   "itemName": "FeatureList",
                   "items": {
-                    "description_en": "The display tag for a single model capability. If no display name is available, the capability code is used",
+                    "description_en": "The display tag for a single model capability. The capability code is used when no display name is available",
                     "description_zh": "单项模型能力的展示标签；没有展示名称时为能力编码",
                     "example": "文本生成",
                     "type": "string"
@@ -323,7 +325,7 @@
                 },
                 "IconUrl": {
                   "backendName": "iconUrl",
-                  "description_en": "The URL of the model brand icon. This field is empty if no brand icon is available. The example URL only illustrates the URL format and is not a fixed download address",
+                  "description_en": "The URL of the model brand icon. This parameter is empty when no brand icon is available. The example URL only illustrates the URL format and is not a fixed download address",
                   "description_zh": "模型品牌图标的 URL。没有可用品牌图标时为空；示例地址仅说明 URL 形态，不是固定的下载地址",
                   "example": "https://example.com/qwen.png",
                   "title_en": "模型品牌图标地址；无法补全时为空",
@@ -332,6 +334,7 @@
                 },
                 "ImplicitCacheHitPointsRate": {
                   "backendName": "implicitCacheHitPointsRate",
+                  "description_en": "The proportion of implicit cache hit credits to the total credits. This parameter is empty when it cannot be calculated",
                   "description_zh": "隐式缓存命中积分占总积分的比例，无法计算时为空",
                   "example": "0.171",
                   "format": "double",
@@ -341,7 +344,7 @@
                 },
                 "InputPointsRate": {
                   "backendName": "inputPointsRate",
-                  "description_en": "The proportion of input credits to the total consumed credits, expressed as a decimal between 0 and 1. For example, 0.739 indicates 73.9%. This field is provided only when the input and output credit details are complete, the values are valid, and the total credits are greater than 0. Otherwise, it is empty.\n\nThe proportion is rounded to a maximum of 8 decimal places. The sum of input and output credits may be less than the total credits. Additionally, a minor rounding error may occur when adding this value to OutputPointsRate. Do not calculate other credits or verify bills based solely on the sum of the proportions",
+                  "description_en": "The proportion of input credits to the total consumed credits, represented as a decimal between 0 and 1. For example, 0.739 indicates 73.9%. This parameter is provided only when the input and output credit details are complete, the values are valid, and the total credits are greater than 0. Otherwise, it is empty.\n\nThe proportion is rounded to a maximum of 8 decimal places. The sum of input and output credits may be less than the total credits. Additionally, a minor rounding error may occur when adding this value to OutputPointsRate. Do not calculate other credits or verify bills based solely on the sum of proportions",
                   "description_zh": "输入积分占总消耗积分的比例，为 0～1 的小数，例如 `0.739` 表示 73.9%。输入和输出积分明细完整、数值有效且总积分大于 0 时才提供；否则为空。\n\n比例四舍五入后最多保留 8 位小数。输入、输出积分合计可能小于总积分；同时，与 `OutputPointsRate` 相加也可能出现微小的舍入误差。不要仅凭比例之和计算其他积分或校验账单",
                   "example": "0.739",
                   "format": "double",
@@ -351,7 +354,7 @@
                 },
                 "IsNew": {
                   "backendName": "isNew",
-                  "description_en": "The new model tag. The current version does not provide this tag. Ignore this field and do not use it to determine whether a model is newly released",
+                  "description_en": "The new model indicator. This indicator is not provided in the current version. Ignore this field and do not use it to determine whether a model is newly released",
                   "description_zh": "新模型标记。当前版本未提供该标记，请忽略此字段，不要据此判断模型是否新发布",
                   "example": "null",
                   "title_en": "是否展示 NEW 标签；当前未配置时为空",
@@ -369,7 +372,7 @@
                 },
                 "MaxOutput": {
                   "backendName": "maxOutput",
-                  "description_en": "The maximum output length for a single generation of the model, in tokens. This field is empty if no model information is available",
+                  "description_en": "The maximum output length for a single generation of the model, in tokens. This parameter is empty when no model information is available",
                   "description_zh": "模型单次生成的最大输出长度，单位：Token。没有可用模型资料时为空",
                   "example": "65536",
                   "format": "int64",
@@ -379,7 +382,7 @@
                 },
                 "ModelBrandName": {
                   "backendName": "modelBrandName",
-                  "description_en": "The display name of the model brand. The display language is affected by Language. This field is empty if no brand information is available",
+                  "description_en": "The display name of the model brand. The display language is affected by Language. This parameter is empty when no brand information is available",
                   "description_zh": "模型品牌的展示名称。显示语言受 `Language` 影响；没有可用品牌资料时为空",
                   "example": "千问",
                   "title_en": "模型品牌展示名称；无法补全时为空",
@@ -388,7 +391,7 @@
                 },
                 "ModelName": {
                   "backendName": "modelName",
-                  "description_en": "The display name of the model. The display language is affected by Language. If no name is available, LlmCode is returned. The name may change, so the model code should be used when associating data",
+                  "description_en": "The display name of the model. The display language is affected by Language. LlmCode is returned when no name is available. The name is subject to change, so the model code should be used when associating data",
                   "description_zh": "模型的展示名称，显示语言受 `Language` 影响。没有可用名称时返回 `LlmCode`；名称可变化，关联数据时应使用模型编码",
                   "example": "Qwen3 Max",
                   "title_en": "模型展示名称；元数据缺失时回退模型编码",
@@ -397,6 +400,7 @@
                 },
                 "NormalInputPointsRate": {
                   "backendName": "normalInputPointsRate",
+                  "description_en": "The proportion of normal input credits to the total credits. This parameter is empty when it cannot be calculated",
                   "description_zh": "普通输入积分占总积分的比例，无法计算时为空",
                   "example": "0.329",
                   "format": "double",
@@ -406,7 +410,7 @@
                 },
                 "OutputPointsRate": {
                   "backendName": "outputPointsRate",
-                  "description_en": "The proportion of output credits to the total consumed credits, expressed as a decimal between 0 and 1. For example, 0.261 indicates 26.1%. This field is provided only when the input and output credit details are complete, the values are valid, and the total credits are greater than 0. Otherwise, it is empty. The proportion is rounded to a maximum of 8 decimal places, and a minor rounding error may occur when adding this value to InputPointsRate",
+                  "description_en": "The proportion of output credits to the total consumed credits, represented as a decimal between 0 and 1. For example, 0.261 indicates 26.1%. This parameter is provided only when the input and output credit details are complete, the values are valid, and the total credits are greater than 0. Otherwise, it is empty. The proportion is rounded to a maximum of 8 decimal places, and a minor rounding error may occur when adding this value to InputPointsRate",
                   "description_zh": "输出积分占总消耗积分的比例，为 0～1 的小数，例如 `0.261` 表示 26.1%。输入和输出积分明细完整、数值有效且总积分大于 0 时才提供；否则为空。比例四舍五入后最多保留 8 位小数，与 `InputPointsRate` 相加时可能出现微小的舍入误差",
                   "example": "0.261",
                   "format": "double",
@@ -426,7 +430,7 @@
                 },
                 "SuccessRate": {
                   "backendName": "successRate",
-                  "description_en": "The number of successful calls divided by the total number of calls, expressed as a decimal between 0 and 1, not a percentage. This field is empty if the number of calls is 0. Multiply this value by 100 to display it as a percentage. The return value is rounded to a maximum of 8 decimal places",
+                  "description_en": "The number of successful calls divided by the total number of calls, represented as a decimal between 0 and 1, not a percentage. This parameter is empty when the number of calls is 0. Multiply this value by 100 to display it as a percentage. The return value is rounded to a maximum of 8 decimal places",
                   "description_zh": "成功调用次数除以调用总次数，为 0～1 的小数，不是百分数。调用次数为 0 时为空；展示百分比时将该值乘以 100。 返回值四舍五入后最多保留 8 位小数",
                   "example": "0.98557692",
                   "format": "double",
@@ -436,6 +440,7 @@
                 },
                 "ToolCallPointsRate": {
                   "backendName": "toolCallPointsRate",
+                  "description_en": "The proportion of tool calling credits to the total credits. This parameter is empty when it cannot be calculated",
                   "description_zh": "工具调用积分占总积分的比例，无法计算时为空",
                   "example": "0",
                   "format": "double",
@@ -445,7 +450,7 @@
                 },
                 "TtftP95Ms": {
                   "backendName": "ttftP95Ms",
-                  "description_en": "The 95th percentile of the time to first token (TTFT), in milliseconds. This field is provided only when corresponding data exists for a fixed statistical window. It is empty when custom start and end dates are passed, even if the start and end dates are the same. The value 700 in the field table is an example for a fixed statistical window and does not apply to custom date ranges",
+                  "description_en": "The 95th percentile of the TTFT, in milliseconds. This parameter is provided only when corresponding data exists in a fixed statistical window. It is empty when custom start and end dates are passed, even if the start and end dates are the same. The value 700 in the field table is an example for a fixed statistical window and does not apply to custom date ranges",
                   "description_zh": "首 Token 时延的第 95 百分位值，单位：毫秒。仅在固定统计窗口存在相应数据时提供。传入自定义起止日期时为空，即使起止日期相同也不提供。 字段表中的 `700` 为固定统计窗口下的示例值，不适用于自定义日期范围",
                   "example": "700",
                   "format": "int64",
@@ -474,7 +479,7 @@
           },
           "PageSize": {
             "backendName": "perPageSize",
-            "description_en": "The number of items per page used for this query. The actual number of returned items may be less than this value",
+            "description_en": "The number of entries per page used for this query. The actual number of returned entries may be less than this value",
             "description_zh": "本次查询使用的每页大小，单位：个。实际返回条数可能小于该值",
             "example": "1",
             "format": "int32",
@@ -493,7 +498,7 @@
           },
           "TotalCount": {
             "backendName": "count",
-            "description_en": "The total number of models used for pagination. When statistical results are available, this field returns the number of models that meet the model type and keyword conditions. This may include models with 0 calls within the selected date range, so it may not be equal to ActiveModelCount.\n\nIf no statistical results are available within the query range, this value returns 0. You cannot determine that the business has no models or no actual calls based solely on TotalCount=0",
+            "description_en": "The total number of models used for pagination. When statistical results are available, this parameter returns the number of models that meet the model type and keyword conditions. This may include models with 0 calls within the selected date range, so it is not necessarily equal to ActiveModelCount.\n\nWhen no statistical results are available within the query range, this value returns 0. You cannot determine that the business has no models or no actual calls based solely on TotalCount=0",
             "description_zh": "用于分页的模型总数，单位：个。有可用统计结果时，返回满足模型类型和关键词条件的模型数量，其中可能包含所选日期范围内调用次数为 0 的模型，因此不一定等于 `ActiveModelCount`。\n\n查询范围内没有可用统计结果时，该值返回 0；不能仅凭 `TotalCount=0` 判断该业务没有模型或没有实际调用",
             "example": "10",
             "format": "int32",
