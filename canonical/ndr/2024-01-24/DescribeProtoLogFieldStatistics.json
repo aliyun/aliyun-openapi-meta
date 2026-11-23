@@ -3,7 +3,7 @@
   "cmd_full_name": "ndr describe-proto-log-field-statistics",
   "cmd_name": "describe-proto-log-field-statistics",
   "deprecated": false,
-  "description_en": "Groups protocol logs by a specified field and counts the number of log entries for each field value. Returns the specified number of groups. You can call ListProtoLogSupportIndex to select fields whose SupportGroupBy is set to true",
+  "description_en": "Groups protocol logs by a specified field, counts the number of logs for each field value, and returns a specified number of groups. You can first call ListProtoLogSupportIndex to select fields whose SupportGroupBy parameter is set to true",
   "description_zh": "按指定字段对协议日志分组并统计各字段值出现的日志条数，返回指定数量的分组。可先通过 ListProtoLogSupportIndex 选择 SupportGroupBy 为 true 的字段",
   "kebab_example": "aliyun ndr describe-proto-log-field-statistics --log-field src_ip --max-results 10 --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "{\"logicOp\":\"and\",\"logFilterItems\":[{\"logField\":\"src_ip\",\"op\":\"=\",\"value\":\"192.0.2.10\"}]}",
-      "help_en": "The log filter conditions in a JSON string. logicOp specifies the logical operator and can be set to and or or. logFilterItems specifies an array of conditions. Each condition includes logField, op, and value, where value is a string. logFilters can contain nested condition groups of the same structure. If this parameter is not specified, no field-level filtering is applied. You can call ListProtoLogSupportIndex to obtain the available fields and operators",
+      "help_en": "The log filter conditions, specified as a JSON string. The logicOp parameter can be and or or. The logFilterItems parameter is an array of conditions, where each item contains logField, op, and value, with value being a string. The logFilters parameter can nest condition groups of the same structure. If this parameter is not specified, no field filtering is applied. You can obtain the available fields and operators by calling ListProtoLogSupportIndex",
       "help_zh": "日志过滤条件，使用 JSON 字符串。logicOp 为 and 或 or；logFilterItems 为条件数组，每项包含 logField、op、value，value 使用字符串；logFilters 可嵌套同结构的条件组。不传时不附加字段过滤。可用字段和运算符通过 ListProtoLogSupportIndex 获取",
       "location": "query",
       "name": "log_filter",
@@ -35,7 +35,7 @@
     },
     {
       "example": "1788393600000",
-      "help_en": "The beginning of the query time range. This value is a UNIX timestamp in milliseconds. If this parameter is not specified or is set to 0, the time 30 minutes before the current time is used. The value must not be later than the value of ToTime. Specify both the start time and end time",
+      "help_en": "The start time of the query. The value is a UNIX timestamp in milliseconds. If this parameter is not specified or is set to 0, the time 30 minutes before the current time is used. The value must not be later than ToTime. We recommend that you specify both the start time and the end time",
       "help_zh": "查询开始时间，Unix 时间戳，单位为毫秒。不传或传 0 时，使用当前时间前 30 分钟；须不晚于 ToTime。建议同时传入开始和结束时间",
       "location": "query",
       "name": "from_time",
@@ -48,7 +48,7 @@
     },
     {
       "example": "1788395400000",
-      "help_en": "The end of the query time range. This value is a UNIX timestamp in milliseconds. If this parameter is not specified or is set to 0, the current time is used. The value must not be earlier than the value of FromTime. If FromTime is equal to ToTime, the system queries logs within the 1-second time range from 1 second before ToTime to ToTime",
+      "help_en": "The end time of the query. The value is a UNIX timestamp in milliseconds. If this parameter is not specified or is set to 0, the current time is used. The value must not be earlier than FromTime. If FromTime and ToTime are the same, the system queries logs within the time range from 1 second before ToTime to ToTime",
       "help_zh": "查询结束时间，Unix 时间戳，单位为毫秒。不传或传 0 时，使用当前时间；须不早于 FromTime。当 FromTime 与 ToTime 相等时，系统按 ToTime 前 1 秒至 ToTime 的时间范围查询",
       "location": "query",
       "name": "to_time",
@@ -61,7 +61,7 @@
     },
     {
       "example": "src_ip",
-      "help_en": "The name of the log field for group statistics. This parameter is required. Use a field returned by ListProtoLogSupportIndex whose SupportGroupBy is set to true",
+      "help_en": "The name of the log field used for grouping and statistics. This parameter cannot be empty. Use a field that is returned by ListProtoLogSupportIndex and whose SupportGroupBy parameter is set to true",
       "help_zh": "分组统计的日志字段名，不能为空。使用 ListProtoLogSupportIndex 返回且 SupportGroupBy 为 true 的字段",
       "location": "query",
       "name": "log_field",
@@ -88,7 +88,7 @@
       "type": "int"
     },
     {
-      "help_en": "Specifies whether to sort the results by log count in ascending order. Valid values:\ntrue: Ascending order.\nfalse: Descending order.\n\nDefault value: false",
+      "help_en": "Specifies whether to sort the results by log count in ascending order. A value of true indicates ascending order. A value of false or an unspecified value indicates descending order",
       "help_zh": "是否按日志条数升序排列。true 表示升序；false 或不传表示降序",
       "location": "query",
       "name": "order_by_count_asc",
@@ -101,7 +101,7 @@
     },
     {
       "example": "global",
-      "help_en": "The site for log query. You can obtain valid values from the Sites parameter returned by DescribeDeliveryDestination. In multi-site scenarios, the specified site is used preferentially if it is active. If this parameter is not specified or the specified site is unavailable, the system automatically selects an active site. If only one active site exists, that site is used. If no active site exists, the LogDeliveryNotOpen error is returned",
+      "help_en": "The site for log query. You can obtain the value from the Sites parameter returned by DescribeDeliveryDestination. In multi-site scenarios, a valid specified site is used first. If no site is specified or the specified site is unavailable, the system automatically selects an available site. If only one site is available, that site is used. If no site is available, LogDeliveryNotOpen is returned",
       "help_zh": "日志查询站点，可从 DescribeDeliveryDestination 返回的 Sites 中获取。多站点场景下优先使用有效的指定站点；未指定或指定站点不可用时，系统自动选择可用站点。仅有一个可用站点时使用该站点；无可用站点时返回 LogDeliveryNotOpen",
       "location": "query",
       "name": "site",
@@ -119,17 +119,17 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response struct",
+        "description_en": "The response structure",
         "description_zh": "接口响应结构",
         "properties": {
           "Data": {
             "backendName": "data",
-            "description_en": "The field group statistics results. This parameter may be empty if no matching data is found",
+            "description_en": "The grouping and statistics results of the field. This parameter may be empty if no matching data is found",
             "description_zh": "字段分组统计结果；无匹配数据时可能为空",
             "properties": {
               "LogField": {
                 "backendName": "logField",
-                "description_en": "The field name used for group statistics",
+                "description_en": "The name of the field used for grouping and statistics in this request",
                 "description_zh": "本次分组统计使用的字段名",
                 "example": "src_ip",
                 "type": "string"
@@ -143,14 +143,14 @@
                   "properties": {
                     "LogFieldKey": {
                       "backendName": "logFieldKey",
-                      "description_en": "The field value of the group",
+                      "description_en": "The field value corresponding to the group",
                       "description_zh": "该分组对应的字段值",
                       "example": "192.0.2.10",
                       "type": "string"
                     },
                     "ProtoLogCount": {
                       "backendName": "protoLogCount",
-                      "description_en": "The number of protocol log entries for the field value",
+                      "description_en": "The number of protocol logs corresponding to the field value",
                       "description_zh": "该字段值对应的协议日志条数",
                       "example": "12",
                       "format": "int64",
@@ -166,21 +166,21 @@
           },
           "ErrorCode": {
             "backendName": "errorCode",
-            "description_en": "The error code returned if the request failed. This parameter is empty if the request was successful. The example shows a scenario in which the query range is invalid",
+            "description_en": "The error code returned when the request fails. This parameter is empty when the request is successful. The example shows a scenario where the query range is invalid",
             "description_zh": "请求失败时的错误码；请求成功时为空。示例展示查询范围无效场景",
             "example": "InvalidQueryTimeRange",
             "type": "string"
           },
           "Message": {
             "backendName": "message",
-            "description_en": "The result message of the request. If the request failed, this parameter describes the error cause. The example shows a scenario in which the query range is invalid",
+            "description_en": "The message about the request result. This parameter describes the cause of the error when the request fails. The example shows a scenario where the query range is invalid",
             "description_zh": "请求结果信息；失败时用于说明错误原因。示例展示查询范围无效场景",
             "example": "invalid time range",
             "type": "string"
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID, which is used to locate the request",
+            "description_en": "The request ID, which is used to identify the request",
             "description_zh": "请求 ID，用于定位本次请求",
             "example": "D8216F01-0DF2-4F44-98F7-20144BA97AA1",
             "title_en": "Id of the request",
@@ -189,7 +189,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful. Valid values:\ntrue: The request was successful.\nfalse: The request failed",
+            "description_en": "Indicates whether the request was successful. A value of true indicates that the request was successful. A value of false indicates that the request failed",
             "description_zh": "请求是否成功。true 表示成功，false 表示失败",
             "type": "boolean"
           }

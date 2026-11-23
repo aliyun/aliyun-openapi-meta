@@ -3,7 +3,7 @@
   "cmd_full_name": "ndr describe-private-asset-enis",
   "cmd_name": "describe-private-asset-enis",
   "deprecated": false,
-  "description_en": "Queries the elastic network interfaces (ENIs) (network interface controller (NIC)), associated instances, private IP addresses, and accessed states in a specified VPC by paging",
+  "description_en": "Performs a paging query on the elastic network interface controller (NIC), associated instances, private IP addresses, and accessed states in a specified VPC",
   "description_zh": "分页查询指定 VPC 下的弹性网卡及其关联实例、私网 IP 和接入状态",
   "kebab_example": "aliyun ndr describe-private-asset-enis --vpc-instance-id vpc-bp1example --vsw-instance-id-list vsw-bp1example --traction-status 1 --eni-instance-id-list eni-bp1example --eni-instance-name example-eni --eni-type Primary --associated-instance-id-list i-bp1example --associated-instance-name example-instance --page 1 --page-size 10 --region-no cn-hangzhou --member-uid 1234567890123456 --private-ip-address 10.0.0.10 --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "vpc-bp1example",
-      "help_en": "The ID of the VPC",
+      "help_en": "The VPC instance ID",
       "help_zh": "VPC 实例 ID",
       "location": "query",
       "name": "vpc_instance_id",
@@ -53,7 +53,7 @@
       "element": {
         "type": "int"
       },
-      "help_en": "The accessed state of the elastic network interfaces (ENIs) (network interface controller (NIC)). A value of 0 indicates that the elastic network interfaces (ENIs) (network interface controller (NIC)) is not accessed. A value of 1 indicates that the elastic network interfaces (ENIs) (network interface controller (NIC)) is accessed",
+      "help_en": "The accessed state of the elastic network interface controller (NIC). A value of 0 indicates not accessed, and a value of 1 indicates accessed",
       "help_zh": "弹性网卡接入状态。0 表示未接入，1 表示已接入",
       "location": "query",
       "name": "traction_status",
@@ -69,7 +69,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The instance IDs of the elastic network interfaces (ENIs) (network interface controller (NIC))",
+      "help_en": "The list of instance IDs of the elastic network interface controller (NIC)",
       "help_zh": "弹性网卡实例 ID 列表",
       "location": "query",
       "name": "eni_instance_id_list",
@@ -83,7 +83,7 @@
     },
     {
       "example": "example-eni",
-      "help_en": "The name of the elastic network interfaces (ENIs) (network interface controller (NIC))",
+      "help_en": "The name of the elastic network interface controller (NIC)",
       "help_zh": "弹性网卡名称",
       "location": "query",
       "name": "eni_instance_name",
@@ -96,7 +96,7 @@
     },
     {
       "example": "Primary",
-      "help_en": "The type of the elastic network interfaces (ENIs) (network interface controller (NIC)). A value of Primary indicates a primary network interface controller (NIC). A value of Secondary indicates a secondary elastic network interfaces (ENIs) (network interface controller (NIC))",
+      "help_en": "The type of the elastic network interface controller (NIC). Primary indicates a primary network interface controller (NIC). Secondary indicates a secondary elastic network interface controller (NIC)",
       "help_zh": "弹性网卡类型。Primary 表示主网卡，Secondary 表示辅助弹性网卡",
       "location": "query",
       "name": "eni_type",
@@ -111,7 +111,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The IDs of the instances associated with the elastic network interfaces (ENIs) (network interface controller (NIC))",
+      "help_en": "The list of instance IDs associated with the elastic network interface controller (NIC)",
       "help_zh": "弹性网卡关联的实例 ID 列表",
       "location": "query",
       "name": "associated_instance_id_list",
@@ -125,7 +125,7 @@
     },
     {
       "example": "example-instance",
-      "help_en": "The name of the instance associated with the elastic network interfaces (ENIs) (network interface controller (NIC))",
+      "help_en": "The instance name associated with the elastic network interface controller (NIC)",
       "help_zh": "弹性网卡关联的实例名称",
       "location": "query",
       "name": "associated_instance_name",
@@ -202,6 +202,53 @@
       "raw_name": "PrivateIpAddress",
       "required": false,
       "type": "string"
+    },
+    {
+      "element": {
+        "type": "int"
+      },
+      "example": "[0,1]",
+      "help_en": "The collection statuses of the asset to which the ENI belongs. An ENI is returned if its asset matches any of the specified statuses. Valid values: 0 (not collected), 1 (partially collected), and 2 (fully collected). If this parameter is specified together with TractionStatus=0, only ENIs that meet the traffic redirection and connection conditions are returned",
+      "help_zh": "网卡所属资产的采集状态列表。任一状态匹配即可。取值为 `0`（未采集）、`1`（部分采集）或 `2`（全部采集）。 与网卡采集状态 `TractionStatus=[0]` 一起传入时，仅返回符合引流接入条件的网卡",
+      "location": "query",
+      "name": "asset_traction_status",
+      "options": [
+        "--asset-traction-status"
+      ],
+      "param_style": "flat",
+      "raw_name": "AssetTractionStatus",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "element": {
+        "type": "string"
+      },
+      "example": "[\"vsw-bp1example1234567890\"]",
+      "help_en": "The vSwitch IDs of the asset to which the ENI belongs. An asset matches this condition if it belongs to any vSwitch in the list. To filter by the vSwitch of the ENI itself, use VswInstanceIdList",
+      "help_zh": "网卡所属资产的交换机 ID 列表。资产属于列表中任一交换机即可命中此条件。网卡自身的交换机使用 `VswInstanceIdList` 筛选",
+      "location": "query",
+      "name": "asset_vsw_instance_id_list",
+      "options": [
+        "--asset-vsw-instance-id-list"
+      ],
+      "param_style": "flat",
+      "raw_name": "AssetVswInstanceIdList",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "example": "ecs",
+      "help_en": "The cloud service type of the asset to which the ENI belongs. Use lowercase identifiers, such as ecs, eci, and acs",
+      "help_zh": "按网卡所属资产的云服务类型筛选，使用小写标识，例如 `ecs`、`eci`、`acs`",
+      "location": "query",
+      "name": "cloud_type",
+      "options": [
+        "--cloud-type"
+      ],
+      "raw_name": "CloudType",
+      "required": false,
+      "type": "string"
     }
   ],
   "pathPattern": "/",
@@ -222,23 +269,23 @@
             "properties": {
               "List": {
                 "backendName": "list",
-                "description_en": "The list of records that meet the filter conditions",
+                "description_en": "The list of entries that meet the query conditions",
                 "description_zh": "符合条件的记录列表",
                 "itemName": "eni",
                 "items": {
-                  "description_en": "A record",
+                  "description_en": "An entry",
                   "description_zh": "一条记录",
                   "properties": {
                     "AssociatedInstanceId": {
                       "backendName": "associatedInstanceId",
-                      "description_en": "The ID of the instance associated with the elastic network interfaces (ENIs) (network interface controller (NIC))",
+                      "description_en": "The instance ID associated with the elastic network interface controller (NIC)",
                       "description_zh": "弹性网卡关联的实例 ID",
                       "example": "i-bp1example",
                       "type": "string"
                     },
                     "AssociatedInstanceName": {
                       "backendName": "associatedInstanceName",
-                      "description_en": "The name of the instance associated with the elastic network interfaces (ENIs) (network interface controller (NIC))",
+                      "description_en": "The instance name associated with the elastic network interface controller (NIC)",
                       "description_zh": "弹性网卡关联的实例名称",
                       "example": "example-instance",
                       "type": "string"
@@ -252,7 +299,7 @@
                     },
                     "EniType": {
                       "backendName": "eniType",
-                      "description_en": "The type of the elastic network interfaces (ENIs) (network interface controller (NIC)). A value of Primary indicates a primary network interface controller (NIC). A value of Secondary indicates a secondary elastic network interfaces (ENIs) (network interface controller (NIC))",
+                      "description_en": "The type of the elastic network interface controller (NIC). Primary indicates a primary network interface controller (NIC). Secondary indicates a secondary elastic network interface controller (NIC)",
                       "description_zh": "弹性网卡类型。Primary 表示主网卡，Secondary 表示辅助弹性网卡",
                       "example": "Primary",
                       "type": "string"
@@ -273,14 +320,14 @@
                     },
                     "InstanceStatus": {
                       "backendName": "instanceStatus",
-                      "description_en": "The running status of the ECS instance. Valid values: Running: The instance is running. Stopped: The instance is stopped. Stopping: The instance is being stopped. Starting: The instance is being started. This field is not returned for non-ECS assets or when the status has not been synchronized. You cannot add private network collection for ECS instances in the Stopped or Stopping state, but you can stop existing collection tasks",
+                      "description_en": "The running status of the ECS instance. Valid values: Running, Stopped, Stopping, and Starting. This parameter is not returned for non-ECS assets or when the status is not synchronized. You cannot start private network collection for ECS instances in the Stopped or Stopping state, but you can stop existing collection",
                       "description_zh": "ECS 实例运行状态。Running 表示运行中，Stopped 表示已停止，Stopping 表示停止中，Starting 表示启动中。非 ECS 资产或状态尚未同步时不返回该字段。处于 Stopped 或 Stopping 状态的 ECS 实例不允许新增私网采集，已有采集仍可停止",
                       "example": "Stopped",
                       "type": "string"
                     },
                     "IntranetIpList": {
                       "backendName": "intranetIpList",
-                      "description_en": "The private IP addresses of the elastic network interfaces (ENIs) (network interface controller (NIC))",
+                      "description_en": "The list of private IP addresses of the elastic network interface controller (NIC)",
                       "description_zh": "弹性网卡的私网 IP 地址列表",
                       "itemName": "intranetIp",
                       "items": {
@@ -296,7 +343,7 @@
                           },
                           "IsPrimary": {
                             "backendName": "isPrimary",
-                            "description_en": "Indicates whether the private IP address is the primary private IP address",
+                            "description_en": "Specifies whether the IP address is the primary private IP address",
                             "description_zh": "是否为主私网 IP 地址",
                             "type": "boolean"
                           }
@@ -314,7 +361,7 @@
                     },
                     "ServiceManaged": {
                       "backendName": "serviceManaged",
-                      "description_en": "Indicates whether the ENI is managed by a cloud service. A value of 0 indicates no. A value of 1 indicates yes",
+                      "description_en": "Specifies whether the ENI is managed by a cloud service. A value of 0 indicates no. A value of 1 indicates yes",
                       "description_zh": "是否为云服务托管网卡。0 表示否，1 表示是",
                       "example": "0",
                       "format": "int32",
@@ -322,7 +369,7 @@
                     },
                     "TractionStatus": {
                       "backendName": "tractionStatus",
-                      "description_en": "The accessed state of the elastic network interfaces (ENIs) (network interface controller (NIC)). A value of 0 indicates that the elastic network interfaces (ENIs) (network interface controller (NIC)) is not accessed. A value of 1 indicates that the elastic network interfaces (ENIs) (network interface controller (NIC)) is accessed",
+                      "description_en": "The accessed state of the elastic network interface controller (NIC). A value of 0 indicates not accessed, and a value of 1 indicates accessed",
                       "description_zh": "弹性网卡接入状态。0 表示未接入，1 表示已接入",
                       "example": "1",
                       "format": "int32",
@@ -330,7 +377,7 @@
                     },
                     "VpcInstanceId": {
                       "backendName": "vpcInstanceId",
-                      "description_en": "The ID of the VPC",
+                      "description_en": "The VPC instance ID",
                       "description_zh": "VPC 实例 ID",
                       "example": "vpc-bp1example",
                       "type": "string"
@@ -372,7 +419,7 @@
               },
               "TotalCount": {
                 "backendName": "totalCount",
-                "description_en": "The total number of records that meet the filter conditions",
+                "description_en": "The total number of entries that meet the query conditions",
                 "description_zh": "符合条件的记录总数",
                 "example": "10",
                 "format": "int32",
