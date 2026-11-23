@@ -2,7 +2,7 @@
   "cmd_full_name": "dataworks-public start-di-sync-instance",
   "cmd_name": "start-di-sync-instance",
   "deprecated": false,
-  "description_en": "Starts a real-time synchronization task or a synchronization solution",
+  "description_en": "Invokes the StartDISyncInstance operation to start real-time synchronization nodes and solution synchronization nodes",
   "description_zh": "调用StartDISyncInstance接口，启动实时同步任务和解决方案同步任务",
   "kebab_example": "aliyun dataworks-public start-di-sync-instance --project-id 10000 --task-type DI_REALTIME --file-id 100 --api-version 2020-05-18 --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,8 +22,8 @@
     {
       "doc_required": true,
       "example": "10000",
-      "help_en": "The ID of the DataWorks workspace. You can log on to the DataWorks console (https://workbench.data.aliyun.com/console) and go to the Workspace page to obtain the workspace ID. You must configure this parameter to specify the DataWorks workspace to which the API operation is applied",
-      "help_zh": "DataWorks工作空间的ID。您可以登录DataWorks控制台 (https://workbench.data.aliyun.com/console)，进入工作空间配置页面获取工作空间ID。\n该参数用来确定本次API调用操作使用的DataWorks工作空间",
+      "help_en": "The ID of the DataWorks workspace. You can obtain the ID by calling the ListProjects operation or by logging on to the DataWorks console (https://workbench.data.aliyun.com/console) and navigating to the workspace configuration page. This parameter specifies the DataWorks workspace used for the current API call",
+      "help_zh": "DataWorks工作空间的ID，您可以通过 ListProjects 接口获取，或登录DataWorks控制台 (https://workbench.data.aliyun.com/console)，进入工作空间配置页面获取工作空间ID。\n该参数用来确定本次API调用操作使用的DataWorks工作空间",
       "location": "query",
       "maximum": "10000000000",
       "minimum": "1",
@@ -38,7 +38,7 @@
     {
       "doc_required": true,
       "example": "DI_REALTIME",
-      "help_en": "The type of the object that you want to start. Valid values:\n\nDI_REALTIME: real-time synchronization task\nDI_SOLUTION: data synchronization solution",
+      "help_en": "The type of the data integration synchronization node to start. Valid values:\nDI_REALTIME: starts a real-time node.\nDI_SOLUTION: starts a solution",
       "help_zh": "启动数据集成同步任务的任务类型。 目前仅支持使用DI_REALTIME和DI_SOLUTION两种类型：\nDI_REALTIME代表启动实时任务。\nDI_SOLUTION代表启动解决方案",
       "location": "query",
       "name": "task_type",
@@ -52,7 +52,7 @@
     {
       "doc_required": true,
       "example": "100",
-      "help_en": "If you set TaskType to DI_REALTIME, set this parameter to the ID of the real-time synchronization task that you want to start.\nIf you set TaskType to DI_SOLUTION, set this parameter to the ID of the data synchronization solution that you want to start",
+      "help_en": "If the TaskType parameter settings are DI_REALTIME, FileId is the ID of the real-time synchronization node.\nIf the TaskType parameter settings are DI_SOLUTION, FileId is the ID of the solution synchronization node",
       "help_zh": "当TaskType参数配置为DI_REALTIME，则FileId为实时同步任务的任务ID。\n当TaskType参数配置为DI_SOLUTION，则FileId为解决方案同步任务的任务ID",
       "location": "query",
       "maximum": "9999999999999999",
@@ -67,7 +67,7 @@
     },
     {
       "example": "{\"failoverLimit\":{\"count\":10,\"interval\":30},\"errorLimit\":{\"record\":0},\"ddlMarkMap\":{\"RENAMECOLUMN\":\"WARNING\",\"DROPTABLE\":\"WARNING\",\"CREATETABLE\":\"IGNORE\",\"MODIFYCOLUMN\":\"WARNING\",\"TRUNCATETABLE\":\"NORMAL\",\"DROPCOLUMN\":\"IGNORE\",\"ADDCOLUMN\":\"NORMAL\",\"RENAMETABLE\":\"CRITICAL\"}}",
-      "help_en": "If you set TaskType to DI_REALTIME, the StartParam parameter specifies the startup parameters for the real-time synchronization task. The startup parameters include failover-related parameters, the parameter that specifies the number of dirty data records allowed, and the parameters in the data definition language (DDL) statements.\nIf you set TaskType to DI_SOLUTION, the StartParam parameter does not take effect",
+      "help_en": "If the TaskType parameter settings are DI_REALTIME, StartParam specifies the startup parameters for the real-time synchronization node, including failover settings, the number of dirty data records, and DDL parameter settings.\nIf the TaskType parameter settings are DI_SOLUTION, the StartParam parameter is not applicable",
       "help_zh": "当TaskType参数配置为DI_REALTIME，则StartParam为实时同步任务的启动参数，包括Failover的设置，脏数据条数，以及DDL的参数配置。\n当TaskType参数配置为DI_SOLUTION，则StartParam参数无意义",
       "location": "query",
       "name": "start_param",
@@ -85,18 +85,18 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response parameters",
+        "description_en": "The response object",
         "description_zh": "返回对象",
         "properties": {
           "Data": {
             "backendName": "data",
-            "description_en": "The result returned for the start",
+            "description_en": "The result of starting the synchronization task",
             "description_zh": "启动同步任务的结果",
             "nullToEmpty": true,
             "properties": {
               "Message": {
                 "backendName": "message",
-                "description_en": "The reason why the real-time synchronization task or the data synchronization solution fails to be started.\n\nIf the real-time synchronization task or the data synchronization solution is started, the value null is returned",
+                "description_en": "The description of the cause of the failure to start the data integration synchronization task.\n\nIf the data integration synchronization task is started successfully, this parameter is empty",
                 "description_zh": "启动数据集成同步任务失败后的原因描述。\n\n如果启动数据集成同步任务成功，则该参数的返回值为空",
                 "example": "fileId:[100] is invalid.",
                 "type": "string",
@@ -104,7 +104,7 @@
               },
               "Status": {
                 "backendName": "status",
-                "description_en": "Indicates whether the real-time synchronization task or the data synchronization solution is started. Valid values:\n\nsuccess: The real-time synchronization task or the data synchronization solution is started.\nfail: The real-time synchronization task or the data synchronization solution fails to be started. You can troubleshoot the issue based on the provided cause",
+                "description_en": "The status of the result for starting the synchronization task. Valid values:\nsuccess: The synchronization task was started successfully.\nfail: The synchronization task failed to start. You can view the specific cause and handle the related issues",
                 "description_zh": "启动同步任务的结果状态。取值如下：\nsuccess：同步任务启动成功。\nfail：同步任务启动失败。您可以查看具体原因，处理相关问题",
                 "example": "success",
                 "nullToEmpty": false,
@@ -117,7 +117,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID. You can locate logs and troubleshoot issues based on the ID",
+            "description_en": "The request ID. You can use the ID to locate logs and troubleshoot issues",
             "description_zh": "请求ID。用于定位日志，排查问题",
             "example": "0bc1411515937635973****",
             "nullToEmpty": false,
@@ -126,7 +126,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful. Valid values:\n\n\n\n\ntrue: successful\nfalse: failed",
+            "description_en": "Indicates whether the request was successful. Valid values:\ntrue: The request was successful.\nfalse: The request failed",
             "description_zh": "请求是否成功。取值如下：\ntrue：成功。\nfalse：失败",
             "example": "true",
             "nullToEmpty": false,
