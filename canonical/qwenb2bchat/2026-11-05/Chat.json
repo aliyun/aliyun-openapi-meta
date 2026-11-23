@@ -3,11 +3,11 @@
   "cmd_full_name": "qwenb2bchat chat",
   "cmd_name": "chat",
   "deprecated": false,
-  "description_en": "Sends text or multimodal messages to initiate conversations with web search capabilities, supporting deep thinking, session history management, and full JSON or Server-Sent Events (SSE) streaming responses. Specific agent and media capabilities are subject to the activated scope",
+  "description_en": "Sends text or multimodal messages to initiate internet-connected conversations. Supports deep thinking, session history management, and both complete JSON and Server-Sent Events (SSE) streaming responses. Specific agent and media capabilities depend on the activated scope",
   "description_zh": "发送文本或多模态消息进行联网对话，支持深度思考、会话历史管理以及完整 JSON 响应和 SSE 流式响应。具体 Agent 及媒体能力以已开通范围为准",
   "kebab_example": "aliyun qwenb2bchat chat --x-request-id req-example-001 --x-gw-access example-gateway-access --x-gw-timestamp 1794787200000 --x-gw-nonce c093adf9-287a-4684-982a-1aea5a248c2e --x-gw-signature 0000000000000000000000000000000000000000000000000000000000000000 --data '{\"messages\":[{\"role\":\"user\",\"content\":\"请介绍杭州西湖。\"}]}' --communication '{\"historyOwner\":\"CLIENT\",\"requestId\":\"req-example-001\",\"sessionId\":\"session-example-001\"}' --region cn-hangzhou",
   "method": "POST",
-  "multi_version": false,
+  "multi_version": true,
   "name": "Chat",
   "operation": {
     "action": "Chat",
@@ -30,8 +30,8 @@
   "parameters": [
     {
       "example": "application/json",
-      "help_en": "The response media types accepted by the client",
-      "help_zh": "客户端接受的响应媒体类型",
+      "help_en": "Optional. Use application/json for complete JSON and text/event-stream for SSE. The explicit params.responseStreaming parameter takes precedence over this header",
+      "help_zh": "可选。完整 JSON 使用 application/json，SSE 使用 text/event-stream。显式 params.responseStreaming 优先于此头",
       "location": "header",
       "name": "accept",
       "options": [
@@ -43,8 +43,8 @@
     },
     {
       "example": "enable",
-      "help_en": "The compatible SSE selection header",
-      "help_zh": "兼容的 SSE 选择头",
+      "help_en": "Optional compatible header. When params.responseStreaming is omitted, the value enable requests SSE",
+      "help_zh": "可选兼容头。省略 params.responseStreaming 时，值 enable 请求 SSE",
       "location": "header",
       "name": "x_dash_scope_sse",
       "options": [
@@ -59,8 +59,8 @@
         "aliyun-roa"
       ],
       "example": "aliyun-roa",
-      "help_en": "The field naming protocol. Pass `aliyun-roa` to use lower camel case fields. If omitted, the legacy protocol is used. This header does not participate in the HMAC signature",
-      "help_zh": "小驼峰回源协议固定传 aliyun-roa，省略时为旧协议；不参与 HMAC 签名",
+      "help_en": "To use the lower camel case API fields in this topic, send aliyun-roa once. If omitted, the legacy field names are used. This header does not participate in the business HMAC signature",
+      "help_zh": "使用本文的小驼峰接口字段时，单独发送一次 aliyun-roa。省略时继续使用旧字段名。本头不参与业务 HMAC",
       "location": "header",
       "name": "x_gw_protocol",
       "options": [
@@ -72,8 +72,8 @@
     },
     {
       "example": "req-example-001",
-      "help_en": "The business request ID. It must be exactly the same as `communication.requestId`",
-      "help_zh": "业务请求 ID，须与 communication.requestId 完全相同",
+      "help_en": "The business request ID, which must be exactly the same as communication.requestId. The format is [A-Za-z0-9._:-]{1,128}. Avoid the reserved prefix gw-ingress-",
+      "help_zh": "业务请求号，与 communication.requestId 完全一致。格式为 [A-Za-z0-9._:-]{1,128}，请避开保留前缀 gw-ingress-",
       "location": "header",
       "name": "x_request_id",
       "options": [
@@ -86,8 +86,8 @@
     },
     {
       "example": "example-gateway-access",
-      "help_en": "The AccessKey ID for the business gateway",
-      "help_zh": "业务网关 Access Key ID",
+      "help_en": "The business gateway AccessKey ID issued by the service provider, used to identify the business credentials and customer account",
+      "help_zh": "服务方发放的业务网关 Access Key ID，用于识别业务凭据和客户账户",
       "location": "header",
       "name": "x_gw_access",
       "options": [
@@ -99,7 +99,7 @@
     },
     {
       "example": "1794787200000",
-      "help_en": "The current Unix timestamp in milliseconds",
+      "help_en": "The current Unix millisecond timestamp",
       "help_zh": "当前 Unix 毫秒时间戳",
       "location": "header",
       "name": "x_gw_timestamp",
@@ -113,8 +113,8 @@
     },
     {
       "example": "c093adf9-287a-4684-982a-1aea5a248c2e",
-      "help_en": "The random string used for each call",
-      "help_zh": "每次调用使用的随机串",
+      "help_en": "A unique random string for the current request. Use a new random string, timestamp, and signature for retries",
+      "help_zh": "本次请求的唯一随机串。重试使用新的随机串、时间戳和签名",
       "location": "header",
       "name": "x_gw_nonce",
       "options": [
@@ -126,8 +126,8 @@
     },
     {
       "example": "0000000000000000000000000000000000000000000000000000000000000000",
-      "help_en": "The HMAC-SHA256 signature in lowercase hexadecimal format, calculated based on the actual request bytes",
-      "help_zh": "按实际请求字节计算的 HMAC-SHA256 小写十六进制签名",
+      "help_en": "The HMAC-SHA256 signature calculated based on the actual request body bytes. Specify a 64-character lowercase hexadecimal value",
+      "help_zh": "对实际发送的正文字节等信息计算 HMAC-SHA256，填写 64 位小写十六进制值",
       "location": "header",
       "name": "x_gw_signature",
       "options": [
@@ -141,8 +141,8 @@
       "fields": [
         {
           "example": "example-app",
-          "help_en": "The application ID. It is provided based on the identity configuration of the gateway credentials",
-          "help_zh": "按网关凭据身份配置提供",
+          "help_en": "The customer application identifier. This field can be omitted when the credentials are bound to a fixed application. When provided, it must comply with the authorization scope",
+          "help_zh": "客户应用标识。凭据已绑定固定应用时可省略，填写时须符合授权范围",
           "name": "app_id",
           "options": [
             "--app-id"
@@ -153,7 +153,7 @@
         },
         {
           "example": "travel",
-          "help_en": "The optional business scenario marker",
+          "help_en": "The optional business scene identifier",
           "help_zh": "可选的业务场景标记",
           "name": "app_scene",
           "options": [
@@ -169,8 +169,8 @@
             "GATEWAY"
           ],
           "example": "CLIENT",
-          "help_en": "The host of the session history. It must be consistent with the first call of the session",
-          "help_zh": "会话历史托管方，须与会话首次调用一致",
+          "help_en": "Required. GATEWAY indicates that the service hosts the history, and CLIENT indicates that the caller provides the history. The same mode must be used throughout the session",
+          "help_zh": "必填。GATEWAY 由服务托管历史，CLIENT 由调用方提供历史。同一会话始终使用同一种模式",
           "name": "history_owner",
           "options": [
             "--history-owner"
@@ -181,8 +181,8 @@
         },
         {
           "example": "req-example-001",
-          "help_en": "The customer business request ID",
-          "help_zh": "客户业务请求 ID",
+          "help_en": "The customer business request ID, which must be exactly the same as X-Request-Id and is used to correlate the current request. This field does not provide execution deduplication",
+          "help_zh": "与 X-Request-Id 完全一致，用来关联本次请求。该字段不提供执行去重",
           "name": "request_id",
           "options": [
             "--request-id"
@@ -194,7 +194,7 @@
         },
         {
           "example": "session-example-001",
-          "help_en": "The customer session ID. It is reused for continued chats",
+          "help_en": "The customer session ID, which is reused for continued chats",
           "help_zh": "客户会话 ID，续聊时复用",
           "name": "session_id",
           "options": [
@@ -209,8 +209,8 @@
           "fields": [
             {
               "example": "device-example-001",
-              "help_en": "The terminal device identifier provided by the customer",
-              "help_zh": "客户提供的终端设备标识",
+              "help_en": "The optional terminal device identifier, which can contain up to 256 UTF-16 code units and cannot be null. When the current or historical messages contain media, the specified value must be non-blank and contain no control characters",
+              "help_zh": "可选终端设备标识，最多 256 个 UTF-16 代码单元，不能为 null。本轮或历史消息含媒体时，填写的值须非空白且不含控制字符",
               "max_length": "256",
               "name": "device_id",
               "options": [
@@ -222,7 +222,7 @@
             },
             {
               "example": "example-user-001",
-              "help_en": "The business user identifier in the customer application. It is provided based on the user binding or delegation configuration of the business gateway credentials",
+              "help_en": "The business user identifier within the customer application, provided according to the user binding or delegation configuration of the business gateway credentials",
               "help_zh": "客户应用内的业务用户标识，按业务网关凭据的用户绑定或委托配置提供",
               "name": "user_id",
               "options": [
@@ -246,7 +246,7 @@
             },
             {
               "example": "示例用户",
-              "help_en": "The business username provided by the customer",
+              "help_en": "The business user name provided by the customer",
               "help_zh": "客户提供的业务用户名称",
               "name": "user_name",
               "options": [
@@ -257,7 +257,7 @@
               "type": "string"
             }
           ],
-          "help_en": "The business user and device information provided by the customer. The identity fields are passed based on the configuration of the business gateway credentials",
+          "help_en": "The business user and device information provided by the customer. Pass identity fields according to the configuration of the business gateway credentials",
           "help_zh": "客户提供的业务用户和设备信息。身份字段按业务网关凭据的配置传入",
           "name": "user_info",
           "options": [
@@ -268,8 +268,8 @@
           "type": "object"
         }
       ],
-      "help_en": "The correlation ID, session, and application identity information for the current request",
-      "help_zh": "本次请求的关联号、会话及应用身份信息",
+      "help_en": "Provides the business request ID, session ID, history hosting method, and optional customer identity information",
+      "help_zh": "提供业务请求号、会话号、历史托管方式和可选的客户身份信息",
       "location": "body",
       "name": "communication",
       "options": [
@@ -287,8 +287,8 @@
             "fields": [
               {
                 "example": "请介绍杭州西湖。",
-                "help_en": "The text or an array of supported multimodal content blocks",
-                "help_zh": "文本或受支持的多模态内容块数组",
+                "help_en": "The text or image-text content blocks. You can pass a string for plain text, or send text and image content blocks. Enabled image input supports HTTPS image references and complete Base64 data URLs. Assistant history accepts only text. Provide file input according to the confirmed integration conventions of the agent in use",
+                "help_zh": "纯文本可直接传字符串，也可发送文本和图片内容块。已开通的图片输入支持 HTTPS 图片引用和完整 Base64 Data URL。assistant 历史仅接受文本。文件输入按所用 Agent 已确认的接入约定提供",
                 "name": "content",
                 "options": [
                   "--content"
@@ -303,8 +303,8 @@
                   "assistant"
                 ],
                 "example": "user",
-                "help_en": "The sender of the message. `user` indicates the business user, and `assistant` indicates the assistant",
-                "help_zh": "消息发送方。user 表示业务用户，assistant 表示助手",
+                "help_en": "The role of the message sender. user indicates the business user, and assistant indicates the assistant in the history. The last message must be from the user for the current turn",
+                "help_zh": "消息角色。user 表示用户，assistant 表示历史中的助手。最后一条是本轮 user",
                 "name": "role",
                 "options": [
                   "--role"
@@ -316,8 +316,8 @@
             ],
             "type": "object"
           },
-          "help_en": "The list of messages arranged in conversational order. When history is hosted by the client, it can include the session history provided by the client",
-          "help_zh": "按对话顺序排列的消息列表。CLIENT 托管时可包含客户端提供的会话历史",
+          "help_en": "A non-empty array of messages. In GATEWAY mode, pass only one user message for the current turn. In CLIENT mode, pass paired user and assistant history messages first, followed by the user message for the current turn",
+          "help_zh": "非空消息数组。GATEWAY 模式只传本轮一条 user。CLIENT 模式可先传成对的 user 和 assistant 历史，再传本轮 user",
           "name": "messages",
           "options": [
             "--messages"
@@ -327,8 +327,8 @@
           "type": "array"
         }
       ],
-      "help_en": "The business data that carries the messages for the current request",
-      "help_zh": "承载本次请求消息的业务数据",
+      "help_en": "The business message object for the current turn, which contains only messages",
+      "help_zh": "本轮的业务消息对象，只包含 messages",
       "location": "body",
       "name": "data",
       "options": [
@@ -343,8 +343,8 @@
       "fields": [
         {
           "example": "debug_level=DEBUG1",
-          "help_en": "Optional. Use the exact string debug_level=DEBUG1 to request debugging and diagnostics. When public diagnostics results are generated, they can be read in data.debug. This field can be omitted",
-          "help_zh": "可选。使用精确字符串 debug_level=DEBUG1 请求联调诊断。公开诊断结果产生时可在 data.debug 中读取，字段允许缺省",
+          "help_en": "The optional integration debugging parameters. Pass the exact string debug_level=DEBUG1. If public results are available, they can be read from data.debug. This field can be omitted and ignored by business clients",
+          "help_zh": "可选联调诊断参数。传入精确字符串 debug_level=DEBUG1。公开结果如有可从 data.debug 读取。字段可缺省，业务客户端可忽略",
           "name": "debug",
           "options": [
             "--debug"
@@ -355,8 +355,8 @@
         },
         {
           "example": "true",
-          "help_en": "Specifies whether to enable deep thinking",
-          "help_zh": "深度思考开关",
+          "help_en": "Specifies whether to enable deep thinking. Set the value to the exact string true to request deep thinking. The string false or omission uses the normal mode. Enabling deep thinking requires authorization for the corresponding capability",
+          "help_zh": "可选字符串，精确值 true 请求深度思考。字符串 false 或省略使用普通模式。开启深度思考需对应能力授权",
           "name": "deepthink",
           "options": [
             "--deepthink"
@@ -367,8 +367,8 @@
         },
         {
           "example": "study_qa",
-          "help_en": "The agent selector for the current turn",
-          "help_zh": "本轮 Agent 选择器",
+          "help_en": "Selects the agent for the current turn. For medical Q&A, enter med_qa. For study Q&A, enter study_qa. Tenant authorization is required. Enter an exact, non-empty name without leading or trailing spaces. If omitted, the default processing method of the service is used",
+          "help_zh": "选择本轮 Agent。医疗问答填 med_qa，学习问答填 study_qa，须获租户授权。填写精确非空名称，不能带首尾空白。省略时采用服务默认处理方式",
           "name": "direct_agent",
           "options": [
             "--direct-agent"
@@ -379,8 +379,8 @@
         },
         {
           "example": "true",
-          "help_en": "Specifies whether to enable mixed text and image output",
-          "help_zh": "图文混排输出开关",
+          "help_en": "Specifies whether to enable mixed text and image output. Agents with this capability enabled can provide this Boolean value according to their integration specifications",
+          "help_zh": "已开通图文混排能力的 Agent 可按其接入约定提供此布尔值",
           "name": "enable_text_image_mixed",
           "options": [
             "--enable-text-image-mixed"
@@ -391,8 +391,8 @@
         },
         {
           "example": "512",
-          "help_en": "The maximum number of output tokens for the model",
-          "help_zh": "模型最大输出 Token 数",
+          "help_en": "The maximum number of tokens for the content generated by the model. Whether it is supported and the allowed values are subject to the integration instructions of the selected agent",
+          "help_zh": "模型生成内容的 Token 数量上限。是否支持及允许的值以所选 Agent 的接入说明为准",
           "name": "max_tokens",
           "options": [
             "--max-tokens"
@@ -402,8 +402,8 @@
           "type": "int"
         },
         {
-          "help_en": "Specifies whether to enable HTTP audio output",
-          "help_zh": "HTTP 音频输出开关",
+          "help_en": "Specifies whether to request text-to-speech for the business response. Set the Boolean value to true to request text-to-speech. This requires HTTP audio output to be enabled and the response to contain speakable text. If set to false or omitted, no additional speech is requested",
+          "help_zh": "填布尔值 true 请求朗读业务回答，需开通 HTTP 音频输出且回答含可朗读文本。false 或省略时不请求额外语音",
           "name": "output_audio",
           "options": [
             "--output-audio"
@@ -413,8 +413,8 @@
           "type": "bool"
         },
         {
-          "help_en": "Specifies whether to use Server-Sent Events (SSE) for the conversation response",
-          "help_zh": "对话响应是否使用 SSE",
+          "help_en": "Specifies whether to use Server-Sent Events (SSE) for the response. A value of true returns SSE, and false returns a single JSON response. An explicit value takes precedence over the Accept and X-DashScope-SSE headers. If omitted, the behavior is determined by the actual request headers",
+          "help_zh": "布尔值 true 返回 SSE，false 返回一次性 JSON。显式值优先于 Accept 和 X-DashScope-SSE。省略时按实际请求头选择",
           "name": "response_streaming",
           "options": [
             "--response-streaming"
@@ -425,8 +425,8 @@
         },
         {
           "example": "0.7",
-          "help_en": "The model sampling temperature",
-          "help_zh": "模型采样温度",
+          "help_en": "The model sampling temperature. The specific supported range and default value are subject to the integration instructions of the selected agent",
+          "help_zh": "模型采样温度。具体支持范围和默认值以所选 Agent 的接入说明为准",
           "name": "temperature",
           "options": [
             "--temperature"
@@ -437,8 +437,8 @@
         },
         {
           "example": "0.8",
-          "help_en": "The nucleus sampling probability of the model",
-          "help_zh": "模型核采样概率",
+          "help_en": "The nucleus sampling threshold of the model. The specific supported range and default value are subject to the integration instructions of the selected agent",
+          "help_zh": "模型核采样阈值。具体支持范围和默认值以所选 Agent 的接入说明为准",
           "name": "topp",
           "options": [
             "--topp"
@@ -448,8 +448,8 @@
           "type": "float"
         }
       ],
-      "help_en": "The optional extensible JSON object. The responseStreaming parameter is an optional Boolean value. If set to false, a complete JSON object is returned. If set to true, Server-Sent Events (SSE) are returned",
-      "help_zh": "可选可扩展 JSON 对象。responseStreaming 为可选布尔值，false 返回完整 JSON，true 返回 SSE",
+      "help_en": "The optional business parameter object. If omitted, the default behavior of the API and the activated agent is used. If explicitly provided, it must be a JSON object",
+      "help_zh": "可选的业务参数对象。省略时沿用接口及已开通 Agent 的默认行为，显式提供时须为 JSON 对象",
       "location": "body",
       "name": "params",
       "options": [
@@ -467,12 +467,12 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "API response",
-        "description_zh": "API response",
+        "description_en": "The response schema for session and business messages, which may include cards, resource processing results, audio frames, or business errors. Streaming responses use the same business fields",
+        "description_zh": "返回会话和业务消息，并可带卡片、资源处理结果、音频帧或业务错误。流式返回使用同一业务字段",
         "example": "{\"communication\":{\"requestId\":\"chat-example-001\",\"responseId\":0},\"data\":{\"messages\":[{\"mimeType\":\"multi_load/iframe\",\"status\":\"complete\",\"content\":\"你好，我可以协助联网问答和信息整理。\",\"metaData\":{\"multiLoad\":[]}}]},\"errorCode\":0,\"errorMsg\":\"success\"}",
         "properties": {
           "audioFrames": {
-            "description_en": "The optional list of audio frames in the response. This list can be empty or omitted when no audio is present",
+            "description_en": "The optional list of audio frames in the response. It can be empty or omitted when there is no audio",
             "description_zh": "响应中的可选音频帧列表。无音频时可为空或省略",
             "itemName": "AudioFrame",
             "items": {
@@ -517,7 +517,7 @@
                   "type": "string"
                 },
                 "type": {
-                  "description_en": "The type of the audio or error frame",
+                  "description_en": "The audio or error frame type",
                   "description_zh": "音频或错误帧类型",
                   "example": "audio",
                   "title_en": "音频或错误帧类型",
@@ -533,7 +533,7 @@
             "type": "array"
           },
           "communication": {
-            "description_en": "The information used to correlate the response frame with the original business request and session",
+            "description_en": "The information used to associate the response frame with the original business request and session",
             "description_zh": "用于关联响应帧与原业务请求和会话的信息",
             "properties": {
               "requestId": {
@@ -545,7 +545,7 @@
                 "type": "string"
               },
               "responseId": {
-                "description_en": "The identifier of the business response frame",
+                "description_en": "The business response frame ID",
                 "description_zh": "业务响应帧标识",
                 "example": "1",
                 "format": "int64",
@@ -568,12 +568,12 @@
             "type": "object"
           },
           "data": {
-            "description_en": "The business data returned in this response, including messages and optional extension information",
+            "description_en": "The business data returned in the current response, including messages and optional extended information",
             "description_zh": "本次响应返回的业务数据，包括消息及可选扩展信息",
             "properties": {
               "debug": {
-                "description_en": "The optional debugging information included with the business response",
-                "description_zh": "业务响应附带的可选调试信息",
+                "description_en": "Supported scenarios can provide public diagnostic information, such as intentLabel. It can be any JSON, including null, or it may be omitted. Business clients can ignore it and use the SSE end event to determine the end of the request",
+                "description_zh": "支持的场景可提供公开诊断信息，例如 intentLabel。任意 JSON，包括 null，也可能省略。业务客户端可忽略，使用 SSE 的结束事件判断请求结束",
                 "example": "{\"intentLabel\":\"image_search\"}",
                 "sensitive": true,
                 "title_en": "可选公开诊断信息",
@@ -581,12 +581,12 @@
                 "type": "any"
               },
               "extraInfo": {
-                "description_en": "The business extension information, which may include inputResources",
+                "description_en": "The business extended information, which may include inputResources",
                 "description_zh": "业务扩展信息，可含 inputResources",
                 "properties": {
                   "inputResources": {
-                    "description_en": "The storage results of the input resources for this turn",
-                    "description_zh": "本轮输入资源转存结果",
+                    "description_en": "The processing results of the input resources in the current round. The contentIndex counts from zero based on the request content blocks",
+                    "description_zh": "本轮输入资源的处理结果。contentIndex 按请求内容块从零开始计数",
                     "itemName": "InputResource",
                     "items": {
                       "properties": {
@@ -600,7 +600,7 @@
                           "type": "integer"
                         },
                         "fileName": {
-                          "description_en": "The file name of the stored resource",
+                          "description_en": "The file name of the transferred resource",
                           "description_zh": "转存资源的文件名",
                           "example": "cat.png",
                           "title_en": "输入资源的文件名",
@@ -608,7 +608,7 @@
                           "type": "string"
                         },
                         "resourceId": {
-                          "description_en": "The ID of the stored resource",
+                          "description_en": "The transferred resource ID",
                           "description_zh": "转存资源 ID",
                           "example": "ws_example_001",
                           "title_en": "输入资源 ID",
@@ -616,7 +616,7 @@
                           "type": "string"
                         },
                         "type": {
-                          "description_en": "The type of the stored resource",
+                          "description_en": "The type of the transferred resource",
                           "description_zh": "转存资源类型",
                           "example": "image",
                           "title_en": "输入资源类型",
@@ -624,7 +624,7 @@
                           "type": "string"
                         },
                         "url": {
-                          "description_en": "The URL of the stored resource",
+                          "description_en": "The URL of the transferred resource",
                           "description_zh": "转存后的资源 URL",
                           "example": "https://cdn.example.com/uploads/cat.png",
                           "title_en": "输入资源的可访问 URL",
@@ -645,8 +645,8 @@
                 "type": "object"
               },
               "messages": {
-                "description_en": "The list of messages returned in this business response or the current streaming response frame",
-                "description_zh": "本次业务响应或当前流式响应帧返回的消息列表",
+                "description_en": "The list of messages returned in the current business response or streaming response frame",
+                "description_zh": "载荷包含正文、进度或卡片消息。相同正文或过程模块的累计快照应替换上一次结果",
                 "itemName": "Message",
                 "items": {
                   "properties": {
@@ -672,8 +672,8 @@
                           "type": "string"
                         },
                         "content": {
-                          "description_en": "The full content snapshot of the process module",
-                          "description_zh": "过程模块的完整内容快照",
+                          "description_en": "The full snapshot of the progress module. Read the body, title, docs, or images based on metaData.type, and update the same module by request ID and sourceSeq",
+                          "description_zh": "进度模块的完整快照。按 metaData.type 读取 body、title、docs 或 images，并按请求号和 sourceSeq 更新相同模块",
                           "example": "{\"body\":\"正在分析问题\",\"status\":\"processing\"}",
                           "sensitive": true,
                           "title_en": "过程模块的完整内容快照",
@@ -681,8 +681,8 @@
                           "type": "any"
                         },
                         "multiLoad": {
-                          "description_en": "The list of structured content associated with the body, such as image-text cards, returned by message type",
-                          "description_zh": "与正文关联的结构化内容列表，例如图文卡片，按消息类型返回",
+                          "description_en": "The list of cards returned for the scenario. Each card is matched with the [(sourceSeq)] placeholder in the body based on the sourceSeq value. For image cards, use type=image_waterfall",
+                          "description_zh": "按场景返回的卡片列表，按 sourceSeq 匹配正文中的 [(sourceSeq)] 占位符。图片卡使用 type=image_waterfall",
                           "itemName": "MultiLoadItem",
                           "items": {
                             "properties": {
@@ -718,7 +718,7 @@
                           "type": "array"
                         },
                         "sourceSeq": {
-                          "description_en": "The process module identifier within this request",
+                          "description_en": "The process module identifier within the current request",
                           "description_zh": "本次请求内的过程模块标识",
                           "example": "thinking-1",
                           "title_en": "本次请求内的过程模块标识",
@@ -740,8 +740,8 @@
                       "type": "object"
                     },
                     "mimeType": {
-                      "description_en": "The message type",
-                      "description_zh": "消息类型",
+                      "description_en": "The message type. Process the body multi_load/iframe, progress bar/progress, optional signal signal/post, or follow-up question paa/iframe based on the mimeType. The distribution and order of messages vary by scenario",
+                      "description_zh": "消息类型。按 mimeType 处理正文 multi_load/iframe、进度 bar/progress、可选信号 signal/post 或追问 paa/iframe。消息的分布和顺序随场景变化",
                       "example": "multi_load/iframe",
                       "title_en": "消息类型",
                       "title_zh": "消息类型",
@@ -769,7 +769,7 @@
             "type": "object"
           },
           "error": {
-            "description_en": "The error details returned when a business call fails",
+            "description_en": "The error details returned when the business call fails",
             "description_zh": "业务调用失败时返回的错误详情",
             "properties": {
               "code": {
@@ -790,7 +790,7 @@
                 "type": "string"
               },
               "requestId": {
-                "description_en": "The business request correlation ID for failed calls, used to troubleshoot issues",
+                "description_en": "The request ID of the failed call, used for troubleshooting",
                 "description_zh": "失败调用的业务请求关联号，用于定位问题",
                 "example": "req-example-001",
                 "title_en": "失败调用的业务请求关联号，用于定位问题。",
@@ -812,7 +812,7 @@
             "type": "any"
           },
           "errorMsg": {
-            "description_en": "The business status description",
+            "description_en": "The business status message",
             "description_zh": "业务状态说明",
             "example": "success",
             "title_en": "业务状态说明",
@@ -837,8 +837,8 @@
   "timeout_ms": 32000,
   "v1_body_parameters": [
     {
-      "help_en": "The business request in JSON format, including session information, messages, and business parameters",
-      "help_zh": "JSON 格式的业务请求，包含会话信息、消息与业务参数",
+      "help_en": "Sends a UTF-8 JSON object. The communication and data fields are required. The params field is optional",
+      "help_zh": "发送 UTF-8 JSON 对象。communication 和 data 必填，params 可省略",
       "name": "body",
       "param_style": "json",
       "position": "body",

@@ -1,0 +1,507 @@
+{
+  "cmd_full_name": "qwenb2bchat chat",
+  "cmd_name": "chat",
+  "deprecated": false,
+  "description_en": "发送文本或多模态消息进行联网对话，支持深度思考、会话历史管理以及完整 JSON 响应和 SSE 流式响应。具体 Agent 及媒体能力以已开通范围为准",
+  "description_zh": "发送文本或多模态消息进行联网对话，支持深度思考、会话历史管理以及完整 JSON 响应和 SSE 流式响应。具体 Agent 及媒体能力以已开通范围为准",
+  "kebab_example": "",
+  "method": "POST",
+  "multi_version": true,
+  "name": "Chat",
+  "operation": {
+    "action": "Chat",
+    "api_style": "ROA",
+    "api_version": "2026-11-21",
+    "is_sse": true,
+    "method": "POST",
+    "operation_type": "readAndWrite",
+    "protocol": "HTTPS",
+    "system_operation_type": "none",
+    "url": "/v1/api/chat"
+  },
+  "parameters": [
+    {
+      "example": "application/json",
+      "help_en": "可选。完整 JSON 可传 application/json，SSE 可传 text/event-stream。客户端必须在正文中以布尔值 params.responseStreaming 指定响应格式",
+      "help_zh": "客户端接受的响应媒体类型",
+      "location": "header",
+      "name": "accept",
+      "options": [
+        "--biz-accept"
+      ],
+      "raw_name": "Accept",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "enable",
+      "help_en": "可选。enable 表示 SSE。每次请求须在正文中显式填写布尔参数 params.responseStreaming。本头不替代 X-GW-Protocol 或 X-GW 签名",
+      "help_zh": "兼容的 SSE 选择头",
+      "location": "header",
+      "name": "x_dash_scope_sse",
+      "options": [
+        "--x-dash-scope-sse"
+      ],
+      "raw_name": "X-DashScope-SSE",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "enum": [
+        "aliyun-roa"
+      ],
+      "example": "aliyun-roa",
+      "help_en": "本文小驼峰请求与响应必须显式传 aliyun-roa，且只传一次。省略选择旧协议，不能直接照搬小驼峰正文。此头不参与业务 HMAC，不代替 POP 鉴权或 X-GW-* 业务签名",
+      "help_zh": "小驼峰回源协议固定传 aliyun-roa，省略时为旧协议；不参与 HMAC 签名",
+      "location": "header",
+      "name": "x_gw_protocol",
+      "options": [
+        "--x-gw-protocol"
+      ],
+      "raw_name": "X-GW-Protocol",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "req-example-001",
+      "help_en": "必填，恰好一个，须与 communication.requestId 完全一致。格式 [A-Za-z0-9._:-]{1,128}，不得用保留前缀 gw-ingress-。例如 chat-20261118-001；这是业务关联号，不保证重复请求只执行一次",
+      "help_zh": "业务请求 ID，须与 communication.requestId 完全相同",
+      "location": "header",
+      "name": "x_request_id",
+      "options": [
+        "--x-request-id"
+      ],
+      "pattern": "[A-Za-z0-9._:-]{1,128}",
+      "raw_name": "X-Request-Id",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "example-gateway-access",
+      "help_en": "必填，服务方发放的业务网关 AK，用于识别租户和业务凭据，不是用于 POP 鉴权的阿里云 AK。每次只传一个非空值；业务 SK 只在客户端用于计算签名，不随请求发送",
+      "help_zh": "业务网关 Access Key ID",
+      "location": "header",
+      "name": "x_gw_access",
+      "options": [
+        "--x-gw-access"
+      ],
+      "raw_name": "X-GW-Access",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "1794787200000",
+      "help_en": "必填，当前 Unix 毫秒时间戳的数字字符串；有效时间窗按凭据配置。签名规范串与本头使用完全相同的字符串。每次重试重新生成时间戳、nonce 和签名",
+      "help_zh": "当前 Unix 毫秒时间戳",
+      "location": "header",
+      "name": "x_gw_timestamp",
+      "options": [
+        "--x-gw-timestamp"
+      ],
+      "pattern": "^[0-9]+$",
+      "raw_name": "X-GW-Timestamp",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "c093adf9-287a-4684-982a-1aea5a248c2e",
+      "help_en": "必填，每次尝试唯一且非空的随机串，例如 UUID；不可重放旧签名。重试重新生成 nonce、时间戳及签名",
+      "help_zh": "每次调用使用的随机串",
+      "location": "header",
+      "name": "x_gw_nonce",
+      "options": [
+        "--x-gw-nonce"
+      ],
+      "raw_name": "X-GW-Nonce",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "0000000000000000000000000000000000000000000000000000000000000000",
+      "help_en": "必填，使用业务网关 SK 计算的 64 位小写十六进制 HMAC-SHA256。六段按 LF 连接且无末尾换行：METHOD、PATH、CANONICAL_QUERY、BODY_SHA256_HEX、TIMESTAMP、NONCE。原始 query 按 & 分项去空、字典序排序，不 decode/re-encode；正文按实际发送的 UTF-8 字节摘要。具体双签名示例见接口说明",
+      "help_zh": "按实际请求字节计算的 HMAC-SHA256 小写十六进制签名",
+      "location": "header",
+      "name": "x_gw_signature",
+      "options": [
+        "--x-gw-signature"
+      ],
+      "raw_name": "X-GW-Signature",
+      "required": true,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/v1/api/chat",
+  "product_code": "QwenB2BChat",
+  "protocol": "HTTPS|SSE",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "JSON 模式返回完整业务对象。SSE 的 event:complete 表示正常结束，其 data 可携带最终业务对象、仅含请求关联信息的对象，或为空对象 {}。先处理终帧中已有的业务数据，再结束读取",
+        "description_zh": "API response",
+        "example": "{\"communication\":{\"requestId\":\"chat-example-001\",\"responseId\":0},\"data\":{\"messages\":[{\"mimeType\":\"multi_load/iframe\",\"status\":\"complete\",\"content\":\"你好，我可以协助联网问答和信息整理。\",\"metaData\":{\"multiLoad\":[]}}]},\"errorCode\":0,\"errorMsg\":\"success\"}",
+        "properties": {
+          "audioFrames": {
+            "description_en": "开通 HTTP 音频输出后，完整 JSON 可在 audioFrames 中返回音频帧。type 为 audio 时，data 为 Base64 音频数据，last 为布尔末帧标识。type 为 error 时可含 code、requestId 和 message。无音频时可为空或省略",
+            "description_zh": "响应中的可选音频帧列表。无音频时可为空或省略",
+            "itemName": "AudioFrame",
+            "items": {
+              "properties": {
+                "code": {
+                  "description_en": "音频处理失败时可能提供",
+                  "description_zh": "错误码",
+                  "example": "DOWNSTREAM_ERROR",
+                  "title_en": "错误码",
+                  "title_zh": "错误码",
+                  "type": "string"
+                },
+                "data": {
+                  "description_en": "音频帧的 Base64 数据。末帧的值可以为空字符串",
+                  "description_zh": "编码后的音频数据",
+                  "example": "SUQz",
+                  "title_en": "编码后的音频数据",
+                  "title_zh": "编码后的音频数据",
+                  "type": "string"
+                },
+                "last": {
+                  "description_en": "true 表示本路音频的最后一帧",
+                  "description_zh": "是否为音频末帧",
+                  "title_en": "是否为音频末帧",
+                  "title_zh": "是否为音频末帧",
+                  "type": "boolean"
+                },
+                "message": {
+                  "description_en": "音频处理失败时按实际错误返回",
+                  "description_zh": "错误说明",
+                  "example": "语音合成暂不可用",
+                  "title_en": "错误说明",
+                  "title_zh": "错误说明",
+                  "type": "string"
+                },
+                "requestId": {
+                  "description_en": "用于关联音频错误与本次业务请求",
+                  "description_zh": "业务请求关联号",
+                  "example": "req-example-001",
+                  "title_en": "业务请求关联号",
+                  "title_zh": "业务请求关联号",
+                  "type": "string"
+                },
+                "type": {
+                  "description_en": "audio 表示音频，error 表示处理失败",
+                  "description_zh": "音频或错误帧类型",
+                  "example": "audio",
+                  "title_en": "音频或错误帧类型",
+                  "title_zh": "音频或错误帧类型",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "sensitive": true,
+            "title_en": "响应中的可选音频帧列表。无音频时可为空或省略。",
+            "title_zh": "响应中的可选音频帧列表。无音频时可为空或省略。",
+            "type": "array"
+          },
+          "communication": {
+            "description_en": "用于关联响应帧与原业务请求和会话的信息",
+            "description_zh": "用于关联响应帧与原业务请求和会话的信息",
+            "properties": {
+              "requestId": {
+                "description_en": "当前响应所属的业务请求 ID，返回时与请求中的 communication.requestId 一致",
+                "description_zh": "存在时与业务请求 ID 相同",
+                "example": "req-example-001",
+                "title_en": "存在时与业务请求 ID 相同",
+                "title_zh": "存在时与业务请求 ID 相同",
+                "type": "string"
+              },
+              "responseId": {
+                "description_en": "可选整数，业务响应帧标识；网关多帧聚合可为0。不代表可对所有网络帧排序的序列号，也不是会话或请求ID",
+                "description_zh": "业务响应帧标识",
+                "example": "1",
+                "format": "int64",
+                "title_en": "业务响应帧标识",
+                "title_zh": "业务响应帧标识",
+                "type": "integer"
+              },
+              "sessionId": {
+                "description_en": "当前响应所属的客户会话 ID",
+                "description_zh": "客户会话 ID",
+                "example": "session-example-001",
+                "sensitive": true,
+                "title_en": "客户会话 ID",
+                "title_zh": "客户会话 ID",
+                "type": "string"
+              }
+            },
+            "title_en": "用于关联响应帧与原业务请求和会话的信息。",
+            "title_zh": "用于关联响应帧与原业务请求和会话的信息。",
+            "type": "object"
+          },
+          "data": {
+            "description_en": "可选业务对象，字段按实际响应出现。单帧 HTTP 音频响应的 data 也可能直接为 Base64 字符串；多态音频完整形状见接口说明。客户端不得假定固定字段全部存在",
+            "description_zh": "本次响应返回的业务数据，包括消息及可选扩展信息",
+            "properties": {
+              "debug": {
+                "description_en": "可选业务调试信息，可省略或为 null。在支持的联调场景中可能包含 intentLabel；具体结构和返回时机按实际响应读取",
+                "description_zh": "业务响应附带的可选调试信息",
+                "example": "{\"intentLabel\":\"image_search\"}",
+                "sensitive": true,
+                "title_en": "可选公开诊断信息",
+                "title_zh": "可选公开诊断信息",
+                "type": "any"
+              },
+              "extraInfo": {
+                "description_en": "业务响应附带的可选扩展信息。inputResources 是本轮输入资源的处理结果数组，元素可含 contentIndex、type、resourceId、url 和 fileName。contentIndex 是原始消息 content 数组的零起始下标，文本块也计数",
+                "description_zh": "业务扩展信息，可含 inputResources",
+                "properties": {
+                  "inputResources": {
+                    "description_en": "仅在响应提供本轮输入资源处理结果时返回",
+                    "description_zh": "本轮输入资源转存结果",
+                    "itemName": "InputResource",
+                    "items": {
+                      "properties": {
+                        "contentIndex": {
+                          "description_en": "从零开始，按原始 content 数组计数，包含文本块",
+                          "description_zh": "原始内容块的位置",
+                          "example": "1",
+                          "format": "int32",
+                          "title_en": "原始内容块的位置",
+                          "title_zh": "原始内容块的位置",
+                          "type": "integer"
+                        },
+                        "fileName": {
+                          "description_en": "有文件名时返回",
+                          "description_zh": "转存资源的文件名",
+                          "example": "cat.png",
+                          "title_en": "输入资源的文件名",
+                          "title_zh": "输入资源的文件名",
+                          "type": "string"
+                        },
+                        "resourceId": {
+                          "description_en": "本轮输入资源的标识，用于关联对应资源",
+                          "description_zh": "转存资源 ID",
+                          "example": "ws_example_001",
+                          "title_en": "输入资源 ID",
+                          "title_zh": "输入资源 ID",
+                          "type": "string"
+                        },
+                        "type": {
+                          "description_en": "原始内容块对应的资源类型",
+                          "description_zh": "转存资源类型",
+                          "example": "image",
+                          "title_en": "输入资源类型",
+                          "title_zh": "输入资源类型",
+                          "type": "string"
+                        },
+                        "url": {
+                          "description_en": "本轮输入资源的可访问地址",
+                          "description_zh": "转存后的资源 URL",
+                          "example": "https://cdn.example.com/uploads/cat.png",
+                          "title_en": "输入资源的可访问 URL",
+                          "title_zh": "输入资源的可访问 URL",
+                          "type": "string"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "title_en": "本轮输入资源的处理结果",
+                    "title_zh": "本轮输入资源的处理结果",
+                    "type": "array"
+                  }
+                },
+                "sensitive": true,
+                "title_en": "业务扩展信息，可含 inputResources",
+                "title_zh": "业务扩展信息，可含 inputResources",
+                "type": "object"
+              },
+              "messages": {
+                "description_en": "可选数组，可能含多条正文、过程或卡片消息。multi_load/iframe 文本为累计快照，不将每帧全文重复拼接；不要固定只取 messages[0]",
+                "description_zh": "本次业务响应或当前流式响应帧返回的消息列表",
+                "itemName": "Message",
+                "items": {
+                  "properties": {
+                    "content": {
+                      "description_en": "可选多态内容，按 mimeType 解析。multi_load/iframe 常为累计文本快照；后帧更新当前内容。过程、卡片按各自类型处理，不把任意 content 强转字符串",
+                      "description_zh": "文本或对应消息类型的内容",
+                      "example": "图片如下[(image_waterfall_1)]",
+                      "sensitive": true,
+                      "title_en": "文本或对应消息类型的内容",
+                      "title_zh": "文本或对应消息类型的内容",
+                      "type": "any"
+                    },
+                    "metaData": {
+                      "description_en": "可选、可扩展的消息元数据。正文消息可通过 multiLoad 提供卡片；过程消息可按类型包含 sourceSeq、type、barTitle、content，用于关联和展示相应内容",
+                      "description_zh": "与该条消息关联的扩展元数据",
+                      "properties": {
+                        "barTitle": {
+                          "description_en": "用于展示当前过程的上下文标题。处理状态见对应消息的 status",
+                          "description_zh": "过程模块的展示标题",
+                          "example": "问题分析",
+                          "title_en": "过程模块的展示标题",
+                          "title_zh": "过程模块的展示标题",
+                          "type": "string"
+                        },
+                        "content": {
+                          "description_en": "数据结构随模块类型变化。bar/progress 中，思考过程使用 body，工具和结束提示使用 title，过程中检索资料或图片分别使用 docs、images。完整键和示例见接入说明",
+                          "description_zh": "过程模块的完整内容快照",
+                          "example": "{\"body\":\"正在分析问题\",\"status\":\"processing\"}",
+                          "sensitive": true,
+                          "title_en": "过程模块的完整内容快照",
+                          "title_zh": "过程模块的完整内容快照",
+                          "type": "any"
+                        },
+                        "multiLoad": {
+                          "description_en": "与正文关联的结构化内容列表，例如图文卡片，按消息类型返回",
+                          "description_zh": "与正文关联的结构化内容列表，例如图文卡片，按消息类型返回",
+                          "itemName": "MultiLoadItem",
+                          "items": {
+                            "properties": {
+                              "content": {
+                                "description_en": "可选，结构随卡片类型变化。图文卡片可含资源列表",
+                                "description_zh": "卡片内容",
+                                "example": "{\"list\":[{\"imageUrl\":\"https://images.example.com/cat.png\"}]}",
+                                "title_en": "卡片内容",
+                                "title_zh": "卡片内容",
+                                "type": "any"
+                              },
+                              "sourceSeq": {
+                                "description_en": "与正文中的卡片引用关联。相同标识代表同一卡片",
+                                "description_zh": "卡片引用标识",
+                                "example": "image_waterfall_1",
+                                "title_en": "卡片引用标识",
+                                "title_zh": "卡片引用标识",
+                                "type": "string"
+                              },
+                              "type": {
+                                "description_en": "按类型选择卡片展示组件",
+                                "description_zh": "卡片类型",
+                                "example": "image_waterfall",
+                                "title_en": "卡片类型",
+                                "title_zh": "卡片类型",
+                                "type": "string"
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "title_en": "与正文关联的结构化内容列表，例如图文卡片，按消息类型返回。",
+                          "title_zh": "与正文关联的结构化内容列表，例如图文卡片，按消息类型返回。",
+                          "type": "array"
+                        },
+                        "sourceSeq": {
+                          "description_en": "按本次请求和 sourceSeq 关联同一模块的更新。新的完整快照替换旧快照",
+                          "description_zh": "本次请求内的过程模块标识",
+                          "example": "thinking-1",
+                          "title_en": "本次请求内的过程模块标识",
+                          "title_zh": "本次请求内的过程模块标识",
+                          "type": "string"
+                        },
+                        "type": {
+                          "description_en": "例如 bar_thinking、bar_tool、bar_think_finish、bar_ref_source_inline 或 bar_image_inline。按实际类型选择展示组件",
+                          "description_zh": "过程模块类型",
+                          "example": "bar_thinking",
+                          "title_en": "过程模块类型",
+                          "title_zh": "过程模块类型",
+                          "type": "string"
+                        }
+                      },
+                      "sensitive": true,
+                      "title_en": "与该条消息关联的扩展元数据。",
+                      "title_zh": "与该条消息关联的扩展元数据。",
+                      "type": "object"
+                    },
+                    "mimeType": {
+                      "description_en": "消息类型，按此值解析正文、进度及可选信号和追问。常见类型见接入说明",
+                      "description_zh": "消息类型",
+                      "example": "multi_load/iframe",
+                      "title_en": "消息类型",
+                      "title_zh": "消息类型",
+                      "type": "string"
+                    },
+                    "status": {
+                      "description_en": "可选消息状态，如 processing、complete；complete 只结束该消息，不替代 SSE event:complete。HTTP200 或单条消息complete都不足以判定整次流成功",
+                      "description_zh": "业务消息状态",
+                      "example": "complete",
+                      "title_en": "业务消息状态",
+                      "title_zh": "业务消息状态",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title_en": "本次业务响应或当前流式响应帧返回的消息列表。",
+                "title_zh": "本次业务响应或当前流式响应帧返回的消息列表。",
+                "type": "array"
+              }
+            },
+            "sensitive": true,
+            "title_en": "本次响应返回的业务数据，包括消息及可选扩展信息。",
+            "title_zh": "本次响应返回的业务数据，包括消息及可选扩展信息。",
+            "type": "object"
+          },
+          "error": {
+            "description_en": "可选错误对象，出现时按失败处理。准备阶段可用错误HTTP状态+JSON返回；已识别业务错误可保留HTTP200，SSE首帧提交后用错误终帧表达。优先结合HTTP X-Request-Id关联",
+            "description_zh": "业务调用失败时返回的错误详情",
+            "properties": {
+              "code": {
+                "description_en": "可选的错误码，可为字符串或数值，表示服务或 Agent 的具体错误类型。程序应按 code 判断，不依赖 message 全文；数值业务码 500 不代表 HTTP 状态一定为 500",
+                "description_zh": "业务错误码，供客户端识别失败类型",
+                "example": "INVALID_REQUEST",
+                "title_en": "业务错误码，供客户端识别失败类型。",
+                "title_zh": "业务错误码，供客户端识别失败类型。",
+                "type": "any"
+              },
+              "message": {
+                "description_en": "业务错误的说明文本",
+                "description_zh": "业务错误的说明文本",
+                "example": "请求参数无效",
+                "sensitive": true,
+                "title_en": "业务错误的说明文本。",
+                "title_zh": "业务错误的说明文本。",
+                "type": "string"
+              },
+              "requestId": {
+                "description_en": "失败调用的业务请求关联号，用于定位问题",
+                "description_zh": "失败调用的业务请求关联号，用于定位问题",
+                "example": "req-example-001",
+                "title_en": "失败调用的业务请求关联号，用于定位问题。",
+                "title_zh": "失败调用的业务请求关联号，用于定位问题。",
+                "type": "string"
+              }
+            },
+            "sensitive": true,
+            "title_en": "业务调用失败时返回的错误详情。",
+            "title_zh": "业务调用失败时返回的错误详情。",
+            "type": "object"
+          },
+          "errorCode": {
+            "description_en": "可选字符串或数值，成功业务响应可为数字0；非零或失败码按错误处理。未返回本字段不自动判失败，须综合 error、HTTP 和流终帧",
+            "description_zh": "业务状态码",
+            "example": "0",
+            "title_en": "业务状态码",
+            "title_zh": "业务状态码",
+            "type": "any"
+          },
+          "errorMsg": {
+            "description_en": "与响应顶层业务状态码对应的说明",
+            "description_zh": "业务状态说明",
+            "example": "success",
+            "title_en": "业务状态说明",
+            "title_zh": "业务状态说明",
+            "type": "string"
+          },
+          "requestId": {
+            "description_en": "响应顶层可选的业务请求关联号。POP 请求号由响应头 x-acs-request-id 提供",
+            "description_zh": "可选业务请求关联号；POP 请求号见 x-acs-request-id",
+            "example": "req-example-001",
+            "title_en": "可选业务请求关联号；POP 请求号见 x-acs-request-id",
+            "title_zh": "可选业务请求关联号；POP 请求号见 x-acs-request-id",
+            "type": "string"
+          }
+        },
+        "title_en": "API response",
+        "title_zh": "API response",
+        "type": "object"
+      }
+    }
+  },
+  "timeout_ms": 32000
+}
