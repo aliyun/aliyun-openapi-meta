@@ -3,7 +3,7 @@
   "cmd_full_name": "dataworks-public get-skill",
   "cmd_name": "get-skill",
   "deprecated": false,
-  "description_en": "Retrieves the details of a specified Skill by name, including the body of the SKILL.md file and the bundle's download link",
+  "description_en": "Retrieves the details of a single skill by name, including the SKILL.md body and the bundle download URL",
   "description_zh": "根据名称读取单个Skill的详细信息，包括SKILL.md正文与bundle下载链接",
   "kebab_example": "aliyun dataworks-public get-skill --name my-skill --api-version 2024-05-18 --region cn-hangzhou",
   "method": "POST",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "my-skill",
-      "help_en": "The unique name of the Skill",
+      "help_en": "The name of the skill to read",
       "help_zh": "要读取的 Skill 名称",
       "location": "formData",
       "name": "name",
@@ -42,12 +42,12 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response data",
+        "description_en": "Schema of Response",
         "description_zh": "Schema of Response",
         "properties": {
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The unique ID for the request",
+            "description_en": "The request ID",
             "description_zh": "请求 ID",
             "example": "824F80BA-1778-5D8A-BAFF-668A4D9C4CC7",
             "title_en": "Id of the request",
@@ -56,40 +56,40 @@
           },
           "Skill": {
             "backendName": "data",
-            "description_en": "The returned Skill object",
+            "description_en": "The skill",
             "description_zh": "技能",
             "properties": {
               "Body": {
                 "backendName": "body",
-                "description_en": "The content of the SKILL.md file",
+                "description_en": "The SKILL.md body",
                 "description_zh": "SKILL.md 正文",
                 "example": "把大象装冰箱需要3步，把冰箱门打开，把大象放进去，把冰箱门关上。",
                 "type": "string"
               },
               "BundleUrl": {
                 "backendName": "bundleUrl",
-                "description_en": "A temporary download link for `bundle.zip`, which does not require authentication and will expire",
+                "description_en": "The download URL for bundle.zip. This is a temporary URL that does not require authentication and expires after a certain period",
                 "description_zh": "bundle.zip 下载链接（无需鉴权的临时 URL，过期失效）",
                 "example": "https://your-bucket.oss-cn-hangzhou.aliyuncs.com/xxx.zip?Expires=...&Signature=...",
                 "type": "string"
               },
               "CreatorId": {
                 "backendName": "creatorId",
-                "description_en": "The ID of the user who created the Skill",
+                "description_en": "The creator ID",
                 "description_zh": "创建者 ID",
                 "example": "123456",
                 "type": "string"
               },
               "Description": {
                 "backendName": "description",
-                "description_en": "The Skill description",
+                "description_en": "The skill description",
                 "description_zh": "Skill 描述",
                 "example": "数据分析技能",
                 "type": "string"
               },
               "GmtCreateTime": {
                 "backendName": "gmtCreate",
-                "description_en": "The time the Skill was created, provided as a UNIX timestamp in milliseconds",
+                "description_en": "The creation time, returned as a millisecond-level UNIX timestamp (13 digits) in string format",
                 "description_zh": "创建时间，以字符串形式返回的毫秒级 Unix 时间戳（13 位数字）",
                 "example": "1780555634000",
                 "format": "iso8601",
@@ -97,7 +97,7 @@
               },
               "GmtModifiedTime": {
                 "backendName": "gmtModified",
-                "description_en": "The time the Skill was last modified, provided as a UNIX timestamp in milliseconds",
+                "description_en": "The last modification time, returned as a millisecond-level UNIX timestamp (13 digits) in string format",
                 "description_zh": "最近修改时间，以字符串形式返回的毫秒级 Unix 时间戳（13 位数字）",
                 "example": "1780555634000",
                 "format": "iso8601",
@@ -105,16 +105,45 @@
               },
               "ModifierId": {
                 "backendName": "modifierId",
-                "description_en": "The ID of the user who last modified the Skill",
+                "description_en": "The last modifier ID",
                 "description_zh": "最近修改者 ID",
                 "example": "123456",
                 "type": "string"
               },
               "Name": {
                 "backendName": "name",
-                "description_en": "The name of the Skill",
+                "description_en": "The skill name",
                 "description_zh": "Skill 名称",
                 "example": "my-skill",
+                "type": "string"
+              },
+              "PublishedVersion": {
+                "backendName": "publishedVersion",
+                "description_en": "The current publish pointer. This field is empty if the skill is not published. When querying a historical version, the version number is returned only if the version is still the current publish pointer. This does not mean that the historical version was never published",
+                "description_zh": "当前发布指针。未发布时为空；查询历史版本时，仅当该版本仍为当前发布指针才返回版本号，不代表历史版本从未发布",
+                "example": "2",
+                "format": "int32",
+                "title_en": "当前已发布版本",
+                "title_zh": "当前已发布版本",
+                "type": "integer"
+              },
+              "SkillVersion": {
+                "backendName": "version",
+                "description_en": "The integer definition version read in this request. If no historical version is specified, this value is used as the ExpectedVersion for the next UpdateSkill call",
+                "description_zh": "本次读取的整数定义版本。未指定历史版本时，用于下一次 UpdateSkill 的 ExpectedVersion",
+                "example": "2",
+                "format": "int32",
+                "title_en": "Skill 当前定义版本",
+                "title_zh": "Skill 当前定义版本",
+                "type": "integer"
+              },
+              "Status": {
+                "backendName": "status",
+                "description_en": "The status of the read skill. To determine whether the current draft is consistent with the published version, check both SkillVersion and PublishedVersion",
+                "description_zh": "读取的 Skill 状态；当前草稿与发布版是否一致需结合 SkillVersion 和 PublishedVersion 判断",
+                "example": "PUBLISHED",
+                "title_en": "Skill 状态",
+                "title_zh": "Skill 状态",
                 "type": "string"
               },
               "Visibility": {
@@ -131,11 +160,11 @@
                 "properties": {
                   "ProjectIds": {
                     "backendName": "projectIds",
-                    "description_en": "A list of project IDs that can access the Skill",
+                    "description_en": "The list of visible project IDs",
                     "description_zh": "可见的项目 ID 列表",
                     "itemName": "projectId",
                     "items": {
-                      "description_en": "A project ID",
+                      "description_en": "The project ID",
                       "description_zh": "项目id列表",
                       "example": "123456",
                       "type": "string"
@@ -144,11 +173,11 @@
                   },
                   "UserIds": {
                     "backendName": "userIds",
-                    "description_en": "A list of user IDs that can access the Skill",
+                    "description_en": "The list of visible user IDs",
                     "description_zh": "可见的用户 ID 列表",
                     "itemName": "userId",
                     "items": {
-                      "description_en": "A user ID",
+                      "description_en": "The user ID",
                       "description_zh": "用户 ID",
                       "example": "123456",
                       "type": "string"
