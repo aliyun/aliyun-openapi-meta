@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun dms-enterprise MountTableToCategory --region cn-hangzhou --TableName order_info --DbId 1000",
+  "camel_example": "aliyun dms-enterprise MountTableToCategory --region cn-hangzhou --TableName order_info --DbId '1***'",
   "cmd_full_name": "dms-enterprise mount-table-to-category",
   "cmd_name": "mount-table-to-category",
   "deprecated": false,
-  "description_en": "Manually mounts a table to a specified business folder to correct an incorrect folder mounting. When Replace is set to true, existing folder relationships of the table are unbound first (remount)",
+  "description_en": "Mounts a table to a specified business category to correct incorrect category mounting. If Replace is set to true, the table is unmounted from other existing categories first",
   "description_zh": "手动把表挂载到指定业务目录，用于修正错误的目录挂载；Replace=true 时先解绑该表其它已有目录关系（改挂）",
-  "kebab_example": "aliyun dms-enterprise mount-table-to-category --db-id 1000 --table-name order_info --region cn-hangzhou",
+  "kebab_example": "aliyun dms-enterprise mount-table-to-category --db-id '1***' --table-name order_info --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "MountTableToCategory",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "1***",
-      "help_en": "The database ID. You can call the https://help.aliyun.com/document_detail/141873.html operation to query the database ID",
+      "help_en": "The database ID. You can call the https://help.aliyun.com/document_detail/141873.html operation to obtain the database ID",
       "help_zh": "数据库ID，可以调用https://help.aliyun.com/document_detail/141873.html接口获取",
       "location": "query",
       "name": "db_id",
@@ -35,7 +35,7 @@
     },
     {
       "example": "3***",
-      "help_en": "The tenant ID.\nYou can view the tenant ID by hovering over the profile icon in the upper-right corner of the console. For more information, see https://help.aliyun.com/document_detail/181330.html",
+      "help_en": "The tenant ID. You can obtain the tenant ID by moving the pointer over the profile picture in the upper-right corner of the console. For more information, see https://help.aliyun.com/document_detail/181330.html",
       "help_zh": "租户ID。\n取自系统右上角头像处悬停展示的租户ID信息，详情请参见https://help.aliyun.com/document_detail/181330.html",
       "location": "query",
       "name": "tid",
@@ -61,7 +61,7 @@
     },
     {
       "example": "123",
-      "help_en": "The ID of the target leaf folder. Specify either this parameter or CategoryPath (this parameter takes priority). You can query the ID by calling ListAssetCategories. If neither this parameter nor CategoryPath is specified, the operation only unbinds the existing folder of the table",
+      "help_en": "The ID of the target leaf category. This parameter and CategoryPath are mutually exclusive, and CategoryId takes precedence. You can call the ListAssetCategories operation to query the ID. If neither CategoryId nor CategoryPath is specified, the table is only unmounted from its existing categories",
       "help_zh": "目标叶子目录 ID，与 CategoryPath 二选一（优先生效），可通过 ListAssetCategories 查询；与 CategoryPath 都不传时仅解绑该表现有目录",
       "location": "query",
       "name": "category_id",
@@ -74,7 +74,7 @@
     },
     {
       "example": "业务域/交易/订单",
-      "help_en": "The path of the target folder (levels separated by /). The path locates existing folders level by level, with a maximum depth of 4 levels. The final folder must be a leaf folder",
+      "help_en": "The path of the target category. Separate levels with forward slashes (/). The system locates existing categories level by level, up to four levels deep. The final category must be a leaf category",
       "help_zh": "目标目录路径（层级用 / 分隔），逐层定位已有目录，最深 4 层；最终目录必须是叶子目录",
       "location": "query",
       "name": "category_path",
@@ -87,7 +87,7 @@
     },
     {
       "example": "100",
-      "help_en": "The ID of the parent folder from which CategoryPath starts. Leave empty to start from the root folder",
+      "help_en": "The ID of the starting parent category for CategoryPath. If you leave this parameter empty, the search starts from the root category",
       "help_zh": "CategoryPath 的起始父目录 ID，留空表示从根目录开始",
       "location": "query",
       "name": "parent_category_id",
@@ -100,7 +100,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to create folders level by level if the folder specified by CategoryPath does not exist. Default value: false, which returns a 404 error to prevent accidental folder creation from an incorrect path",
+      "help_en": "Specifies whether to create the categories in the CategoryPath level by level if they do not exist. Default value: false. If this parameter is set to false and the categories do not exist, a 404 error is returned to prevent accidental creation of categories due to incorrect paths",
       "help_zh": "CategoryPath 对应目录不存在时是否逐层创建，默认 false 直接报 404，避免误传路径凭空造目录",
       "location": "query",
       "name": "create_missing_category",
@@ -130,9 +130,9 @@
             "properties": {
               "CategoryId": {
                 "backendName": "categoryId",
-                "description_en": "The ID of the folder to which the table is finally mounted. This value is empty for a pure unbind operation (when no folder parameter is specified)",
+                "description_en": "The ID of the category to which the table is finally mounted. This parameter is empty if the table is only unmounted and no category parameters are specified",
                 "description_zh": "最终挂载到的目录 ID；纯解绑（不传目录参数）时为空",
-                "example": "FC-0F46B2A2E4FA22AF",
+                "example": "5639",
                 "format": "int64",
                 "title_en": "最终挂载到的目录 ID；纯解绑（不传目录参数）时为空",
                 "title_zh": "最终挂载到的目录 ID；纯解绑（不传目录参数）时为空",
@@ -140,7 +140,7 @@
               },
               "NewlyMounted": {
                 "backendName": "newlyMounted",
-                "description_en": "Indicates whether a new mount relationship was created. A value of false indicates that the relationship between the table and the target folder already exists",
+                "description_en": "Indicates whether a new mount relationship is created. A value of false indicates that the relationship between the table and the target category already exists",
                 "description_zh": "是否新建了挂载关系，false 表示表与目标目录的关系已存在",
                 "title_en": "是否新建了挂载关系，false 表示表与目标目录的关系已存在",
                 "title_zh": "是否新建了挂载关系，false 表示表与目标目录的关系已存在",
@@ -148,11 +148,11 @@
               },
               "RemovedCategoryIds": {
                 "backendName": "removedCategoryIds",
-                "description_en": "The list of original folder IDs that were unbound during this operation. Under single-mount semantics, mounting to a new folder automatically unbinds the old folder",
+                "description_en": "The IDs of the original categories from which the table is unmounted in this request. Under single-mount semantics, mounting the table to a new category automatically unmounts it from the old categories",
                 "description_zh": "本次被解绑的原目录 ID 列表（单挂载语义下挂新目录会自动解绑旧目录）",
                 "itemName": "removedCategoryIds",
                 "items": {
-                  "description_en": "The ID of the original folder that was unbound during this operation",
+                  "description_en": "The ID of an original category from which the table is unmounted in this request",
                   "description_zh": "本次被解绑的原目录 ID",
                   "example": "123",
                   "format": "int64",
@@ -211,7 +211,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful. Valid values:\ntrue: The request was successful.\nfalse: The request failed",
+            "description_en": "Indicates whether the request is successful. Valid values:\ntrue: The request is successful.\nfalse: The request fails",
             "description_zh": "请求是否成功，返回值如下：\ntrue：请求成功\nfalse：请求失败",
             "example": "true",
             "nullToEmpty": false,
