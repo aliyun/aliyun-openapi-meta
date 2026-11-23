@@ -3,7 +3,7 @@
   "cmd_full_name": "domain query-domain-by-instance-id",
   "cmd_name": "query-domain-by-instance-id",
   "deprecated": false,
-  "description_en": "Queries the basic information of a domain name based on the instance ID",
+  "description_en": "Queries the basic information of a domain name based on the domain name instance ID",
   "description_zh": "调用QueryDomainByInstanceId根据域名实例编号查询域名的基本信息",
   "kebab_example": "aliyun domain query-domain-by-instance-id --instance-id 'S20131205001****' --region cn-hangzhou",
   "method": "GET|POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "127.0.0.1",
-      "help_en": "The user IP address. You can set this parameter to 127.0.0.1",
+      "help_en": "The IP address of the user. You can set this parameter to 127.0.0.1",
       "help_zh": "用户IP，可以设置为127.0.0.1",
       "location": "query",
       "name": "user_client_ip",
@@ -67,6 +67,15 @@
     "200": {
       "schema": {
         "properties": {
+          "AutoRenewEnabled": {
+            "backendName": "module.autoRenewEnabled",
+            "description_en": "Indicates whether auto-renewal is enabled",
+            "description_zh": "是否开启自动续费",
+            "example": "true",
+            "title_en": "是否开启自动续费",
+            "title_zh": "是否开启自动续费",
+            "type": "string"
+          },
           "CnnicPrivacyServiceStatus": {
             "backendName": "module.cnnicPrivacyServiceStatus",
             "description_en": "The CNNIC registry privacy protection status",
@@ -126,7 +135,7 @@
           },
           "DomainLifecycleStatus": {
             "backendName": "module.domainLifecycleStatus",
-            "description_en": "The lifecycle status of the domain name. Possible values include REGISTRATION_GRACE_PERIOD (registration grace period), ACTIVE (active), RENEWAL_GRACE_PERIOD (renewal grace period), REDEMPTION_PERIOD (redemption period), PENDING_DELETE (pending delete), and EXPIRED (expired). Enum values may be extended. Do not implement business logic based solely on the current values",
+            "description_en": "The lifecycle status of the domain name. Possible values include REGISTRATION_GRACE_PERIOD (registration grace period), ACTIVE (normal), RENEWAL_GRACE_PERIOD (renewal grace period), REDEMPTION_PERIOD (redemption period), PENDING_DELETE (pending deletion), and EXPIRED (expired). The enumerated values may be extended. Do not rely solely on the current values to implement business logic",
             "description_zh": "域名生命周期状态。可能的取值包括 REGISTRATION_GRACE_PERIOD（注册宽限期）、ACTIVE（正常状态）、RENEWAL_GRACE_PERIOD（续费宽限期）、REDEMPTION_PERIOD（赎回期）、PENDING_DELETE（待删除期）、EXPIRED（已过期）。枚举值可能扩展，请勿仅依赖当前取值实现业务逻辑",
             "example": "ACTIVE",
             "type": "string"
@@ -151,7 +160,7 @@
           },
           "DomainNameVerificationStatus": {
             "backendName": "module.domainNameVerificationStatus",
-            "description_en": "The naming verification status of the domain name. Valid values:\nNONAUDIT: Not verified.\nSUCCEED: Verified.\nFAILED: Verification failed.\nAUDITING: Under verification",
+            "description_en": "The naming review status of the domain name. Valid values:\nNONAUDIT: not reviewed\nSUCCEED: approved\nFAILED: review failed\nAUDITING: under review",
             "description_zh": "域名命名审核状态。取值：\nNONAUDIT：未认证。\nSUCCEED：成功。\nFAILED：审核失败。\nAUDITING：审核中。\n                           ",
             "example": "NONAUDIT",
             "mappingResourcePropertyName": "$.DomainNameVerificationStatus",
@@ -160,7 +169,7 @@
           },
           "DomainStatus": {
             "backendName": "module.domainStatus",
-            "description_en": "The status of the domain name. Valid values:\n\n1: Urgent renewal required.                                 \n2: Urgent redemption required.                                 \n3: Normal",
+            "description_en": "The status of the domain name. Valid values:\n\n1: renewal required                                 \n2: redemption required                                 \n3: normal",
             "description_zh": "域名状态。取值：\n\n1：急需续费。                                 \n2：急需赎回。                                 \n3：正常",
             "example": "1",
             "mappingResourcePropertyName": "$.Status",
@@ -168,7 +177,7 @@
           },
           "DomainType": {
             "backendName": "module.domainType",
-            "description_en": "The type of the domain name. Valid values:\n\nNew gTLD.                                 \ngTLD.                                 \nccTLD",
+            "description_en": "The type of the domain name. Valid values:\n\nNew gTLD                                 \ngTLD                                 \nccTLD",
             "description_zh": "域名类型。取值：\n\nNew gTLD。                                 \ngTLD。                                 \nccTLD",
             "example": "gTLD",
             "mappingResourcePropertyName": "$.DomainType",
@@ -176,7 +185,7 @@
           },
           "Email": {
             "backendName": "module.holderEmail",
-            "description_en": "The email address of the domain name owner",
+            "description_en": "The email address of the domain name registrant",
             "description_zh": "域名所有者邮箱",
             "example": "username@example.com",
             "mappingResourcePropertyName": "$.Email",
@@ -194,7 +203,7 @@
           },
           "EmailVerificationStatus": {
             "backendName": "module.emailVerificationStatus",
-            "description_en": "Indicates whether the email address of the domain name registrant is verified. Valid values:\n0: Not verified.\n1: Verified",
+            "description_en": "Indicates whether the email address of the domain name registrant is verified. Valid values:\n0: The email address is not verified.\n1: The email address is verified",
             "description_zh": "域名持有者邮箱是否已通过验证。取值：\n0：没有通过验证。\n1：已通过验证。\n                           ",
             "example": "1",
             "format": "int32",
@@ -213,7 +222,7 @@
           },
           "ExpirationDate": {
             "backendName": "module.expirationDate",
-            "description_en": "The expiration time of the queried domain name. The time format varies based on the site and the Lang parameter. For the China site, the format is yyyy-MM-dd HH:mm:ss in the default time zone of the service runtime. For the International site, if Lang is set to zh, the format is yyyy-MM-dd HH:mm:ss (UTC). If Lang is set to en or other values, the format is MMM dd,yyyy HH:mm:ss (UTC)",
+            "description_en": "The expiration time of the queried domain name. The time format varies based on the site and the Lang parameter. For the China site, the format is yyyy-MM-dd HH:mm:ss in the default time zone of the service runtime. For the international site, if Lang is set to zh, the format is yyyy-MM-dd HH:mm:ss (UTC). If Lang is set to en or other values, the format is MMM dd,yyyy HH:mm:ss (UTC)",
             "description_zh": "查询的域名到期时间。时间格式按调用站点和 Lang 决定：国内站为 yyyy-MM-dd HH:mm:ss，使用服务运行时默认时区；国际站 Lang=zh 为 yyyy-MM-dd HH:mm:ss（UTC），Lang=en 或其他值为 MMM dd,yyyy HH:mm:ss（UTC）",
             "example": "2019-12-07 17:02:13",
             "mappingResourcePropertyName": "$.ExpirationDate",
@@ -258,7 +267,7 @@
           },
           "PrivacyServiceStatus": {
             "backendName": "module.privacyServiceStatus",
-            "description_en": "The privacy service status of the domain name",
+            "description_en": "The domain name privacy service status",
             "description_zh": "域名隐私服务状态",
             "enum": [
               "OPEN",
@@ -278,7 +287,7 @@
           },
           "RealNameStatus": {
             "backendName": "module.domainAuditStatus",
-            "description_en": "The real-name verification status of the domain name. Valid values:\nNONAUDIT: Not verified.\nSUCCEED: Verified.\nFAILED: Verification failed.\nAUDITING: Under verification.\n\nThe real-name verification status is a combination of the domain name naming verification and real-name verification. The real-name verification is considered successful only when both the naming verification and real-name verification are passed",
+            "description_en": "The real-name verification status of the domain name. Valid values:\nNONAUDIT: not reviewed\nSUCCEED: approved\nFAILED: review failed\nAUDITING: under review\n\nThe real-name verification status is a combination of the domain name naming review status and the real-name verification status. Real-name verification is considered successful only when both the domain name naming review and the real-name verification are approved",
             "description_zh": "域名实名认证状态。取值：\nNONAUDIT：未实名认证。\nSUCCEED：实名认证成功。\nFAILED：实名认证审核失败。\nAUDITING：实名认证审核中。\n\n域名实名认证状态是域名命名审核和实名审核的组合状态，只有域名命名审核和实名审核均通过才算域名实名认证成功",
             "example": "NONAUDIT",
             "mappingResourcePropertyName": "$.RealNameStatus",
@@ -296,7 +305,7 @@
           },
           "RegistrantOrganization": {
             "backendName": "module.englishHolder",
-            "description_en": "The domain name registrant",
+            "description_en": "The domain name registrant organization",
             "description_zh": "域名持有者",
             "example": "Test litm",
             "mappingResourcePropertyName": "$.RegistrantOrganization",
@@ -305,7 +314,7 @@
           },
           "RegistrantType": {
             "backendName": "module.domainRegType",
-            "description_en": "The type of the domain name registrant. Valid values:\n1: Individual.\n2: Enterprise",
+            "description_en": "The type of the domain name registrant. Valid values:\n1: individual\n2: organization",
             "description_zh": "域名注册联系人类型。取值：\n1：个人。\n2：企业。\n                           ",
             "example": "1",
             "mappingResourcePropertyName": "$.RegistrantType",
@@ -326,16 +335,25 @@
           },
           "RegistrantUpdatingStatus": {
             "backendName": "module.chgHolderStatus",
-            "description_en": "The modification status of the domain name registrant. Valid values:\nPENDING: The registrant information is being modified.\nNORMAL: Normal",
+            "description_en": "The modification status of the domain name registrant. Valid values:\nPENDING: The information of the domain name registrant is being modified.\nNORMAL: normal",
             "description_zh": "域名持有者修改状态。取值：\nPENDING：域名持有者信息修改中。\nNORMAL：正常",
             "example": "NORMAL",
             "mappingResourcePropertyName": "$.RegistrantUpdatingStatus",
             "type": "string",
             "visibility": "Public"
           },
+          "Registrar": {
+            "backendName": "module.registrar",
+            "description_en": "The registrar",
+            "description_zh": "注册商",
+            "example": "aliyun",
+            "title_en": "注册商",
+            "title_zh": "注册商",
+            "type": "string"
+          },
           "RegistrationDate": {
             "backendName": "module.creationDate",
-            "description_en": "The registration time of the domain name. The time format varies based on the site and the Lang parameter. For the China site, the format is yyyy-MM-dd HH:mm:ss in the default time zone of the service runtime. For the International site, if Lang is set to zh, the format is yyyy-MM-dd HH:mm:ss (UTC). If Lang is set to en or other values, the format is MMM dd,yyyy HH:mm:ss (UTC)",
+            "description_en": "The registration time of the domain name. The time format varies based on the site and the Lang parameter. For the China site, the format is yyyy-MM-dd HH:mm:ss in the default time zone of the service runtime. For the international site, if Lang is set to zh, the format is yyyy-MM-dd HH:mm:ss (UTC). If Lang is set to en or other values, the format is MMM dd,yyyy HH:mm:ss (UTC)",
             "description_zh": "域名注册时间。时间格式按调用站点和 Lang 决定：国内站为 yyyy-MM-dd HH:mm:ss，使用服务运行时默认时区；国际站 Lang=zh 为 yyyy-MM-dd HH:mm:ss（UTC），Lang=en 或其他值为 MMM dd,yyyy HH:mm:ss（UTC）",
             "example": "2017-12-07 17:02:13",
             "mappingResourcePropertyName": "$.CreateTime",
@@ -401,7 +419,7 @@
           },
           "TransferOutStatus": {
             "backendName": "module.simpleTransferOutStatus",
-            "description_en": "The transfer-out status of the domain name. Valid values:\nNORMAL: Normal.\nPENDING: Being transferred out of Alibaba Cloud",
+            "description_en": "The transfer-out status of the domain name. Valid values:\nNORMAL: normal\nPENDING: being transferred out of Alibaba Cloud",
             "description_zh": "域名转出状态。取值：\nNORMAL：正常。\nPENDING：正在转出阿里云。\n                           ",
             "example": "NORMAL",
             "mappingResourcePropertyName": "$.TransferOutStatus",
@@ -410,7 +428,7 @@
           },
           "TransferProhibitionLock": {
             "backendName": "module.transferLock",
-            "description_en": "The status of the lock to transfer a domain name to another Alibaba Cloud account. Valid values:\nNONE_SETTING: Not set in Settings.\nOPEN: Enabled.\nCLOSE: shutdown",
+            "description_en": "The status of the lock to transfer a domain name to another Alibaba Cloud account. Valid values:\nNONE_SETTING: Settings not configured\nOPEN: enabled\nCLOSE: shutdown",
             "description_zh": "域名转移锁状态。取值：\nNONE_SETTING：未设置。\nOPEN：已开启。\nCLOSE：已关闭。\n                           ",
             "example": "CLOSE",
             "mappingResourcePropertyName": "$.TransferProhibitionLock",
@@ -419,7 +437,7 @@
           },
           "UpdateProhibitionLock": {
             "backendName": "module.safetyLock",
-            "description_en": "The update prohibition lock status of the domain name. Valid values:\nNONE_SETTING: Not set.\nOPEN: Enabled.\nCLOSE: Disabled",
+            "description_en": "The update prohibition lock status of the domain name. Valid values:\nNONE_SETTING: not set\nOPEN: enabled\nCLOSE: disabled",
             "description_zh": "域名安全锁状态。取值：\nNONE_SETTING：未设置。\nOPEN：已开启。\nCLOSE：已关闭。\n                           ",
             "example": "CLOSE",
             "mappingResourcePropertyName": "$.UpdateProhibitionLock",
@@ -428,7 +446,7 @@
           },
           "UserId": {
             "backendName": "module.userId",
-            "description_en": "The Alibaba Cloud user ID (Alibaba Cloud account UID)",
+            "description_en": "The ID of the Alibaba Cloud user (Alibaba Cloud account UID)",
             "description_zh": "阿里云用户编号（阿里云账号UID）",
             "example": "121000000****",
             "mappingResourcePropertyName": "$.UserId",
