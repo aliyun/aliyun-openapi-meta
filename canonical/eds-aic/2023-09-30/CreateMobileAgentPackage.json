@@ -1,5 +1,5 @@
 {
-  "camel_example": "aliyun eds-aic CreateMobileAgentPackage --region cn-hangzhou --PackageSpecId 1 --Tag.1.Key key --PromotionId '50003308011****' --BizRegionId 'cn-hangzhou' --CreditConfig 1 --Amount 1 --AutoRenew false --Period 1 --CreditAmount '10000.0' --PaidCallbackUrl 'https://aim.wuying.aliyun.com/nodes' --AutoPay false --InstanceName CloudPhone --ChannelCookie 'example-string' --Tag.1.Value value --ImageId 'imgc-075cllfeuazh0****' --BandwidthPackageId 'np-791ncq8qcuoop9hta' --MobileAgentPackageSpec advanced --PeriodUnit Month --version 2023-09-30 --method POST --force",
+  "camel_example": "aliyun eds-aic CreateMobileAgentPackage --region cn-hangzhou --PackageSpecId 1 --Tag.1.Key key --PromotionId '50003308011****' --ZoneId 'cn-hangzhou-b' --BizRegionId 'cn-hangzhou' --CreditConfig 1 --Amount 1 --AutoRenew false --Period 1 --CreditAmount '10000.0' --PaidCallbackUrl 'https://aim.wuying.aliyun.com/nodes' --AutoPay false --DisplayConfig '{\"ResolutionWidth\":1080,\"ResolutionHeight\":1920,\"Dpi\":480}' --InstanceName CloudPhone --ChannelCookie 'example-string' --Tag.1.Value value --ImageId 'imgc-075cllfeuazh0****' --BandwidthPackageId 'np-791ncq8qcuoop9hta' --MobileAgentPackageSpec advanced --PeriodUnit Month --version 2023-09-30 --method POST --force",
   "cmd_full_name": "eds-aic create-mobile-agent-package",
   "cmd_name": "create-mobile-agent-package",
   "deprecated": false,
@@ -39,7 +39,7 @@
         "Year"
       ],
       "example": "Month",
-      "help_en": "The unit of the subscription duration. Valid values:\nMonth: Months.\nYear: Years",
+      "help_en": "The unit of the subscription duration. Valid values:\nMonth: Month.\nYear: Year",
       "help_zh": "购买资源的时长单位。\n取值范围：\nMonth：月。\nYear：年",
       "location": "query",
       "name": "period_unit",
@@ -52,7 +52,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to enable automatic payment. Valid values:\n\ntrue: Automatic payment. You must ensure that your account balance is sufficient.\nfalse (default): Generates an order without deducting fees.\n\n\n\n\nIf your payment method has an insufficient balance, you can set this parameter to false. An unpaid order will be generated, and you can log on to the WUYING Cloud Phone console to pay the order",
+      "help_en": "Specifies whether to enable automatic payment. Valid values:\n\ntrue: Automatic payment is enabled. Make sure that your account balance is sufficient.\nfalse (default): Only an order is generated and no payment is deducted.\n\n\n\n\nIf your payment method has an insufficient balance, you can set this parameter to false. An unpaid order is generated, and you can log on to the WUYING Cloud Phone console to complete the payment",
       "help_zh": "是否自动支付。取值范围：\n\ntrue：自动支付。您需要确保账户余额充足。\nfalse（默认）：只生成订单不扣费。\n\n\n\n\n如果您的支付方式余额不足，可以将此参数设置为false，此时会生成未支付订单，您可以登录无影云手机管理控制台自行支付",
       "location": "query",
       "name": "auto_pay",
@@ -65,7 +65,7 @@
     },
     {
       "example": "10000.0",
-      "help_en": "The credit amount",
+      "help_en": "The credit quota",
       "help_zh": "积分额度",
       "location": "query",
       "name": "credit_amount",
@@ -78,7 +78,7 @@
     },
     {
       "example": "50003308011****",
-      "help_en": "The promotion ID",
+      "help_en": "The ID of the promotion",
       "help_zh": "优惠活动ID",
       "location": "query",
       "name": "promotion_id",
@@ -226,14 +226,27 @@
     },
     {
       "example": "np-791ncq8qcuoop9hta",
-      "help_en": "The bandwidth package ID, which is used to associate an existing bandwidth package when creating an instance. The value must be prefixed with np- and followed by lowercase letters and digits. The bandwidth package must be an AI premium bandwidth package (CBWP_ECD) that belongs to the current account. If this parameter is left empty, the default bandwidth package allocation logic applies",
-      "help_zh": "带宽包ID，用于创建实例时绑定已有带宽包。格式为 np- 前缀 + 小写字母数字，且必须为归属于当前账号的 AI 精品带宽包（CBWP_ECD）。为空时走默认带宽包分配逻辑",
+      "help_en": "The bandwidth package ID",
+      "help_zh": "带宽包ID",
       "location": "query",
       "name": "bandwidth_package_id",
       "options": [
         "--bandwidth-package-id"
       ],
       "raw_name": "BandwidthPackageId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "cn-hangzhou-b",
+      "help_en": "The zone ID",
+      "help_zh": "可用区ID",
+      "location": "query",
+      "name": "zone_id",
+      "options": [
+        "--zone-id"
+      ],
+      "raw_name": "ZoneId",
       "required": false,
       "type": "string"
     },
@@ -269,7 +282,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The tags",
+      "help_en": "The tag",
       "help_zh": "标签",
       "location": "query",
       "name": "tag",
@@ -280,6 +293,57 @@
       "raw_name": "Tag",
       "required": false,
       "type": "array"
+    },
+    {
+      "fields": [
+        {
+          "example": "480",
+          "help_en": "The display density in DPI. Valid values: 120 to 600. The value must be an integer. This parameter is supported only for the matrix (CPS) provisioning form. If this parameter is specified for the instance group (VM) provisioning form, InvalidDpi is returned and no order is generated because the display density for the VM form is derived from the resolution",
+          "help_zh": "显示密度，单位 dpi，取值范围 120-600（含边界），必须为整数。仅矩阵（CPS）形态支持；实例组（VM）形态传入本字段返回 InvalidDpi 且不生成订单，该形态的显示密度由分辨率推导",
+          "name": "dpi",
+          "options": [
+            "--dpi"
+          ],
+          "raw_name": "Dpi",
+          "required": false,
+          "type": "int"
+        },
+        {
+          "example": "1920",
+          "help_en": "The resolution height in pixels. The value must be an even number. The valid value range varies by provisioning form: 300 to 3000 for the instance group (VM) form, and 480 to 2640 for the matrix (CPS) form. This parameter must be specified together with ResolutionWidth. The width and height are validated separately. There are no restrictions on the aspect ratio or the size relationship between width and height",
+          "help_zh": "分辨率高度，单位像素，必须为偶数。允许的取值范围按履约形态不同：实例组（VM）为 300-3000；矩阵（CPS）沿用现有范围 480-2640。须与 ResolutionWidth 同时传入。宽高分开校验，不限制横竖屏比例或宽高大小关系",
+          "name": "resolution_height",
+          "options": [
+            "--resolution-height"
+          ],
+          "raw_name": "ResolutionHeight",
+          "required": false,
+          "type": "int"
+        },
+        {
+          "example": "1080",
+          "help_en": "The resolution width in pixels. The value must be an even number. The valid value range varies by provisioning form: 300 to 3000 for the instance group (VM) form, and 480 to 2640 for the matrix (CPS) form. This parameter must be specified together with ResolutionHeight. If only one of them is specified, InvalidDisplayConfig is returned. If the value exceeds the valid range for the corresponding form, InvalidDisplayConfig is returned and no order is generated",
+          "help_zh": "分辨率宽度，单位像素，必须为偶数。允许的取值范围按履约形态不同：实例组（VM）为 300-3000；矩阵（CPS）沿用现有范围 480-2640。须与 ResolutionHeight 同时传入，只传其中一个返回 InvalidDisplayConfig；超出对应形态的取值范围同样返回 InvalidDisplayConfig 且不生成订单",
+          "name": "resolution_width",
+          "options": [
+            "--resolution-width"
+          ],
+          "raw_name": "ResolutionWidth",
+          "required": false,
+          "type": "int"
+        }
+      ],
+      "help_en": "The custom display configuration. This parameter is optional. If this parameter is not specified, the existing default display configuration is used. ResolutionWidth and ResolutionHeight must be specified in pairs. If only one of them is specified, InvalidDisplayConfig is returned. Dpi is supported only for the matrix (CPS) provisioning form. The instance group (VM) provisioning form does not support display density. If Dpi is specified for the VM provisioning form, InvalidDpi is returned because the display density for this form is derived from the resolution",
+      "help_zh": "自定义显示配置，可选。不传时沿用现有默认显示配置。ResolutionWidth 与 ResolutionHeight 必须成对传入，只传其中一个将返回 InvalidDisplayConfig。Dpi 仅矩阵（CPS）形态支持；实例组（VM）形态不支持显示密度，传入 Dpi 将返回 InvalidDpi（该形态的显示密度由分辨率推导）",
+      "location": "query",
+      "name": "display_config",
+      "options": [
+        "--display-config"
+      ],
+      "param_style": "json",
+      "raw_name": "DisplayConfig",
+      "required": false,
+      "type": "object"
     }
   ],
   "pathPattern": "",
