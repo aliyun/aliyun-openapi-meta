@@ -3,7 +3,7 @@
   "cmd_full_name": "sls create-metric-store",
   "cmd_name": "create-metric-store",
   "deprecated": false,
-  "description_en": "Creates a Metricstore to store metrics",
+  "description_en": "Creates a Metricstore to store time series data",
   "description_zh": "创建时序库（MetricStore），可用于存储时序数据",
   "kebab_example": "aliyun sls create-metric-store --project my-project --name my_metric_store --ttl 7 --shard-count 2 --region cn-hangzhou",
   "method": "POST",
@@ -16,6 +16,7 @@
     "body_mapping": {
       "append_meta": "appendMeta",
       "auto_split": "autoSplit",
+      "encrypt_conf": "encryptConf",
       "hot_ttl": "hot_ttl",
       "infrequent_access_ttl": "infrequentAccessTTL",
       "max_split_shard": "maxSplitShard",
@@ -50,7 +51,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to record the public IP address of the client. The default value is false.\n\ntrue: Records the public IP address.\n\nfalse: Does not record the public IP address",
+      "help_en": "Specifies whether to record public IP addresses. Default value: false.\n\ntrue: Records public IP addresses.\nfalse: Does not record public IP addresses",
       "help_zh": "是否记录外网IP地址功能。默认值为false。\n\ntrue：记录外网IP地址。\nfalse：不记录外网IP地址",
       "location": "body",
       "name": "append_meta",
@@ -64,7 +65,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to enable automatic shard splitting",
+      "help_en": "Specifies whether to enable automatic sharding",
       "help_zh": "是否开启自动分裂",
       "location": "body",
       "name": "auto_split",
@@ -77,8 +78,98 @@
       "type": "bool"
     },
     {
+      "example": "{\n\t\"enable\": \"true\",\n\t\"encryptType\": \"default\",\n\t\"userCmkInfo\": {\n\t\t\"cmkKeyId\": \"f5136b95-2420-ab31-xxxxxxxxx\",\n\t\t\"arn\": \"acs:ram::13234:role/logsource\",\n\t\t\"regionId\": \"cn-hangzhou\"\n\t}\n}",
+      "fields": [
+        {
+          "example": "true",
+          "help_en": "Specifies whether to enable data encryption",
+          "help_zh": "是否开启数据加密",
+          "name": "enable",
+          "options": [
+            "--enable"
+          ],
+          "raw_name": "enable",
+          "required": false,
+          "type": "bool"
+        },
+        {
+          "example": "default",
+          "help_en": "The encryption algorithm",
+          "help_zh": "加密算法",
+          "name": "encrypt_type",
+          "options": [
+            "--encrypt-type"
+          ],
+          "raw_name": "encryptType",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "{\n\t\"cmkKeyId\": \"f5136b95-2420-ab31-xxxxxxxxx\",\n\t\"arn\": \"acs:ram::13234:role/logsource\",\n\t\"regionId\": \"cn-hangzhou\"\n}",
+          "fields": [
+            {
+              "example": "acs:ram::13234:role/logsource",
+              "help_en": "The ARN of the RAM role",
+              "help_zh": "RAM 角色的 ARN",
+              "name": "arn",
+              "options": [
+                "--arn"
+              ],
+              "raw_name": "arn",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "example": "f5136b95-2420-ab31-xxxxxxxxx",
+              "help_en": "The ID of the customer master key (CMK)",
+              "help_zh": "用户主密钥 ID",
+              "name": "cmk_key_id",
+              "options": [
+                "--cmk-key-id"
+              ],
+              "raw_name": "cmkKeyId",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "example": "cn-hangzhou",
+              "help_en": "The region where the customer master key (CMK) resides",
+              "help_zh": "用户主密钥所在地域",
+              "name": "region_id",
+              "options": [
+                "--biz-region-id"
+              ],
+              "raw_name": "regionId",
+              "required": false,
+              "type": "string"
+            }
+          ],
+          "help_en": "The bring your own key (BYOK) configuration. If this parameter is not configured, the service key of Simple Log Service is used",
+          "help_zh": "用户自带密钥配置；不配置时使用日志服务的服务密钥",
+          "name": "user_cmk_info",
+          "options": [
+            "--user-cmk-info"
+          ],
+          "raw_name": "userCmkInfo",
+          "required": false,
+          "type": "object"
+        }
+      ],
+      "help_en": "The data encryption configuration",
+      "help_zh": "数据加密配置",
+      "location": "body",
+      "name": "encrypt_conf",
+      "options": [
+        "--encrypt-conf"
+      ],
+      "param_style": "json",
+      "raw_name": "encryptConf",
+      "required": false,
+      "type": "object"
+    },
+    {
       "example": "60",
-      "help_en": "The period for which data is stored in the hot tier. Unit: days. The value must be at least 7 and cannot be greater than the value of ttl. If you set this parameter to -1, all data is stored in the hot tier for the duration specified by ttl.\n\nWhen the hot storage period ends, the data is moved to the IA storage class. For more information, see https://help.aliyun.com/document_detail/308645.html",
+      "help_en": "The retention period of data in the hot tier of the Logstore. Unit: days. Minimum value: 7. The value cannot exceed the value of ttl. A value of -1 indicates that all data is stored in the hot tier within the ttl retention period.\n\nWhen the storage duration of data exceeds the configured retention period of the hot tier, the data is transferred to the infrequent access (IA) tier. For more information, see https://help.aliyun.com/document_detail/308645.html",
       "help_zh": "数据在Logstore热存储层中的存储时间。单位：天，最小为7，最大不能超过ttl的值，取值为-1代表保存时间ttl内全是热存储。\n\n当数据的存储时间超过您所配置的热存储层数据保存时间后，数据将转为低频存储。更多信息，请参见https://help.aliyun.com/document_detail/308645.html",
       "location": "body",
       "name": "hot_ttl",
@@ -92,7 +183,7 @@
     },
     {
       "example": "30",
-      "help_en": "The retention period of data in the IA storage class. Unit: days. The minimum value is 30. After this period, data is moved to Archive Storage",
+      "help_en": "The retention period of data in the infrequent access (IA) tier. No minimum retention period is required, but data must be retained for at least 30 days before it is transferred to the archive tier",
       "help_zh": "低频存储。没有最少存储时间要求，至少保存30天转归档存储",
       "location": "body",
       "name": "infrequent_access_ttl",
@@ -106,7 +197,7 @@
     },
     {
       "example": "64",
-      "help_en": "The maximum number of shards into which a shard can be split. This parameter is valid only if autoSplit is set to true",
+      "help_en": "The maximum number of shards for automatic sharding. This parameter takes effect only when autoSplit is set to true",
       "help_zh": "自动分裂的最大 shard 数，仅当 autoSplit 为 true 时有效",
       "location": "body",
       "name": "max_split_shard",
@@ -120,7 +211,7 @@
     },
     {
       "example": "prometheus",
-      "help_en": "The type of the Metricstore. Only prometheus is supported. The default value is prometheus",
+      "help_en": "The metric type of the Metricstore. Only prometheus is supported. Default value: prometheus",
       "help_zh": "时序库类型，目前仅支持 prometheus，默认为 prometheus",
       "location": "body",
       "name": "metric_type",
@@ -134,7 +225,7 @@
     },
     {
       "example": "standard",
-      "help_en": "The type of the Metricstore. Only standard is supported. The default value is standard",
+      "help_en": "The type of the Metricstore. Only standard is supported. Default value: standard",
       "help_zh": "时序库的类型，目前仅支持 standard，默认为 standard",
       "location": "body",
       "name": "mode",
@@ -162,7 +253,7 @@
     },
     {
       "example": "2",
-      "help_en": "The number of https://help.aliyun.com/document_detail/28976.html for the Metricstore",
+      "help_en": "The number of https://help.aliyun.com/document_detail/28976.html in the Metricstore",
       "help_zh": "时序库的 https://help.aliyun.com/document_detail/28976.html 分片数量",
       "location": "body",
       "name": "shard_count",
@@ -284,7 +375,7 @@
           "type": "object"
         }
       ],
-      "help_en": "The write hashing configuration",
+      "help_en": "The hash-based write configuration",
       "help_zh": "哈希写入配置",
       "location": "body",
       "name": "sharding_policy",
