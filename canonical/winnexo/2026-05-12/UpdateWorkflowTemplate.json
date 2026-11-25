@@ -3,7 +3,7 @@
   "cmd_full_name": "winnexo update-workflow-template",
   "cmd_name": "update-workflow-template",
   "deprecated": false,
-  "description_en": "Overwrites and updates a workflow template with valid members. The last save takes effect",
+  "description_en": "Overwrites and updates a workflow template for active members. The last save takes effect",
   "description_zh": "有效成员整体覆盖更新工作流模板；最后一次保存生效",
   "kebab_example": "aliyun winnexo update-workflow-template --collaboration-group-id cg_9401 --template-id tpl_9401 --definition '{\"schemaVersion\":2,\"name\":\"客户投诉处理流程\",\"edges\":[],\"steps\":[{\"executorType\":\"MEMBER\",\"sortOrder\":1,\"executorUserId\":10086,\"stepId\":\"collect\",\"name\":\"收集客户信息\",\"specification\":[{\"type\":\"text\",\"content\":\"收集客户信息\"}]}]}' --region cn-hangzhou",
   "method": "POST",
@@ -22,6 +22,45 @@
     "url": "/openapi/updateWorkflowTemplate"
   },
   "parameters": [
+    {
+      "example": "wn_app_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "help_en": "The platform application token issued by the console. If specified, the operation is executed as the user specified by opsUserId or opsUserCode",
+      "help_zh": "平台应用 Token（控制台签发）。传入后将以 opsUserId 或 opsUserCode 指定的用户身份执行",
+      "location": "query",
+      "name": "app_token",
+      "options": [
+        "--app-token"
+      ],
+      "raw_name": "appToken",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "10001",
+      "help_en": "The proxy user ID, which is the WINNEXO platform user ID. This parameter is used only when the application credential is configured as winnexo_uid",
+      "help_zh": "代理用户ID（WINNEXO 平台用户ID），仅当应用凭证配置为 winnexo_uid 时使用",
+      "location": "query",
+      "name": "ops_user_id",
+      "options": [
+        "--ops-user-id"
+      ],
+      "raw_name": "opsUserId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "alice",
+      "help_en": "The proxy user code, which is unique within the tenant. This parameter is used only when the application credential is configured as source_uid",
+      "help_zh": "代理用户编码（租户内唯一），仅当应用凭证配置为 source_uid 时使用",
+      "location": "query",
+      "name": "ops_user_code",
+      "options": [
+        "--ops-user-code"
+      ],
+      "raw_name": "opsUserCode",
+      "required": false,
+      "type": "string"
+    },
     {
       "example": "10000",
       "help_en": "The tenant ID. This is a common parameter. If not specified, the default tenant of the caller is used",
@@ -97,7 +136,7 @@
     },
     {
       "example": "v1",
-      "help_en": "The submitted version number on which the new version is based. This parameter is mutually exclusive with version. If not specified, the system falls back to the current effective version",
+      "help_en": "The submitted version number on which the new version is based. This parameter is mutually exclusive with version. If not specified, the current effective version is used as the fallback",
       "help_zh": "新增版本所基于的已提交版本号；与 version 互斥，不传时回退当前生效版本",
       "location": "formData",
       "name": "source_version",
@@ -128,7 +167,7 @@
         "SUBMIT"
       ],
       "example": "SUBMIT",
-      "help_en": "The write action. Valid values:\nSAVE: Saves the template as a draft without taking effect, allowing node names and executors to be left empty.\nSUBMIT: Requires complete nodes, and saves and submits the template as the only effective version.\nDefault value: SUBMIT",
+      "help_en": "The write action. Valid values: SAVE (saves the template as a draft without taking effect, and allows node names and executors to be left empty) and SUBMIT (requires complete nodes, and saves and submits the template as the only effective version). Default value: SUBMIT",
       "help_zh": "写入动作：SAVE 保存为草稿（不生效），允许节点名称与执行人留空；SUBMIT 要求节点完整，保存并提交为唯一生效版本。默认 SUBMIT",
       "location": "formData",
       "name": "action",
@@ -176,7 +215,7 @@
             "example": "[{\"from\":\"collect\",\"to\":\"deliver\"}]",
             "itemName": "edges",
             "items": {
-              "description_en": "A node dependency edge. from is the stepId of the predecessor node, and to is the stepId of the successor node",
+              "description_en": "A node dependency edge, where from is the stepId of the predecessor node and to is the stepId of the successor node",
               "description_zh": "一条节点依赖边，from为前置节点stepId，to为后置节点stepId",
               "example": "{\"from\":\"collect\",\"to\":\"deliver\"}",
               "type": "object"
@@ -237,7 +276,7 @@
           },
           "schemaVersion": {
             "backendName": "schemaVersion",
-            "description_en": "The template structure version. The current value is 2, which is independent of the business version vN",
+            "description_en": "The schema version of the template. The current value is 2, which is independent of the business version vN",
             "description_zh": "模板结构版本，当前为2，与业务版本vN独立",
             "example": "2",
             "format": "int64",
@@ -277,7 +316,7 @@
                 },
                 "ownerType": {
                   "backendName": "executorType",
-                  "description_en": "The owner type. Valid values:\nMEMBER: Human.\nAGENT: Agent",
+                  "description_en": "The owner type. Valid values: MEMBER (human) and AGENT (agent)",
                   "description_zh": "负责人类型：MEMBER 人工 / AGENT 智能体",
                   "example": "MEMBER",
                   "type": "string"
@@ -292,7 +331,7 @@
                 },
                 "reviewOutput": {
                   "backendName": "reviewOutput",
-                  "description_en": "Specifies whether to manually review the output. Default value: false. This feature can only be enabled for digital workers, and review to-do items are automatically sent to the owner",
+                  "description_en": "Specifies whether to manually review the deliverables. Default value: false. This can be enabled only for digital workers. Review tasks are automatically sent to the owner",
                   "description_zh": "是否人工审核产出物，默认关闭；仅数字员工可开启，审核待办自动发负责人",
                   "example": "false",
                   "type": "boolean"
@@ -331,11 +370,11 @@
                 },
                 "specificationJson": {
                   "backendName": "specificationJson",
-                  "description_en": "The ordered fragment array. Supports text, mention, skill, app, files, and web_search. Preserves reference identities and order",
+                  "description_en": "The ordered array of segments. Supports text, mention, skill, app, files, and web_search. Preserves reference identities and order",
                   "description_zh": "有序片段数组，支持text/mention/skill/app/files/web_search；保留引用身份和顺序",
                   "example": "[{\"type\":\"text\",\"content\":\"收集客户信息\"}]",
                   "items": {
-                    "description_en": "The ordered fragment array. Supports text, mention, skill, app, files, and web_search. Preserves reference identities and order",
+                    "description_en": "The ordered array of segments. Supports text, mention, skill, app, files, and web_search. Preserves reference identities and order",
                     "description_zh": "有序片段数组，支持text/mention/skill/app/files/web_search；保留引用身份和顺序",
                     "example": "{\"type\":\"text\",\"content\":\"汇总销售数据\"}",
                     "type": "object"
@@ -381,7 +420,7 @@
           },
           "versionStatus": {
             "backendName": "versionStatus",
-            "description_en": "The version status. Valid values:\nDRAFT: Draft.\nSUBMITTED: Submitted",
+            "description_en": "The version status. Valid values: DRAFT and SUBMITTED",
             "description_zh": "版本状态：DRAFT 草稿 / SUBMITTED 已提交",
             "example": "SUBMITTED",
             "type": "string"

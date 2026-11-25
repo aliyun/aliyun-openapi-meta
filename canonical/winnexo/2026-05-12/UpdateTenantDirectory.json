@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun winnexo POST /openapi/updateTenantDirectory --region cn-hangzhou --tenantId 10000 --header \"Content-Type=application/x-www-form-urlencoded\" --body 'path=https://example.com/oss/file.pdf&name=示例名称.pdf&description=示例描述&directoryId=exampleDirectoryId&parentId=1' --version 2026-05-12 --force",
+  "camel_example": "aliyun winnexo POST /openapi/updateTenantDirectory --region cn-hangzhou --tenantId 10000 --header \"Content-Type=application/x-www-form-urlencoded\" --body 'path=/产品知识库&name=产品知识库&description=团队产品资料与操作指引&directoryId=kb-example&parentId=1001' --version 2026-05-12 --force",
   "cmd_full_name": "winnexo update-tenant-directory",
   "cmd_name": "update-tenant-directory",
   "deprecated": false,
   "description_en": "Updates the directory information of an enterprise knowledge base and modifies the digital employee association and AI version summary configuration for a standard enterprise root",
   "description_zh": "更新企业知识库目录信息，并可修改普通企业根的数字员工关联和 AI 版本摘要配置",
-  "kebab_example": "aliyun winnexo update-tenant-directory --tenant-id 10000 --directory-id exampleDirectoryId --name '示例名称.pdf' --description '示例描述' --parent-id 1 --path https://example.com/oss/file.pdf --region cn-hangzhou",
+  "kebab_example": "aliyun winnexo update-tenant-directory --tenant-id 10000 --directory-id kb-example --name '产品知识库' --description '团队产品资料与操作指引' --parent-id 1001 --path '/产品知识库' --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "UpdateTenantDirectory",
@@ -22,6 +22,45 @@
     "url": "/openapi/updateTenantDirectory"
   },
   "parameters": [
+    {
+      "example": "wn_app_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "help_en": "平台应用 Token（控制台签发）。传入后将以 opsUserId 或 opsUserCode 指定的用户身份执行",
+      "help_zh": "平台应用凭证。使用应用代理模式时传入，并根据应用配置配合 opsUserId 或 opsUserCode 指定操作人；请勿在日志或公开示例中使用真实凭证",
+      "location": "query",
+      "name": "app_token",
+      "options": [
+        "--app-token"
+      ],
+      "raw_name": "appToken",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "10001",
+      "help_en": "代理用户ID（WINNEXO 平台用户ID），仅当应用凭证配置为 winnexo_uid 时使用",
+      "help_zh": "被代理的 WINNEXO 平台用户 ID。仅在应用凭证的身份映射模式为 winnexo_uid 时使用；不能用该参数绕过租户或知识库权限校验",
+      "location": "query",
+      "name": "ops_user_id",
+      "options": [
+        "--ops-user-id"
+      ],
+      "raw_name": "opsUserId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "alice",
+      "help_en": "代理用户编码（租户内唯一），仅当应用凭证配置为 source_uid 时使用",
+      "help_zh": "被代理用户在租户内的唯一编码。仅在应用凭证的身份映射模式为 source_uid 时使用；不能用该参数绕过租户或知识库权限校验",
+      "location": "query",
+      "name": "ops_user_code",
+      "options": [
+        "--ops-user-code"
+      ],
+      "raw_name": "opsUserCode",
+      "required": false,
+      "type": "string"
+    },
     {
       "example": "10000",
       "help_en": "The ID of the target tenant. It is used for tenant routing in public requests. The server-side authentication chain verifies access permissions. You cannot use this parameter to access unauthorized tenants",
@@ -99,6 +138,51 @@
       "raw_name": "path",
       "required": false,
       "type": "string"
+    },
+    {
+      "enum": [
+        "ALL",
+        "SPECIFIED"
+      ],
+      "example": "SPECIFIED",
+      "help_en": "数字员工关联模式；仅普通企业知识库根可设置。未传/null保持既有语义；SPECIFIED须显式提供名单，ALL仅允许省略或空名单",
+      "help_zh": "数字员工关联模式。ALL 表示对所有数字员工可见，operatingObjectNames 只能省略、为 null 或空数组；SPECIFIED 表示按名单关联，必须显式提供 operatingObjectNames，空数组表示不关联任何员工。省略或 null 不触发关联配置变更。仅支持普通企业知识库根目录",
+      "location": "formData",
+      "name": "oo_visibility_mode",
+      "options": [
+        "--oo-visibility-mode"
+      ],
+      "raw_name": "ooVisibilityMode",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "element": {
+        "type": "string"
+      },
+      "help_en": "数字员工内部名称列表，最多100项，每项非空且最多256字符；SPECIFIED空数组表示不关联任何员工，非空名单按去重后全量替换",
+      "help_zh": "指定关联的数字员工内部名称列表，必须与 ooVisibilityMode 配合使用。SPECIFIED 时必传，空数组表示清空关联；ALL 时只能省略、为 null 或空数组。最多 100 项，每项去除首尾空白后为 1–256 个字符；服务端校验当前租户存在且可用的员工，去重后全量替换关联",
+      "location": "formData",
+      "name": "operating_object_names",
+      "options": [
+        "--operating-object-names"
+      ],
+      "param_style": "json",
+      "raw_name": "operatingObjectNames",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "help_en": "后续内容更新的AI版本摘要开关；false关闭，未传/null保持既有语义，不删除既有摘要",
+      "help_zh": "是否为后续内容更新生成 AI 版本摘要。true 开启，false 关闭；省略或 null 不触发配置变更。关闭不删除已有摘要。仅支持普通企业知识库根目录",
+      "location": "formData",
+      "name": "change_record_enabled",
+      "options": [
+        "--change-record-enabled"
+      ],
+      "raw_name": "changeRecordEnabled",
+      "required": false,
+      "type": "bool"
     }
   ],
   "pathPattern": "/openapi/updateTenantDirectory",

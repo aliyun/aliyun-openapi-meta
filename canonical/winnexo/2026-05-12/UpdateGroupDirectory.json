@@ -3,7 +3,7 @@
   "cmd_full_name": "winnexo update-group-directory",
   "cmd_name": "update-group-directory",
   "deprecated": false,
-  "description_en": "Modifies a folder in the materials section of a collaborative share",
+  "description_en": "Modifies a material directory in a collaboration workspace",
   "description_zh": "修改协作空间资料目录",
   "kebab_example": "aliyun winnexo update-group-directory --group-id group_example --directory-id dir_example --region cn-hangzhou",
   "method": "POST",
@@ -23,8 +23,47 @@
   },
   "parameters": [
     {
+      "example": "wn_app_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "help_en": "The platform application token issued by the console. If specified, the operation is executed as the user identified by opsUserId or opsUserCode",
+      "help_zh": "平台应用 Token（控制台签发）。传入后将以 opsUserId 或 opsUserCode 指定的用户身份执行",
+      "location": "query",
+      "name": "app_token",
+      "options": [
+        "--app-token"
+      ],
+      "raw_name": "appToken",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "10001",
+      "help_en": "The proxy user ID, which is the WINNEXO platform user ID. This parameter is used only when the application credential is configured as winnexo_uid",
+      "help_zh": "代理用户ID（WINNEXO 平台用户ID），仅当应用凭证配置为 winnexo_uid 时使用",
+      "location": "query",
+      "name": "ops_user_id",
+      "options": [
+        "--ops-user-id"
+      ],
+      "raw_name": "opsUserId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "alice",
+      "help_en": "The proxy user code, which is unique within the tenant. This parameter is used only when the application credential is configured as source_uid",
+      "help_zh": "代理用户编码（租户内唯一），仅当应用凭证配置为 source_uid 时使用",
+      "location": "query",
+      "name": "ops_user_code",
+      "options": [
+        "--ops-user-code"
+      ],
+      "raw_name": "opsUserCode",
+      "required": false,
+      "type": "string"
+    },
+    {
       "example": "10000",
-      "help_en": "The tenant ID. This is a common parameter. If this parameter is not specified, the default tenant of the caller is used",
+      "help_en": "The tenant ID. This is a common parameter. If omitted, the default tenant of the caller is used",
       "help_zh": "租户ID，公共参数；缺省时使用调用方默认租户",
       "location": "query",
       "name": "tenant_id",
@@ -37,7 +76,7 @@
     },
     {
       "example": "group_example",
-      "help_en": "The ID of the collaborative share",
+      "help_en": "The ID of the collaboration workspace",
       "help_zh": "协作空间 ID",
       "location": "formData",
       "name": "group_id",
@@ -50,7 +89,7 @@
     },
     {
       "example": "dir_example",
-      "help_en": "The ID of the physical subfolder in the current space. The internal root folder and reference folders are not allowed",
+      "help_en": "The ID of the physical subdirectory in the current workspace. Internal root directories and referenced directories are not allowed",
       "help_zh": "当前空间物理子目录 ID，不允许内部根或引用目录",
       "location": "formData",
       "name": "directory_id",
@@ -63,7 +102,7 @@
     },
     {
       "example": "项目资料",
-      "help_en": "The new name. If this parameter is omitted or set to null, the name remains unchanged",
+      "help_en": "The new name. If omitted or set to null, the name is not modified",
       "help_zh": "新名称；省略或 null 不修改",
       "location": "formData",
       "name": "name",
@@ -76,7 +115,7 @@
     },
     {
       "example": "项目说明",
-      "help_en": "The new description. If this parameter is set to an empty string, the description is cleared. If this parameter is omitted or set to null, the description remains unchanged. At least one of name or description must be non-null",
+      "help_en": "The new description. An empty string clears the description. If omitted or set to null, the description is not modified. At least one of the name or description parameters must be non-null",
       "help_zh": "新描述；空字符串清空，省略或 null 不修改；name/description 至少一个非 null",
       "location": "formData",
       "name": "description",
@@ -104,21 +143,21 @@
           },
           "description": {
             "backendName": "description",
-            "description_en": "The folder description",
+            "description_en": "The directory description",
             "description_zh": "目录描述",
             "example": "项目说明",
             "type": "string"
           },
           "directoryId": {
             "backendName": "directoryId",
-            "description_en": "The folder ID",
+            "description_en": "The directory ID",
             "description_zh": "目录 ID",
             "example": "dir_example",
             "type": "string"
           },
           "directoryType": {
             "backendName": "directoryType",
-            "description_en": "The folder type. The value is fixed as GROUP",
+            "description_en": "The directory type. The value is fixed as GROUP",
             "description_zh": "目录类型，固定为 GROUP",
             "enum": [
               "GROUP"
@@ -128,14 +167,14 @@
           },
           "groupId": {
             "backendName": "groupId",
-            "description_en": "The ID of the collaborative share",
+            "description_en": "The ID of the collaboration workspace",
             "description_zh": "协作空间 ID",
             "example": "group_example",
             "type": "string"
           },
           "kbRootDirectoryId": {
             "backendName": "kbRootDirectoryId",
-            "description_en": "The ID of the internal root folder in the collaborative share. This folder cannot be modified",
+            "description_en": "The ID of the internal root directory in the collaboration workspace. This directory cannot be modified",
             "description_zh": "协作空间内部根目录 ID，不允许修改",
             "example": "dir_root",
             "type": "string"
@@ -149,21 +188,21 @@
           },
           "name": {
             "backendName": "name",
-            "description_en": "The folder name",
+            "description_en": "The directory name",
             "description_zh": "目录名称",
             "example": "项目资料",
             "type": "string"
           },
           "parentDirectoryId": {
             "backendName": "parentDirectoryId",
-            "description_en": "The parent folder ID",
+            "description_en": "The ID of the parent directory",
             "description_zh": "父目录 ID",
             "example": "dir_parent",
             "type": "string"
           },
           "requestId": {
             "backendName": "RequestId",
-            "description_en": "The request trace ID",
+            "description_en": "The request ID",
             "description_zh": "请求追踪ID",
             "example": "019FF406-1B10-0065-A97D-2D1920C2A03D",
             "type": "string"

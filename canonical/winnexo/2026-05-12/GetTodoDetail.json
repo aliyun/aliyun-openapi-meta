@@ -3,7 +3,7 @@
   "cmd_full_name": "winnexo get-todo-detail",
   "cmd_name": "get-todo-detail",
   "deprecated": false,
-  "description_en": "Queries the processing details of a to-do item",
+  "description_en": "Queries the details of a to-do item",
   "description_zh": "查询待办处理详情",
   "kebab_example": "aliyun winnexo get-todo-detail --todo-id todo_abc123 --region cn-hangzhou",
   "method": "POST",
@@ -22,6 +22,45 @@
     "url": "/openapi/getTodoDetail"
   },
   "parameters": [
+    {
+      "example": "wn_app_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "help_en": "The platform application token issued by the console. If specified, the operation is executed as the user identified by opsUserId or opsUserCode",
+      "help_zh": "平台应用 Token（控制台签发）。传入后将以 opsUserId 或 opsUserCode 指定的用户身份执行",
+      "location": "query",
+      "name": "app_token",
+      "options": [
+        "--app-token"
+      ],
+      "raw_name": "appToken",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "10001",
+      "help_en": "The proxy user ID, which is the WINNEXO platform user ID. This parameter is used only when the application credential is configured as winnexo_uid",
+      "help_zh": "代理用户ID（WINNEXO 平台用户ID），仅当应用凭证配置为 winnexo_uid 时使用",
+      "location": "query",
+      "name": "ops_user_id",
+      "options": [
+        "--ops-user-id"
+      ],
+      "raw_name": "opsUserId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "alice",
+      "help_en": "The proxy user code, which is unique within the tenant. This parameter is used only when the application credential is configured as source_uid",
+      "help_zh": "代理用户编码（租户内唯一），仅当应用凭证配置为 source_uid 时使用",
+      "location": "query",
+      "name": "ops_user_code",
+      "options": [
+        "--ops-user-code"
+      ],
+      "raw_name": "opsUserCode",
+      "required": false,
+      "type": "string"
+    },
     {
       "example": "10000",
       "help_en": "The tenant ID. This is a common parameter. If not specified, the default tenant of the caller is used",
@@ -72,11 +111,11 @@
             "items": {
               "description_en": "All assignees",
               "description_zh": "全部处理人",
-              "example": "示例处理人",
+              "example": "{\"assigneeUserId\":\"43\",\"status\":\"PENDING\"}",
               "properties": {
                 "actedAt": {
                   "backendName": "actedAt",
-                  "description_en": "The action time in UTC+8. This field is empty if the item is not processed",
+                  "description_en": "The time when the item was processed (UTC+8). This field is empty if the item is unprocessed",
                   "description_zh": "处理时间（北京时间）；未处理为空",
                   "example": "2026-10-16T10:30:00+08:00",
                   "type": "string"
@@ -97,7 +136,7 @@
                 },
                 "readAt": {
                   "backendName": "readAt",
-                  "description_en": "The read time in UTC+8. This field is empty if the item is unread",
+                  "description_en": "The time when the item was read (UTC+8). This field is empty if the item is unread",
                   "description_zh": "已读时间（北京时间）；未读为空",
                   "example": "2026-10-12 10:01:00",
                   "type": "string"
@@ -125,9 +164,9 @@
           },
           "attachmentPolicy": {
             "backendName": "attachmentPolicy",
-            "description_en": "The attachment policy. Attachments are not stored in the database in the current version",
+            "description_en": "The attachment policy. In the current version, attachments are not stored in the database",
             "description_zh": "附件策略（当前版本附件不落库）",
-            "example": "allowUpload=true",
+            "example": "{\"allowAttachments\":\"true\",\"maxFilesPerQuestion\":\"20\",\"maxFilesTotal\":\"50\",\"maxFileSizeBytes\":\"52428800\",\"acceptTypes\":[]}",
             "itemName": "attachmentPolicy",
             "required": false,
             "type": "object"
@@ -141,7 +180,7 @@
           },
           "completedAt": {
             "backendName": "completedAt",
-            "description_en": "The completion time in UTC+8 (YYYY-MM-DD HH:mm:ss)",
+            "description_en": "The completion time in the YYYY-MM-DD HH:mm:ss format (UTC+8)",
             "description_zh": "完成时间（北京时间 YYYY-MM-DD HH:mm:ss）",
             "example": "2026-10-12 10:00:00",
             "type": "string"
@@ -162,14 +201,14 @@
           },
           "gmtCreate": {
             "backendName": "gmtCreate",
-            "description_en": "The creation time in UTC+8 (YYYY-MM-DD HH:mm:ss)",
+            "description_en": "The creation time in the YYYY-MM-DD HH:mm:ss format (UTC+8)",
             "description_zh": "创建时间（北京时间 YYYY-MM-DD HH:mm:ss）",
             "example": "2026-10-12 10:00:00",
             "type": "string"
           },
           "gmtModified": {
             "backendName": "gmtModified",
-            "description_en": "The last modification time in UTC+8 (YYYY-MM-DD HH:mm:ss)",
+            "description_en": "The last modification time in the YYYY-MM-DD HH:mm:ss format (UTC+8)",
             "description_zh": "最后修改时间（北京时间 YYYY-MM-DD HH:mm:ss）",
             "example": "2026-10-12 10:00:00",
             "type": "string"
@@ -197,7 +236,7 @@
           },
           "myAssigneeStatus": {
             "backendName": "myAssigneeStatus",
-            "description_en": "The action status of the caller as the assignee",
+            "description_en": "The action status of the caller as an assignee",
             "description_zh": "调用者的处理人行状态",
             "example": "PENDING",
             "type": "string"
@@ -206,14 +245,14 @@
             "backendName": "myDisplayState",
             "description_en": "The list display status for the caller",
             "description_zh": "调用者的列表展示状态",
-            "example": "TODO",
+            "example": "DONE",
             "type": "string"
           },
           "myPermissions": {
             "backendName": "myPermissions",
-            "description_en": "The permissions of the caller, such as canSubmit and canTransfer",
+            "description_en": "The permissions of the caller. Valid values: canSubmit and canTransfer",
             "description_zh": "调用者权限（canSubmit/canTransfer）",
-            "example": "APP/VIEW=true",
+            "example": "{\"canSubmit\":\"true\",\"canTransfer\":\"false\"}",
             "itemName": "myPermissions",
             "required": false,
             "type": "object"
@@ -227,13 +266,13 @@
           },
           "questions": {
             "backendName": "questions",
-            "description_en": "The list of questions (structured projection)",
+            "description_en": "The structured list of questions",
             "description_zh": "问题清单（结构化投影）",
             "itemName": "问题",
             "items": {
-              "description_en": "The list of questions (structured projection)",
+              "description_en": "The structured list of questions",
               "description_zh": "问题清单（结构化投影）",
-              "example": "示例问题项",
+              "example": "{\"question\":\"是否通过审批\",\"mode\":\"SINGLE_CHOICE\",\"required\":\"true\",\"options\":[{\"label\":\"通过\",\"description\":\"选项补充说明\",\"recommended\":\"false\"}],\"allowCustom\":\"false\",\"customLabel\":\"其他\",\"customPlaceholder\":\"请说明\",\"customMaxLength\":\"200\",\"placeholder\":\"请输入\",\"maxLength\":\"500\"}",
               "properties": {
                 "allowCustom": {
                   "backendName": "allowCustom",
@@ -244,7 +283,7 @@
                 },
                 "customLabel": {
                   "backendName": "customLabel",
-                  "description_en": "The text for the custom input field",
+                  "description_en": "The text for the custom input item",
                   "description_zh": "自定义输入项文案",
                   "example": "其他",
                   "type": "string"
@@ -281,24 +320,24 @@
                 },
                 "options": {
                   "backendName": "options",
-                  "description_en": "The options. This field is required for choice questions",
+                  "description_en": "The options, which are required for choice questions",
                   "description_zh": "选项（选择类必有）",
                   "itemName": "选项",
                   "items": {
-                    "description_en": "The options. This field is required for choice questions",
+                    "description_en": "The options, which are required for choice questions",
                     "description_zh": "选项（选择类必有）",
-                    "example": "示例选项",
+                    "example": "{\"label\":\"通过\",\"description\":\"选项补充说明\",\"recommended\":\"false\"}",
                     "properties": {
                       "description": {
                         "backendName": "description",
-                        "description_en": "The supplementary description of the option",
+                        "description_en": "The additional description for the option",
                         "description_zh": "选项补充说明",
                         "example": "选项补充说明",
                         "type": "string"
                       },
                       "label": {
                         "backendName": "label",
-                        "description_en": "The option text (reference key)",
+                        "description_en": "The option text, which serves as a reference key",
                         "description_zh": "选项文案（引用键）",
                         "example": "通过",
                         "type": "string"
@@ -326,7 +365,7 @@
                 },
                 "question": {
                   "backendName": "question",
-                  "description_en": "The question text (reference key)",
+                  "description_en": "The question text, which serves as a reference key",
                   "description_zh": "问题正文（引用键）",
                   "example": "是否通过审批",
                   "type": "string"
@@ -354,18 +393,18 @@
           },
           "resultPayload": {
             "backendName": "resultPayload",
-            "description_en": "The response content in JSONB format as-is. Defaults to an empty object if not submitted",
+            "description_en": "The response content in JSONB format, passed through as-is. Defaults to an empty object if not submitted",
             "description_zh": "作答内容（JSONB 原样；未提交为空对象缺省）",
-            "example": "result=同意",
+            "example": "{\"answers\":[{\"question\":\"是否通过审批\",\"answer\":[\"通过\"]}]}",
             "itemName": "resultPayload",
             "required": false,
             "type": "object"
           },
           "sourceContext": {
             "backendName": "sourceContext",
-            "description_en": "The source context. This context is passed through as-is during creation",
+            "description_en": "The source context, which is passed through as-is during creation",
             "description_zh": "来源上下文（创建时原样透传）",
-            "example": "source=openapi",
+            "example": "{\"source\":\"openapi\"}",
             "itemName": "sourceContext",
             "required": false,
             "type": "object"

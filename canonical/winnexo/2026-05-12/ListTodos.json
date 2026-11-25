@@ -1,9 +1,9 @@
 {
-  "camel_example": "aliyun winnexo POST /openapi/listTodos --region cn-hangzhou --tenantId 10000 --header \"Content-Type=application/x-www-form-urlencoded\" --body 'readStatus=[UNREAD]&collaborationGroupId=cg_123&priorities=[HIGH]&sourceTypes=[OPEN_API]&maxResults=20&nextToken=example&statuses=[PENDING]&pageSize=20&sortBy=DEFAULT&page=1&keyword=审批' --version 2026-05-12 --force",
+  "camel_example": "aliyun winnexo POST /openapi/listTodos --region cn-hangzhou --opsUserCode alice --opsUserId 10001 --appToken wn_app_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx --tenantId 10000 --header \"Content-Type=application/x-www-form-urlencoded\" --body 'readStatus=[UNREAD]&collaborationGroupId=cg_123&priorities=[HIGH]&sourceTypes=[OPEN_API]&maxResults=20&nextToken=example&pageSize=20&statuses=[PENDING]&sortBy=DEFAULT&page=1&keyword=审批' --version 2026-05-12 --force",
   "cmd_full_name": "winnexo list-todos",
   "cmd_name": "list-todos",
   "deprecated": false,
-  "description_en": "Performs a paging query on the to-do list",
+  "description_en": "Performs a paging query for the to-do list",
   "description_zh": "分页查询待办列表",
   "kebab_example": "aliyun winnexo list-todos --tenant-id 10000 --read-status UNREAD --statuses PENDING --priorities HIGH --source-types OPEN_API --collaboration-group-id cg_123 --keyword '审批' --sort-by DEFAULT --page 1 --page-size 20 --max-results 20 --next-token example --region cn-hangzhou",
   "method": "POST",
@@ -23,6 +23,45 @@
   },
   "parameters": [
     {
+      "example": "wn_app_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "help_en": "The platform application token issued by the console. If specified, the operation is performed as the user identified by opsUserId or opsUserCode",
+      "help_zh": "平台应用 Token（控制台签发）。传入后将以 opsUserId 或 opsUserCode 指定的用户身份执行",
+      "location": "query",
+      "name": "app_token",
+      "options": [
+        "--app-token"
+      ],
+      "raw_name": "appToken",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "10001",
+      "help_en": "The proxy user ID, which is the WINNEXO platform user ID. This parameter is used only when the application credential is configured as winnexo_uid",
+      "help_zh": "代理用户ID（WINNEXO 平台用户ID），仅当应用凭证配置为 winnexo_uid 时使用",
+      "location": "query",
+      "name": "ops_user_id",
+      "options": [
+        "--ops-user-id"
+      ],
+      "raw_name": "opsUserId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "alice",
+      "help_en": "The proxy user code, which is unique within the tenant. This parameter is used only when the application credential is configured as source_uid",
+      "help_zh": "代理用户编码（租户内唯一），仅当应用凭证配置为 source_uid 时使用",
+      "location": "query",
+      "name": "ops_user_code",
+      "options": [
+        "--ops-user-code"
+      ],
+      "raw_name": "opsUserCode",
+      "required": false,
+      "type": "string"
+    },
+    {
       "example": "10000",
       "help_en": "The tenant ID. This is a common parameter. If not specified, the default tenant of the caller is used",
       "help_zh": "租户ID，公共参数；缺省时使用调用方默认租户",
@@ -39,8 +78,8 @@
       "element": {
         "type": "string"
       },
-      "example": "UNREAD",
-      "help_en": "The read status filter. Valid values: UNREAD and READ. The status is determined by the readAt field of the assignee",
+      "example": "[\"UNREAD\",\"READ\"]",
+      "help_en": "The read status filter. Valid values: UNREAD, READ. The status is determined by the readAt time of the assignee",
       "help_zh": "读取状态筛选（UNREAD/READ，按处理人 readAt 判定）",
       "location": "formData",
       "name": "read_status",
@@ -56,8 +95,8 @@
       "element": {
         "type": "string"
       },
-      "example": "PENDING",
-      "help_en": "The to-do status filter. Valid values: PENDING, COMPLETED, and CANCELLED",
+      "example": "[\"PENDING\",\"COMPLETED\"]",
+      "help_en": "The to-do status filter. Valid values: PENDING, COMPLETED, CANCELLED",
       "help_zh": "待办状态筛选（PENDING/COMPLETED/CANCELLED）",
       "location": "formData",
       "name": "statuses",
@@ -73,8 +112,8 @@
       "element": {
         "type": "string"
       },
-      "example": "HIGH",
-      "help_en": "The priority filter. Valid values: HIGH, MEDIUM, and LOW",
+      "example": "[\"HIGH\",\"MEDIUM\"]",
+      "help_en": "The priority filter. Valid values: HIGH, MEDIUM, LOW",
       "help_zh": "优先级筛选（HIGH/MEDIUM/LOW）",
       "location": "formData",
       "name": "priorities",
@@ -90,8 +129,8 @@
       "element": {
         "type": "string"
       },
-      "example": "WORKFLOW",
-      "help_en": "The to-do type filter. Valid values: WORKFLOW and OPEN_API",
+      "example": "[\"WORKFLOW\",\"OPEN_API\"]",
+      "help_en": "The to-do type filter. Valid values: WORKFLOW, OPEN_API",
       "help_zh": "待办类型筛选（WORKFLOW/OPEN_API）",
       "location": "formData",
       "name": "source_types",
@@ -105,7 +144,7 @@
     },
     {
       "example": "cg_123",
-      "help_en": "The collaboration workspace ID. This is an optional filter. If not specified, items from all workspaces are returned",
+      "help_en": "The collaboration workspace ID. This is an optional filter. If not specified, all workspaces are included",
       "help_zh": "协作空间 ID（可选过滤；不传 = 全部空间）",
       "location": "formData",
       "name": "collaboration_group_id",
@@ -216,7 +255,7 @@
           },
           "hasMore": {
             "backendName": "hasMore",
-            "description_en": "Indicates whether more data is available",
+            "description_en": "Specifies whether more data is available",
             "description_zh": "是否还有更多数据",
             "example": "false",
             "type": "boolean"
@@ -229,7 +268,7 @@
             "items": {
               "description_en": "The list of to-do items on the current page",
               "description_zh": "当前页待办列表",
-              "example": "示例列表项",
+              "example": "{\"todoId\":\"todo_abc123\",\"title\":\"治理审批\",\"priority\":\"HIGH\",\"status\":\"COMPLETED\",\"myAssigneeStatus\":\"COMPLETED\",\"myDisplayState\":\"DONE\",\"completedByUserId\":\"42\",\"completedByUserName\":\"张三\",\"completedAt\":\"2026-10-12 10:00:00\",\"isRead\":\"false\",\"sourceType\":\"WORKFLOW\",\"assigneeCount\":\"2\",\"sourceContext\":{\"source\":\"openapi\"},\"messageId\":\"msg-1\",\"gmtCreate\":\"2026-10-12 10:00:00\",\"gmtModified\":\"2026-10-12 10:00:00\",\"questionCount\":\"1\",\"questionSummaries\":[\"是否同意该方案\"]}",
               "properties": {
                 "assigneeCount": {
                   "backendName": "assigneeCount",
@@ -241,7 +280,7 @@
                 },
                 "completedAt": {
                   "backendName": "completedAt",
-                  "description_en": "The completion time in the YYYY-MM-DD HH:mm:ss format (UTC+8)",
+                  "description_en": "The completion time in UTC+8. Format: YYYY-MM-DD HH:mm:ss",
                   "description_zh": "完成时间（北京时间 YYYY-MM-DD HH:mm:ss）",
                   "example": "2026-10-12 10:00:00",
                   "type": "string"
@@ -262,28 +301,28 @@
                 },
                 "gmtCreate": {
                   "backendName": "gmtCreate",
-                  "description_en": "The creation time in the YYYY-MM-DD HH:mm:ss format (UTC+8)",
+                  "description_en": "The creation time in UTC+8. Format: YYYY-MM-DD HH:mm:ss",
                   "description_zh": "创建时间（北京时间 YYYY-MM-DD HH:mm:ss）",
                   "example": "2026-10-12 10:00:00",
                   "type": "string"
                 },
                 "gmtModified": {
                   "backendName": "gmtModified",
-                  "description_en": "The last modification time in the YYYY-MM-DD HH:mm:ss format (UTC+8)",
+                  "description_en": "The last modification time in UTC+8. Format: YYYY-MM-DD HH:mm:ss",
                   "description_zh": "最后修改时间（北京时间 YYYY-MM-DD HH:mm:ss）",
                   "example": "2026-10-12 10:00:00",
                   "type": "string"
                 },
                 "isRead": {
                   "backendName": "isRead",
-                  "description_en": "Indicates whether the caller has read the item",
+                  "description_en": "Specifies whether the caller has read the item",
                   "description_zh": "调用者是否已读",
                   "example": "false",
                   "type": "boolean"
                 },
                 "messageId": {
                   "backendName": "messageId",
-                  "description_en": "The message ID of the assistant that sent the to-do item. This field is empty if there is no conversation source",
+                  "description_en": "The ID of the assistant message that generated the to-do item. This field is empty if there is no conversation source",
                   "description_zh": "发出该待办的 assistant 消息ID；无会话来源为空",
                   "example": "msg-1",
                   "type": "string"
@@ -299,7 +338,7 @@
                   "backendName": "myDisplayState",
                   "description_en": "The list display status for the caller",
                   "description_zh": "调用者的列表展示状态",
-                  "example": "TODO",
+                  "example": "DONE",
                   "type": "string"
                 },
                 "priority": {
@@ -334,9 +373,9 @@
                 },
                 "sourceContext": {
                   "backendName": "sourceContext",
-                  "description_en": "The source context. This context is passed through as-is during creation",
+                  "description_en": "The source context. This is passed through as-is during creation",
                   "description_zh": "来源上下文（创建时原样透传）",
-                  "example": "source=openapi",
+                  "example": "{\"source\":\"openapi\"}",
                   "itemName": "sourceContext",
                   "required": false,
                   "type": "object"
@@ -378,7 +417,7 @@
           },
           "maxResults": {
             "backendName": "maxResults",
-            "description_en": "The effective maximum number of entries to return per page for the current request",
+            "description_en": "The effective maximum number of entries returned per page for this request",
             "description_zh": "本次生效的单页最大返回数量",
             "example": "20",
             "format": "int64",
@@ -393,7 +432,7 @@
           },
           "nextToken": {
             "backendName": "nextToken",
-            "description_en": "The pagination token for the next page. This field is an empty string if no more data is available",
+            "description_en": "The pagination token for the next page. This is an empty string if no more data is available",
             "description_zh": "下一页翻页令牌；无更多数据时为空字符串",
             "example": "example",
             "type": "string"

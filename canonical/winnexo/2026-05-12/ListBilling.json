@@ -1,9 +1,9 @@
 {
-  "camel_example": "aliyun winnexo POST /openapi/listBilling --region cn-hangzhou --tenantId 10000 --header \"Content-Type=application/x-www-form-urlencoded\" --body 'bizType=string_value&wnUserId=1&ignoreZero=true&bizId=exampleBizId&pageSize=20&startTime=2023-10-01T12:00:00Z&endTime=2023-10-01T12:00:00Z&page=1&operation=string_value&status=READY' --version 2026-05-12 --force",
+  "camel_example": "aliyun winnexo POST /openapi/listBilling --region cn-hangzhou --opsUserCode alice --opsUserId 10001 --appToken wn_app_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx --tenantId 10000 --header \"Content-Type=application/x-www-form-urlencoded\" --body 'bizType=string_value&wnUserId=1&ignoreZero=true&bizId=exampleBizId&pageSize=20&startTime=2023-10-01T12:00:00Z&endTime=2023-10-01T12:00:00Z&page=1&operation=string_value&status=READY' --version 2026-05-12 --force",
   "cmd_full_name": "winnexo list-billing",
   "cmd_name": "list-billing",
   "deprecated": false,
-  "description_en": "Queries and filters a bill list by using OpenAPI. Multiple filter conditions are supported",
+  "description_en": "Queries and filters a list of bills by using OpenAPI with multiple filter conditions",
   "description_zh": "通过OpenAPI查询并筛选账单列表，支持多种条件过滤",
   "kebab_example": "aliyun winnexo list-billing --tenant-id 10000 --wn-user-id 1 --operation string_value --status READY --start-time 2023-10-01T12:00:00Z --end-time 2023-10-01T12:00:00Z --biz-type string_value --biz-id exampleBizId --ignore-zero true --page 1 --page-size 20 --region cn-hangzhou",
   "method": "POST",
@@ -23,8 +23,47 @@
   },
   "parameters": [
     {
+      "example": "wn_app_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "help_en": "The platform application token issued by the console. If you specify this parameter, the request is executed as the user specified by opsUserId or opsUserCode",
+      "help_zh": "平台应用 Token（控制台签发）。传入后将以 opsUserId 或 opsUserCode 指定的用户身份执行",
+      "location": "query",
+      "name": "app_token",
+      "options": [
+        "--app-token"
+      ],
+      "raw_name": "appToken",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "10001",
+      "help_en": "The ID of the proxy user, which is the WINNEXO platform user ID. This parameter is used only when the application credential is configured as winnexo_uid",
+      "help_zh": "代理用户ID（WINNEXO 平台用户ID），仅当应用凭证配置为 winnexo_uid 时使用",
+      "location": "query",
+      "name": "ops_user_id",
+      "options": [
+        "--ops-user-id"
+      ],
+      "raw_name": "opsUserId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "alice",
+      "help_en": "The code of the proxy user, which is unique within the tenant. This parameter is used only when the application credential is configured as source_uid",
+      "help_zh": "代理用户编码（租户内唯一），仅当应用凭证配置为 source_uid 时使用",
+      "location": "query",
+      "name": "ops_user_code",
+      "options": [
+        "--ops-user-code"
+      ],
+      "raw_name": "opsUserCode",
+      "required": false,
+      "type": "string"
+    },
+    {
       "example": "10000",
-      "help_en": "The tenant ID. This is a common parameter. In winnexo-cli, pass this parameter explicitly by using --tenant-id",
+      "help_en": "The tenant ID. This is a common parameter. For winnexo-cli, this parameter is explicitly passed by using --tenant-id",
       "help_zh": "租户ID，公共参数；winnexo-cli 通过 --tenant-id 显式传入",
       "location": "query",
       "name": "tenant_id",
@@ -37,7 +76,7 @@
     },
     {
       "example": "1",
-      "help_en": "The user ID (WINNEXO platform user ID, optional filter)",
+      "help_en": "The user ID, which is the WINNEXO platform user ID. This parameter is optional for filtering",
       "help_zh": "用户ID（WINNEXO 平台用户ID，可选筛选）",
       "location": "formData",
       "name": "wn_user_id",
@@ -50,7 +89,7 @@
     },
     {
       "example": "string_value",
-      "help_en": "The operation type. Valid values:\n\nstart: indicates node creation. This is the default value. In most cases, you do not need to explicitly set this value.\nstop: stops a real-time meeting node. This value corresponds to the creation of a real-time meeting. After the meeting ends, set this value to stop and trigger the call. This value is used in real-time meeting scenarios.\n\nNote: When ending a real-time recording, make sure to set this parameter to stop",
+      "help_en": "The operation item. Valid values:\nstart: indicates the creation of a task. This is the default value and usually does not need to be explicitly specified.\nstop: stops a real-time meeting task. This corresponds to the creation of a real-time meeting and is set to stop to trigger a call after the meeting ends. This value is used in real-time meeting scenarios.\nNote: When you end a real-time recording, you must set this parameter to stop",
       "help_zh": "操作项，可选取值：\n\nstart：表示任务的创建，也是默认值，通常情况下无须显示设置\nstop：停止实时会议任务，对应的是创建实时会议，在会议结束后设置为stop并触发调用；实时会议场景使用；\n\n需要注意：在结束实时记录时，务必设置此参数，且设置为stop",
       "location": "formData",
       "name": "operation",
@@ -63,7 +102,7 @@
     },
     {
       "example": "READY",
-      "help_en": "The node status. Running is returned upon submission",
+      "help_en": "The task status. A status of Running is returned immediately after the task is submitted",
       "help_zh": "任务状态：提交即返回 Running",
       "location": "formData",
       "name": "status",
@@ -76,7 +115,7 @@
     },
     {
       "example": "2023-10-01T12:00:00Z",
-      "help_en": "The query start time. The value is a UNIX timestamp in seconds",
+      "help_en": "The start time of the query. The value is a UNIX timestamp in seconds",
       "help_zh": "查询开始时间，Unix时间戳（秒）",
       "location": "formData",
       "name": "start_time",
@@ -89,7 +128,7 @@
     },
     {
       "example": "2023-10-01T12:00:00Z",
-      "help_en": "The actual end timestamp of the live stream, in milliseconds",
+      "help_en": "The actual end timestamp of the live stream. The value is a UNIX timestamp in milliseconds",
       "help_zh": "直播实际的结束时间戳，单位毫秒",
       "location": "formData",
       "name": "end_time",
@@ -102,7 +141,7 @@
     },
     {
       "example": "string_value",
-      "help_en": "The business type. Currently supported values: model Q&A (LlmChat) and document library Q&A (LibraryChat)",
+      "help_en": "The business type. Valid values: LlmChat (model Q&A) and LibraryChat (document library Q&A)",
       "help_zh": "业务类型，目前支持：模型问答（LlmChat）、文档库问答（LibraryChat）",
       "location": "formData",
       "name": "biz_type",
@@ -115,7 +154,7 @@
     },
     {
       "example": "exampleBizId",
-      "help_en": "The unique business identifier. When bizType is set to LibraryChat, bizId specifies the document library ID",
+      "help_en": "The unique identifier of the business. When bizType is set to LibraryChat, bizId refers to the ID of the document library",
       "help_zh": "业务唯一标识，当bizType为LibraryChat时，bizId指的是文档库id",
       "location": "formData",
       "name": "biz_id",
@@ -128,7 +167,7 @@
     },
     {
       "example": "true",
-      "help_en": "Specifies whether to filter out bills with zero credit consumption. Default value: true (filter out)",
+      "help_en": "Specifies whether to filter out bills with zero credit consumption. Default value: true",
       "help_zh": "是否过滤 credit 消耗为 0 的账单，默认 true（过滤）",
       "location": "formData",
       "name": "ignore_zero",
@@ -174,7 +213,7 @@
       "description_en": "查询账单列表",
       "description_zh": "查询账单列表",
       "schema": {
-        "description_en": "The bill list",
+        "description_en": "The queried bill list",
         "description_zh": "查询账单列表",
         "properties": {
           "code": {
@@ -186,11 +225,11 @@
           },
           "list": {
             "backendName": "list",
-            "description_en": "The details of the bills",
+            "description_en": "The details of the link enhancement rule",
             "description_zh": "链接增强规则详情",
             "itemName": "使用明细列表",
             "items": {
-              "description_en": "The bill entry",
+              "description_en": "The list of address book hiding settings",
               "description_zh": "通讯录隐藏的设置列表",
               "properties": {
                 "billingId": {
@@ -216,7 +255,7 @@
                 },
                 "costSource": {
                   "backendName": "costSource",
-                  "description_en": "The cost source type",
+                  "description_en": "The type of the cost source",
                   "description_zh": "费用来源类型",
                   "example": "[\"STANDARD\"]",
                   "itemName": "costSource",
@@ -237,7 +276,7 @@
                   "example": "[\"标准版\"]",
                   "itemName": "costSourceDisplayName",
                   "items": {
-                    "description_en": "The consumption source name",
+                    "description_en": "The name of the consumption source",
                     "description_zh": "消耗来源名称",
                     "example": "标准版",
                     "type": "string"
@@ -248,14 +287,14 @@
                 },
                 "endTime": {
                   "backendName": "endTime",
-                  "description_en": "The end timestamp, in milliseconds",
+                  "description_en": "The end timestamp in milliseconds",
                   "description_zh": "结束时间戳，单位毫秒",
                   "example": "2023-10-01T12:00:00Z",
                   "type": "string"
                 },
                 "entryObjectId": {
                   "backendName": "entryObjectId",
-                  "description_en": "The entry object ID",
+                  "description_en": "The ID of the entry object",
                   "description_zh": "入口对象ID",
                   "example": "exampleEntryObjectId",
                   "type": "string"
@@ -269,35 +308,35 @@
                 },
                 "isShadow": {
                   "backendName": "isShadow",
-                  "description_en": "Indicates whether the bill is a shadow bill",
+                  "description_en": "Specifies whether the bill is a shadow bill",
                   "description_zh": "是否影子账单",
                   "example": "true",
                   "type": "boolean"
                 },
                 "operation": {
                   "backendName": "operation",
-                  "description_en": "The operation type",
+                  "description_en": "The search term rewrite configuration",
                   "description_zh": "搜索词改写配置",
                   "example": "string_value",
                   "type": "string"
                 },
                 "operationDisplayName": {
                   "backendName": "operationDisplayName",
-                  "description_en": "The display name of the operation",
+                  "description_en": "The display name of the action",
                   "description_zh": "动作展示名",
                   "example": "string_value",
                   "type": "string"
                 },
                 "startTime": {
                   "backendName": "startTime",
-                  "description_en": "The start timestamp, in milliseconds",
+                  "description_en": "The start timestamp in milliseconds",
                   "description_zh": "开始时间戳，单位毫秒",
                   "example": "2023-10-01T12:00:00Z",
                   "type": "string"
                 },
                 "status": {
                   "backendName": "status",
-                  "description_en": "The node status. Running is returned upon submission",
+                  "description_en": "The task status. A status of Running is returned immediately after the task is submitted",
                   "description_zh": "任务状态：提交即返回 Running",
                   "example": "READY",
                   "type": "string"
@@ -311,7 +350,7 @@
                 },
                 "tenantId": {
                   "backendName": "tenantId",
-                  "description_en": "The tenant ID. This is a common parameter. If not specified, the default tenant of the caller is used",
+                  "description_en": "The tenant ID. This is a common parameter. If this parameter is not specified, the default tenant of the caller is used",
                   "description_zh": "租户ID，公共参数，缺省时使用调用方默认租户",
                   "example": "10000",
                   "format": "int64",
@@ -340,7 +379,7 @@
           },
           "message": {
             "backendName": "Message",
-            "description_en": "The prompt message",
+            "description_en": "The message",
             "description_zh": "提示信息",
             "example": "successful",
             "type": "string"
@@ -374,7 +413,7 @@
           },
           "total": {
             "backendName": "total",
-            "description_en": "The total number of entries",
+            "description_en": "The total number of Logtail pipeline configurations in the current project",
             "description_zh": "当前Project下的Logtail流水线配置总数",
             "example": "1",
             "format": "int64",

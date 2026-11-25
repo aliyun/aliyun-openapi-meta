@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun winnexo POST /openapi/createTenantDirectory --region cn-hangzhou --header \"Content-Type=application/x-www-form-urlencoded\" --body 'name=示例名称.pdf' --version 2026-05-12 --force",
+  "camel_example": "aliyun winnexo POST /openapi/createTenantDirectory --region cn-hangzhou --header \"Content-Type=application/x-www-form-urlencoded\" --body 'name=产品知识库' --version 2026-05-12 --force",
   "cmd_full_name": "winnexo create-tenant-directory",
   "cmd_name": "create-tenant-directory",
   "deprecated": false,
-  "description_en": "Creates a root directory or subdirectory for an enterprise knowledge base in the current tenant, and configures digital employee associations and AI version summaries for standard enterprise roots",
+  "description_en": "Creates an enterprise knowledge base root directory or subdirectory in the current tenant, and configures digital employee associations and AI version summaries for standard enterprise root directories",
   "description_zh": "在当前租户创建企业知识库根目录或子目录，并可为普通企业根配置数字员工关联和 AI 版本摘要",
-  "kebab_example": "aliyun winnexo create-tenant-directory --name '示例名称.pdf' --region cn-hangzhou",
+  "kebab_example": "aliyun winnexo create-tenant-directory --name '产品知识库' --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "CreateTenantDirectory",
@@ -23,8 +23,47 @@
   },
   "parameters": [
     {
+      "example": "wn_app_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "help_en": "The platform application credential. Pass this parameter when you use the application proxy mode, and specify the operator by using opsUserId or opsUserCode based on the application configuration. Do not use real credentials in logs or public examples",
+      "help_zh": "平台应用凭证。使用应用代理模式时传入，并根据应用配置配合 opsUserId 或 opsUserCode 指定操作人；请勿在日志或公开示例中使用真实凭证",
+      "location": "query",
+      "name": "app_token",
+      "options": [
+        "--app-token"
+      ],
+      "raw_name": "appToken",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "10001",
+      "help_en": "The ID of the proxied WINNEXO platform user. This parameter is used only when the identity mapping mode of the application credential is winnexo_uid. You cannot use this parameter to bypass tenant or knowledge base permission verification",
+      "help_zh": "被代理的 WINNEXO 平台用户 ID。仅在应用凭证的身份映射模式为 winnexo_uid 时使用；不能用该参数绕过租户或知识库权限校验",
+      "location": "query",
+      "name": "ops_user_id",
+      "options": [
+        "--ops-user-id"
+      ],
+      "raw_name": "opsUserId",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "alice",
+      "help_en": "The unique code of the proxied user in the tenant. This parameter is used only when the identity mapping mode of the application credential is source_uid. You cannot use this parameter to bypass tenant or knowledge base permission verification",
+      "help_zh": "被代理用户在租户内的唯一编码。仅在应用凭证的身份映射模式为 source_uid 时使用；不能用该参数绕过租户或知识库权限校验",
+      "location": "query",
+      "name": "ops_user_code",
+      "options": [
+        "--ops-user-code"
+      ],
+      "raw_name": "opsUserCode",
+      "required": false,
+      "type": "string"
+    },
+    {
       "example": "10000",
-      "help_en": "The ID of the target tenant. It is used for tenant routing in public requests and its access permissions are verified by the server-side authentication chain. You cannot use this parameter to access unauthorized tenants",
+      "help_en": "The ID of the target tenant. This parameter is used for tenant routing in public requests. The server authentication chain verifies access permissions based on this parameter. You cannot use this parameter to access unauthorized tenants",
       "help_zh": "目标租户 ID，用于公共请求的租户路由，由服务端鉴权链校验访问权限；不能据此访问未授权租户",
       "location": "query",
       "name": "tenant_id",
@@ -50,7 +89,7 @@
     },
     {
       "example": "团队产品资料与操作指引",
-      "help_en": "The purpose or content description of the directory. If omitted, this parameter is left empty",
+      "help_en": "The purpose or content description of the directory. If this parameter is omitted, the value is empty",
       "help_zh": "目录的用途或内容说明；省略时为空",
       "location": "formData",
       "name": "description",
@@ -63,7 +102,7 @@
     },
     {
       "example": "1001",
-      "help_en": "The internal primary key of the parent directory. If this parameter is omitted or set to null, a root directory for the enterprise knowledge base is created. If this parameter is specified, a subdirectory is created. This parameter must be omitted or set to null when digital employee association or version summary configurations are included",
+      "help_en": "The internal primary key of the parent directory. If this parameter is omitted or set to null, an enterprise knowledge base root directory is created. If this parameter is specified, a subdirectory is created. This parameter must be omitted or set to null when digital employee association or version summary configurations are included",
       "help_zh": "父目录内部主键。省略或 null 创建企业知识库根目录；指定时创建子目录。携带数字员工关联或版本摘要配置时必须省略或为 null",
       "location": "formData",
       "name": "parent_id",
@@ -86,6 +125,51 @@
       "raw_name": "path",
       "required": false,
       "type": "string"
+    },
+    {
+      "enum": [
+        "ALL",
+        "SPECIFIED"
+      ],
+      "example": "SPECIFIED",
+      "help_en": "The digital employee association mode. ALL indicates that the directory is visible to all digital employees, and operatingObjectNames must be omitted, set to null, or set to an empty array. SPECIFIED indicates association by list, and operatingObjectNames must be explicitly provided. An empty array indicates that no employees are associated. If this parameter is omitted or set to null, the association configuration is not changed. This parameter is supported only for standard enterprise knowledge base root directories",
+      "help_zh": "数字员工关联模式。ALL 表示对所有数字员工可见，operatingObjectNames 只能省略、为 null 或空数组；SPECIFIED 表示按名单关联，必须显式提供 operatingObjectNames，空数组表示不关联任何员工。省略或 null 不触发关联配置变更。仅支持普通企业知识库根目录",
+      "location": "formData",
+      "name": "oo_visibility_mode",
+      "options": [
+        "--oo-visibility-mode"
+      ],
+      "raw_name": "ooVisibilityMode",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "element": {
+        "type": "string"
+      },
+      "help_en": "The list of internal names of the specified associated digital employees. This parameter must be used together with ooVisibilityMode. This parameter is required when ooVisibilityMode is set to SPECIFIED. An empty array indicates that all associations are cleared. When ooVisibilityMode is set to ALL, this parameter must be omitted, set to null, or set to an empty array. You can specify up to 100 items. Each item must be 1 to 256 characters in length after leading and trailing spaces are removed. The server verifies that the employees exist and are available in the current tenant, and fully replaces the associations after deduplication",
+      "help_zh": "指定关联的数字员工内部名称列表，必须与 ooVisibilityMode 配合使用。SPECIFIED 时必传，空数组表示清空关联；ALL 时只能省略、为 null 或空数组。最多 100 项，每项去除首尾空白后为 1–256 个字符；服务端校验当前租户存在且可用的员工，去重后全量替换关联",
+      "location": "formData",
+      "name": "operating_object_names",
+      "options": [
+        "--operating-object-names"
+      ],
+      "param_style": "json",
+      "raw_name": "operatingObjectNames",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "help_en": "Specifies whether to generate AI version summaries for subsequent content updates. Valid values:\ntrue: Enabled.\nfalse: Disabled.\nIf this parameter is omitted or set to null, the configuration is not changed. Disabling this feature does not delete existing summaries. This parameter is supported only for standard enterprise knowledge base root directories",
+      "help_zh": "是否为后续内容更新生成 AI 版本摘要。true 开启，false 关闭；省略或 null 不触发配置变更。关闭不删除已有摘要。仅支持普通企业知识库根目录",
+      "location": "formData",
+      "name": "change_record_enabled",
+      "options": [
+        "--change-record-enabled"
+      ],
+      "raw_name": "changeRecordEnabled",
+      "required": false,
+      "type": "bool"
     }
   ],
   "pathPattern": "/openapi/createTenantDirectory",
@@ -96,7 +180,7 @@
       "description_en": "创建企业知识库目录",
       "description_zh": "创建企业知识库目录",
       "schema": {
-        "description_en": "The schema for creating an enterprise knowledge base directory",
+        "description_en": "The response schema for creating an enterprise knowledge base directory",
         "description_zh": "创建企业知识库目录",
         "properties": {
           "code": {
@@ -108,7 +192,7 @@
           },
           "description": {
             "backendName": "description",
-            "description_en": "The description of the directory after creation. If not set, this field is empty",
+            "description_en": "The description of the created directory. If no description is set, the value is empty",
             "description_zh": "创建后的目录描述；未设置时为空",
             "example": "团队产品资料与操作指引",
             "required": false,
@@ -116,7 +200,7 @@
           },
           "directoryId": {
             "backendName": "directoryId",
-            "description_en": "The business ID of the newly created directory. For standard enterprise roots, this ID can be used to read or update knowledge base configurations",
+            "description_en": "The business ID of the newly created directory. You can use this ID to read or update the knowledge base configuration for standard enterprise root directories",
             "description_zh": "新建目录的业务 ID；普通企业根可用此标识读取或更新知识库配置",
             "example": "kb-example",
             "required": true,
@@ -141,7 +225,7 @@
           },
           "id": {
             "backendName": "id",
-            "description_en": "The internal primary key of the directory, which can be used as the parentId when creating a subdirectory. This is different from the business ID directoryId",
+            "description_en": "The internal primary key of the directory. You can use this key as the parentId when you create a subdirectory. This key is different from the business ID directoryId",
             "description_zh": "目录内部主键，可作为创建子目录时的 parentId；不同于业务标识 directoryId",
             "example": "1001",
             "format": "int64",
@@ -150,14 +234,14 @@
           },
           "message": {
             "backendName": "Message",
-            "description_en": "The response message. The value is success if the request is successful. If the request fails, the message describes the cause of the error",
+            "description_en": "The response message. The value is success if the request is successful. If the request fails, this parameter describes the cause of the error",
             "description_zh": "响应消息，成功时为 success；失败时用于说明错误原因",
             "example": "success",
             "type": "string"
           },
           "name": {
             "backendName": "name",
-            "description_en": "The name of the directory after creation",
+            "description_en": "The name of the created directory",
             "description_zh": "创建后的目录名称",
             "example": "产品知识库",
             "required": true,
@@ -165,7 +249,7 @@
           },
           "operatingObjectName": {
             "backendName": "operatingObjectName",
-            "description_en": "The legacy single digital employee association field. Do not use this field to replace the mode and association list returned by GetKnowledgeBaseConfiguration",
+            "description_en": "The legacy single digital employee association field. You cannot use this field to replace the mode and association list returned by GetKnowledgeBaseConfiguration",
             "description_zh": "历史单一数字员工关联字段；不能用此字段代替 GetKnowledgeBaseConfiguration 返回的模式与关联名单",
             "example": "opt_1",
             "required": false,
@@ -173,7 +257,7 @@
           },
           "parentId": {
             "backendName": "parentId",
-            "description_en": "The internal primary key of the parent directory. This field is empty for enterprise root directories",
+            "description_en": "The internal primary key of the parent directory. This value is empty for enterprise root directories",
             "description_zh": "父目录的内部主键；企业根目录为空",
             "example": "1001",
             "format": "int64",
@@ -182,7 +266,7 @@
           },
           "path": {
             "backendName": "path",
-            "description_en": "The path of the directory after creation",
+            "description_en": "The path of the created directory",
             "description_zh": "创建后的目录路径",
             "example": "/产品知识库",
             "required": true,
@@ -190,7 +274,7 @@
           },
           "requestId": {
             "backendName": "RequestId",
-            "description_en": "The request tracking ID, which can be used to troubleshoot issues for this call",
+            "description_en": "The request tracking ID. You can use this ID to troubleshoot issues related to this call",
             "description_zh": "请求追踪标识，可用于定位本次调用的问题",
             "example": "019FF406-1B10-0065-A97D-2D1920C2A03D",
             "type": "string"
