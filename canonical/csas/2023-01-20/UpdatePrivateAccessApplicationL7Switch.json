@@ -3,7 +3,7 @@
   "cmd_full_name": "csas update-private-access-application-l7-switch",
   "cmd_name": "update-private-access-application-l7-switch",
   "deprecated": false,
-  "description_en": "Updates the Layer 7 access switch for an internal access application",
+  "description_en": "Updates the Layer 7 switch for an internal access application",
   "description_zh": "更新内网访问应用七层开关",
   "kebab_example": "aliyun csas update-private-access-application-l7-switch --application-id 'pa-application-e12860ef6c48****' --status Enabled --zero-trust-status Enabled --user-mark-status Enabled --download-audit-status Disabled --src-ip-mark-status Disabled --dev-tag-mark-status Disabled --timeout-sec 60 --port-ranges Begin=80 End=81 --region cn-hangzhou",
   "method": "POST",
@@ -37,7 +37,7 @@
     },
     {
       "example": "Enabled",
-      "help_en": "The master switch for the Layer 7 access switch of the internal access application. Required. Valid values:\nEnabled: Enabled.\nDisabled: Disabled.\n\nWhen the value is set to Disabled, PortRanges is neither verified nor saved",
+      "help_en": "The master switch for the Layer 7 access switch of the internal access application. Required. Valid values:\nEnabled: Enabled.\nDisabled: Disabled.\n\nWhen the value is Disabled, PortRanges is neither verified nor saved",
       "help_zh": "内网访问应用七层访问开关的总开关。必填。取值：\nEnabled：开启。\nDisabled：关闭。\n\n取值为 Disabled 时不校验也不保存 PortRanges",
       "location": "formData",
       "name": "status",
@@ -50,7 +50,7 @@
     },
     {
       "example": "Enabled",
-      "help_en": "The Host bypass prevention switch. Required. Valid values:\nEnabled: Enabled.\nDisabled: Disabled",
+      "help_en": "The host bypass prevention switch. Required. Valid values:\nEnabled: Enabled.\nDisabled: Disabled",
       "help_zh": "Host防绕过开关。必填。取值：\nEnabled：开启。\nDisabled：关闭",
       "location": "formData",
       "name": "zero_trust_status",
@@ -115,7 +115,7 @@
     },
     {
       "example": "60",
-      "help_en": "The request timeout period, in seconds. Valid values: 1 to 3600. Default value: 60. If this parameter is not specified or an invalid value is specified, the default value 60 is used",
+      "help_en": "The request timeout period in seconds. Valid values: 1 to 3600. Default value: 60. If this parameter is not specified or an invalid value is specified, the default value 60 is used",
       "help_zh": "请求超时时长，单位为秒。取值范围：1~3600。默认值为60。未传入或取值非法时按60处理",
       "location": "formData",
       "name": "timeout_sec",
@@ -156,7 +156,7 @@
         ],
         "type": "object"
       },
-      "help_en": "The port ranges for the internal access application. Multiple port ranges cannot overlap or be duplicated. You can specify up to 50 port ranges. This parameter takes effect and is verified only when Status is set to Enabled. If this parameter is not specified or an empty set is specified, the default ports 80, 443, 8080, and 465 are used. The effective ports are the intersection of the ports specified in this request and the configured port ranges of the internal access application",
+      "help_en": "The port ranges for the internal access application. Multiple port ranges cannot be duplicate or overlap. You can specify up to 50 port ranges. This parameter takes effect and is verified only when Status is set to Enabled. If this parameter is not specified or an empty set is specified, the default ports 80, 443, 8080, and 465 are used. The effective ports are the intersection of the ports specified in this request and the port ranges already configured for the internal access application",
       "help_zh": "内网访问应用端口范围集合。多个端口范围不可重复或重叠。最多可输入50个端口范围。仅当 Status 取值为 Enabled 时生效并校验：此时未传入或传入空集合，按默认端口80、443、8080、465处理；最终生效的端口为本次传入端口与该内网访问应用已配置端口范围的交集",
       "location": "formData",
       "name": "port_ranges",
@@ -165,6 +165,52 @@
       ],
       "param_style": "flat",
       "raw_name": "PortRanges",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "element": {
+        "fields": [
+          {
+            "element": {
+              "type": "string"
+            },
+            "help_en": "The list of HTTP request methods allowed for the paths in this group. You can specify up to 7 methods. If this parameter is not specified or an empty array is specified, the request methods are not restricted",
+            "help_zh": "本组路径允许使用的 HTTP 请求方法列表，最多 7 个。不传或传入空数组表示不限制请求方法",
+            "name": "allow_methods",
+            "options": [
+              "--allow-methods"
+            ],
+            "raw_name": "AllowMethods",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "element": {
+              "type": "string"
+            },
+            "help_en": "The list of URL paths allowed for access in this group. You must specify at least 1 path and up to 20 paths. The paths match the path part in the request, excluding the protocol, domain name, and query parameters",
+            "help_zh": "本组允许访问的 URL 路径列表，至少包含 1 个路径，最多 20 个。匹配请求中的路径部分，不包含协议、域名和查询参数",
+            "name": "urls",
+            "options": [
+              "--urls"
+            ],
+            "raw_name": "Urls",
+            "required": false,
+            "type": "array"
+          }
+        ],
+        "type": "object"
+      },
+      "help_en": "The URL access whitelist rules for the application. You can specify up to 20 rule groups. The size cannot exceed 2,048 bytes after JSON serialization. This parameter takes effect only when Status is set to Enabled. A request passes the URL check only when its path and method meet any group of rules at the same time; otherwise, the request is blocked. Requests that are already blocked by access policies are not allowed even if they pass the URL check. If this parameter is not specified or an empty array is specified, the original rules are cleared. The rules are also cleared when Status is set to Disabled",
+      "help_zh": "应用的 URL 访问白名单规则，最多 20 组，JSON 序列化后不超过 2048 字节。仅在 Status 为 Enabled 时生效。路径与方法同时满足任意一组规则时通过 URL 检查，否则阻断；不会放行已被访问策略阻断的请求。不传或传入空数组均清空原规则，Status 为 Disabled 时也清空规则",
+      "location": "formData",
+      "name": "url_access_paths",
+      "options": [
+        "--url-access-paths"
+      ],
+      "param_style": "flat",
+      "raw_name": "UrlAccessPaths",
       "required": false,
       "type": "array"
     }
@@ -180,7 +226,7 @@
         "properties": {
           "L7Switch": {
             "backendName": "data.l7Switch",
-            "description_en": "The Layer 7 access switch configurations of the internal access application after the update",
+            "description_en": "The Layer 7 access switch configuration of the internal access application after this update",
             "description_zh": "本次更新后该内网访问应用的七层访问开关配置",
             "properties": {
               "ApplicationId": {
@@ -206,7 +252,7 @@
               },
               "PortRanges": {
                 "backendName": "portRanges",
-                "description_en": "The effective port ranges for Layer 7 access, which are the intersection of the ports specified in this request and the configured port ranges of the internal access application. If Status is set to Disabled, an empty set is returned",
+                "description_en": "The effective port ranges for Layer 7 access, which are the intersection of the ports specified in this request and the port ranges already configured for the internal access application. An empty set is returned when Status is set to Disabled",
                 "description_zh": "七层访问实际生效的端口范围集合，为本次传入端口与该内网访问应用已配置端口范围的交集。Status 取值为 Disabled 时返回空集合",
                 "itemName": "portRanges",
                 "items": {
@@ -250,11 +296,49 @@
               },
               "TimeoutSec": {
                 "backendName": "timeoutSec",
-                "description_en": "The request timeout period, in seconds",
+                "description_en": "The request timeout period in seconds",
                 "description_zh": "请求超时时长，单位为秒",
                 "example": "60",
                 "format": "int32",
                 "type": "integer"
+              },
+              "UrlAccessPaths": {
+                "backendName": "urlAccessPaths",
+                "description_en": "The URL access whitelist rules for the application. This parameter takes effect only when Status is set to Enabled. An empty value indicates that URLs and request methods are not restricted. A request passes the URL check only when the request path and the method meet any group of rules at the same time. Otherwise, the request is blocked. Passing the URL check does not allow requests that are already blocked by an access policy",
+                "description_zh": "应用的 URL 访问白名单规则。仅在 Status 为 Enabled 时生效；为空表示不限制 URL 和请求方法。请求路径与方法同时满足任意一组规则时通过 URL 检查，否则阻断；通过 URL 检查不会放行已被访问策略阻断的请求",
+                "itemName": "urlAccessPaths",
+                "items": {
+                  "properties": {
+                    "AllowMethods": {
+                      "backendName": "allowMethods",
+                      "description_en": "The list of HTTP request methods allowed for the paths in this group. An empty value indicates that request methods are not restricted",
+                      "description_zh": "本组路径允许使用的 HTTP 请求方法列表。为空表示不限制请求方法",
+                      "itemName": "allowMethods",
+                      "items": {
+                        "description_en": "The allowed HTTP request method. Valid values: GET, HEAD, POST, PUT, DELETE, OPTIONS, and PATCH",
+                        "description_zh": "允许的 HTTP 请求方法。取值：GET、HEAD、POST、PUT、DELETE、OPTIONS、PATCH",
+                        "example": "GET",
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "Urls": {
+                      "backendName": "urls",
+                      "description_en": "The list of URL paths allowed for access in this group. You must specify at least 1 path and up to 20 paths. The paths match the path part in the request, excluding the protocol, domain name, and query parameters",
+                      "description_zh": "本组允许访问的 URL 路径列表，至少包含 1 个路径，最多 20 个。匹配请求中的路径部分，不包含协议、域名和查询参数",
+                      "itemName": "urls",
+                      "items": {
+                        "description_en": "A single URL path or wildcard pattern allowed for access. Examples: /api/test or /test/. The asterisk () does not match the path separator (/)",
+                        "description_zh": "允许访问的单个 URL 路径或通配符模式。例如 /api/test 或 /test/*；其中 * 不匹配路径分隔符 /",
+                        "example": "/api/test",
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
               },
               "UserMarkStatus": {
                 "backendName": "userMarkStatus",
@@ -265,7 +349,7 @@
               },
               "ZeroTrustStatus": {
                 "backendName": "zeroTrustStatus",
-                "description_en": "The Host bypass prevention switch. Valid values:\nEnabled: Enabled.\nDisabled: Disabled",
+                "description_en": "The host bypass prevention switch. Valid values:\nEnabled: Enabled.\nDisabled: Disabled",
                 "description_zh": "Host防绕过开关。取值：\nEnabled：开启。\nDisabled：关闭",
                 "example": "Enabled",
                 "type": "string"
