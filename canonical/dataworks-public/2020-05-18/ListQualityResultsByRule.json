@@ -2,7 +2,7 @@
   "cmd_full_name": "dataworks-public list-quality-results-by-rule",
   "cmd_name": "list-quality-results-by-rule",
   "deprecated": true,
-  "description_en": "Validates the quality of a Data Source against Validation Rules and returns the Validation Results",
+  "description_en": "Checks the quality of a data source based on a check rule and queries the check results",
   "description_zh": "根据校验规则校验数据源的质量，并查询校验结果",
   "kebab_example": "aliyun dataworks-public list-quality-results-by-rule --rule-id 152322134 --start-date '2020-09-20 00:00:00' --end-date '2020-09-22 00:00:00' --page-size 10 --page-number 1 --project-name autotest --api-version 2020-05-18 --region cn-hangzhou",
   "method": "POST",
@@ -24,7 +24,7 @@
     {
       "doc_required": true,
       "example": "152322134",
-      "help_en": "The ID of the monitoring rule. You can use the rule ID and a partition filter to query the monitoring results of the rule",
+      "help_en": "The ID of the check rule. You can use this rule ID in combination with information such as partition expressions to perform queries",
       "help_zh": "使用的校验规则ID。您可以使用该规则ID与分区表达式等信息进行联合查询",
       "location": "formData",
       "maximum": "2147483647",
@@ -40,7 +40,7 @@
     {
       "doc_required": true,
       "example": "2020-09-20 00:00:00",
-      "help_en": "The beginning of the business date range to query. Specify the time in the yyyy-MM-dd HH:mm:ss format.\n\n\n\n\nYou must configure this parameter together with the EndDate parameter. The business date range to query cannot exceed 7 days",
+      "help_en": "The start time of the business date, in the yyyy-MM-dd HH:mm:ss format.\n\nThis parameter is used in combination with EndDate. The time span between the two parameters cannot exceed 7 days",
       "help_zh": "业务日期起始时间，格式为yyyy-MM-dd HH:mm:ss。\n\n该参数与EndDate配合使用，二者所取的时间区间不能大于7天",
       "location": "formData",
       "name": "start_date",
@@ -54,7 +54,7 @@
     {
       "doc_required": true,
       "example": "2020-09-22 00:00:00",
-      "help_en": "The end of the business date range to query. Specify the time in the yyyy-MM-dd HH:mm:ss format.\n\n\n\n\nYou must configure this parameter together with the StartDate parameter. The business date range to query cannot exceed 7 days",
+      "help_en": "The end time of the business date, in the yyyy-MM-dd HH:mm:ss format.\n\nThis parameter is used in combination with StartDate. The time span between the two parameters cannot exceed 7 days",
       "help_zh": "业务日期截止时间，格式为yyyy-MM-dd HH:mm:ss。\n\n该参数与StartDate配合使用，二者所取的时间区间不能大于7天",
       "location": "formData",
       "name": "end_date",
@@ -68,7 +68,7 @@
     {
       "doc_required": true,
       "example": "10",
-      "help_en": "The number of entries per page. Default value: 10. Maximum value: 20",
+      "help_en": "The number of entries to return per page. Default value: 10. Maximum value: 20",
       "help_zh": "每页显示的条数，默认为10条，最大20条",
       "location": "formData",
       "maximum": "20",
@@ -100,7 +100,7 @@
     {
       "doc_required": true,
       "example": "autotest",
-      "help_en": "The name of the compute engine or data source for which you want to perform data quality monitoring",
+      "help_en": "The name of the engine or data source for which you want to check data quality",
       "help_zh": "需要进行数据质量校验的引擎或者数据源名称",
       "location": "formData",
       "name": "project_name",
@@ -132,12 +132,12 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The check result",
+        "description_en": "The check results",
         "description_zh": "校验结果",
         "properties": {
           "Data": {
             "backendName": "data",
-            "description_en": "The top-level object of the check result",
+            "description_en": "The top-level struct for the check results",
             "description_zh": "校验结果的顶层结构体",
             "properties": {
               "PageNumber": {
@@ -151,7 +151,7 @@
               },
               "PageSize": {
                 "backendName": "pageSize",
-                "description_en": "The number of entries per page. Default value: 10. Maximum value: 100",
+                "description_en": "The number of entries to return per page. Default value: 10. Maximum value: 100",
                 "description_zh": "每页显示的条数，默认为10条，最大100条",
                 "example": "10",
                 "format": "int32",
@@ -160,16 +160,16 @@
               },
               "RuleChecks": {
                 "backendName": "ruleChecks",
-                "description_en": "A list of check results",
+                "description_en": "The list of check results",
                 "description_zh": "校验结果的列表",
                 "itemName": "RuleChecks",
                 "items": {
-                  "description_en": "A check result",
+                  "description_en": "The check result",
                   "description_zh": "校验结果",
                   "properties": {
                     "ActualExpression": {
                       "backendName": "actualExpression",
-                      "description_en": "The actual data partition that was checked",
+                      "description_en": "The actual partition of the checked data source table",
                       "description_zh": "被校验的数据源表的实际分区",
                       "example": "ds=20200925",
                       "mappingResourcePropertyName": "$.ActualExpression",
@@ -178,7 +178,7 @@
                     },
                     "BeginTime": {
                       "backendName": "beginTimestamp",
-                      "description_en": "The start time of the check",
+                      "description_en": "The start time of the check operation.\n\nThe value is a 13-digit number, such as `1600704000000`",
                       "description_zh": "执行校验操作的开始时间。\n\n格式示例为 13 位数字，例如 `1600704000000`",
                       "example": "1600704000000",
                       "format": "int64",
@@ -188,7 +188,7 @@
                     },
                     "BizDate": {
                       "backendName": "bizdateTimestamp",
-                      "description_en": "The business date. For an offline table, this is typically the day before the check is performed",
+                      "description_en": "The business date. If the checked business entity is offline data, the business date is typically the day before the check operation is performed.\n\nThe value is a 13-digit number, such as `1600704000000`",
                       "description_zh": "业务日期。如果被校验的业务主体为离线数据，则业务日期通常为执行校验操作的前一天。\n\n格式示例为 13 位数字，例如 `1600704000000`",
                       "example": "1600704000000",
                       "format": "int64",
@@ -197,7 +197,7 @@
                     },
                     "BlockType": {
                       "backendName": "blockType",
-                      "description_en": "The strength of the monitoring rule. A strong rule can block a downstream scheduling task if a critical alert is triggered. Valid values:\n\n`1`: Strong rule.\n\n`0`: Weak rule",
+                      "description_en": "The strength of the check rule, which indicates the importance of the rule. Valid values:\n1: strong rule.\n0: weak rule.\nYou can set important rules as strong rules based on your business requirements. If a strong rule is used and a red alert is triggered, the node is blocked",
                       "description_zh": "校验规则的强弱。强弱表示规则的重要程度。取值如下：\n1，表示强规则。\n0，表示弱规则。\n您可以根据实际需求设置重要的规则为强规则。如果使用强规则并触发了红色告警，则会阻塞调度任务",
                       "example": "1",
                       "format": "int32",
@@ -255,7 +255,7 @@
                     },
                     "Comment": {
                       "backendName": "comment",
-                      "description_en": "The description of the monitoring rule",
+                      "description_en": "The description of the check rule",
                       "description_zh": "校验规则的描述",
                       "example": "The description of the rule.",
                       "mappingResourcePropertyName": "$.Comment",
@@ -264,7 +264,7 @@
                     },
                     "CriticalThreshold": {
                       "backendName": "criticalThreshold",
-                      "description_en": "The threshold for a critical alert, representing the deviation from the expected sample value. You can customize this threshold based on business requirements. If a strong rule is used and this critical threshold is triggered, the scheduled task is blocked",
+                      "description_en": "The red threshold. This threshold indicates the degree of deviation from the expected sample value. You can customize this threshold based on your business requirements. If a strong rule is used and the red threshold is triggered, the scheduling node is blocked",
                       "description_zh": "红色阈值。表示与样本预期的偏离程度。您可以根据业务需求自定义该阈值。使用强规则并触发红色阈值，会阻塞调度任务",
                       "example": "0.6",
                       "format": "float",
@@ -274,7 +274,7 @@
                     },
                     "DateType": {
                       "backendName": "dateType",
-                      "description_en": "The scheduling cycle. For example, `YMD` can represent yearly, monthly, and daily tasks",
+                      "description_en": "The type of the scheduling cycle. Typically, the value is YMD, which indicates yearly, monthly, or daily nodes",
                       "description_zh": "调度周期的类型。通常为YMD，即年任务、月任务、天任务",
                       "example": "YMD",
                       "mappingResourcePropertyName": "$.DateType",
@@ -283,7 +283,7 @@
                     },
                     "DiscreteCheck": {
                       "backendName": "discrete",
-                      "description_en": "Indicates whether a discrete value check is used. Valid values:\n\n`true`: A discrete value check is used.\n\n`false`: A discrete value check is not used",
+                      "description_en": "Specifies whether the check is a discrete check. Valid values:\ntrue: The check is a discrete check.\nfalse: The check is not a discrete check",
                       "description_zh": "是否为离散校验。取值如下：\ntrue：是离散校验。\nfalse：非离散校验",
                       "example": "true",
                       "type": "boolean",
@@ -291,7 +291,7 @@
                     },
                     "EndTime": {
                       "backendName": "endTimestamp",
-                      "description_en": "The end time for querying check results",
+                      "description_en": "The end time for querying the check results.\n\nThe value is a 13-digit number, such as `1600704000000`",
                       "description_zh": "查询校验结果的截止时间。\n\n格式示例为 13 位数字，例如 `1600704000000`",
                       "example": "1600704000000",
                       "format": "int64",
@@ -301,7 +301,7 @@
                     },
                     "EntityId": {
                       "backendName": "entityId",
-                      "description_en": "The ID of the partition filter expression",
+                      "description_en": "The ID of the partition expression",
                       "description_zh": "分区表达式ID",
                       "example": "14534343",
                       "format": "int64",
@@ -321,7 +321,7 @@
                     },
                     "ExternalId": {
                       "backendName": "externalId",
-                      "description_en": "The node ID of the scheduling task",
+                      "description_en": "The ID of the scheduling node",
                       "description_zh": "调度任务的节点ID",
                       "example": "123112232",
                       "mappingResourcePropertyName": "$.ExternalId",
@@ -330,7 +330,7 @@
                     },
                     "ExternalType": {
                       "backendName": "externalType",
-                      "description_en": "The type of the scheduling system. Currently, only CWF is supported",
+                      "description_en": "The type of the scheduling system. Only CWF is supported",
                       "description_zh": "调度系统的类型。目前仅支持CWF",
                       "example": "CWF2",
                       "mappingResourcePropertyName": "$.ExternalType",
@@ -339,7 +339,7 @@
                     },
                     "FixedCheck": {
                       "backendName": "fixedCheck",
-                      "description_en": "Indicates whether a fixed-value check is used. Valid values:\n\n`true`: A fixed-value check is used.\n\n`false`: A fixed-value check is not used",
+                      "description_en": "Specifies whether the check is a fixed value check. Valid values:\ntrue: The check is a fixed value check.\nfalse: The check is not a fixed value check",
                       "description_zh": "是否为固定值校验。取值如下：\ntrue：是固定值校验。\nfalse：非固定值校验",
                       "example": "false",
                       "mappingResourcePropertyName": "$.FixedCheck",
@@ -358,7 +358,7 @@
                     },
                     "IsPrediction": {
                       "backendName": "isPrediction",
-                      "description_en": "Indicates whether the result is a prediction. Valid values:\n\n`true`: The result is a prediction.\n\n`false`: The result is not a prediction",
+                      "description_en": "Specifies whether the result is a predicted result. Valid values:\ntrue: The result is a predicted result.\nfalse: The result is not a predicted result",
                       "description_zh": "是否为预测的结果。取值如下：\ntrue：是预测的结果。\nfalse：不是预测的结果",
                       "example": "false",
                       "mappingResourcePropertyName": "$.IsPrediction",
@@ -367,7 +367,7 @@
                     },
                     "LowerValue": {
                       "backendName": "lowerValue",
-                      "description_en": "The predicted lower limit, which is automatically generated based on the configured threshold",
+                      "description_en": "The predicted lower limit. This value is automatically generated based on the threshold that you set",
                       "description_zh": "预测下限。根据您设置的阈值自动生成",
                       "example": "2344",
                       "format": "float",
@@ -377,7 +377,7 @@
                     },
                     "MatchExpression": {
                       "backendName": "matchExpression",
-                      "description_en": "The partition filter expression",
+                      "description_en": "The partition expression",
                       "description_zh": "分区表达式",
                       "example": "ds=$[yyyymmdd]",
                       "mappingResourcePropertyName": "$.MatchExpression",
@@ -386,7 +386,7 @@
                     },
                     "MethodName": {
                       "backendName": "methodName",
-                      "description_en": "The method used to collect sample data. Examples: `avg`, `count`, `sum`, `min`, `max`, `count_distinct`, `user_defined`, `table_count`, `table_size`, `table_dt_load_count`, `table_dt_refuseload_count`, `null_value`, `null_value/table_count`, `(table_count-count_distinct)/table_count`, and `table_count-count_distinct`",
+                      "description_en": "The method used to collect sample data, such as avg, count, sum, min, max, count_distinct, user_defined, table_count, table_size, table_dt_load_count, table_dt_refuseload_count, null_value, null_value/table_count, (table_count-count_distinct)/table_count, and table_count-count_distinct",
                       "description_zh": "采集样本数据的方法。包括avg、count、sum、min、max、count_distinct、user_defined、table_count、table_size、table_dt_load_count、table_dt_refuseload_count、null_value、null_value/table_count、(table_count-count_distinct)/table_count、table_count-count_distinct等",
                       "example": "max",
                       "mappingResourcePropertyName": "$.MethodName",
@@ -404,14 +404,14 @@
                     },
                     "Open": {
                       "backendName": "openSwitch",
-                      "description_en": "Indicates whether the rule is enabled",
+                      "description_en": "Specifies whether the rule is enabled",
                       "description_zh": "规则是否开启",
                       "example": "true",
                       "type": "boolean"
                     },
                     "ProjectName": {
                       "backendName": "projectName",
-                      "description_en": "The name of the engine or data source used for the quality check",
+                      "description_en": "The name of the engine or data source for which you want to check data quality",
                       "description_zh": "需要进行数据质量校验的引擎或者数据源名称",
                       "example": "autotest",
                       "mappingResourcePropertyName": "$.ProjectName",
@@ -420,7 +420,7 @@
                     },
                     "Property": {
                       "backendName": "property",
-                      "description_en": "The column in the source data table that the rule checks",
+                      "description_en": "The field for the rule property, which is the name of the column in the checked data source table",
                       "description_zh": "规则属性的字段，即被校验数据源表的column名称",
                       "example": "type",
                       "mappingResourcePropertyName": "$.Property",
@@ -429,16 +429,16 @@
                     },
                     "ReferenceValue": {
                       "backendName": "referenceValue",
-                      "description_en": "The historical sample values",
+                      "description_en": "The historical sample value",
                       "description_zh": "历史样本值",
                       "itemName": "ReferenceValue",
                       "items": {
-                        "description_en": "A historical sample",
+                        "description_en": "The check result",
                         "description_zh": "校验结果",
                         "properties": {
                           "BizDate": {
                             "backendName": "bizDate",
-                            "description_en": "The business date. For an offline table, this is typically the day before the check is performed",
+                            "description_en": "The business date. If the checked business entity is offline data, the business date is typically the day before the check operation is performed.\n\nThe value is a 13-digit number, such as `1600704000000`",
                             "description_zh": "业务日期。如果被校验的业务主体为离线数据，则业务日期通常为执行校验操作的前一天。\n\n格式示例为 13 位数字，例如 `1600704000000`",
                             "example": "1600704000000",
                             "type": "string",
@@ -446,7 +446,7 @@
                           },
                           "DiscreteProperty": {
                             "backendName": "discreteProperty",
-                            "description_en": "The value of the sample column after being grouped by the `GROUP BY` clause. For example, if you group by a gender column, the values of this parameter can be 'male', 'female', or null",
+                            "description_en": "The value of the sample field after grouping by using the GROUP BY clause. For example, if you group by the gender field, the DiscreteProperty values are male, female, and null",
                             "description_zh": "通过group by分组后的样本字段取值。例如group by性别字段，则DiscreteProperty为男生、女生和null",
                             "example": "type1",
                             "type": "string",
@@ -454,7 +454,7 @@
                           },
                           "SingleCheckResult": {
                             "backendName": "singleCheckResult",
-                            "description_en": "The check result as a string",
+                            "description_en": "The string representation of the check result",
                             "description_zh": "校验结果的字符串",
                             "example": "2",
                             "format": "int32",
@@ -487,7 +487,7 @@
                     },
                     "ResultString": {
                       "backendName": "resultStr",
-                      "description_en": "The string representation of the check result",
+                      "description_en": "The check result in string format",
                       "description_zh": "校验结果的字符串形式",
                       "example": "ResultString",
                       "type": "string",
@@ -514,16 +514,16 @@
                     },
                     "SampleValue": {
                       "backendName": "sampleValue",
-                      "description_en": "The current sample values",
+                      "description_en": "The sample that is currently used",
                       "description_zh": "当前使用的样本",
                       "itemName": "SampleValue",
                       "items": {
-                        "description_en": "A current sample",
+                        "description_en": "The check result",
                         "description_zh": "校验结果",
                         "properties": {
                           "BizDate": {
                             "backendName": "bizDate",
-                            "description_en": "The business date. For an offline table, this is typically the day before the check is performed",
+                            "description_en": "The business date. If the checked business entity is offline data, the business date is typically the day before the check operation is performed.\n\nThe value is a 13-digit number, such as `1600704000000`",
                             "description_zh": "业务日期。如果被校验的业务主体为离线数据，则业务日期通常为执行校验操作的前一天。\n\n格式示例为 13 位数字，例如 `1600704000000`",
                             "example": "1600704000000",
                             "type": "string",
@@ -531,7 +531,7 @@
                           },
                           "DiscreteProperty": {
                             "backendName": "discreteProperty",
-                            "description_en": "The value of the sample column after being grouped by the `GROUP BY` clause. For example, if you group by a gender column, the values of this parameter can be 'male', 'female', or null",
+                            "description_en": "The value of the sample field after grouping by using the GROUP BY clause. For example, if you group by the gender field, the DiscreteProperty values are male, female, and null",
                             "description_zh": "通过group by分组后的样本字段取值。例如group by性别字段，则DiscreteProperty为男生、女生和null",
                             "example": "type2",
                             "type": "string",
@@ -554,7 +554,7 @@
                     },
                     "TableName": {
                       "backendName": "tableName",
-                      "description_en": "The name of the table being checked",
+                      "description_en": "The name of the table that is checked",
                       "description_zh": "进行校验的表名称",
                       "example": "dual",
                       "mappingResourcePropertyName": "$.TableName",
@@ -572,7 +572,7 @@
                     },
                     "TemplateId": {
                       "backendName": "templateId",
-                      "description_en": "The ID of the rule template",
+                      "description_en": "The ID of the check template that is used",
                       "description_zh": "使用的校验模板的ID",
                       "example": "5",
                       "format": "int32",
@@ -582,7 +582,7 @@
                     },
                     "TemplateName": {
                       "backendName": "templateName",
-                      "description_en": "The name of the rule template",
+                      "description_en": "The name of the check template that is used",
                       "description_zh": "使用的校验模板的名称",
                       "example": "Expected value verification",
                       "mappingResourcePropertyName": "$.TemplateName",
@@ -591,8 +591,8 @@
                     },
                     "TimeCost": {
                       "backendName": "timeConsuming",
-                      "description_en": "The duration of the check",
-                      "description_zh": "执行校验任务花费的时间",
+                      "description_en": "The time taken to execute the check task, in seconds",
+                      "description_zh": "执行校验任务花费的时间，单位为秒",
                       "example": "10",
                       "type": "string",
                       "visibility": "Public"
@@ -608,7 +608,7 @@
                     },
                     "UpperValue": {
                       "backendName": "upperValue",
-                      "description_en": "The predicted upper limit, which is automatically generated based on the configured threshold",
+                      "description_en": "The predicted upper limit. This value is automatically generated after the threshold is set",
                       "description_zh": "预测上限。设置阈值后自动生成",
                       "example": "22200",
                       "format": "float",
@@ -618,7 +618,7 @@
                     },
                     "WarningThreshold": {
                       "backendName": "warningThreshold",
-                      "description_en": "The custom threshold for a warning alert. An alert is triggered if the deviation from the expected value exceeds this threshold",
+                      "description_en": "The orange threshold. This threshold indicates the degree of deviation from the expected sample value. You can customize this threshold based on your business requirements",
                       "description_zh": "橙色阈值。表示与样本预期的偏离程度，您可以根据业务需求自定义该阈值",
                       "example": "0.1",
                       "format": "float",
@@ -628,7 +628,7 @@
                     },
                     "WhereCondition": {
                       "backendName": "whereCondition",
-                      "description_en": "The filter condition for the check",
+                      "description_en": "The filter condition used by the check task",
                       "description_zh": "校验任务使用的过滤条件",
                       "example": "type!='type2'",
                       "mappingResourcePropertyName": "$.WhereCondition",
@@ -643,7 +643,7 @@
               },
               "TotalCount": {
                 "backendName": "totalCount",
-                "description_en": "The total number of records",
+                "description_en": "The total number of data records",
                 "description_zh": "数据的总记录数",
                 "example": "200",
                 "format": "int64",
@@ -693,7 +693,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful",
+            "description_en": "Indicates whether the request is successful",
             "description_zh": "请求是否成功",
             "example": "true",
             "nullToEmpty": false,

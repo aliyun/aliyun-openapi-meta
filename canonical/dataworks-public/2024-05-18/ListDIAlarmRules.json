@@ -3,7 +3,7 @@
   "cmd_full_name": "dataworks-public list-di-alarm-rules",
   "cmd_name": "list-di-alarm-rules",
   "deprecated": false,
-  "description_en": "Views alert rules configured for a synchronization task",
+  "description_en": "Queries the alert rules for data integration",
   "description_zh": "查看数据集成报警规则",
   "kebab_example": "aliyun dataworks-public list-di-alarm-rules --job-id 1000001 --page-number 1 --page-size 10 --di-alarm-rule-id 34988 --api-version 2024-05-18 --region cn-hangzhou",
   "method": "GET",
@@ -22,8 +22,8 @@
   "parameters": [
     {
       "example": "1000001",
-      "help_en": "The ID of the task for which alert rules are configured",
-      "help_zh": "任务ID。可通过 ListDIJobs（需传入 ProjectId）返回的 DIJobs[].Id 获取。示例值 1000001 为占位示例，实际值须以 ListDIJobs 返回的任务 ID 替换。本参数实际为必填项，省略时服务端返回 500（NullPointerException）",
+      "help_en": "The ID of the data integration task for which you want to query alert rules. This parameter is required. You can call the ListDIJobs (https://api.aliyun.com/document/dataworks-public/2024-05-18/ListDIJobs) operation to query the target workspace and obtain the `Id` of the target task from `PagingInfo.DIJobs[]`.\n\nIf `DI.Job.NotFound` is returned, use the same caller identity and region to call GetDIJob (https://api.aliyun.com/document/dataworks-public/2024-05-18/GetDIJob) with this task ID to query the details, and verify the workspace and access permissions of the target task. Both querying task details and querying alert rules by task ID verify the task version, source and destination channels, and synchronization type",
+      "help_zh": "要查询告警规则的数据集成任务 ID，调用时必填。通过 ListDIJobs (https://api.aliyun.com/document/dataworks-public/2024-05-18/ListDIJobs) 查询目标工作空间，从 `PagingInfo.DIJobs[]` 中取目标任务的 `Id`。\n\n如果返回 `DI.Job.NotFound`，请使用同一调用身份，在同一地域用 GetDIJob (https://api.aliyun.com/document/dataworks-public/2024-05-18/GetDIJob) 和该任务 ID 查询详情，并确认目标任务所在工作空间及访问权限。查询任务详情和按任务查询告警规则均校验任务版本、源端与目的端通道和同步类型",
       "location": "query",
       "name": "job_id",
       "options": [
@@ -48,7 +48,7 @@
     },
     {
       "example": "10",
-      "help_en": "The number of entries per page. Default value: 10. Maximum value: 100",
+      "help_en": "The number of entries to return on each page. Default value: 10. Maximum value: 100",
       "help_zh": "每页显示的条数，默认为10条，最大100条",
       "location": "query",
       "name": "page_size",
@@ -61,7 +61,7 @@
     },
     {
       "example": "34988",
-      "help_en": "The ID of the alert rule. If you leave this parameter empty, all alert rules of the task are queried",
+      "help_en": "The ID of the specific alert rule to query. If you leave this parameter empty, all alert rules for the specified task are queried",
       "help_zh": "指定查询特定的告警规则ID，如为空，则查询JobId下的所有告警规则",
       "location": "query",
       "name": "di_alarm_rule_id",
@@ -79,7 +79,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response parameters",
+        "description_en": "Schema of Response",
         "description_zh": "Schema of Response",
         "properties": {
           "PagingInfo": {
@@ -89,17 +89,17 @@
             "properties": {
               "DIJobAlarmRules": {
                 "backendName": "data",
-                "description_en": "The alert rules",
+                "description_en": "The list of alert rules",
                 "description_zh": "告警规则列表",
                 "itemName": "DIJobAlarmRules",
                 "items": {
-                  "description_en": "The details of an alert rule",
+                  "description_en": "The details of a single alert rule",
                   "description_zh": "单个告警规则详情",
                   "properties": {
                     "DIAlarmRuleId": {
                       "backendName": "diAlarmRuleId",
                       "deprecated": true,
-                      "description_en": "This parameter is deprecated. Use the Id parameter instead",
+                      "description_en": "[Deprecated] Use the Id field instead",
                       "description_zh": "该字段已废弃，请使用Id字段",
                       "example": "72402",
                       "format": "int64",
@@ -107,7 +107,7 @@
                     },
                     "DIJobId": {
                       "backendName": "diJobId",
-                      "description_en": "The ID of the synchronization task",
+                      "description_en": "The ID of the task",
                       "description_zh": "任务ID",
                       "example": "32594",
                       "format": "int64",
@@ -122,7 +122,7 @@
                     },
                     "Enabled": {
                       "backendName": "enabled",
-                      "description_en": "Indicates whether the alert rule is enabled. Valid values: True and False",
+                      "description_en": "Specifies whether the alert rule is enabled",
                       "description_zh": "告警规则是否启用",
                       "example": "True",
                       "type": "boolean"
@@ -137,7 +137,7 @@
                     },
                     "MetricType": {
                       "backendName": "metricType",
-                      "description_en": "The metric type in the alert rule. Valid values:\n\n\n\n\nHeartbeat: task status alert\nFailoverCount: failover count alert\nDelay: task latency alert\nDdlReport: DDL notification\nResourceUtilization: resource group utilization",
+                      "description_en": "The type of the alert metric. Valid values:\nHeartbeat: task status alert\nFailoverCount: failover count alert\nDelay: task delay alert\nDdlReport: DDL notification\nResourceUtilization: resource group utilization",
                       "description_zh": "告警指标类型，可选的枚举值：\nHeartbeat（任务状态报警）\nFailoverCount（failover次数报警）\nDelay（任务延迟报警）\nDdlReport（DDL通知）\nResourceUtilization（资源组使用率）",
                       "example": "Heartbeat",
                       "type": "string"
@@ -151,13 +151,13 @@
                     },
                     "NotificationSettings": {
                       "backendName": "notificationSettings",
-                      "description_en": "The alert notification method and recipient settings",
+                      "description_en": "The alert notification channels and recipient settings",
                       "description_zh": "告警通知渠道和接收人设置",
                       "properties": {
                         "InhibitionInterval": {
                           "backendName": "inhibitionInterval",
                           "deprecated": true,
-                          "description_en": "This parameter is deprecated and replaced by the MuteInterval parameter",
+                          "description_en": "[Deprecated] Use the MuteInterval field instead",
                           "description_zh": "该字段已废弃，请使用MuteInterval字段",
                           "example": "5",
                           "format": "int64",
@@ -165,7 +165,7 @@
                         },
                         "MuteInterval": {
                           "backendName": "inhibitionInterval",
-                          "description_en": "The duration of the alert suppression interval. Unit: minutes",
+                          "description_en": "The alert mute interval, in minutes",
                           "description_zh": "告警抑制间隔时长，单位分钟",
                           "example": "5",
                           "format": "int64",
@@ -173,20 +173,20 @@
                         },
                         "NotificationChannels": {
                           "backendName": "notificationChannels",
-                          "description_en": "The alert notification methods",
+                          "description_en": "The array of alert notification channels",
                           "description_zh": "告警通知渠道数组",
                           "itemName": "NotificationChannels",
                           "items": {
-                            "description_en": "The alert notification method",
+                            "description_en": "A single alert notification channel",
                             "description_zh": "单个告警通知渠道",
                             "properties": {
                               "Channels": {
                                 "backendName": "channels",
-                                "description_en": "The alert notification methods",
+                                "description_en": "The array of alert channel settings",
                                 "description_zh": "告警通道设置数组",
                                 "itemName": "Channels",
                                 "items": {
-                                  "description_en": "The alert notification method. Valid values:\n\n\n\n\nMail: email\nPhone: phone call\nSms: SMS\nDing: DingTalk",
+                                  "description_en": "The channel type. Valid values:\nMail: email\nPhone: phone call\nSms: text message\nDing: DingTalk",
                                   "description_zh": "通道，可选的枚举值;\nMail（邮件）\nPhone（电话）\nSms（短信）\nDing（钉钉）",
                                   "example": "Ding",
                                   "type": "string"
@@ -195,7 +195,7 @@
                               },
                               "Severity": {
                                 "backendName": "severity",
-                                "description_en": "The severity level. Valid values:\n\nWarning\n\nCritical",
+                                "description_en": "The severity level. Valid values:\nWarning\nCritical",
                                 "description_zh": "严重程度，可选的枚举值：\nWarning\nCritical",
                                 "example": "Critical",
                                 "type": "string"
@@ -207,27 +207,27 @@
                         },
                         "NotificationReceivers": {
                           "backendName": "notificationReceivers",
-                          "description_en": "The settings of alert notification recipients",
+                          "description_en": "The alert notification recipients",
                           "description_zh": "告警通知接收方",
                           "itemName": "NotificationReceiver",
                           "items": {
-                            "description_en": "The settings of alert notification recipients",
+                            "description_en": "The alert notification recipients",
                             "description_zh": "告警通知接收方",
                             "properties": {
                               "ReceiverType": {
                                 "backendName": "receiverType",
-                                "description_en": "The recipient type. Valid values: AliyunUid, DingToken, FeishuToken, and WebHookUrl",
+                                "description_en": "The type of the recipient. Valid values: AliyunUid, DingToken, FeishuToken, and WebHookUrl",
                                 "description_zh": "接收方类型，取值范围：AliyunUid/DingToken/FeishuToken/WebHookUrl",
                                 "example": "DingToken",
                                 "type": "string"
                               },
                               "ReceiverValues": {
                                 "backendName": "receiverValues",
-                                "description_en": "The recipient.\n\nIf the value of the ReceiverType parameter is AliyunUid, the value of this parameter is the Alibaba Cloud account ID of a user.\n\nIf the value of the ReceiverType parameter is DingToken, the value of this parameter is the token of a DingTalk chatbot",
+                                "description_en": "The value of the recipient.\nIf the recipient type is AliyunUid, the value is the specific Alibaba Cloud user ID.\nIf the recipient type is DingToken, the value is the specific DingTalk token",
                                 "description_zh": "接收方取值。\n当接收方类型为阿里云ID时，接收方取值为具体阿里云用户ID。\n当接收方类型为钉钉token时，接收方取值为具体钉钉token值",
                                 "itemName": "ReceiverValue",
                                 "items": {
-                                  "description_en": "The recipient.\n\nIf the value of the ReceiverType parameter is AliyunUid, the value of this parameter is the Alibaba Cloud account ID of a user.\n\nIf the value of the ReceiverType parameter is DingToken, the value of this parameter is the token of a DingTalk chatbot",
+                                  "description_en": "The value of the recipient.\n\nIf the recipient type is AliyunUid, the value is the specific Alibaba Cloud user ID.\nIf the recipient type is DingToken, the value is the specific DingTalk token",
                                   "description_zh": "接收方取值。\n\n当接收方类型为阿里云ID时，接收方取值为具体阿里云用户ID。\n当接收方类型为钉钉token时，接收方取值为具体钉钉token值",
                                   "example": "token1",
                                   "type": "string"
@@ -244,22 +244,22 @@
                     },
                     "TriggerConditions": {
                       "backendName": "triggerConditions",
-                      "description_en": "The conditions that are used to trigger the alert rule",
+                      "description_en": "The list of alert trigger conditions. Multiple trigger conditions are supported",
                       "description_zh": "告警触发条件列表，支持多条件",
                       "itemName": "TriggerConditions",
                       "items": {
-                        "description_en": "The condition that is used to trigger the alert rule",
+                        "description_en": "The alert trigger condition",
                         "description_zh": "告警触发条件",
                         "properties": {
                           "DdlReportTags": {
                             "backendName": "ddlReportTags",
                             "deprecated": true,
-                            "description_en": "This parameter is deprecated and replaced by the DdlTypes parameter",
+                            "description_en": "[Deprecated] Use the DdlTypes field instead",
                             "description_zh": "该字段已废弃，请使用DdlTypes字段",
                             "itemName": "DdlReportTags",
                             "items": {
                               "deprecated": true,
-                              "description_en": "This parameter is deprecated and replaced by the DdlTypes parameter",
+                              "description_en": "[Deprecated] Use the DdlTypes field instead",
                               "description_zh": "该字段已废弃，请使用DdlTypes字段",
                               "example": "ALTERADDCOLUMN",
                               "type": "string"
@@ -268,11 +268,11 @@
                           },
                           "DdlTypes": {
                             "backendName": "ddlReportTags",
-                            "description_en": "The types of DDL operations for which the alert rule takes effect. This parameter is returned only if the MetricType parameter is set to DdlReport",
+                            "description_en": "The list of DDL operations to take effect. This parameter is returned only when MetricType is set to DdlReport",
                             "description_zh": "在MetricType配置为DdlReport时才返回需要生效的DDL列表",
                             "itemName": "DdlTypes",
                             "items": {
-                              "description_en": "The type of the DDL operation for which the alert rule takes effect. This parameter is returned only if the MetricType parameter is set to DdlReport. Valid values:\n\n\n\n\nAlterAddColumn: add a column\nAlterDropColumn: drop a column\nAlterRenameColumn: rename a column\nAlterRenameTable: rename a table\nAlterTableModify: other table modifications\nDropTable: drop a table\nTruncateTable: empty a table",
+                              "description_en": "The DDL operations to take effect when MetricType is set to DdlReport. Valid values:\n\nAlterAddColumn: add a column\nAlterDropColumn: drop a column\nAlterRenameColumn: rename a column\nAlterRenameTable: rename a table\nAlterTableModify: perform other table modifications\nDropTable: drop a table\nTruncateTable: truncate a table",
                               "description_zh": "在MetricType配置为DdlReport时才返回需要生效的DDL列表，包括\n\nAlterAddColumn 加列\nAlterDropColumn 删列\nAlterRenameColumn 修改列名\nAlterRenameTable 修改表名\nAlterTableModify 其他修改表\nDropTable 删除表\nTruncateTable 清空表",
                               "example": "AlterAddColumn",
                               "type": "string"
@@ -281,7 +281,7 @@
                           },
                           "Duration": {
                             "backendName": "duration",
-                            "description_en": "The time interval for alert calculation. Unit: minutes",
+                            "description_en": "The time interval for alert calculation, in minutes",
                             "description_zh": "告警计算时间区间，单位分钟",
                             "example": "1",
                             "format": "int64",
@@ -289,14 +289,14 @@
                           },
                           "Severity": {
                             "backendName": "severity",
-                            "description_en": "The severity level. Valid values:\n\nWarning\n\nCritical",
+                            "description_en": "The severity level. Valid values:\nWarning\nCritical",
                             "description_zh": "严重程度，可选的枚举值：\nWarning\nCritical",
                             "example": "Critical",
                             "type": "string"
                           },
                           "Threshold": {
                             "backendName": "threshold",
-                            "description_en": "The alert threshold.\n\nIf the alert rule is for task status, no threshold is used.\n\nIf the alert rule is for failovers, the threshold is the number of failovers.\n\nIf the alert rule is for latency, the threshold is the latency duration, in seconds",
+                            "description_en": "The alert threshold.\n\nTask status alert: no threshold\nFailover count alert: the number of failovers\nTask delay alert: the delay duration, in seconds",
                             "description_zh": "告警阈值。\n\n任务状态报警：无阈值。\nfailover次数报警：阈值为failover次数。\n任务延迟报警：阈值为延迟时长，单位秒",
                             "example": "5",
                             "format": "int64",
@@ -314,7 +314,7 @@
               },
               "PageNumber": {
                 "backendName": "pageNumber",
-                "description_en": "The page number. Pages start from page 1",
+                "description_en": "The page number. Pages start from 1",
                 "description_zh": "分页页码，从1开始",
                 "example": "1",
                 "format": "int64",
@@ -322,7 +322,7 @@
               },
               "PageSize": {
                 "backendName": "pageSize",
-                "description_en": "The number of entries per page",
+                "description_en": "The number of entries returned per page",
                 "description_zh": "每页显示的条数",
                 "example": "10",
                 "format": "int64",
@@ -330,7 +330,7 @@
               },
               "TotalCount": {
                 "backendName": "totalCount",
-                "description_en": "The total number of entries that meet the conditions",
+                "description_en": "The total number of entries that meet the specified conditions",
                 "description_zh": "满足条件的数据总条数",
                 "example": "90",
                 "format": "int64",
@@ -341,7 +341,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID. You can use the ID to query logs and troubleshoot issues",
+            "description_en": "The ID of the request. You can use the ID to locate logs and troubleshoot issues",
             "description_zh": "请求的ID。用于定位日志，排查问题",
             "example": "74C2FECD-5B3A-554A-BCF5-351A36DE9815",
             "title_en": "Id of the request",

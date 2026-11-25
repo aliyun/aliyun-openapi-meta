@@ -3,7 +3,7 @@
   "cmd_full_name": "dataworks-public list-nodes",
   "cmd_name": "list-nodes",
   "deprecated": false,
-  "description_en": "Retrieves a list of data development nodes with paging. You can also perform a filtered query on the list by using specified conditions",
+  "description_en": "Retrieves a paginated list of Data Studio nodes. You can filter the list by using specified conditions",
   "description_zh": "分页获取数据开发节点列表，也可以通过筛选条件对列表进行筛选查询",
   "kebab_example": "aliyun dataworks-public list-nodes --project-id 12345 --api-version 2024-05-18 --region cn-hangzhou",
   "method": "GET",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "12345",
-      "help_en": "The ID of the DataWorks workspace. You can log on to the DataWorks console (https://workbench.data.aliyun.com/console) and go to the Workspace Management page to obtain the workspace ID",
+      "help_en": "The ID of the DataWorks workspace. You can log on to the DataWorks console (https://workbench.data.aliyun.com/console) and go to the Workspace Configuration page to obtain the workspace ID",
       "help_zh": "DataWorks工作空间的ID。您可以登录DataWorks控制台 (https://workbench.data.aliyun.com/console)，进入工作空间配置页面获取工作空间ID",
       "location": "query",
       "name": "project_id",
@@ -35,7 +35,7 @@
     },
     {
       "example": "DataworksProject",
-      "help_en": "The scenario to which the node belongs. This parameter is used as a filter condition. If you do not specify this parameter, leave it empty. In Data Studio, this parameter corresponds to the partitions in the left-side directory tree. Valid values: \n\nDataworksProject: project directory.\n\nDataworksManualWorkflow: manual workflow. \n\nDataworksManualTask: manual task",
+      "help_en": "The scenario to which the node belongs. This parameter is used as a filter condition. If you do not specify this parameter, leave it empty. In Data Studio, this parameter corresponds to the sections in the left-side directory tree. Valid values: \n\nDataworksProject: project directory\n\nDataworksManualWorkflow: manual workflow \n\nDataworksManualTask: manual task",
       "help_zh": "筛选条件：节点所在场景，如未指定则不填写，在数据开发中对应左侧目录树的分区可选值： \n\nDataworksProject 项目目录\n\nDataworksManualWorkflow 手动工作流 \n\nDataworksManualTask 手动任务",
       "location": "query",
       "name": "scene",
@@ -60,8 +60,21 @@
       "type": "string"
     },
     {
+      "example": "业务流程/订单分析",
+      "help_en": "The full path of the directory. Only the direct child nodes in the directory are returned. To query the root directory, set this parameter to /. To query a subdirectory, set this parameter to the full path of the subdirectory. The Path and ContainerId parameters are mutually exclusive",
+      "help_zh": "目录的完整路径。仅返回该目录下的直属节点。查询根目录时传 /，查询子目录时传该子目录的完整路径。Path 与 ContainerId 互斥",
+      "location": "query",
+      "name": "path",
+      "options": [
+        "--path"
+      ],
+      "raw_name": "Path",
+      "required": false,
+      "type": "string"
+    },
+    {
       "example": "Normal",
-      "help_en": "The scheduling type. This parameter is used as a filter condition. Valid values: \n\nNormal: The node runs as expected.\n\nPause: The node is paused, and the execution of its downstream nodes is blocked.\n \nSkip: The node is set to dry run. The system directly returns a success response with an execution duration of 0 seconds. This does not block the execution of downstream nodes or consume resources",
+      "help_en": "The scheduling type. This parameter is used as a filter condition. Valid values: \n\nNormal: The node runs normally.\n\nPause: The node is paused, and the execution of downstream nodes that depend on the current node is blocked.\n \nSkip: The node is set to dry run. The system directly returns a success status with an execution duration of 0 seconds. This does not block the execution of downstream nodes or consume resources",
       "help_zh": "筛选条件：调度类型可选值： \n\nNormal：正常执行任务。\n\nPause：节点状态被置为暂停，并且会阻塞依赖当前节点的下游节点执行。\n \nSkip：节点状态被置为空跑，系统会直接返回成功（执行时长为0秒），不会阻塞下游节点执行，也不会占用资源",
       "location": "query",
       "name": "recurrence",
@@ -74,7 +87,7 @@
     },
     {
       "example": "Allowed",
-      "help_en": "The rerun mode. If you do not specify this parameter, leave it empty. Valid values: \n\nAllowed: The node can be rerun regardless of whether it is successfully run or fails to run.\n \nFailureAllowed: The node can be rerun only after it fails to run.\n \nDenied: The node cannot be rerun regardless of whether it is successfully run or fails to run",
+      "help_en": "The rerun mode. If you do not specify this parameter, leave it empty. Valid values: \n\nAllowed: The node can be rerun after it succeeds or fails.\n \nFailureAllowed: The node can be rerun only after it fails.\n \nDenied: The node cannot be rerun regardless of whether it succeeds or fails",
       "help_zh": "重跑属性，如不指定则不填写。取值如下： \n\nAllowed：运行成功或失败后皆可重跑。\n \nFailureAllowed：运行成功后不可重跑，运行失败后可以重跑。\n \nDenied：运行成功或失败皆不可重跑",
       "location": "query",
       "name": "rerun_mode",
@@ -95,6 +108,23 @@
         "--name"
       ],
       "raw_name": "Name",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "enum": [
+        "CreateTime",
+        "ModifyTime"
+      ],
+      "example": "ModifyTime",
+      "help_en": "The field by which nodes are sorted. Valid values: CreateTime and ModifyTime. Nodes are sorted in descending order based on the specified field. If you do not specify this parameter, nodes are sorted by creation time by default",
+      "help_zh": "节点排序字段，支持 CreateTime（创建时间）和 ModifyTime（修改时间），均按倒序排列。未传时默认按创建时间排序",
+      "location": "query",
+      "name": "order_by",
+      "options": [
+        "--order-by"
+      ],
+      "raw_name": "OrderBy",
       "required": false,
       "type": "string"
     },
@@ -135,7 +165,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "Schema of Response",
+        "description_en": "The response schema",
         "description_zh": "Schema of Response",
         "properties": {
           "PagingInfo": {
@@ -145,18 +175,18 @@
             "properties": {
               "Nodes": {
                 "backendName": "data",
-                "description_en": "The list of data development nodes",
+                "description_en": "The list of Data Studio nodes",
                 "description_zh": "数据开发节点列表",
                 "itemName": "node",
                 "items": {
-                  "description_en": "The data development node information",
+                  "description_en": "The Data Studio node information",
                   "description_zh": "数据开发节点信息",
                   "properties": {
                     "CreateTime": {
                       "backendName": "gmtCreate",
                       "default": "",
                       "deprecated": false,
-                      "description_en": "The timestamp when the data development node was created",
+                      "description_en": "The timestamp when the Data Studio node was created",
                       "description_zh": "数据开发节点创建时间戳",
                       "example": "1722910655000",
                       "format": "int64",
@@ -219,7 +249,7 @@
                     },
                     "Id": {
                       "backendName": "uuid",
-                      "description_en": "The unique identifier of the data development node.\n<notice>This field is of the Long type in SDK versions earlier than 8.0.0 and of the String type in SDK 8.0.0 and later. This change does not affect the normal use of the SDK. The parameter is still returned based on the type defined in the SDK. The type change may cause project compilation to fail only when you upgrade the SDK across version 8.0.0. In this case, you must manually correct the data type.></notice>",
+                      "description_en": "The unique identifier of the Data Studio node. ><notice>This field is of the Long type before SDK 8.0.0 and of the String type in SDK 8.0.0 and later. This change does not affect the normal use of the SDK, and the parameter is still returned based on the type defined in the SDK. This type change may cause project compilation to fail only if you upgrade the SDK across version 8.0.0. In this case, you must manually correct the data type.></notice>",
                       "description_zh": "数据开发节点的唯一标识符。\n\n<notice>该字段在SDK8.0.0版本之前为Long类型，SDK8.0.0版本及之后为String类型。该变更不影响SDK正常使用，参数仍会按SDK中定义的类型返回。只有在跨8.0.0版本的SDK升级时，类型变更可能会导致项目编译不通过，需要用户手动修正数据类型。></notice>",
                       "example": "860438872620113XXXX",
                       "type": "string"
@@ -455,7 +485,7 @@
                       "backendName": "gmtModified",
                       "default": "",
                       "deprecated": false,
-                      "description_en": "The timestamp when the data development node was last modified",
+                      "description_en": "The timestamp when the Data Studio node was last modified",
                       "description_zh": "数据开发节点最近修改时间戳",
                       "example": "1722910655000",
                       "format": "int64",
@@ -707,7 +737,7 @@
                       "backendName": "owner",
                       "default": "",
                       "deprecated": false,
-                      "description_en": "The owner of the data development node",
+                      "description_en": "The owner of the Data Studio node",
                       "description_zh": "数据开发节点责任人",
                       "example": "110755000425XXXX",
                       "mappingResourcePropertyName": "$.Owner",
@@ -720,7 +750,7 @@
                     "ProjectId": {
                       "backendName": "projectId",
                       "deprecated": false,
-                      "description_en": "The ID of the DataWorks workspace. You can logon to the DataWorks console (https://workbench.data.aliyun.com/console) and go to the workspace storage management page to view the ID",
+                      "description_en": "The ID of the DataWorks workspace. You can log on to the DataWorks console (https://workbench.data.aliyun.com/console) and go to the Workspace Management page to view the ID",
                       "description_zh": "DataWorks工作空间的ID，您可以登录DataWorks控制台 (https://workbench.data.aliyun.com/console)，进入工作空间管理页面查看ID",
                       "example": "33233",
                       "format": "int64",
@@ -865,7 +895,7 @@
                           "backendName": "rerunInterval",
                           "default": "",
                           "deprecated": false,
-                          "description_en": "The retry time interval, in milliseconds",
+                          "description_en": "The retry interval. Unit: milliseconds",
                           "description_zh": "重试时间间隔，单位毫秒",
                           "example": "180000",
                           "format": "int32",
@@ -919,7 +949,7 @@
                           "backendName": "timeout",
                           "default": "",
                           "deprecated": false,
-                          "description_en": "The timeout period",
+                          "description_en": "The timeout period. Unit: seconds",
                           "description_zh": "超时时间，单位：秒",
                           "example": "0",
                           "format": "int32",
