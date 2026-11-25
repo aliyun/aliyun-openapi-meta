@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun polardb CreateModelApi --region cn-hangzhou --GwClusterId 'pg-xxxxxxxxxx' --RegionId 'cn-hangzhou' --ModelCategory text --PathPrefix '/test' --Protocol openai --RouteRules '[\n  {\n    \"RuleName\": \"string\",\n    \"FallbackMode\": \"failover\",\n    \"MatchModelListJson\": \"[]\",\n    \"providerBalancerAlgorithm\": \"round-robin\",\n    \"Providers\": [\n      {\n        \"ModelServiceName\": \"string\",\n        \"Weight\": \"0\",\n        \"model_protocol\": \"vllm\"\n        \"ModelList\": \"[]\"\n      }\n    ],\n    \"FallbackProviders\": [\n      {\n        \"ModelServiceName\": \"string\",\n        \"model_protocol\": \"anthropic\",\n        \"Weight\": \"10\",\n        \"ModelList\": \"[]\"\n      }\n    ]\n  }\n]' --Name test",
+  "camel_example": "aliyun polardb CreateModelApi --region cn-hangzhou --GwClusterId 'pg-xxxxxxxxxx' --RegionId 'cn-hangzhou'",
   "cmd_full_name": "polardb create-model-api",
   "cmd_name": "create-model-api",
   "deprecated": false,
   "description_en": "Creates a routing rule",
   "description_zh": "创建路由规则",
-  "kebab_example": "aliyun polardb create-model-api --gw-cluster-id pg-xxxxxxxxxx --name test --model-category text --path-prefix /test --protocol openai --route-rules '[\n  {\n    \"RuleName\": \"string\",\n    \"FallbackMode\": \"failover\",\n    \"MatchModelListJson\": \"[]\",\n    \"providerBalancerAlgorithm\": \"round-robin\",\n    \"Providers\": [\n      {\n        \"ModelServiceName\": \"string\",\n        \"Weight\": \"0\",\n        \"model_protocol\": \"vllm\"\n        \"ModelList\": \"[]\"\n      }\n    ],\n    \"FallbackProviders\": [\n      {\n        \"ModelServiceName\": \"string\",\n        \"model_protocol\": \"anthropic\",\n        \"Weight\": \"10\",\n        \"ModelList\": \"[]\"\n      }\n    ]\n  }\n]' --biz-region-id cn-hangzhou --region cn-hangzhou",
+  "kebab_example": "aliyun polardb create-model-api --gw-cluster-id pg-xxxxxxxxxx --biz-region-id cn-hangzhou --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": false,
   "name": "CreateModelApi",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "pg-xxxxxxxxxx",
-      "help_en": "The gateway instance ID. You can obtain this ID from the GwClusterId parameter returned by the CreateGateway operation",
+      "help_en": "The ID of the gateway instance. You can obtain this ID from the GwClusterId value returned by the CreateGateway operation",
       "help_zh": "网关实例 ID，可从 CreateGateway 返回的 GwClusterId 获取",
       "location": "query",
       "name": "gw_cluster_id",
@@ -43,7 +43,7 @@
         "--name"
       ],
       "raw_name": "Name",
-      "required": true,
+      "required": false,
       "type": "string"
     },
     {
@@ -56,7 +56,7 @@
         "--model-category"
       ],
       "raw_name": "ModelCategory",
-      "required": true,
+      "required": false,
       "type": "string"
     },
     {
@@ -69,7 +69,7 @@
         "--path-prefix"
       ],
       "raw_name": "PathPrefix",
-      "required": true,
+      "required": false,
       "type": "string"
     },
     {
@@ -82,7 +82,7 @@
         "--protocol"
       ],
       "raw_name": "Protocol",
-      "required": true,
+      "required": false,
       "type": "string"
     },
     {
@@ -121,7 +121,33 @@
         "--route-rules"
       ],
       "raw_name": "RouteRules",
-      "required": true,
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "[{\"Source\":\"client-model-a\",\"Target\":\"upstream-model-a\"},{\"Source\":\"client-model-b\",\"Target\":\"upstream-model-b\"}]",
+      "help_en": "The model name mappings, specified as a JSON array string. Each element is in the format of {\"Source\":\"client model name\",\"Target\":\"upstream model name\"}. The Source parameter is matched in a case-insensitive manner and must be unique. The Target parameter retains its original case when forwarded. Both parameters cannot be empty and cannot contain leading or trailing spaces",
+      "help_zh": "模型名映射，JSON 数组字符串，元素为 {\"Source\":\"客户端模型名\",\"Target\":\"上游模型名\"}；Source 按大小写不敏感匹配且不能重复，Target 转发时保留原始大小写，两者均非空且无首尾空白",
+      "location": "query",
+      "name": "model_mappings",
+      "options": [
+        "--model-mappings"
+      ],
+      "raw_name": "ModelMappings",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "{\"AllowedModels\":[\"deepseek-v4-pro\",\"glm-5.3\",\"glm-5.3-flash\"]}",
+      "help_en": "The intelligent routing candidate list, specified as a JSON object string. Currently, it only contains AllowedModels, which is a non-empty array of unique model names. The order of the array determines the candidate order. Do not pass the Enabled, cost, or quality tier parameters. Saving candidates does not enable the feature. You must first call the EnableModelRouting operation to obtain the gateway entitlements",
+      "help_zh": "智能路由候选列表，JSON 对象字符串，当前仅含 AllowedModels：非空、不重复的模型名数组，顺序即候选顺序；不传 Enabled、成本或质量档位。保存候选不等于开通，需先调用 EnableModelRouting 获得网关权益",
+      "location": "query",
+      "name": "model_routing",
+      "options": [
+        "--model-routing"
+      ],
+      "raw_name": "ModelRouting",
+      "required": false,
       "type": "string"
     },
     {
@@ -173,6 +199,33 @@
         "description_en": "Schema of Response",
         "description_zh": "Schema of Response",
         "properties": {
+          "Category": {
+            "backendName": "data.category",
+            "description_en": "The model category",
+            "description_zh": "模型类别",
+            "example": "text",
+            "title_en": "模型类别",
+            "title_zh": "模型类别",
+            "type": "string"
+          },
+          "GmtCreated": {
+            "backendName": "data.gmtCreated",
+            "description_en": "The creation time",
+            "description_zh": "创建时间",
+            "example": "2026-11-09T06:43:33Z",
+            "title_en": "创建时间",
+            "title_zh": "创建时间",
+            "type": "string"
+          },
+          "GmtModified": {
+            "backendName": "data.gmtModified",
+            "description_en": "The modification time",
+            "description_zh": "修改时间",
+            "example": "2026-11-09T06:43:33Z",
+            "title_en": "修改时间",
+            "title_zh": "修改时间",
+            "type": "string"
+          },
           "InvokeEndpoint": {
             "backendName": "data.invokeEndpoint",
             "description_en": "The invocation endpoint",
@@ -187,6 +240,42 @@
             "example": "mi-xxxxxx",
             "type": "string"
           },
+          "ModelMappings": {
+            "backendName": "data.modelMappings",
+            "description_en": "The saved model name mappings, returned as a JSON array string. This parameter is empty if no mappings are configured",
+            "description_zh": "已保存的模型名映射，JSON 数组字符串；未配置时为空",
+            "example": "[{\"Source\":\"client-model-a\",\"Target\":\"upstream-model-a\"}]",
+            "title_en": "已保存的模型名映射，JSON 数组字符串；未配置时为空",
+            "title_zh": "已保存的模型名映射，JSON 数组字符串；未配置时为空",
+            "type": "string"
+          },
+          "Name": {
+            "backendName": "data.name",
+            "description_en": "The name of the model API",
+            "description_zh": "模型 API 名称",
+            "example": "jev-chat-api",
+            "title_en": "模型 API 名称",
+            "title_zh": "模型 API 名称",
+            "type": "string"
+          },
+          "PathPrefix": {
+            "backendName": "data.pathPrefix",
+            "description_en": "The invocation path prefix",
+            "description_zh": "调用路径前缀",
+            "example": "/jev/v1",
+            "title_en": "调用路径前缀",
+            "title_zh": "调用路径前缀",
+            "type": "string"
+          },
+          "Protocol": {
+            "backendName": "data.protocol",
+            "description_en": "The access protocol",
+            "description_zh": "接入协议",
+            "example": "openai-chat",
+            "title_en": "接入协议",
+            "title_zh": "接入协议",
+            "type": "string"
+          },
           "RequestId": {
             "backendName": "requestId",
             "description_en": "The request ID",
@@ -194,6 +283,15 @@
             "example": "6BD9CDE4-5E7B-4BF3-9BB8-83C73E******",
             "title_en": "Id of the request",
             "title_zh": "Id of the request",
+            "type": "string"
+          },
+          "RouteRules": {
+            "backendName": "data.routeRules",
+            "description_en": "The saved routing rules, returned as a JSON string. A byte-by-byte exact echo is not guaranteed",
+            "description_zh": "已保存的路由规则，JSON 字符串；不承诺逐字节原样回显",
+            "example": "[{\"RuleName\":\"default\",\"Providers\":[{\"ModelServiceName\":\"model-service-a\",\"ModelList\":\"[\\\\\"deepseek-v4-pro\\\\\"]\",\"Weight\":100}]}]",
+            "title_en": "已保存的路由规则，JSON 字符串；不承诺逐字节原样回显",
+            "title_zh": "已保存的路由规则，JSON 字符串；不承诺逐字节原样回显",
             "type": "string"
           },
           "Status": {
