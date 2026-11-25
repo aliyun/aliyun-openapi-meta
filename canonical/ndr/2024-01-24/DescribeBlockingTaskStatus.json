@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun ndr DescribeBlockingTaskStatus --region cn-hangzhou --PageSize 10 --NextToken '\"\"' --MaxResults 10 --Page 1 --TaskUuids.1 '11111111-2222-4333-8444-555555555555' --version 2024-01-24 --method POST --force",
+  "camel_example": "aliyun ndr DescribeBlockingTaskStatus --region cn-hangzhou --PageSize 10 --NextToken '\"\"' --MaxResults 10 --Page 1 --TaskUuids.1 '550e8400-e29b-41d4-a716-446655440000' --version 2024-01-24 --method POST --force",
   "cmd_full_name": "ndr describe-blocking-task-status",
   "cmd_name": "describe-blocking-task-status",
   "deprecated": false,
-  "description_en": "Queries the execution status and failure types of blocking-related nodes through paging based on node UUIDs",
+  "description_en": "Queries the execution status and failure types of blocking tasks by task UUID with paging",
   "description_zh": "按任务 UUID 分页查询封禁相关任务的执行状态和失败类型",
-  "kebab_example": "aliyun ndr describe-blocking-task-status --task-uuids 11111111-2222-4333-8444-555555555555 --page 1 --page-size 10 --next-token '\"\"' --max-results 10 --region cn-hangzhou",
+  "kebab_example": "aliyun ndr describe-blocking-task-status --task-uuids 550e8400-e29b-41d4-a716-446655440000 --page 1 --page-size 10 --next-token '\"\"' --max-results 10 --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": false,
   "name": "DescribeBlockingTaskStatus",
@@ -24,6 +24,7 @@
       "element": {
         "type": "string"
       },
+      "example": "[\"550e8400-e29b-41d4-a716-446655440000\"]",
       "help_en": "The array of task UUIDs to query. A maximum of 100 items are supported. If this parameter is omitted or an empty array is passed, all tasks of the current account are queried. No records are returned for non-existent UUIDs",
       "help_zh": "需查询的任务 UUID 数组，最多 100 项。省略或传空数组时查询当前账号全部任务；不存在的 UUID 不返回记录",
       "location": "query",
@@ -38,7 +39,7 @@
     },
     {
       "example": "1",
-      "help_en": "The page number. Pages start from 1. Default value: 1",
+      "help_en": "The page number. Pages start from 1. If this parameter is omitted, the default value 1 is used",
       "help_zh": "页码，从 1 开始，省略时为 1",
       "location": "query",
       "name": "page",
@@ -51,7 +52,7 @@
     },
     {
       "example": "10",
-      "help_en": "The number of entries per page. Default value: 10. If the value is less than or equal to 0, it is treated as 10. If the value is greater than 100, it is treated as 100. Specify a value from 1 to 100",
+      "help_en": "The number of entries per page. Default value: 10. If the value is less than or equal to 0, 10 is used. If the value is greater than 100, 100 is used. Specify a value from 1 to 100",
       "help_zh": "每页条数，默认 10；小于等于 0 时按 10，大于 100 时按 100。建议传入 1～100",
       "location": "query",
       "name": "page_size",
@@ -77,7 +78,7 @@
     },
     {
       "example": "10",
-      "help_en": "A reserved parameter for compatibility. This parameter is not used to control the number of returned entries. Use PageSize to set the number of entries per page",
+      "help_en": "A reserved parameter for compatibility. This parameter is not used to control the number of returned records. Use PageSize to set the number of entries per page",
       "help_zh": "兼容保留参数，当前不用于控制返回数量；请使用 PageSize 设置每页条数",
       "location": "query",
       "name": "max_results",
@@ -109,6 +110,7 @@
                 "backendName": "list",
                 "description_en": "The list of blocking task records on the current page. This list may be empty if no matching records are found",
                 "description_zh": "本页封禁任务记录列表，无匹配时可能为空",
+                "example": "[{\"TaskUuid\":\"550e8400-e29b-41d4-a716-446655440000\",\"BlockingType\":\"ip\",\"BlockingDirection\":\"in\",\"BlockingEntity\":\"198.51.100.10\",\"TaskType\":6,\"TaskStatus\":2,\"TaskTime\":1794549600000,\"BlockingProduct\":[\"cfw\"]}]",
                 "itemName": "list",
                 "items": {
                   "description_en": "A blocking task record",
@@ -116,9 +118,11 @@
                   "properties": {
                     "BlockingDirection": {
                       "backendName": "blockingDirection",
-                      "description_en": "The blocking direction corresponding to the task. For blocking and unblocking tasks, the value is in or out. For configuration modification and deletion records, the value may be bidirectional. This field may be empty for records of configurations that have not taken effect",
+                      "description_en": "The blocking direction corresponding to the task. Blocking and unblocking tasks use in or out. Configuration modification and deletion records may use bidirectional. Records for configurations that have not taken effect may be empty",
                       "description_zh": "任务对应的封禁方向。封禁和解封任务为 in 或 out；配置修改、删除记录可能为 bidirectional，未生效配置的记录可能为空",
                       "example": "in",
+                      "title_en": "云防火墙封禁方向：in入向、out出向、bidirectional双向；WAF执行入向封禁",
+                      "title_zh": "云防火墙封禁方向：in入向、out出向、bidirectional双向；WAF执行入向封禁",
                       "type": "string"
                     },
                     "BlockingEntity": {
@@ -126,80 +130,120 @@
                       "description_en": "The IPv4 address or domain name of the blocked object",
                       "description_zh": "封禁对象的 IPv4 地址或域名",
                       "example": "203.0.113.10",
+                      "title_en": "封禁实体值，类型为ip时填写IP地址，类型为domain时填写域名",
+                      "title_zh": "封禁实体值，类型为ip时填写IP地址，类型为domain时填写域名",
                       "type": "string"
+                    },
+                    "BlockingProduct": {
+                      "backendName": "blockingProduct",
+                      "description_en": "The blocking product. A value of cfw indicates Cloud Firewall. A value of waf indicates Web Application Firewall (WAF)",
+                      "description_zh": "封禁产品，cfw表示云防火墙，waf表示Web应用防火墙",
+                      "example": "[\"cfw\"]",
+                      "itemName": "Item",
+                      "items": {
+                        "description_en": "The blocking product identifier. A value of cfw indicates Cloud Firewall. A value of waf indicates WAF",
+                        "description_zh": "封禁产品标识：cfw为云防火墙，waf为Web应用防火墙",
+                        "example": "cfw",
+                        "title_en": "封禁产品标识：cfw为云防火墙，waf为Web应用防火墙",
+                        "title_zh": "封禁产品标识：cfw为云防火墙，waf为Web应用防火墙",
+                        "type": "string"
+                      },
+                      "title_en": "封禁产品，cfw表示云防火墙，waf表示Web应用防火墙",
+                      "title_zh": "封禁产品，cfw表示云防火墙，waf表示Web应用防火墙",
+                      "type": "array"
                     },
                     "BlockingType": {
                       "backendName": "blockingType",
-                      "description_en": "The object type. ip indicates an IPv4 address, and domain indicates a domain name",
+                      "description_en": "The blocked object type. A value of ip indicates an IPv4 address. A value of domain indicates a domain name",
                       "description_zh": "封禁对象类型。ip 表示 IPv4 地址，domain 表示域名",
                       "example": "ip",
+                      "title_en": "封禁实体类型，ip表示IP地址，domain表示域名",
+                      "title_zh": "封禁实体类型，ip表示IP地址，domain表示域名",
                       "type": "string"
                     },
                     "FailureType": {
                       "backendName": "failureType",
-                      "description_en": "The task failure type. This field can be empty. Valid values:\nquota_exceeded: The Cloud Firewall resource quota is insufficient.\ndata_corrupted: The associated policy or address book is abnormal.\nexecution_failed: The execution failed",
+                      "description_en": "The task failure type. This parameter can be empty. A value of quota_exceeded indicates that the Cloud Firewall resource quota is insufficient. A value of data_corrupted indicates that the associated policy or address book is abnormal. A value of execution_failed indicates that the execution failed",
                       "description_zh": "任务失败类型，可为空。quota_exceeded 表示云防火墙资源配额不足，data_corrupted 表示关联策略或地址簿异常，execution_failed 表示执行失败",
                       "example": "quota_exceeded",
+                      "title_en": "执行失败原因的稳定分类标识；无失败时不返回",
+                      "title_zh": "执行失败原因的稳定分类标识；无失败时不返回",
                       "type": "string"
                     },
                     "TaskStatus": {
                       "backendName": "taskStatus",
-                      "description_en": "The task execution status. Valid values:\n0: pending\n1: running\n2: successful\n3: failed",
+                      "description_en": "The task execution status. Valid values:\n0: Pending.\n1: Running.\n2: Successful.\n3: Failed",
                       "description_zh": "任务执行状态。0：待执行；1：执行中；2：执行成功；3：执行失败",
                       "example": "2",
                       "format": "int32",
+                      "title_en": "0待执行、1执行中、2成功、3失败、4部分成功",
+                      "title_zh": "0待执行、1执行中、2成功、3失败、4部分成功",
                       "type": "integer"
                     },
                     "TaskTime": {
                       "backendName": "taskTime",
-                      "description_en": "The task creation time. The value is a UNIX timestamp in milliseconds. This is not the task completion time",
+                      "description_en": "The task creation time. It is a UNIX timestamp in milliseconds. This is not the task completion time",
                       "description_zh": "任务创建时间，Unix 毫秒时间戳；不是任务执行完成时间",
                       "example": "1788393600000",
                       "format": "int64",
+                      "title_en": "任务创建时间，Unix毫秒时间戳",
+                      "title_zh": "任务创建时间，Unix毫秒时间戳",
                       "type": "integer"
                     },
                     "TaskType": {
                       "backendName": "taskType",
-                      "description_en": "The task type. Valid values:\n0: manual blocking\n1: system blocking\n2: manual unblocking\n3: system unblocking\n4: configuration modification\n5: configuration deletion",
+                      "description_en": "The task type. Valid values:\n0: Manual blocking.\n1: System blocking.\n2: Manual unblocking.\n3: System unblocking.\n4: Configuration modification.\n5: Configuration deletion",
                       "description_zh": "任务类型。0：手动封禁；1：系统封禁；2：手动解封；3：系统解封；4：修改配置；5：删除配置",
                       "example": "0",
                       "format": "int32",
+                      "title_en": "0手动封禁、1系统封禁、2手动解封、3系统解封、4修改、5删除、6批量封禁、7应急暂停、8应急恢复",
+                      "title_zh": "0手动封禁、1系统封禁、2手动解封、3系统解封、4修改、5删除、6批量封禁、7应急暂停、8应急恢复",
                       "type": "integer"
                     },
                     "TaskUuid": {
                       "backendName": "taskUuid",
-                      "description_en": "The node UUID, which can be used to query the execution result. This field may be empty for some history or configuration operation records",
+                      "description_en": "The task UUID, which can be used to query the execution result. This value may be empty for some historical or configuration operation records",
                       "description_zh": "任务 UUID，可用于查询执行结果；部分历史记录或配置操作记录可能没有值",
                       "example": "11111111-2222-4333-8444-555555555555",
+                      "title_en": "封禁任务唯一标识，用于查询执行状态和操作详情",
+                      "title_zh": "封禁任务唯一标识，用于查询执行状态和操作详情",
                       "type": "string"
                     }
                   },
                   "type": "object"
                 },
+                "title_en": "当前页查询记录列表",
+                "title_zh": "当前页查询记录列表",
                 "type": "array"
               },
               "Page": {
                 "backendName": "page",
-                "description_en": "The page number used for the current query. Pages start from 1",
+                "description_en": "The page number used for the query. Pages start from 1",
                 "description_zh": "本次查询采用的页码，从 1 开始",
                 "example": "1",
                 "format": "int32",
+                "title_en": "当前页码，从1开始",
+                "title_zh": "当前页码，从1开始",
                 "type": "integer"
               },
               "PageSize": {
                 "backendName": "pageSize",
-                "description_en": "The page size used for the current query, which may not be equal to the actual number of entries returned on the current page",
+                "description_en": "The page size used for the query. This is not necessarily equal to the actual number of records returned on the current page",
                 "description_zh": "本次采用的分页大小，不等于本页实际返回条数",
                 "example": "10",
                 "format": "int32",
+                "title_en": "每页返回的记录数量",
+                "title_zh": "每页返回的记录数量",
                 "type": "integer"
               },
               "TotalCount": {
                 "backendName": "totalCount",
-                "description_en": "The total number of task records that meet the filter conditions, not the number of entries returned on the current page",
+                "description_en": "The total number of task records that meet the filter conditions. This is not the number of records returned on the current page",
                 "description_zh": "符合筛选条件的任务记录总数，不是本页返回条数",
                 "example": "2",
                 "format": "int64",
+                "title_en": "符合查询条件的记录总数",
+                "title_zh": "符合查询条件的记录总数",
                 "type": "integer"
               }
             },
@@ -207,7 +251,7 @@
           },
           "ErrorCode": {
             "backendName": "errorCode",
-            "description_en": "The error code returned when the request fails. An empty string is returned if the request is successful. The example InvalidParam indicates that the request parameter is invalid and does not represent an error code for a successful response",
+            "description_en": "The error code returned when the request fails. An empty string is returned when the request is successful. The example InvalidParam indicates that the request parameter is invalid and does not represent an error code for a successful response",
             "description_zh": "请求失败时的错误码；成功时为空字符串。示例 InvalidParam 表示请求参数无效，不代表成功响应的错误码",
             "example": "InvalidParam",
             "title_en": "错误码",
@@ -216,7 +260,7 @@
           },
           "MaxResults": {
             "backendName": "maxResults",
-            "description_en": "A reserved field for compatibility. This field does not provide a valid page size. Refer to Data.PageSize for the actual page size. The example only illustrates the field format",
+            "description_en": "A reserved field for compatibility. This field does not provide a valid page size. Refer to Data.PageSize instead. The example only illustrates the field format",
             "description_zh": "兼容保留字段，当前不提供有效分页大小；请以 Data.PageSize 为准。示例仅说明字段格式",
             "example": "10",
             "format": "int32",
@@ -253,7 +297,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the operation is successful. A value of true indicates that the request is processed successfully. A value of false indicates that the request fails. For asynchronous operations, a success response does not indicate that the task is completed",
+            "description_en": "Indicates whether the API call is successful. A value of true indicates that the request is processed successfully. A value of false indicates that the request fails. For asynchronous operations, a success response does not indicate that the task is completed",
             "description_zh": "本次接口调用是否成功。true 表示请求处理成功，false 表示失败；异步接口的成功不表示任务已经执行完成",
             "example": "true",
             "title_en": "操作是否成功",

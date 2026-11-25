@@ -1,5 +1,5 @@
 {
-  "camel_example": "aliyun ndr DescribeBlockingStatus --region cn-hangzhou --version 2024-01-24 --method POST --force",
+  "camel_example": "aliyun ndr DescribeBlockingStatus --region cn-hangzhou --BlockingProduct cfw --version 2024-01-24 --method POST --force",
   "cmd_full_name": "ndr describe-blocking-status",
   "cmd_name": "describe-blocking-status",
   "deprecated": false,
@@ -19,7 +19,25 @@
     "system_operation_type": "get",
     "url": "/"
   },
-  "parameters": [],
+  "parameters": [
+    {
+      "enum": [
+        "cfw",
+        "waf"
+      ],
+      "example": "cfw",
+      "help_en": "The blocking product to query. Default value: cfw",
+      "help_zh": "查询的封禁产品，默认 cfw",
+      "location": "query",
+      "name": "blocking_product",
+      "options": [
+        "--blocking-product"
+      ],
+      "raw_name": "BlockingProduct",
+      "required": false,
+      "type": "string"
+    }
+  ],
   "pathPattern": "/",
   "product_code": "ndr",
   "protocol": "HTTPS",
@@ -38,13 +56,16 @@
             "properties": {
               "ClosedAclUuids": {
                 "backendName": "closedAclUuids",
-                "description_en": "The UUIDs of the ACL policies that are disabled and whose identifiers can be obtained",
+                "description_en": "The list of universally unique identifiers (UUIDs) of the disabled ACL policies whose identifiers can be obtained",
                 "description_zh": "已被关闭且可获取标识的 ACL 策略 UUID 列表",
+                "example": "[\"550e8400-e29b-41d4-a716-446655440002\"]",
                 "itemName": "ClosedAclUuid",
                 "items": {
                   "description_en": "The UUID of a disabled ACL policy",
                   "description_zh": "一条已关闭的 ACL 策略 UUID",
                   "example": "11111111-2222-4333-8444-555555555555",
+                  "title_en": "一条未启用的NDR托管ACL的UUID",
+                  "title_zh": "一条未启用的NDR托管ACL的UUID",
                   "type": "string"
                 },
                 "title_en": "被用户关闭的 ACL 策略 UUID 列表",
@@ -53,18 +74,63 @@
               },
               "CorruptAclUuids": {
                 "backendName": "corruptAclUuids",
-                "description_en": "The UUIDs of the ACL policies that have data anomalies and whose identifiers can be obtained",
+                "description_en": "The list of UUIDs of the ACL policies that have data anomalies and whose identifiers can be obtained",
                 "description_zh": "存在数据异常且可获取标识的 ACL 策略 UUID 列表",
+                "example": "[\"550e8400-e29b-41d4-a716-446655440003\"]",
                 "itemName": "CorruptAclUuid",
                 "items": {
-                  "description_en": "The UUID of an ACL policy with data anomalies",
+                  "description_en": "The UUID of an ACL policy that has data anomalies",
                   "description_zh": "一条数据异常的 ACL 策略 UUID",
                   "example": "11111111-2222-4333-8444-555555555555",
+                  "title_en": "一条存在数据异常的NDR托管ACL的UUID",
+                  "title_zh": "一条存在数据异常的NDR托管ACL的UUID",
                   "type": "string"
                 },
                 "title_en": "数据异常的 ACL 策略 UUID 列表",
                 "title_zh": "数据异常的 ACL 策略 UUID 列表",
                 "type": "array"
+              },
+              "EmergencyState": {
+                "backendName": "emergencyState",
+                "description_en": "The emergency control status. This parameter is not returned if the feature is not enabled in the current environment",
+                "description_zh": "应急控制状态，当前环境未启用时不返回",
+                "properties": {
+                  "BlockingEntityCount": {
+                    "backendName": "blockingEntityCount",
+                    "description_en": "The number of blocked entities for the current product. If the same entity is associated with multiple WAF instances, it is counted only once",
+                    "description_zh": "当前产品封禁实体数，同一实体多WAF实例只计一次",
+                    "example": "12",
+                    "format": "int64",
+                    "title_en": "当前产品封禁实体数，同一实体多WAF实例只计一次",
+                    "title_zh": "当前产品封禁实体数，同一实体多WAF实例只计一次",
+                    "type": "integer"
+                  },
+                  "BlockingProduct": {
+                    "backendName": "blockingProduct",
+                    "description_en": "The blocking product",
+                    "description_zh": "封禁产品",
+                    "enum": [
+                      "cfw",
+                      "waf"
+                    ],
+                    "example": "cfw",
+                    "title_en": "封禁产品",
+                    "title_zh": "封禁产品",
+                    "type": "string"
+                  },
+                  "Suspended": {
+                    "backendName": "suspended",
+                    "description_en": "Indicates whether the delivery of blocking tasks is suspended for the product",
+                    "description_zh": "该产品是否暂停封禁下发",
+                    "example": "false",
+                    "title_en": "该产品是否暂停封禁下发",
+                    "title_zh": "该产品是否暂停封禁下发",
+                    "type": "boolean"
+                  }
+                },
+                "title_en": "应急控制状态，当前环境未启用时不返回",
+                "title_zh": "应急控制状态，当前环境未启用时不返回",
+                "type": "object"
               },
               "HasAclClosed": {
                 "backendName": "hasAclClosed",
@@ -101,6 +167,15 @@
                 "title_en": "封禁模块是否健康（无异常）",
                 "title_zh": "封禁模块是否健康（无异常）",
                 "type": "boolean"
+              },
+              "WafInGrayRange": {
+                "backendName": "wafInGrayRange",
+                "description_en": "Indicates whether the current user can use Web Application Firewall (WAF) blocking",
+                "description_zh": "当前用户是否可使用 WAF 封禁",
+                "example": "false",
+                "title_en": "当前用户是否可使用 WAF 封禁",
+                "title_zh": "当前用户是否可使用 WAF 封禁",
+                "type": "boolean"
               }
             },
             "title_en": "数据对象",
@@ -109,7 +184,7 @@
           },
           "ErrorCode": {
             "backendName": "errorCode",
-            "description_en": "The error code returned when the request fails. The value is an empty string if the request is successful. For example, InvalidParam indicates that the request parameters are invalid, which is not an error code for a successful response",
+            "description_en": "The error code returned when the request fails. An empty string is returned if the request is successful. For example, InvalidParam indicates that the request parameters are invalid, which is not an error code for a successful response",
             "description_zh": "请求失败时的错误码；成功时为空字符串。示例 InvalidParam 表示请求参数无效，不代表成功响应的错误码",
             "example": "InvalidParam",
             "title_en": "错误码",
@@ -136,7 +211,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the operation is successful. A value of true indicates that the request is processed successfully. A value of false indicates that the request fails. For asynchronous operations, a success response does not indicate that the task is completed",
+            "description_en": "Indicates whether the API call was successful. A value of true indicates that the request was processed successfully. A value of false indicates that the request failed. For asynchronous operations, a success response does not indicate that the task has been completed",
             "description_zh": "本次接口调用是否成功。true 表示请求处理成功，false 表示失败；异步接口的成功不表示任务已经执行完成",
             "example": "true",
             "title_en": "操作是否成功",

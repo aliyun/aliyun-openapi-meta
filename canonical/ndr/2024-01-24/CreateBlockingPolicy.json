@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun ndr CreateBlockingPolicy --region cn-hangzhou --BlockingType ip --BlockingDirection in --BlockingEntity '203.0.113.10' --version 2024-01-24 --method POST --force",
+  "camel_example": "aliyun ndr CreateBlockingPolicy --region cn-hangzhou --Policies '[{\"BlockingType\":\"ip\",\"BlockingReason\":\"高频SSH暴力破解\",\"WafAllInstances\":true,\"BlockingProduct\":[\"cfw\"],\"BlockingDirection\":\"in\",\"WafInstances\":[{\"MemberUid\":1089306842784234,\"InstanceId\":\"waf_v2_public_cn-n5m4v2pdk01\",\"Region\":\"cn-hangzhou\"}],\"BlockingExpireTime\":0,\"BlockingEntity\":\"198.51.100.10\",\"IncidentId\":\"evt-abc123\"}]' --BlockingType ip --BlockingReason '阻止异常网络访问' --WafAllInstances true --BlockingProduct '[\"cfw\"]' --BlockingDirection in --Lang zh --WafInstances '[{\"MemberUid\":1089306842784234,\"InstanceId\":\"waf_v2_public_cn-n5m4v2pdk01\",\"Region\":\"cn-hangzhou\"}]' --BlockingExpireTime 0 --BlockingEntity '203.0.113.10' --IncidentId '11111111-2222-4333-8444-555555555555' --version 2024-01-24 --method POST --force",
   "cmd_full_name": "ndr create-blocking-policy",
   "cmd_name": "create-blocking-policy",
   "deprecated": false,
   "description_en": "Creates a blocking task for a specified IPv4 address or domain name",
   "description_zh": "为指定 IPv4 地址或域名创建封禁任务",
-  "kebab_example": "aliyun ndr create-blocking-policy --blocking-type ip --blocking-entity 203.0.113.10 --blocking-direction in --region cn-hangzhou",
+  "kebab_example": "aliyun ndr create-blocking-policy --blocking-type ip --blocking-entity 203.0.113.10 --blocking-direction in --blocking-reason '阻止异常网络访问' --incident-id 11111111-2222-4333-8444-555555555555 --blocking-expire-time 0 --lang zh --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": false,
   "name": "CreateBlockingPolicy",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "ip",
-      "help_en": "Required. The object type. Valid values: ip (IPv4 address) and domain (domain name)",
+      "help_en": "Required. The object type to block. Only ip (IPv4) and domain (domain name) are supported",
       "help_zh": "必填。封禁对象类型，仅支持 ip（IPv4）或 domain（域名）",
       "location": "query",
       "name": "blocking_type",
@@ -30,12 +30,12 @@
         "--blocking-type"
       ],
       "raw_name": "BlockingType",
-      "required": true,
+      "required": false,
       "type": "string"
     },
     {
       "example": "203.0.113.10",
-      "help_en": "Required. The object to block. For the ip type, the value must be a single IPv4 address. IPv6 addresses, CIDR blocks, and 0.0.0.0 are not supported. For the domain type, the value must be a domain name. IP literals and the wildcard character (*) are not supported. The domain name must contain a period and cannot exceed 253 bytes in length",
+      "help_en": "Required. The object to block. For the ip type, the value must be a single IPv4 address. IPv6, CIDR blocks, and 0.0.0.0 are not supported. For the domain type, the value must be a domain name. IP literals and the wildcard character (*) are not supported. The domain name must contain a dot and cannot exceed 253 bytes in length",
       "help_zh": "必填。封禁对象。ip 类型须为单个 IPv4 地址，不支持 IPv6、CIDR 或 0.0.0.0；domain 类型须为域名，不支持 IP 字面值或通配符 *，须包含点，长度不超过 253 字节",
       "location": "query",
       "name": "blocking_entity",
@@ -43,12 +43,12 @@
         "--blocking-entity"
       ],
       "raw_name": "BlockingEntity",
-      "required": true,
+      "required": false,
       "type": "string"
     },
     {
       "example": "in",
-      "help_en": "Required. The direction of the blocking task. Valid values: in (inbound), out (outbound), and bidirectional. For the domain type, only out is supported",
+      "help_en": "Required. The direction of the blocking. Valid values: in for inbound, out for outbound, and bidirectional for both directions. For the domain type, only out is supported",
       "help_zh": "调用时必填。in 表示入方向，out 表示出方向，bidirectional 表示双向；domain 类型仅支持 out",
       "location": "query",
       "name": "blocking_direction",
@@ -56,7 +56,7 @@
         "--blocking-direction"
       ],
       "raw_name": "BlockingDirection",
-      "required": true,
+      "required": false,
       "type": "string"
     },
     {
@@ -87,7 +87,7 @@
     },
     {
       "example": "0",
-      "help_en": "The expiration time of the blocking task. The value is a UNIX timestamp in milliseconds. If this parameter is omitted or set to 0, the blocking task never expires. A non-zero value cannot be earlier than the time when the API is called",
+      "help_en": "The expiration time of the blocking, specified as a UNIX timestamp in milliseconds. If this parameter is omitted or set to 0, the blocking never expires. A non-zero value cannot be earlier than the time when the API is called",
       "help_zh": "封禁过期时间，Unix 毫秒时间戳。省略或传 0 表示永不过期；非零值不得早于调用时刻",
       "location": "query",
       "name": "blocking_expire_time",
@@ -100,7 +100,7 @@
     },
     {
       "example": "zh",
-      "help_en": "The language parameter for compatibility. This parameter does not affect the business results or error messages of this API operation and is optional",
+      "help_en": "The language code for the returned information, such as zh or en. This parameter is compatible but does not affect the business results or error messages of this API. This parameter is optional",
       "help_zh": "兼容语言参数，当前不影响本接口的业务结果及错误说明，可不传",
       "location": "query",
       "name": "lang",
@@ -110,6 +110,262 @@
       "raw_name": "Lang",
       "required": false,
       "type": "string"
+    },
+    {
+      "element": {
+        "type": "string"
+      },
+      "example": "[\"cfw\"]",
+      "help_en": "The JSON array of products for blocking. Default value: cfw. Valid values: cfw and waf",
+      "help_zh": "封禁产品JSON数组，默认CFW；可选cfw、waf",
+      "location": "query",
+      "name": "blocking_product",
+      "options": [
+        "--blocking-product"
+      ],
+      "param_style": "json",
+      "raw_name": "BlockingProduct",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "example": "true",
+      "help_en": "Specifies whether to apply the blocking to all WAF instances. Valid values: true for all instances and false for specified instances. The current task is still executed based on the WafInstances list",
+      "help_zh": "记录用户选择的 WAF 实例范围。true 为全部实例，false 为指定实例。当前任务仍按 WafInstances 清单执行",
+      "location": "query",
+      "name": "waf_all_instances",
+      "options": [
+        "--waf-all-instances"
+      ],
+      "raw_name": "WafAllInstances",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "element": {
+        "fields": [
+          {
+            "example": "waf_v2_public_cn-n5m4v2pdk01",
+            "help_en": "The WAF instance ID",
+            "help_zh": "WAF实例ID",
+            "name": "instance_id",
+            "options": [
+              "--instance-id"
+            ],
+            "raw_name": "InstanceId",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "1089306842784234",
+            "help_en": "The UID of the Alibaba Cloud account or member accounts to which the instance belongs",
+            "help_zh": "实例所属主账号或成员账号UID",
+            "name": "member_uid",
+            "options": [
+              "--member-uid"
+            ],
+            "raw_name": "MemberUid",
+            "required": false,
+            "type": "int"
+          },
+          {
+            "example": "cn-hangzhou",
+            "help_en": "The region of the WAF instance",
+            "help_zh": "WAF站点",
+            "name": "region",
+            "options": [
+              "--region"
+            ],
+            "raw_name": "Region",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "type": "object"
+      },
+      "example": "[{\"MemberUid\":1089306842784234,\"Region\":\"cn-hangzhou\",\"InstanceId\":\"waf_v2_public_cn-n5m4v2pdk01\"}]",
+      "help_en": "The list of selected WAF instances. This parameter is required when waf is included in BlockingProduct. Even if all instances are selected, the complete list must be submitted",
+      "help_zh": "所选WAF固定实例清单；包含WAF时必传，全部也须提交完整清单",
+      "location": "query",
+      "name": "waf_instances",
+      "options": [
+        "--waf-instances"
+      ],
+      "param_style": "json",
+      "raw_name": "WafInstances",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "element": {
+        "fields": [
+          {
+            "example": "in",
+            "help_en": "The direction of the blocking. Valid values: in, out, and bidirectional",
+            "help_zh": "封禁方向：in / out / bidirectional",
+            "name": "blocking_direction",
+            "options": [
+              "--blocking-direction"
+            ],
+            "raw_name": "BlockingDirection",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "1.2.3.4",
+            "help_en": "The entity to block (IP address or domain name)",
+            "help_zh": "封禁的实体（IP 地址或域名）",
+            "name": "blocking_entity",
+            "options": [
+              "--blocking-entity"
+            ],
+            "raw_name": "BlockingEntity",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "1717106400000",
+            "help_en": "The expiration time of the blocking, specified as a UNIX timestamp in milliseconds. If this parameter is omitted or set to 0, the blocking never expires",
+            "help_zh": "封禁过期时间戳（毫秒），不传或传 0 表示永不过期",
+            "name": "blocking_expire_time",
+            "options": [
+              "--blocking-expire-time"
+            ],
+            "raw_name": "BlockingExpireTime",
+            "required": false,
+            "type": "int"
+          },
+          {
+            "element": {
+              "type": "string"
+            },
+            "example": "[\"cfw\"]",
+            "help_en": "The JSON array of products for blocking. Default value: cfw. Valid values: cfw and waf",
+            "help_zh": "封禁产品JSON数组，默认CFW；可选cfw、waf",
+            "name": "blocking_product",
+            "options": [
+              "--blocking-product"
+            ],
+            "raw_name": "BlockingProduct",
+            "required": false,
+            "type": "array"
+          },
+          {
+            "example": "高频SSH暴力破解",
+            "help_en": "The description of the blocking reason",
+            "help_zh": "标签，以顿号分隔，最多5个，总长不超过1024字符",
+            "name": "blocking_reason",
+            "options": [
+              "--blocking-reason"
+            ],
+            "raw_name": "BlockingReason",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "ip",
+            "help_en": "The type of the object to block. Valid values: ip and domain",
+            "help_zh": "封禁类型：ip / domain",
+            "name": "blocking_type",
+            "options": [
+              "--blocking-type"
+            ],
+            "raw_name": "BlockingType",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "evt-abc123",
+            "help_en": "The ID of the associated security event",
+            "help_zh": "关联的安全事件 UUID",
+            "name": "incident_id",
+            "options": [
+              "--incident-id"
+            ],
+            "raw_name": "IncidentId",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "example": "true",
+            "help_en": "Specifies whether to apply the blocking to all WAF instances. Valid values: true for all instances and false for specified instances. The current task is still executed based on the WafInstances list",
+            "help_zh": "记录用户选择的 WAF 实例范围。true 为全部实例，false 为指定实例。当前任务仍按 WafInstances 清单执行",
+            "name": "waf_all_instances",
+            "options": [
+              "--waf-all-instances"
+            ],
+            "raw_name": "WafAllInstances",
+            "required": false,
+            "type": "bool"
+          },
+          {
+            "element": {
+              "fields": [
+                {
+                  "example": "waf_v2_public_cn-n5m4v2pdk01",
+                  "help_en": "The WAF instance ID",
+                  "help_zh": "WAF实例ID",
+                  "name": "instance_id",
+                  "options": [
+                    "--instance-id"
+                  ],
+                  "raw_name": "InstanceId",
+                  "required": false,
+                  "type": "string"
+                },
+                {
+                  "example": "1089306842784234",
+                  "help_en": "The UID of the Alibaba Cloud account or member accounts to which the instance belongs",
+                  "help_zh": "实例所属主账号或成员账号UID",
+                  "name": "member_uid",
+                  "options": [
+                    "--member-uid"
+                  ],
+                  "raw_name": "MemberUid",
+                  "required": false,
+                  "type": "int"
+                },
+                {
+                  "example": "cn-hangzhou",
+                  "help_en": "The region of the WAF instance",
+                  "help_zh": "WAF站点",
+                  "name": "region",
+                  "options": [
+                    "--region"
+                  ],
+                  "raw_name": "Region",
+                  "required": false,
+                  "type": "string"
+                }
+              ],
+              "type": "object"
+            },
+            "example": "[{\"MemberUid\":1089306842784234,\"Region\":\"cn-hangzhou\",\"InstanceId\":\"waf_v2_public_cn-n5m4v2pdk01\"}]",
+            "help_en": "The list of selected WAF instances. This parameter is required when waf is included in BlockingProduct. Even if all instances are selected, the complete list must be submitted",
+            "help_zh": "所选WAF固定实例清单；包含WAF时必传，全部也须提交完整清单",
+            "name": "waf_instances",
+            "options": [
+              "--waf-instances"
+            ],
+            "raw_name": "WafInstances",
+            "required": false,
+            "type": "array"
+          }
+        ],
+        "type": "object"
+      },
+      "example": "[{\"BlockingType\":\"ip\",\"BlockingEntity\":\"198.51.100.10\",\"BlockingDirection\":\"in\",\"BlockingReason\":\"高频SSH暴力破解\",\"IncidentId\":\"evt-abc123\",\"BlockingExpireTime\":0,\"BlockingProduct\":[\"cfw\"],\"WafInstances\":[{\"MemberUid\":1089306842784234,\"Region\":\"cn-hangzhou\",\"InstanceId\":\"waf_v2_public_cn-n5m4v2pdk01\"}]}]",
+      "help_en": "The complete configuration for batch blocking. Each item can specify different instances. If this parameter is not empty, the top-level single-item fields are ignored. A maximum of 100 items are supported",
+      "help_zh": "批量封禁完整配置，每项可选择不同实例；非空时忽略顶层单条字段，最多100项",
+      "location": "query",
+      "name": "policies",
+      "options": [
+        "--policies"
+      ],
+      "param_style": "json",
+      "raw_name": "Policies",
+      "required": false,
+      "type": "array"
     }
   ],
   "pathPattern": "/",
@@ -130,32 +386,57 @@
             "properties": {
               "TaskItems": {
                 "backendName": "taskItems",
-                "description_en": "The list of blocking tasks created in the current request. One task is created for unidirectional blocking, and two tasks are created for bidirectional blocking. Successful creation does not indicate that the blocking has taken effect",
+                "description_en": "The list of blocking tasks created in the request. One task is created for unidirectional blocking, and two tasks are created for bidirectional blocking. Successful creation does not indicate that the blocking has taken effect",
                 "description_zh": "本次创建的封禁任务列表，单向一条、双向两条；成功创建不表示封禁已生效",
+                "example": "[{\"TaskUuid\":\"550e8400-e29b-41d4-a716-446655440000\",\"BlockingType\":\"ip\",\"BlockingEntity\":\"198.51.100.10\",\"BlockingDirection\":\"in\",\"TaskType\":6,\"BlockingProduct\":[\"cfw\"]}]",
                 "itemName": "TaskItem",
                 "items": {
-                  "description_en": "The information about an asynchronous task created in the current request",
+                  "description_en": "The information about an asynchronous task created in the request",
                   "description_zh": "一条本次新建的异步任务信息",
                   "properties": {
                     "BlockingDirection": {
                       "backendName": "blockingDirection",
-                      "description_en": "The direction of the asynchronous task. A value of in indicates the inbound direction, and a value of out indicates the outbound direction. A bidirectional operation is split into two tasks",
+                      "description_en": "The direction of the asynchronous task. Valid values:\nin: inbound.\nout: outbound.\nBidirectional operations are split into two tasks",
                       "description_zh": "本条异步任务的方向，in 表示入方向，out 表示出方向；双向操作拆成两条任务",
                       "example": "in",
+                      "title_en": "云防火墙封禁方向：in入向、out出向、bidirectional双向；WAF执行入向封禁",
+                      "title_zh": "云防火墙封禁方向：in入向、out出向、bidirectional双向；WAF执行入向封禁",
                       "type": "string"
                     },
                     "BlockingEntity": {
                       "backendName": "blockingEntity",
-                      "description_en": "The IPv4 address or domain name of the object to block",
+                      "description_en": "The IPv4 address or domain name of the blocked object",
                       "description_zh": "封禁对象的 IPv4 地址或域名",
                       "example": "203.0.113.10",
+                      "title_en": "封禁实体值，类型为ip时填写IP地址，类型为domain时填写域名",
+                      "title_zh": "封禁实体值，类型为ip时填写IP地址，类型为domain时填写域名",
                       "type": "string"
+                    },
+                    "BlockingProduct": {
+                      "backendName": "blockingProduct",
+                      "description_en": "The blocking product. Valid values:\ncfw: Cloud Firewall.\nwaf: Web Application Firewall (WAF)",
+                      "description_zh": "封禁产品，cfw表示云防火墙，waf表示Web应用防火墙",
+                      "example": "[\"cfw\"]",
+                      "itemName": "Item",
+                      "items": {
+                        "description_en": "The identifier of the product for blocking. Valid values: cfw for Cloud Firewall and waf for Web Application Firewall (WAF)",
+                        "description_zh": "封禁产品标识：cfw为云防火墙，waf为Web应用防火墙",
+                        "example": "cfw",
+                        "title_en": "封禁产品标识：cfw为云防火墙，waf为Web应用防火墙",
+                        "title_zh": "封禁产品标识：cfw为云防火墙，waf为Web应用防火墙",
+                        "type": "string"
+                      },
+                      "title_en": "封禁产品，cfw表示云防火墙，waf表示Web应用防火墙",
+                      "title_zh": "封禁产品，cfw表示云防火墙，waf表示Web应用防火墙",
+                      "type": "array"
                     },
                     "BlockingType": {
                       "backendName": "blockingType",
-                      "description_en": "The object type. A value of ip indicates an IPv4 address, and a value of domain indicates a domain name",
+                      "description_en": "The object type of the blocked entity. Valid values:\nip: IPv4 address.\ndomain: domain name",
                       "description_zh": "封禁对象类型。ip 表示 IPv4 地址，domain 表示域名",
                       "example": "ip",
+                      "title_en": "封禁实体类型，ip表示IP地址，domain表示域名",
+                      "title_zh": "封禁实体类型，ip表示IP地址，domain表示域名",
                       "type": "string"
                     },
                     "TaskType": {
@@ -164,18 +445,24 @@
                       "description_zh": "本条任务的类型，固定为 0，表示手动封禁",
                       "example": "0",
                       "format": "int32",
+                      "title_en": "操作类型：0手动封禁、1系统封禁、2手动解封、3系统解封、4编辑、5删除、6批量封禁、7应急暂停、8应急恢复",
+                      "title_zh": "操作类型：0手动封禁、1系统封禁、2手动解封、3系统解封、4编辑、5删除、6批量封禁、7应急暂停、8应急恢复",
                       "type": "integer"
                     },
                     "TaskUuid": {
                       "backendName": "taskUuid",
-                      "description_en": "The UUID of the newly created node. You can pass this UUID to the TaskUuids parameter of DescribeBlockingTaskStatus to query the execution result",
+                      "description_en": "The UUID of the node for this create task. You can pass this UUID to the TaskUuids parameter of DescribeBlockingTaskStatus to execute a query for the result",
                       "description_zh": "本条新建任务的 UUID，可传入 DescribeBlockingTaskStatus 的 TaskUuids 查询执行结果",
                       "example": "11111111-2222-4333-8444-555555555555",
+                      "title_en": "封禁任务唯一标识，用于查询执行状态和操作详情",
+                      "title_zh": "封禁任务唯一标识，用于查询执行状态和操作详情",
                       "type": "string"
                     }
                   },
                   "type": "object"
                 },
+                "title_en": "已受理任务；实际执行结果需查询任务状态",
+                "title_zh": "已受理任务；实际执行结果需查询任务状态",
                 "type": "array"
               }
             },
@@ -183,7 +470,7 @@
           },
           "ErrorCode": {
             "backendName": "errorCode",
-            "description_en": "The error code returned when the request fails. If the request is successful, an empty string is returned. For example, InvalidParam indicates that the request parameters are invalid, which is not an error code for a successful response",
+            "description_en": "The error code returned when the request fails. The value is an empty string if the request is successful. For example, InvalidParam indicates that the request parameters are invalid and is not an error code for a successful response",
             "description_zh": "请求失败时的错误码；成功时为空字符串。示例 InvalidParam 表示请求参数无效，不代表成功响应的错误码",
             "example": "InvalidParam",
             "title_en": "错误码",
@@ -210,7 +497,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the API call is successful. A value of true indicates that the request is processed successfully, and a value of false indicates that the request fails. For an asynchronous API operation, a success response does not indicate that the task has been executed",
+            "description_en": "Indicates whether the API call is successful. A value of true indicates that the request is processed successfully, and a value of false indicates that the request fails. For asynchronous APIs, a value of true does not indicate that the task is completed",
             "description_zh": "本次接口调用是否成功。true 表示请求处理成功，false 表示失败；异步接口的成功不表示任务已经执行完成",
             "example": "true",
             "title_en": "操作是否成功",
