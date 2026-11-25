@@ -3,7 +3,7 @@
   "cmd_full_name": "cs attach-instances-to-node-pool",
   "cmd_name": "attach-instances-to-node-pool",
   "deprecated": false,
-  "description_en": "Adds existing ECS instances to an ACK cluster as worker nodes, or re-adds removed node instances to a node pool. You can invoke AttachInstancesToNodePool to add existing nodes to a node pool",
+  "description_en": "Adds existing ECS instances to a node pool in an ACK cluster as worker nodes, or re-adds removed worker node instances to a node pool",
   "description_zh": "如果需要将已有ECS实例添加到ACK集群中作为Worker节点，或移除Worker节点后需将节点实例重新加入节点池，您可以调用AttachInstancesToNodePool将已有节点添加到节点池",
   "kebab_example": "aliyun cs attach-instances-to-node-pool --cluster-id c82e6987e2961451182edacd74faf0000 --nodepool-id np31da1b38983f4511b490fc62108a0000 --region cn-hangzhou",
   "method": "POST",
@@ -15,6 +15,7 @@
     "api_version": "2015-12-15",
     "body_mapping": {
       "format_disk": "format_disk",
+      "format_disk_option": "format_disk_option",
       "instances": "instances",
       "keep_instance_name": "keep_instance_name",
       "password": "password"
@@ -56,7 +57,7 @@
     },
     {
       "example": "false",
-      "help_en": "[Deprecated] Use `format_disk_option` instead.\n\n`true`: Equivalent to setting `format_disk_option` to `DataDisk`.\n`false`: Equivalent to setting `format_disk_option` to `SystemDisk`",
+      "help_en": "[Deprecated] Use `format_disk_option` instead. Valid values:\n\n`true`: equivalent to setting `format_disk_option` to `DataDisk`.\n`false`: equivalent to setting `format_disk_option` to `SystemDisk`",
       "help_zh": "【已废弃】请使用`format_disk_option`\n\n`true`: 等价于`format_disk_option`为`DataDisk`。\n`false`: 等价于`format_disk_option`为`SystemDisk`",
       "location": "body",
       "name": "format_disk",
@@ -67,6 +68,25 @@
       "raw_name": "format_disk",
       "required": false,
       "type": "bool"
+    },
+    {
+      "enum": [
+        "SystemDisk",
+        "DataDisk",
+        "NodePoolDiskConfig"
+      ],
+      "example": "NodePoolDiskConfig",
+      "help_en": "The disk formatting method. This parameter is mutually exclusive with `format_disk` set to `true`. Valid values:\n\n`SystemDisk`: No additional initialization is performed. Container runtime data is stored on the system cloud disk or any disk that is already mounted to the relevant directory during import.\n`DataDisk`: If a data cloud disk or local disk is mounted, the last disk is formatted and mounted to store container runtime data.\n`NodePoolDiskConfig`: Initializes data cloud disks based on the configuration of the imported node pool. Cloud disks and elastic ephemeral disks are matched based on the `disk_name` field of the node pool and the `DiskName` field of the block storage. Local disks are matched sequentially based on the PCI address order. Node pool configurations that do not match any disk are ignored.\n\n<warning>The `DataDisk` option is retained only for historical compatibility and is strongly discouraged.\nThis option uses the last disk in lexicographical order of device names under `/dev` (NVMe is preferred). Note that nvme9 takes precedence over nvme10. Operating systems with newer kernels such as Alinux 4 cannot guarantee a stable device order.\n</warning>\n\nDisks with recognizable file systems during import skip the formatting step and are mounted directly",
+      "help_zh": "格式化磁盘的方式，不能与`format_disk`为`true`同时指定。取值：\n\n`SystemDisk`: 不执行额外初始化操作，容器运行时数据将存储在系统盘，或任何在导入时已经挂载在相关目录的盘上。\n`DataDisk`: 如已挂载数据盘或本地盘，格式化并挂载最后一块盘用于存储容器运行时数据。\n`NodePoolDiskConfig`: 按导入的节点池的配置初始化数据盘。云盘/弹性临时盘按照节点池`disk_name`字段和块存储的`DiskName`字段匹配。本地盘按PCI地址顺序依次匹配。未匹配到对应磁盘的节点池配置将被忽略。\n\n<warning>`DataDisk`选项仅因历史兼容性原因保留，强烈不推荐使用。\n该选项使用`/dev`下设备名字按典序最后一块盘（优先使用NVMe），注意nvme9将优先于nvme10。Alinux 4等较新内核的操作系统无法保证稳定设备顺序。\n</warning>\n\n导入时已有可识别文件系统的磁盘会跳过格式化步骤，并直接挂载",
+      "location": "body",
+      "name": "format_disk_option",
+      "options": [
+        "--format-disk-option"
+      ],
+      "param_style": "json",
+      "raw_name": "format_disk_option",
+      "required": false,
+      "type": "string"
     },
     {
       "element": {
