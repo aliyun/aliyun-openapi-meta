@@ -1,11 +1,11 @@
 {
-  "camel_example": "",
+  "camel_example": "aliyun maxcompute GET /api/v1/ai/artifacts --region cn-hangzhou --archived true --search '订单看板' --managedOnly true --conversationId '123456789012****#cn-shanghai#1ee04bea-0488-46b6-b85b-827e3cd37e55' --nextToken 'eyJvZmZzZXQiOjUwfQ==' --maxResults 50 --type report --header \"Content-Type=application/json\"",
   "cmd_full_name": "maxcompute list-artifacts",
   "cmd_name": "list-artifacts",
   "deprecated": false,
-  "description_en": "Performs a paging query to retrieve the list of analysis artifacts for the current account, and supports filtering by conversation and artifact type",
+  "description_en": "Queries the list of analysis artifacts for the current account with paging, and supports filtering by session and artifact type",
   "description_zh": "分页查询当前账号的分析产物列表，支持按会话和产物类型过滤",
-  "kebab_example": "",
+  "kebab_example": "aliyun maxcompute list-artifacts --conversation-id '123456789012****#cn-shanghai#1ee04bea-0488-46b6-b85b-827e3cd37e55' --type report --next-token eyJvZmZzZXQiOjUwfQ== --managed-only true --archived true --search '订单看板' --max-results 50 --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
   "name": "ListArtifacts",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "123456789012****#cn-shanghai#1ee04bea-0488-46b6-b85b-827e3cd37e55",
-      "help_en": "The conversation ID used to filter the results. Only artifacts generated in this conversation are returned. If you leave this parameter empty, all artifacts of the current account are returned",
+      "help_en": "Filters the results by conversation ID to return only the artifacts generated in the specified conversation. If left empty, all artifacts of the current account are returned",
       "help_zh": "按会话ID过滤，仅返回该会话产生的产物。留空时返回当前账号的全部产物",
       "location": "query",
       "name": "conversation_id",
@@ -35,7 +35,7 @@
     },
     {
       "example": "report",
-      "help_en": "The artifact type used to filter the results. Valid values: dataset, table, chart, dashboard, report, sql, python, maxframe, and udf. If you leave this parameter empty, artifacts of all types are returned",
+      "help_en": "Filters the results by artifact type. Valid values: dataset, table, chart, dashboard, report, sql, python, maxframe, and udf. If left empty, artifacts of all types are returned",
       "help_zh": "产物类型过滤。取值：dataset（数据集）、table（表格）、chart（图表）、dashboard（仪表盘）、report（报告）、sql（SQL）、python（Python）、maxframe（MaxFrame）、udf（UDF）。留空时返回全部类型",
       "location": "query",
       "name": "type",
@@ -60,8 +60,8 @@
       "type": "string"
     },
     {
-      "help_en": "Specifies whether to return only managed dashboards. If you set this parameter to true, only dashboard-type artifacts with dashboard.schemaVersion set to 1 in the metadata are returned. Default value: false, which indicates that all artifacts are returned",
-      "help_zh": "是否仅返回受管看板。取值为 true 时仅返回元数据中 dashboard.schemaVersion 为 1 的 dashboard 类型 Artifact；默认 false，返回全部 Artifact",
+      "help_en": "Specifies whether to return only managed dashboards. Default value: false. When set to true, you can use the archived parameter to filter the archive status of dashboards",
+      "help_zh": "是否只返回托管看板。默认 `false`。设置为 `true` 时可使用 `archived` 筛选看板归档状态",
       "location": "query",
       "name": "managed_only",
       "options": [
@@ -72,8 +72,8 @@
       "type": "bool"
     },
     {
-      "help_en": "Filters managed dashboards by archive status. This parameter takes effect only when managedOnly is set to true. If you set this parameter to true, only archived dashboards are returned. If you set this parameter to false, only unarchived dashboards are returned. If you do not specify this parameter, dashboards are not filtered by archive status",
-      "help_zh": "按归档状态筛选受管看板，仅在 managedOnly 为 true 时生效。true 仅返回已归档看板，false 仅返回未归档看板；不传则不按归档状态筛选",
+      "help_en": "The archive filter for managed dashboards. This parameter requires managedOnly to be set to true. Set to true to query archived dashboards, or false to query unarchived dashboards. If omitted, dashboards in both states are returned",
+      "help_zh": "托管看板的归档筛选条件，要求 `managedOnly=true`。`true` 查询已归档看板，`false` 查询未归档看板。省略时返回两种状态",
       "location": "query",
       "name": "archived",
       "options": [
@@ -85,8 +85,8 @@
     },
     {
       "example": "订单看板",
-      "help_en": "Searches for artifacts by title keyword using literal substring matching. The percent sign (%) and underscore (_) are treated as regular characters rather than wildcards. If you do not specify this parameter, artifacts are not filtered by title",
-      "help_zh": "按标题关键字搜索 Artifact，字面子串匹配，% 和 _ 按普通字符处理而非通配符；不传则不按标题筛选",
+      "help_en": "Queries records whose artifact titles contain the specified text. The maximum length is 200 characters. The filter conditions from the initial query are applied during pagination",
+      "help_zh": "按产物标题查询包含该文本的记录，最多 200 个字符。翻页时沿用首次查询的筛选条件",
       "location": "query",
       "name": "search",
       "options": [
@@ -133,7 +133,7 @@
                   "properties": {
                     "artifactId": {
                       "backendName": "artifactId",
-                      "description_en": "The artifact ID, which uniquely identifies an analysis artifact",
+                      "description_en": "The artifact ID. It uniquely identifies an analysis artifact",
                       "description_zh": "产物ID，唯一标识一个分析产物",
                       "example": "01J5ZKQ8M7N2P4R6T8V0W2X4Y6",
                       "type": "string"
@@ -208,7 +208,7 @@
               },
               "maxResults": {
                 "backendName": "maxResults",
-                "description_en": "The maximum number of entries returned in the current request",
+                "description_en": "The maximum number of entries to return for the current request",
                 "description_zh": "本次请求的最大返回条数",
                 "example": "50",
                 "format": "int32",
@@ -216,7 +216,7 @@
               },
               "nextToken": {
                 "backendName": "nextToken",
-                "description_en": "The pagination token for the next page. If this field is an empty string, no more data is available",
+                "description_en": "The pagination token for the next page. An empty string indicates that no more data is available",
                 "description_zh": "下一页分页标记。为空字符串时表示没有更多数据",
                 "example": "eyJvZmZzZXQiOjUwfQ==",
                 "type": "string"
@@ -226,7 +226,7 @@
           },
           "errorCode": {
             "backendName": "errorCode",
-            "description_en": "The error code. This field is not returned if the call is successful. If the call fails, a specific error code is returned to help you identify the cause of the error",
+            "description_en": "The error code. This field is not returned if the call is successful. If the call fails, a specific error code is returned to help identify the cause of the error",
             "description_zh": "错误码。调用成功时不返回该字段；调用失败时返回具体错误码，用于定位错误原因",
             "example": "InvalidParameter",
             "type": "string"
@@ -248,7 +248,7 @@
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The request ID, which uniquely identifies the request. You can use this ID for troubleshooting and log correlation",
+            "description_en": "The request ID. It uniquely identifies the request and can be used for troubleshooting and log correlation",
             "description_zh": "请求ID，唯一标识本次请求，可用于问题排查与日志关联",
             "example": "A3F5B7C9-1D2E-4F6A-8B9C-0D1E2F3A4B5C",
             "type": "string"

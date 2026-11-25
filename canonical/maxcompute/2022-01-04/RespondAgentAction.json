@@ -1,11 +1,11 @@
 {
-  "camel_example": "",
+  "camel_example": "aliyun maxcompute POST /api/v1/ai/chat/respond --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"decision\":\"allow-once\",\"conversationId\":\"123456789012****#cn-shanghai#1ee04bea-0488-46b6-b85b-827e3cd37e55\",\"actionId\":\"exec:01J5ZKQ8M7N2P4R6T8V0W2X4Y6\"}'",
   "cmd_full_name": "maxcompute respond-agent-action",
   "cmd_name": "respond-agent-action",
   "deprecated": false,
-  "description_en": "Responds to pending approval operations or clarification questions generated during an agent run to allow the agent to continue execution",
+  "description_en": "Responds to pending confirmation operations (approvals) or clarification questions generated during an agent run to allow the agent to continue execution",
   "description_zh": "响应Agent运行中产生的待确认操作（审批）或澄清问题，使Agent继续执行",
-  "kebab_example": "",
+  "kebab_example": "aliyun maxcompute respond-agent-action --conversation-id '123456789012****#cn-shanghai#1ee04bea-0488-46b6-b85b-827e3cd37e55' --action-id exec:01J5ZKQ8M7N2P4R6T8V0W2X4Y6 --decision allow-once --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "RespondAgentAction",
@@ -34,7 +34,7 @@
   "parameters": [
     {
       "example": "exec:01J5ZKQ8M7N2P4R6T8V0W2X4Y6",
-      "help_en": "The ID of the operation to respond to. This value is obtained from the action_id field of the action event in the ChatSse event stream",
+      "help_en": "The ID of the operation to be responded to. This value is obtained from the action_id field of the action event in the ChatSse event stream",
       "help_zh": "待响应操作的ID，来自ChatSse事件流中action事件的action_id字段",
       "location": "body",
       "name": "action_id",
@@ -48,7 +48,7 @@
     },
     {
       "example": "exec",
-      "help_en": "The operation type. Valid values: exec (command execution approval), plugin (plugin operation approval), and question (clarification question). If this parameter is not specified, the value is inferred from the prefix of actionId",
+      "help_en": "The operation type. Valid values: exec (command execution approval), plugin (plugin operation approval), and question (clarification question). If this parameter is not specified, the value is inferred based on the prefix of the actionId",
       "help_zh": "操作类型。取值：exec（命令执行审批）、plugin（插件操作审批）或question（澄清问题）。不传时按actionId前缀推断",
       "location": "body",
       "name": "action_kind",
@@ -90,7 +90,7 @@
     },
     {
       "example": "allow-once",
-      "help_en": "The approval decision. This parameter is required for approval operations. Valid values: allow-once (allows the operation for this time only) and deny (rejects the operation). The value allow-always is not supported. This field is ignored for question operations. Use optionIds and freeText to provide answers instead",
+      "help_en": "The approval decision. This parameter is required for approval operations. Valid values: allow-once (allow this time) and deny (reject). The value allow-always is not accepted. This field is ignored for question operations. Use optionIds and freeText to provide answers instead",
       "help_zh": "审批决定。审批类操作必传，取值：allow-once（本次允许）或deny（拒绝），不接受allow-always。question类操作忽略此字段，改用optionIds与freeText作答",
       "location": "body",
       "name": "decision",
@@ -120,7 +120,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The list of option IDs for question operations. A maximum of six items are allowed. A maximum of one item is allowed for single-choice questions. Zero items are allowed, but a non-empty freeText value must be provided in this case",
+      "help_en": "The list of option IDs for question operations. A maximum of 6 items are allowed. For single-choice questions, a maximum of 1 item is allowed. 0 items are allowed, but a non-empty freeText value must be provided in this case",
       "help_zh": "question类操作的选项ID列表，最多6项；单选问题最多1项。允许0项，但此时必须提供非空freeText",
       "location": "body",
       "name": "option_ids",
@@ -134,7 +134,7 @@
     },
     {
       "example": "补充说明",
-      "help_en": "The reserved field. This field is currently not consumed by the server",
+      "help_en": "A reserved field. This field is not consumed by the server",
       "help_zh": "预留字段，当前服务端不消费",
       "location": "body",
       "name": "response_text",
@@ -163,7 +163,7 @@
             "properties": {
               "actionId": {
                 "backendName": "actionId",
-                "description_en": "The ID of the operation that was responded to",
+                "description_en": "The ID of the responded operation",
                 "description_zh": "被响应的操作ID",
                 "example": "exec:01J5ZKQ8M7N2P4R6T8V0W2X4Y6",
                 "type": "string"
@@ -191,7 +191,7 @@
               },
               "response": {
                 "backendName": "response",
-                "description_en": "The detailed result of the operation processing. If the response fails, this field contains the cause of the failure. For example, empty_answer indicates that no answer was provided for a question operation, and unsupported_decision indicates that the approval decision is not accepted. In the latter case, allowedDecisions is returned to list the valid values",
+                "description_en": "The detailed result of the operation processing. If the response fails, this field contains the cause of the failure, such as empty_answer (no answer provided for a question operation) or unsupported_decision (the approval decision is not accepted, and allowedDecisions is returned to list the valid values)",
                 "description_zh": "操作处理的详细结果。响应失败时包含失败原因，例如empty_answer（question类未提供答案）、unsupported_decision（审批决定不被接受，同时返回allowedDecisions列出可选值）",
                 "properties": {
                   "id": {
@@ -220,14 +220,14 @@
               },
               "runId": {
                 "backendName": "runId",
-                "description_en": "The agent run ID to which the operation belongs. This field is an empty string if the operation is not associated with a run",
+                "description_en": "The agent run ID to which the operation belongs. If the operation is not associated with a run, an empty string is returned",
                 "description_zh": "操作所属的Agent运行ID。未关联运行时为空字符串",
                 "example": "9f8e7d6c5b4a39281706f5e4d3c2b1a0",
                 "type": "string"
               },
               "success": {
                 "backendName": "success",
-                "description_en": "Indicates whether the response to the operation was successful",
+                "description_en": "Indicates whether the operation was successfully responded to",
                 "description_zh": "是否成功响应该操作",
                 "type": "boolean"
               }
@@ -273,7 +273,7 @@
   "timeout_ms": 17000,
   "v1_body_parameters": [
     {
-      "help_en": "The request body for the response",
+      "help_en": "The request body",
       "help_zh": "响应请求体",
       "name": "body",
       "param_style": "json",

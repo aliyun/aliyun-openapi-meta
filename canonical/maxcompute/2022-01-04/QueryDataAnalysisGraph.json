@@ -1,11 +1,11 @@
 {
-  "camel_example": "",
+  "camel_example": "aliyun maxcompute POST /api/v1/ai/data-graphs/global-graph --region cn-hangzhou --header \"Content-Type=application/json\" --body '{\"sourceKey\":\"metadata/odps_project/sales_orders\",\"relationType\":\"REFERENCES\",\"taskRoots\":true,\"maxNodes\":800,\"maxEdges\":3000,\"skeleton\":true,\"view\":\"global\",\"zone\":\"metadata\",\"scope\":[\"metadata\"],\"datasourceId\":\"ds-01J5ZKQ8M7N2P4R6\",\"limit\":100,\"domainRootsOnly\":true,\"datasourceName\":\"销售数据源\",\"key\":\"metadata/odps_project/sales_orders\",\"matchMode\":\"exact\",\"direction\":\"out\",\"zoneMode\":\"all\",\"query\":\"销售订单\",\"label\":\"table\",\"targetKey\":\"metadata/odps_project/customers\",\"datasourceType\":\"maxcompute\",\"maxTaskRoots\":40,\"size\":100,\"usageFilter\":true,\"domain\":\"销售域\",\"hops\":1,\"page\":1,\"operation\":\"search\"}'",
   "cmd_full_name": "maxcompute query-data-analysis-graph",
   "cmd_name": "query-data-analysis-graph",
   "deprecated": false,
-  "description_en": "Queries the data analytics graph. If the operation parameter is not specified, the full graph is returned based on the data source. If the operation parameter is specified, the corresponding incremental graph operation is executed, such as business domain query, node expansion, search, and data source directory listing",
+  "description_en": "Queries the data analytics graph. If the operation parameter is not specified, the full graph is returned based on the data source. If the operation parameter is specified, the corresponding incremental graph operation is performed, such as business domain query, node expansion, search, and data source directory retrieval",
   "description_zh": "查询数据分析图谱。不传operation时按数据源返回全量图谱；传入operation时执行对应的增量图谱操作，如业务域查询、节点展开、搜索与数据源目录",
-  "kebab_example": "",
+  "kebab_example": "aliyun maxcompute query-data-analysis-graph --datasource-id ds-01J5ZKQ8M7N2P4R6 --operation search --view global --key metadata/odps_project/sales_orders --domain '销售域' --query '销售订单' --direction out --source-key metadata/odps_project/sales_orders --target-key metadata/odps_project/customers --relation-type REFERENCES --page 1 --size 100 --datasource-name '销售数据源' --datasource-type maxcompute --limit 100 --zone metadata --label table --scope metadata --match-mode exact --hops 1 --usage-filter true --max-nodes 800 --max-edges 3000 --domain-roots-only true --skeleton true --zone-mode all --task-roots true --max-task-roots 40 --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "QueryDataAnalysisGraph",
@@ -54,7 +54,7 @@
   "parameters": [
     {
       "example": "ds-01J5ZKQ8M7N2P4R6",
-      "help_en": "The data source ID. The length is 1 to 256 characters. This parameter is required for full graph queries. For incremental operations, only the global and datasources operations support this parameter",
+      "help_en": "The data source ID. The length is 1 to 256 characters. This parameter is required for full graph queries. For incremental operations, only global and datasources support this parameter",
       "help_zh": "数据源ID，长度1~256个字符。全量图谱查询时必填；增量操作仅global和datasources支持该参数",
       "location": "body",
       "name": "datasource_id",
@@ -179,7 +179,7 @@
     },
     {
       "example": "100",
-      "help_en": "The maximum number of returned entries. Valid values: 1 to 2000. The upper limit varies by operation: the maximum value for search is 100 (default: 100), the maximum value for searchSubgraph is 200 (default: 100), the maximum value for crossGraph is 500 (default: 500), and the default value for expandNode and expandLayer is 500",
+      "help_en": "The maximum number of returned entries. Valid values: 1 to 2000. The limit varies by operation: the maximum value for search is 100 (default: 100), the maximum value for searchSubgraph is 200 (default: 100), the maximum value for crossGraph is 500 (default: 500), and the default value for expandNode and expandLayer is 500",
       "help_zh": "返回条数上限，取值范围1~2000。各操作上限不同：search最大100（默认100），searchSubgraph最大200（默认100），crossGraph最大500（默认500），expandNode和expandLayer默认500",
       "location": "body",
       "name": "limit",
@@ -307,7 +307,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The search partition scope. Valid values: metadata (metadata), trace (trace), and knowledge (knowledge). A maximum of three values can be specified. This parameter is used for the searchSubgraph operation. If this parameter is not specified, the default value is all partitions for the own view and metadata for the global view",
+      "help_en": "The search partition scope. Valid values: metadata (metadata), trace (trace), and knowledge (knowledge). A maximum of three values can be specified. This parameter is used for the searchSubgraph operation. If this parameter is not specified, all partitions are used by default for the own view, and metadata is used by default for the global view",
       "help_zh": "搜索分区范围。取值：metadata（元数据）、trace（链路）、knowledge（知识），最多3项。searchSubgraph操作使用；不传时own视图默认全部分区，global视图默认metadata",
       "location": "body",
       "name": "scope",
@@ -348,7 +348,7 @@
     },
     {
       "example": "metadata/odps_project/sales_orders",
-      "help_en": "The node key of the edge start point. The maximum length is 2,000 characters. This parameter is required for the edge operation",
+      "help_en": "The source node key of the edge. The maximum length is 2,000 characters. This parameter is required for the edge operation",
       "help_zh": "边起点节点键，最长2000个字符。edge操作必填",
       "location": "body",
       "name": "source_key",
@@ -362,7 +362,7 @@
     },
     {
       "example": "metadata/odps_project/customers",
-      "help_en": "The node key of the edge end point. The maximum length is 2,000 characters. This parameter is required for the edge operation",
+      "help_en": "The target node key of the edge. The maximum length is 2,000 characters. This parameter is required for the edge operation",
       "help_zh": "边终点节点键，最长2000个字符。edge操作必填",
       "location": "body",
       "name": "target_key",
@@ -452,7 +452,7 @@
         "properties": {
           "data": {
             "backendName": "data",
-            "description_en": "The graph query result payload. A full graph query returns an object that contains the ok and data fields. The data field contains the nodes (node list) and edges (edge list). An incremental operation returns the result of the corresponding operation. For example, the datasources operation returns a pagination structure that includes records, total, size, and page, and the domains operation returns a domains list",
+            "description_en": "The graph query result payload. A full graph query returns an object containing ok and data, where data includes nodes (node list) and edges (edge list). An incremental operation returns the result of the corresponding operation. For example, datasources returns a pagination structure containing records, total, size, and page, and domains returns a domains list",
             "description_zh": "图谱查询结果载荷。全量图谱查询返回包含ok与data的对象，data内含nodes（节点列表）与edges（边列表）；增量操作返回对应操作的结果，例如datasources返回records、total、size、page分页结构，domains返回domains列表",
             "example": "{\"ok\":true,\"data\":{\"nodes\":[],\"edges\":[]}}",
             "type": "any"
@@ -481,7 +481,7 @@
           },
           "isSuccess": {
             "backendName": "isSuccess",
-            "description_en": "Indicates whether the call is successful. A value of true indicates success, and a value of false indicates failure. If the call fails, use the errorCode and errorMsg fields to identify the cause",
+            "description_en": "Indicates whether the call is successful. A value of true indicates success, and a value of false indicates failure. If the call fails, check the errorCode and errorMsg fields to identify the cause",
             "description_zh": "调用是否成功。true表示成功，false表示失败；失败时结合errorCode与errorMsg定位原因",
             "type": "boolean"
           },
@@ -506,7 +506,7 @@
   "timeout_ms": 62000,
   "v1_body_parameters": [
     {
-      "help_en": "The graph query request body. If the operation parameter is not specified, the request is processed as a full graph query, and the datasourceId parameter is required. If the operation parameter is specified, the request is processed as an incremental graph operation. For the applicable operations of each parameter, refer to the field descriptions",
+      "help_en": "The graph query request body. If the operation parameter is not specified, the request is processed as a full graph query, and datasourceId is required. If the operation parameter is specified, the request is processed as an incremental graph operation. For the applicable operations of each parameter, see the field descriptions",
       "help_zh": "图谱查询请求体。不传operation时按全量图谱查询处理，此时datasourceId必填；传入operation时按增量图谱操作处理，各参数的适用操作见字段说明",
       "name": "body",
       "param_style": "json",
