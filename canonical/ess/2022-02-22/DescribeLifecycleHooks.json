@@ -2,7 +2,7 @@
   "cmd_full_name": "ess describe-lifecycle-hooks",
   "cmd_name": "describe-lifecycle-hooks",
   "deprecated": false,
-  "description_en": "Queries the details of lifecycle hooks by specifying lifecycle hook IDs or scaling group IDs. The returned information includes the next action after the wait state ends, the scaling activity type associated with the lifecycle hook, the notification recipient identifier, and the suspension wait time",
+  "description_en": "Queries the information of lifecycle hooks by specifying lifecycle hook IDs or scaling group IDs. The information includes the next action to perform after the wait state ends, the scaling activity type associated with the lifecycle hook, the notification recipient identifier, and the suspension wait time",
   "description_zh": "调用DescribeLifecycleHooks通过指定生命周期挂钩ID或伸缩组ID来查询生命周期挂钩的信息，包括等待状态结束后的下一步动作、生命周期挂钩对应的伸缩活动类型、通知对象标识符、挂起等待时间等",
   "kebab_example": "aliyun ess describe-lifecycle-hooks --scaling-group-id 'asg-bp1igpak5ft1flyp****' --lifecycle-hook-name 'lifecyclehook****' --page-number 1 --page-size 50 --lifecycle-hook-ids '[\"ash-bp1at9ufhmcf9cmy****\"]' --biz-region-id cn-hangzhou --api-version 2022-02-22 --region cn-hangzhou",
   "method": "GET|POST",
@@ -21,7 +21,7 @@
   "parameters": [
     {
       "example": "asg-bp1igpak5ft1flyp****",
-      "help_en": "The ID of the scaling group",
+      "help_en": "The ID of the scaling group.\nConditionally required: You must specify at least one of LifecycleHookIds or ScalingGroupId when you query lifecycle hooks. If you specify only RegionId without specifying either of the two parameters, a 400 InvalidParameter error is returned",
       "help_zh": "伸缩组的ID。\n条件必填：查询时必须指定 LifecycleHookIds 或 ScalingGroupId 中的至少一个；仅指定 RegionId 而不指定二者会返回 400 InvalidParameter 错误",
       "location": "query",
       "name": "scaling_group_id",
@@ -60,7 +60,7 @@
     },
     {
       "example": "50",
-      "help_en": "The Settings for the number of entries to return on each page during paging in a paged query. Maximum value: 50.\n\nDefault value: 50",
+      "help_en": "The number of entries to return on each page. Maximum value: 50.\n\nDefault value: 50",
       "help_zh": "分页查询时设置的每页行数，最大值：50。\n\n默认值：50",
       "location": "query",
       "name": "page_size",
@@ -75,7 +75,7 @@
       "element": {
         "type": "string"
       },
-      "help_en": "The list of lifecycle hook IDs",
+      "help_en": "The IDs of the lifecycle hooks.\nConditionally required: You must specify at least one of LifecycleHookIds or ScalingGroupId when you query lifecycle hooks. If you specify both parameters, LifecycleHookIds takes precedence. If you specify only RegionId without specifying either of the two parameters, a 400 InvalidParameter error is returned",
       "help_zh": "生命周期挂钩的ID列表。\n条件必填：查询时必须指定 LifecycleHookIds 或 ScalingGroupId 中的至少一个，同时指定两者时以 LifecycleHookIds 为准；仅指定 RegionId 而不指定二者会返回 400 InvalidParameter 错误",
       "location": "query",
       "name": "lifecycle_hook_ids",
@@ -89,7 +89,7 @@
     },
     {
       "example": "cn-beijing",
-      "help_en": "The ID of the region where the scaling group resides",
+      "help_en": "The region ID of the scaling group",
       "help_zh": "伸缩组所属地域的ID",
       "location": "query",
       "name": "region_id",
@@ -107,7 +107,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response information for querying lifecycle hooks",
+        "description_en": "The returned information of lifecycle hooks",
         "description_zh": "查询生命周期挂钩返回信息",
         "properties": {
           "LifecycleHooks": {
@@ -121,14 +121,14 @@
               "properties": {
                 "DefaultResult": {
                   "backendName": "defaultResult",
-                  "description_en": "The next action to perform after the wait state of the instance ends",
+                  "description_en": "The action to perform after the wait state of the instance ends",
                   "description_zh": "实例挂起等待状态结束后的下一步动作",
                   "example": "CONTINUE",
                   "type": "string"
                 },
                 "HeartbeatTimeout": {
                   "backendName": "heartbeatTimeout",
-                  "description_en": "The wait time configured in the lifecycle hook for the scaling activity. The next action is performed when the wait time expires",
+                  "description_en": "The wait time configured in the lifecycle hook for the scaling activity. The next action is performed after the wait time expires",
                   "description_zh": "生命周期挂钩为伸缩活动设置的等待时间，等待超时后会执行下一步动作",
                   "example": "60",
                   "format": "int32",
@@ -136,12 +136,12 @@
                 },
                 "LifecycleActionSources": {
                   "backendName": "lifecycleActionSources",
-                  "description_en": "The specific scenarios that trigger the lifecycle hook",
+                  "description_en": "The specific scenarios in which the lifecycle hook is triggered",
                   "description_zh": "生命周期挂钩触发的具体场景",
                   "itemName": "LifecycleActionSource",
                   "items": {
-                    "description_en": "The specific scenarios that trigger the lifecycle hook. Valid values:\nDirectToScalingGroup: The instance is directly added to the scaling group during scale-out.\nDirectToWarmPool: The instance is added to the warm pool during scale-out.\nWarmPoolToScalingGroup: The instance is added to the scaling group from the warm pool during scale-out.\nScalingGroupToTerminate: The instance is directly released from the scaling group during scale-in.\nWarmPoolToTerminate: The instance is directly released from the warm pool during scale-in.\nScalingGroupToWarmPool: The instance is reclaimed from the scaling group to the warm pool during scale-in",
-                    "description_zh": "生命周期挂钩触发的具体场景。可能值：\n    a. DirectToScalingGroup： 实例直接扩容加入伸缩组；\n    b. DirectToWarmPool：实例扩容加入WarmPool；\n    c. WarmPoolToScalingGroup：实例从WarmPool中扩容加入伸缩组\n    d. ScalingGroupToTerminate ：实例直接从伸缩组中缩容释放；\n    e. WarmPoolToTerminate ：实例直接从WarmPool中缩容释放；\n    f. ScalingGroupToWarmPool ： 实例从伸缩组中缩容回收到WarmPool中",
+                    "description_en": "The specific scenarios in which the lifecycle hook is triggered. Valid values:\n   \nDirectToScalingGroup: The instance is directly added to the scaling group during a scale-out activity.\n\nDirectToWarmPool: The instance is added to the warm pool during a scale-out activity.\n\nWarmPoolToScalingGroup: The instance is added from the warm pool to the scaling group during a scale-out activity.\n\nScalingGroupToTerminate: The instance is directly removed from the scaling group during a scale-in activity.\n\nWarmPoolToTerminate: The instance is removed from the warm pool during a scale-in activity.\n\nScalingGroupToWarmPool: The instance is removed from the scaling group and reclaimed to the warm pool during a scale-in activity",
+                    "description_zh": "生命周期挂钩触发的具体场景。可能值：\n   \nDirectToScalingGroup： 实例直接扩容加入伸缩组中。\n\nDirectToWarmPool：实例扩容加入预热池中。\n\nWarmPoolToScalingGroup：实例从预热池扩容加入伸缩组中。\n\nScalingGroupToTerminate：实例直接从伸缩组中缩容。\n\nWarmPoolToTerminate：实例从预热池中缩容。\n\nScalingGroupToWarmPool： 实例从伸缩组缩容回收到预热池中",
                     "example": "DirectToScalingGroup",
                     "title_en": "生命周期挂钩触发的具体场景。可能值：\n    a. DirectToScalingGroup： 实例直接扩容加入伸缩组；\n    b. DirectToWarmPool：实例扩容加入WarmPool；\n    c. WarmPoolToScalingGroup：实例从WarmPool中扩容加入伸缩组\n    d. ScalingGroupToTerminate ：实例直接从伸缩组中缩容释放；\n    e. WarmPoolToTerminate ：实例直接从WarmPool中缩容释放；\n    f. ScalingGroupToWarmPool ： 实例从伸缩组中缩容回收到WarmPool中",
                     "title_zh": "生命周期挂钩触发的具体场景。可能值：\n    a. DirectToScalingGroup： 实例直接扩容加入伸缩组；\n    b. DirectToWarmPool：实例扩容加入WarmPool；\n    c. WarmPoolToScalingGroup：实例从WarmPool中扩容加入伸缩组\n    d. ScalingGroupToTerminate ：实例直接从伸缩组中缩容释放；\n    e. WarmPoolToTerminate ：实例直接从WarmPool中缩容释放；\n    f. ScalingGroupToWarmPool ： 实例从伸缩组中缩容回收到WarmPool中",
@@ -181,7 +181,7 @@
                 },
                 "NotificationArn": {
                   "backendName": "notificationArn",
-                  "description_en": "The notification recipient identifier for the lifecycle hook. The parameter format is as follows:\nNo notification configured: `acs:ess:{region-id}:{account-id}:null/null`.\nMNS queue: `acs:mns:{region-id}:{account-id}:queue/{queuename}`.\nMNS topic: `acs:mns:{region-id}:{account-id}:topic/{topicname}`.\nOOS template: `acs:oos:{region-id}:{account-id}:template/{templatename}`.\nEventBridge: `acs:eventbridge:{region-id}:{account-id}:eventbus/default`.\n\nThe variables in the parameter format have the following meanings:\nregion-id: The ID of the region where the scaling group resides.\naccount-id: The Alibaba Cloud account ID.\nqueuename: The name of the MNS queue.\ntopicname: The name of the MNS topic.\ntemplatename: The name of the OOS template",
+                  "description_en": "The identifier of the notification recipient for the lifecycle hook. The parameter format is as follows:\nNotifications not configured: `acs:ess:{region-id}:{account-id}:null/null`.\nMNS queue: `acs:mns:{region-id}:{account-id}:queue/{queuename}`.\nMNS topic: `acs:mns:{region-id}:{account-id}:topic/{topicname}`.\nOOS template: `acs:oos:{region-id}:{account-id}:template/{templatename}`.\nEventBridge: `acs:eventbridge:{region-id}:{account-id}:eventbus/default`.\n\nThe variables in the parameter format have the following meanings:\nregion-id: The ID of the region where the scaling group resides.\naccount-id: The Alibaba Cloud account ID.\nqueuename: The name of the MNS queue.\ntopicname: The name of the MNS topic.\ntemplatename: The name of the OOS template",
                   "description_zh": "生命周期挂钩通知对象标识符，参数格式如下：\n未设置通知：`acs:ess:{region-id}:{account-id}:null/null`。\nMNS队列：`acs:mns:{region-id}:{account-id}:queue/{queuename}`。\nMNS主题：``acs:mns:{region-id}:{account-id}:topic/{topicname}``。\nOOS模板：`acs:oos:{region-id}:{account-id}:template/{templatename}`。\n事件总线，参数取值格式：`acs:eventbridge:{region-id}:{account-id}:eventbus/default`。\n\n参数格式中的变量含义如下：\nregion-id：伸缩组所在的地域的ID。\naccount-id：阿里云账号ID。\nqueuename：MNS队列的名称。\ntopicname：MNS主题的名称。\ntemplatename：OOS模板的名称",
                   "example": "acs:ess:cn-beijing:161456884340****:null/null",
                   "type": "string"
@@ -223,7 +223,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID",
+            "description_en": "The ID of the request",
             "description_zh": "请求ID",
             "example": "473469C7-AA6F-4DC5-B3DB-A3DC0DE3C83E",
             "type": "string"
