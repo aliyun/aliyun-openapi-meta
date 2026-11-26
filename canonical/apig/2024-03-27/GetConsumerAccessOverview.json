@@ -5,7 +5,7 @@
   "deprecated": false,
   "description_en": "Queries the consumer access overview",
   "description_zh": "查询消费者访问概览",
-  "kebab_example": "aliyun apig get-consumer-access-overview --consumer-id cs-d00000000000000000000 --gateway-id gw-123456 --api-version 2024-03-27 --region cn-hangzhou",
+  "kebab_example": "aliyun apig get-consumer-access-overview --consumer-id cs-d00000000000000000000 --gateway-id gw-123456 --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
   "name": "GetConsumerAccessOverview",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "cs-d00000000000000000000",
-      "help_en": "The consumer ID, which is the identifier returned by the API operation for creating or querying consumers",
+      "help_en": "The consumer ID, which is the identifier returned by the consumer creation or query API operation",
       "help_zh": "消费者 ID，使用消费者创建或查询接口返回的标识",
       "location": "path",
       "name": "consumer_id",
@@ -45,6 +45,19 @@
       "raw_name": "gatewayId",
       "required": true,
       "type": "string"
+    },
+    {
+      "example": "true",
+      "help_en": "Specifies whether to also query the model TPM limits. Default value: false. If set to true, modelTpmLimits is returned for dedicated instances",
+      "help_zh": "是否同时查询模型 TPM 上限。默认 false，设为 true 时在专享实例上返回 modelTpmLimits",
+      "location": "query",
+      "name": "include_model_tpm",
+      "options": [
+        "--include-model-tpm"
+      ],
+      "raw_name": "includeModelTpm",
+      "required": false,
+      "type": "bool"
     }
   ],
   "pathPattern": "/v1/consumer-access/consumers/[consumerId]/overview",
@@ -57,132 +70,229 @@
         "description_zh": "Schema of Response",
         "properties": {
           "code": {
-            "description_en": "The response status code. The value is Ok for successful requests, or a specific business error code for failed requests",
+            "description_en": "The response status code. It returns Ok for a successful request or a specific business error code for a failed request",
             "description_zh": "响应状态码。成功时返回 Ok，失败时返回具体业务错误码",
             "example": "Ok",
+            "title_en": "请求结果码。请求成功时为 Ok。",
+            "title_zh": "请求结果码。请求成功时为 Ok。",
             "type": "string"
           },
           "data": {
             "description_en": "The business result returned by the consumer operation",
             "description_zh": "消费者操作返回的业务结果",
+            "example": "{\"gateway\":{\"gatewayId\":\"gw-example01\",\"name\":\"team-ai-gateway\"},\"identityDescription\":\"对话服务使用的消费者\",\"resources\":[{\"resourceId\":\"api-example01\",\"name\":\"team-chat\",\"resourceType\":\"ModelApi\",\"models\":[],\"modelGroups\":[]}],\"quotas\":[],\"impacts\":[{\"gateway\":{\"gatewayId\":\"gw-example01\",\"name\":\"team-ai-gateway\"},\"resources\":[\"team-chat\"],\"authorizationCounts\":{\"modelApis\":1,\"mcpServers\":0,\"agentApis\":0}}],\"modelTpmLimits\":[{\"modelId\":\"msc-example01\",\"consumerTpm\":300,\"globalTpm\":1800}],\"complete\":true}",
             "properties": {
               "complete": {
-                "description_en": "Specifies whether the query result is complete. A successful response returns a complete projection",
+                "description_en": "Indicates whether the query result is complete. A successful response returns a complete projection",
                 "description_zh": "查询结果是否完整；成功响应返回完整投影",
+                "example": "true",
+                "title_en": "是否已完整读取本次概览所需的数据。",
+                "title_zh": "是否已完整读取本次概览所需的数据。",
                 "type": "boolean"
               },
               "gateway": {
-                "description_en": "The gateway identifier and name in the current view",
+                "description_en": "The gateway identifier and name in the current context",
                 "description_zh": "当前视角的网关标识及名称",
+                "example": "{\"gatewayId\":\"gw-example01\",\"name\":\"team-ai-gateway\"}",
                 "properties": {
                   "gatewayId": {
                     "description_en": "The ID of the AI gateway instance to which the resource belongs",
                     "description_zh": "资源所属的 AI 网关实例 ID",
                     "example": "gw-d00000000000000000000",
+                    "title_en": "AI 网关实例 ID。",
+                    "title_zh": "AI 网关实例 ID。",
                     "type": "string"
                   },
                   "name": {
                     "description_en": "The name of the consumer",
                     "description_zh": "消费者的名称",
                     "example": "beta-consumer",
+                    "title_en": "网关实例名称。",
+                    "title_zh": "网关实例名称。",
                     "type": "string"
                   }
                 },
+                "title_en": "网关实例的 ID 和名称。",
+                "title_zh": "网关实例的 ID 和名称。",
                 "type": "object"
               },
               "identityDescription": {
                 "description_en": "The description text of the consumer",
                 "description_zh": "消费者的描述文本",
                 "example": "用于业务应用的消费者。",
+                "title_en": "消费者的描述。",
+                "title_zh": "消费者的描述。",
                 "type": "string"
               },
               "impacts": {
-                "description_en": "The impact of authorization configurations for this consumer in readable gateways within the local region",
+                "description_en": "The impact of authorization configurations for the consumer in readable gateways within the local region",
                 "description_zh": "该消费者在本地域可读网关中的授权配置影响",
+                "example": "[{\"gateway\":{\"gatewayId\":\"gw-example01\",\"name\":\"team-ai-gateway\"},\"resources\":[\"team-chat\"],\"authorizationCounts\":{\"modelApis\":1,\"mcpServers\":0,\"agentApis\":0}}]",
                 "itemName": "impacts",
                 "items": {
+                  "description_en": "The authorization impact information for a gateway",
+                  "description_zh": "一个网关的授权影响信息",
+                  "example": "{\"gateway\":{\"gatewayId\":\"gw-example01\",\"name\":\"team-ai-gateway\"},\"resources\":[\"team-chat\"],\"authorizationCounts\":{\"modelApis\":1,\"mcpServers\":0,\"agentApis\":0}}",
                   "properties": {
                     "authorizationCounts": {
-                      "description_en": "The number of authorization configurations counted by resource type",
+                      "description_en": "The number of authorization configurations by resource type",
                       "description_zh": "按资源类型统计的授权配置数量",
+                      "example": "{\"modelApis\":1,\"mcpServers\":0,\"agentApis\":0}",
                       "properties": {
                         "agentApis": {
-                          "description_en": "The number of agent APIs with configured authorization",
+                          "description_en": "The number of agent APIs with configured authorizations",
                           "description_zh": "已配置授权的 Agent API 数量",
                           "example": "1",
                           "format": "int32",
+                          "title_en": "已授权的 Agent API 数量。",
+                          "title_zh": "已授权的 Agent API 数量。",
                           "type": "integer"
                         },
                         "mcpServers": {
-                          "description_en": "The number of MCP servers with configured authorization",
+                          "description_en": "The number of MCP services with configured authorizations",
                           "description_zh": "已配置授权的 MCP 服务数量",
                           "example": "1",
                           "format": "int32",
+                          "title_en": "已授权的 MCP 服务数量。",
+                          "title_zh": "已授权的 MCP 服务数量。",
                           "type": "integer"
                         },
                         "modelApis": {
-                          "description_en": "The number of model APIs with configured authorization",
+                          "description_en": "The number of model APIs with configured authorizations",
                           "description_zh": "已配置授权的模型 API 数量",
                           "example": "1",
                           "format": "int32",
+                          "title_en": "已授权的 Model API 数量。",
+                          "title_zh": "已授权的 Model API 数量。",
                           "type": "integer"
                         }
                       },
+                      "title_en": "此网关按资源类型统计的授权数量。",
+                      "title_zh": "此网关按资源类型统计的授权数量。",
                       "type": "object"
                     },
                     "gateway": {
-                      "description_en": "The gateway identifier and name in the current view",
+                      "description_en": "The gateway identifier and name in the current context",
                       "description_zh": "当前视角的网关标识及名称",
+                      "example": "{\"gatewayId\":\"gw-example01\",\"name\":\"team-ai-gateway\"}",
                       "properties": {
                         "gatewayId": {
                           "description_en": "The ID of the AI gateway instance to which the resource belongs",
                           "description_zh": "资源所属的 AI 网关实例 ID",
                           "example": "gw-d00000000000000000000",
+                          "title_en": "AI 网关实例 ID。",
+                          "title_zh": "AI 网关实例 ID。",
                           "type": "string"
                         },
                         "name": {
                           "description_en": "The name of the consumer",
                           "description_zh": "消费者的名称",
                           "example": "beta-consumer",
+                          "title_en": "网关实例名称。",
+                          "title_zh": "网关实例名称。",
                           "type": "string"
                         }
                       },
+                      "title_en": "网关实例的 ID 和名称。",
+                      "title_zh": "网关实例的 ID 和名称。",
                       "type": "object"
                     },
                     "resources": {
                       "description_en": "The collection of resources for which the consumer has been granted authorization",
                       "description_zh": "消费者已经配置授权的资源集合",
+                      "example": "[\"team-chat\"]",
                       "itemName": "resources",
                       "items": {
                         "description_en": "The name of an affected authorized resource",
                         "description_zh": "一个受影响授权资源的名称",
                         "example": "beta-model-api",
+                        "title_en": "单个已授权资源的名称。",
+                        "title_zh": "单个已授权资源的名称。",
                         "type": "string"
                       },
+                      "title_en": "此网关上已授权资源的名称列表。",
+                      "title_zh": "此网关上已授权资源的名称列表。",
                       "type": "array"
                     }
                   },
+                  "title_en": "一个网关的授权影响信息。",
+                  "title_zh": "一个网关的授权影响信息。",
                   "type": "object"
                 },
+                "title_en": "按可读取的网关实例汇总的授权影响范围。",
+                "title_zh": "按可读取的网关实例汇总的授权影响范围。",
+                "type": "array"
+              },
+              "modelTpmLimits": {
+                "description_en": "The list of models with configured global or current consumer TPM limits in the target dedicated instance. Returned when includeModelTpm is set to true, and an empty array when no matching models exist",
+                "description_zh": "目标专享实例中，已配置模型总上限或当前消费者上限的模型列表。请求 includeModelTpm=true 时返回，无匹配模型时为空数组",
+                "example": "[{\"modelId\":\"msc-example01\",\"consumerTpm\":300,\"globalTpm\":1800}]",
+                "itemName": "modelTpmLimits",
+                "items": {
+                  "description_en": "The TPM limit applicable to the current consumer for a model",
+                  "description_zh": "一个模型对当前消费者适用的 TPM 上限",
+                  "example": "{\"modelId\":\"msc-example01\",\"consumerTpm\":300,\"globalTpm\":1800}",
+                  "properties": {
+                    "consumerTpm": {
+                      "description_en": "The maximum tokens per minute for the current consumer using this model. Returned only when a rule is configured for the consumer",
+                      "description_zh": "当前消费者使用该模型的每分钟 Token 上限，仅在配置了该消费者的规则时返回",
+                      "example": "300",
+                      "format": "int64",
+                      "title_en": "当前消费者使用该模型的每分钟 Token 上限，仅在配置了该消费者的规则时返回。",
+                      "title_zh": "当前消费者使用该模型的每分钟 Token 上限，仅在配置了该消费者的规则时返回。",
+                      "type": "integer"
+                    },
+                    "globalTpm": {
+                      "description_en": "The maximum tokens per minute shared by all consumers for this model within the instance. Returned only when a global limit is configured",
+                      "description_zh": "该模型在实例内由所有消费者共享的每分钟 Token 上限，仅在配置了模型总限额时返回",
+                      "example": "1800",
+                      "format": "int64",
+                      "title_en": "该模型在实例内由所有消费者共享的每分钟 Token 上限，仅在配置了模型总限额时返回。",
+                      "title_zh": "该模型在实例内由所有消费者共享的每分钟 Token 上限，仅在配置了模型总限额时返回。",
+                      "type": "integer"
+                    },
+                    "modelId": {
+                      "description_en": "The actual model card ID starting with msc- or the logical model ID starting with vm-",
+                      "description_zh": "实际模型卡 ID（msc- 开头）或逻辑模型 ID（vm- 开头）",
+                      "example": "msc-example01",
+                      "title_en": "实际模型卡 ID（msc- 开头）或逻辑模型 ID（vm- 开头）。",
+                      "title_zh": "实际模型卡 ID（msc- 开头）或逻辑模型 ID（vm- 开头）。",
+                      "type": "string"
+                    }
+                  },
+                  "title_en": "一个模型对当前消费者适用的 TPM 上限。",
+                  "title_zh": "一个模型对当前消费者适用的 TPM 上限。",
+                  "type": "object"
+                },
+                "title_en": "目标专享实例中，已配置模型总上限或当前消费者上限的模型列表。请求 includeModelTpm=true 时返回，无匹配模型时为空数组。",
+                "title_zh": "目标专享实例中，已配置模型总上限或当前消费者上限的模型列表。请求 includeModelTpm=true 时返回，无匹配模型时为空数组。",
                 "type": "array"
               },
               "quotas": {
                 "description_en": "The quota rules and usage for the consumer and its associated consumer group",
                 "description_zh": "消费者本身及所属消费者组的配额规则和用量",
+                "example": "[{\"ruleId\":\"rule-example01\",\"subjectId\":\"cs-example01\",\"subjectType\":\"consumer\",\"subjectName\":\"team-app\",\"name\":\"daily-tokens\",\"limit\":100000,\"used\":1250,\"unit\":\"Token\",\"periodType\":\"day\",\"windowAlignment\":\"calendar\"}]",
                 "itemName": "quotas",
                 "items": {
+                  "description_en": "A FinOps quota rule",
+                  "description_zh": "一条 FinOps 配额规则",
+                  "example": "{\"ruleId\":\"rule-example01\",\"subjectId\":\"cs-example01\",\"subjectType\":\"consumer\",\"subjectName\":\"team-app\",\"name\":\"daily-tokens\",\"limit\":100000,\"used\":1250,\"unit\":\"Token\",\"periodType\":\"day\",\"windowAlignment\":\"calendar\"}",
                   "properties": {
                     "limit": {
-                      "description_en": "The quota limit for the current rule, measured in the same unit as the unit field",
+                      "description_en": "The quota limit for the current rule, using the same unit of measurement as the unit field",
                       "description_zh": "当前规则的配额上限，与 unit 字段使用相同计量单位",
                       "example": "1000000",
                       "format": "int64",
+                      "title_en": "每个配额周期的额度上限。",
+                      "title_zh": "每个配额周期的额度上限。",
                       "type": "integer"
                     },
                     "name": {
                       "description_en": "The name of the consumer",
                       "description_zh": "消费者的名称",
                       "example": "beta-consumer",
+                      "title_en": "配额规则名称。",
+                      "title_zh": "配额规则名称。",
                       "type": "string"
                     },
                     "periodMultiplier": {
@@ -190,95 +300,132 @@
                       "description_zh": "自定义周期的倍数",
                       "example": "1",
                       "format": "int64",
+                      "title_en": "自定义周期包含的基本周期数。",
+                      "title_zh": "自定义周期包含的基本周期数。",
                       "type": "integer"
                     },
                     "periodType": {
-                      "description_en": "The quota period type. Valid values: day, week, and month",
+                      "description_en": "The type of the quota period. Valid values: day, week, and month",
                       "description_zh": "配额周期类型，day、week、month 分别表示日、周、月",
                       "example": "day",
+                      "title_en": "配额周期类型。",
+                      "title_zh": "配额周期类型。",
                       "type": "string"
                     },
                     "ruleId": {
-                      "description_en": "The quota rule ID",
+                      "description_en": "The ID of the quota rule",
                       "description_zh": "配额规则 ID",
                       "example": "qr-d00000000000000000000",
+                      "title_en": "FinOps 配额规则 ID。",
+                      "title_zh": "FinOps 配额规则 ID。",
                       "type": "string"
                     },
                     "subjectId": {
                       "description_en": "The ID of the subject to which the quota belongs",
                       "description_zh": "配额所属主体 ID",
                       "example": "cs-d00000000000000000000",
+                      "title_en": "配额所属的消费者或消费者组 ID。",
+                      "title_zh": "配额所属的消费者或消费者组 ID。",
                       "type": "string"
                     },
                     "subjectName": {
                       "description_en": "The name of the subject to which the quota belongs",
                       "description_zh": "配额所属主体的名称",
                       "example": "beta-consumer",
+                      "title_en": "配额主体名称。",
+                      "title_zh": "配额主体名称。",
                       "type": "string"
                     },
                     "subjectType": {
-                      "description_en": "The quota subject type. Valid values: consumer and consumer_group",
+                      "description_en": "The type of the quota subject. Valid values: consumer and consumer_group",
                       "description_zh": "配额主体类型，consumer 为消费者，consumer_group 为消费者组",
                       "example": "consumer",
+                      "title_en": "配额主体类型，consumer 为消费者，consumer_group 为消费者组。",
+                      "title_zh": "配额主体类型，consumer 为消费者，consumer_group 为消费者组。",
                       "type": "string"
                     },
                     "unit": {
-                      "description_en": "The quota measurement unit",
+                      "description_en": "The unit of measurement for the quota",
                       "description_zh": "配额计量单位",
                       "example": "token",
+                      "title_en": "额度计量单位。",
+                      "title_zh": "额度计量单位。",
                       "type": "string"
                     },
                     "used": {
-                      "description_en": "The used quota within the period corresponding to the current rule, measured in the same unit as the unit field",
+                      "description_en": "The used quota within the period corresponding to the current rule, using the same unit of measurement as the unit field",
                       "description_zh": "当前规则对应周期内已经使用的额度，与 unit 字段使用相同计量单位",
                       "example": "100",
                       "format": "double",
+                      "title_en": "当前配额周期已使用的额度，以 unit 为单位。",
+                      "title_zh": "当前配额周期已使用的额度，以 unit 为单位。",
                       "type": "number"
                     },
                     "windowAlignment": {
-                      "description_en": "The alignment method of the period window. Valid values: calendar for natural periods and epoch for custom base periods",
+                      "description_en": "The alignment of the period window. Valid values: calendar for natural periods and epoch for custom base periods",
                       "description_zh": "周期窗口的对齐方式，calendar 为自然周期，epoch 为自定义基准周期",
                       "example": "calendar",
+                      "title_en": "配额窗口的对齐方式。",
+                      "title_zh": "配额窗口的对齐方式。",
                       "type": "string"
                     }
                   },
+                  "title_en": "一条 FinOps 配额规则。",
+                  "title_zh": "一条 FinOps 配额规则。",
                   "type": "object"
                 },
+                "title_en": "适用于消费者的 FinOps 配额规则，包含直接配置的配额和所属消费者组的共享配额。",
+                "title_zh": "适用于消费者的 FinOps 配额规则，包含直接配置的配额和所属消费者组的共享配额。",
                 "type": "array"
               },
               "resources": {
                 "description_en": "The collection of resources for which the consumer has been granted authorization",
                 "description_zh": "消费者已经配置授权的资源集合",
+                "example": "[{\"resourceId\":\"api-example01\",\"name\":\"team-chat\",\"resourceType\":\"ModelApi\",\"models\":[{\"modelCardId\":\"msc-example01\",\"name\":\"text-chat\",\"modelType\":\"Model\",\"modelSourceId\":\"ms-example01\",\"modelSourceName\":\"team-model-source\"}],\"modelGroups\":[]}]",
                 "itemName": "resources",
                 "items": {
+                  "description_en": "An authorized resource",
+                  "description_zh": "单个已授权资源",
+                  "example": "{\"resourceId\":\"api-example01\",\"name\":\"team-chat\",\"resourceType\":\"ModelApi\",\"models\":[{\"modelCardId\":\"msc-example01\",\"name\":\"text-chat\",\"modelType\":\"Model\",\"modelSourceId\":\"ms-example01\",\"modelSourceName\":\"team-model-source\"}],\"modelGroups\":[]}",
                   "properties": {
                     "allModels": {
-                      "description_en": "Specifies whether the authorization scope of this resource includes all models",
+                      "description_en": "Specifies whether the authorization scope of the resource includes all models",
                       "description_zh": "该资源的授权范围是否包含全部模型",
+                      "example": "true",
                       "nullable": true,
+                      "title_en": "是否拥有该资源下所有模型的访问权限。",
+                      "title_zh": "是否拥有该资源下所有模型的访问权限。",
                       "type": "boolean"
                     },
                     "allTools": {
-                      "description_en": "Specifies whether the authorization scope of this MCP resource includes all tools",
+                      "description_en": "Specifies whether the authorization scope of the MCP resource includes all tools",
                       "description_zh": "该 MCP 资源的授权范围是否包含全部工具",
+                      "example": "true",
                       "nullable": true,
+                      "title_en": "是否授权访问该 MCP 服务的全部工具。",
+                      "title_zh": "是否授权访问该 MCP 服务的全部工具。",
                       "type": "boolean"
                     },
                     "consumerGroupName": {
-                      "description_en": "The name of the consumer group that provides this authorization",
+                      "description_en": "The name of the consumer group that grants this authorization",
                       "description_zh": "提供该项授权的消费者组名称",
                       "example": "beta-consumer-group",
+                      "title_en": "通过消费者组获得授权时的组名称。",
+                      "title_zh": "通过消费者组获得授权时的组名称。",
                       "type": "string"
                     },
                     "entitlementState": {
-                      "description_en": "The existing desired or applied state of the model entitlement projection. This field is omitted if no state row exists",
+                      "description_en": "The existing desired and applied states of the model entitlement projection. Omitted when no state row exists",
                       "description_zh": "模型许可投影的既有desired/applied状态；无状态行时省略",
+                      "example": "{\"desiredRevision\":2,\"appliedRevision\":1,\"status\":\"Pending\"}",
                       "properties": {
                         "appliedRevision": {
                           "description_en": "The applied authorization revision number",
                           "description_zh": "已应用的授权修订号",
                           "example": "1",
                           "format": "int64",
+                          "title_en": "最近一次成功提交并回读的模型访问许可版本。",
+                          "title_zh": "最近一次成功提交并回读的模型访问许可版本。",
                           "type": "integer"
                         },
                         "desiredRevision": {
@@ -286,215 +433,286 @@
                           "description_zh": "需要下发的期望授权修订号",
                           "example": "2",
                           "format": "int64",
+                          "title_en": "模型访问许可的目标版本。",
+                          "title_zh": "模型访问许可的目标版本。",
                           "type": "integer"
                         },
                         "errorMessage": {
-                          "description_en": "The error description when processing fails. This field is empty if no error occurs",
+                          "description_en": "The error description when processing fails. Empty when no error occurs",
                           "description_zh": "处理失败时的错误说明；没有错误时为空",
                           "example": "配置下发失败。",
+                          "title_en": "模型访问许可下发失败时的错误信息。",
+                          "title_zh": "模型访问许可下发失败时的错误信息。",
                           "type": "string"
                         },
                         "status": {
-                          "description_en": "The status. Valid values: Pending, Applying, Committed, and Failed",
+                          "description_en": "The status of the entitlement delivery. Valid values: Pending, Applying, Committed, and Failed",
                           "description_zh": "Pending、Applying、Committed或Failed",
                           "example": "Committed",
-                          "title_en": "Pending、Applying、Committed或Failed。",
-                          "title_zh": "Pending、Applying、Committed或Failed。",
+                          "title_en": "许可下发状态，取值为 Pending、Applying、Committed 或 Failed。",
+                          "title_zh": "许可下发状态，取值为 Pending、Applying、Committed 或 Failed。",
                           "type": "string"
                         }
                       },
-                      "title_en": "模型许可投影的既有desired/applied状态；无状态行时省略。",
-                      "title_zh": "模型许可投影的既有desired/applied状态；无状态行时省略。",
+                      "title_en": "模型访问许可的目标版本与控制面提交状态。",
+                      "title_zh": "模型访问许可的目标版本与控制面提交状态。",
                       "type": "object"
                     },
                     "expireTime": {
-                      "description_en": "The expiration time. The value is null for long-term authorization, an RFC 3339 formatted string for short-term authorization that can be losslessly projected, or omitted if unknown",
+                      "description_en": "The expiration time. The value is null for long-term authorizations, an RFC 3339 formatted string for short-term authorizations with lossless projection, and omitted when unknown",
                       "description_zh": "长期授权为null；短期且可无损投影时为RFC3339；未知时省略",
                       "example": "2026-12-31T23:59:59Z",
                       "nullable": true,
-                      "title_en": "长期授权为null；短期且可无损投影时为RFC3339；未知时省略。",
-                      "title_zh": "长期授权为null；短期且可无损投影时为RFC3339；未知时省略。",
+                      "title_en": "授权到期时间，格式为 RFC 3339。长期授权返回 null，无法确定统一到期时间时省略。",
+                      "title_zh": "授权到期时间，格式为 RFC 3339。长期授权返回 null，无法确定统一到期时间时省略。",
                       "type": "string"
                     },
                     "modelGroups": {
                       "description_en": "The accessible model groups and their model collections",
                       "description_zh": "可访问的模型组及其模型集合",
+                      "example": "[{\"modelGroupId\":\"mg-example01\",\"name\":\"chat-models\",\"models\":[{\"modelCardId\":\"msc-example01\",\"name\":\"text-chat\",\"modelType\":\"Model\",\"modelSourceId\":\"ms-example01\",\"modelSourceName\":\"team-model-source\"}]}]",
                       "itemName": "modelGroups",
                       "items": {
+                        "description_en": "An authorized model group",
+                        "description_zh": "单个已授权模型组",
+                        "example": "{\"modelGroupId\":\"mg-example01\",\"name\":\"chat-models\",\"models\":[{\"modelCardId\":\"msc-example01\",\"name\":\"text-chat\",\"modelType\":\"Model\",\"modelSourceId\":\"ms-example01\",\"modelSourceName\":\"team-model-source\"}]}",
                         "properties": {
                           "consumerGroupName": {
-                            "description_en": "The name of the consumer group that provides this authorization",
+                            "description_en": "The name of the consumer group that grants this authorization",
                             "description_zh": "提供该项授权的消费者组名称",
                             "example": "beta-consumer-group",
+                            "title_en": "授予此模型组访问权限的消费者组名称。",
+                            "title_zh": "授予此模型组访问权限的消费者组名称。",
                             "type": "string"
                           },
                           "modelGroupId": {
                             "description_en": "The model group ID. Use the modelGroupId returned by CreateModelGroup",
                             "description_zh": "模型组 ID，使用 CreateModelGroup 返回的 modelGroupId",
                             "example": "mg-d00000000000000000000",
+                            "title_en": "模型组 ID。",
+                            "title_zh": "模型组 ID。",
                             "type": "string"
                           },
                           "models": {
                             "description_en": "The list of accessible model endpoints within the current resource scope",
                             "description_zh": "当前资源范围内可访问的模型入口列表",
+                            "example": "[{\"modelCardId\":\"msc-example01\",\"name\":\"text-chat\",\"modelType\":\"Model\",\"modelSourceId\":\"ms-example01\",\"modelSourceName\":\"team-model-source\"}]",
                             "itemName": "models",
                             "items": {
+                              "description_en": "An accessible model",
+                              "description_zh": "单个可访问的模型",
+                              "example": "{\"modelCardId\":\"msc-example01\",\"name\":\"text-chat\",\"modelType\":\"Model\",\"modelSourceId\":\"ms-example01\",\"modelSourceName\":\"team-model-source\"}",
                               "properties": {
                                 "consumerGroupName": {
-                                  "description_en": "The name of the consumer group that provides this authorization",
+                                  "description_en": "The name of the consumer group that grants this authorization",
                                   "description_zh": "提供该项授权的消费者组名称",
                                   "example": "beta-consumer-group",
+                                  "title_en": "授予此模型访问权限的消费者组名称。",
+                                  "title_zh": "授予此模型访问权限的消费者组名称。",
                                   "type": "string"
                                 },
                                 "modelCardId": {
-                                  "description_en": "The model identifier. Standard models use the source model card ID, while logical model endpoints use the vm- prefix",
+                                  "description_en": "The model identifier. A standard model uses the source model card ID, while a logical model endpoint uses a vm- prefix",
                                   "description_zh": "模型标识；普通模型使用源模型卡 ID，逻辑模型入口使用 vm- 标识",
                                   "example": "msc-d00000000000000000000",
+                                  "title_en": "实际模型卡或逻辑模型的 ID。",
+                                  "title_zh": "实际模型卡或逻辑模型的 ID。",
                                   "type": "string"
                                 },
                                 "modelSourceId": {
                                   "description_en": "The model source ID. Use the modelSourceId returned by CreateAiModelSource",
                                   "description_zh": "模型源 ID，使用 CreateAiModelSource 返回的 modelSourceId",
                                   "example": "ms-d00000000000000000000",
+                                  "title_en": "实际模型所属的模型来源 ID。",
+                                  "title_zh": "实际模型所属的模型来源 ID。",
                                   "type": "string"
                                 },
                                 "modelSourceName": {
                                   "description_en": "The display name of the model source",
                                   "description_zh": "模型源的展示名称",
                                   "example": "百炼模型源",
+                                  "title_en": "实际模型所属的模型来源名称。",
+                                  "title_zh": "实际模型所属的模型来源名称。",
                                   "type": "string"
                                 },
                                 "modelType": {
                                   "description_en": "The model type. Valid values: Model and LogicalModel",
                                   "description_zh": "Model或LogicalModel",
                                   "example": "Model",
-                                  "title_en": "Model或LogicalModel。",
-                                  "title_zh": "Model或LogicalModel。",
+                                  "title_en": "模型类型。Model 表示实际模型卡，LogicalModel 表示逻辑模型。",
+                                  "title_zh": "模型类型。Model 表示实际模型卡，LogicalModel 表示逻辑模型。",
                                   "type": "string"
                                 },
                                 "name": {
                                   "description_en": "The name of the consumer",
                                   "description_zh": "消费者的名称",
                                   "example": "beta-consumer",
+                                  "title_en": "模型名称。",
+                                  "title_zh": "模型名称。",
                                   "type": "string"
                                 }
                               },
+                              "title_en": "单个可访问的模型。",
+                              "title_zh": "单个可访问的模型。",
                               "type": "object"
                             },
+                            "title_en": "消费者可访问的该组模型列表。",
+                            "title_zh": "消费者可访问的该组模型列表。",
                             "type": "array"
                           },
                           "name": {
                             "description_en": "The name of the consumer",
                             "description_zh": "消费者的名称",
                             "example": "beta-consumer",
+                            "title_en": "模型组名称。",
+                            "title_zh": "模型组名称。",
                             "type": "string"
                           }
                         },
+                        "title_en": "单个已授权模型组。",
+                        "title_zh": "单个已授权模型组。",
                         "type": "object"
                       },
+                      "title_en": "该资源下消费者获授权的模型组列表。",
+                      "title_zh": "该资源下消费者获授权的模型组列表。",
                       "type": "array"
                     },
                     "models": {
                       "description_en": "The list of accessible model endpoints within the current resource scope",
                       "description_zh": "当前资源范围内可访问的模型入口列表",
+                      "example": "[{\"modelCardId\":\"msc-example01\",\"name\":\"text-chat\",\"modelType\":\"Model\",\"modelSourceId\":\"ms-example01\",\"modelSourceName\":\"team-model-source\"}]",
                       "itemName": "models",
                       "items": {
+                        "description_en": "An accessible model",
+                        "description_zh": "单个可访问的模型",
+                        "example": "{\"modelCardId\":\"msc-example01\",\"name\":\"text-chat\",\"modelType\":\"Model\",\"modelSourceId\":\"ms-example01\",\"modelSourceName\":\"team-model-source\"}",
                         "properties": {
                           "consumerGroupName": {
-                            "description_en": "The name of the consumer group that provides this authorization",
+                            "description_en": "The name of the consumer group that grants this authorization",
                             "description_zh": "提供该项授权的消费者组名称",
                             "example": "beta-consumer-group",
+                            "title_en": "授予此模型访问权限的消费者组名称。",
+                            "title_zh": "授予此模型访问权限的消费者组名称。",
                             "type": "string"
                           },
                           "modelCardId": {
-                            "description_en": "The model identifier. Standard models use the source model card ID, while logical model endpoints use the vm- prefix",
+                            "description_en": "The model identifier. A standard model uses the source model card ID, while a logical model endpoint uses a vm- prefix",
                             "description_zh": "模型标识；普通模型使用源模型卡 ID，逻辑模型入口使用 vm- 标识",
                             "example": "msc-d00000000000000000000",
+                            "title_en": "实际模型卡或逻辑模型的 ID。",
+                            "title_zh": "实际模型卡或逻辑模型的 ID。",
                             "type": "string"
                           },
                           "modelSourceId": {
                             "description_en": "The model source ID. Use the modelSourceId returned by CreateAiModelSource",
                             "description_zh": "模型源 ID，使用 CreateAiModelSource 返回的 modelSourceId",
                             "example": "ms-d00000000000000000000",
+                            "title_en": "实际模型所属的模型来源 ID。",
+                            "title_zh": "实际模型所属的模型来源 ID。",
                             "type": "string"
                           },
                           "modelSourceName": {
                             "description_en": "The display name of the model source",
                             "description_zh": "模型源的展示名称",
                             "example": "百炼模型源",
+                            "title_en": "实际模型所属的模型来源名称。",
+                            "title_zh": "实际模型所属的模型来源名称。",
                             "type": "string"
                           },
                           "modelType": {
                             "description_en": "The model type. Valid values: Model and LogicalModel",
                             "description_zh": "Model或LogicalModel",
                             "example": "Model",
-                            "title_en": "Model或LogicalModel。",
-                            "title_zh": "Model或LogicalModel。",
+                            "title_en": "模型类型。Model 表示实际模型卡，LogicalModel 表示逻辑模型。",
+                            "title_zh": "模型类型。Model 表示实际模型卡，LogicalModel 表示逻辑模型。",
                             "type": "string"
                           },
                           "name": {
                             "description_en": "The name of the consumer",
                             "description_zh": "消费者的名称",
                             "example": "beta-consumer",
+                            "title_en": "模型名称。",
+                            "title_zh": "模型名称。",
                             "type": "string"
                           }
                         },
+                        "title_en": "单个可访问的模型。",
+                        "title_zh": "单个可访问的模型。",
                         "type": "object"
                       },
+                      "title_en": "该资源下消费者可访问的模型列表。",
+                      "title_zh": "该资源下消费者可访问的模型列表。",
                       "type": "array"
                     },
                     "name": {
                       "description_en": "The name of the consumer",
                       "description_zh": "消费者的名称",
                       "example": "beta-consumer",
+                      "title_en": "获授权的资源名称。",
+                      "title_zh": "获授权的资源名称。",
                       "type": "string"
                     },
                     "resourceId": {
                       "description_en": "The immutable identifier of the authorized resource",
                       "description_zh": "授权资源的不可变标识",
                       "example": "api-d00000000000000000000",
+                      "title_en": "消费者获授权的资源 ID。",
+                      "title_zh": "消费者获授权的资源 ID。",
                       "type": "string"
                     },
                     "resourceType": {
                       "description_en": "The resource type. Valid values: ModelApi, MCP, and Agent",
                       "description_zh": "ModelApi、MCP或Agent",
                       "example": "ModelApi",
-                      "title_en": "ModelApi、MCP或Agent。",
-                      "title_zh": "ModelApi、MCP或Agent。",
+                      "title_en": "资源类型，取值为 ModelApi、MCP 或 Agent。",
+                      "title_zh": "资源类型，取值为 ModelApi、MCP 或 Agent。",
                       "type": "string"
                     },
                     "tools": {
-                      "description_en": "The list of names of MCP tools that are allowed to be called within this resource scope",
+                      "description_en": "The list of MCP tool names that are allowed to be called within the resource scope",
                       "description_zh": "该资源范围内允许调用的 MCP 工具名称列表",
+                      "example": "[\"search\"]",
                       "itemName": "tools",
                       "items": {
                         "description_en": "The name of an MCP tool that is allowed to be called",
                         "description_zh": "一个允许调用的 MCP 工具名称",
                         "example": "query_weather",
+                        "title_en": "单个 MCP 工具名称。",
+                        "title_zh": "单个 MCP 工具名称。",
                         "type": "string"
                       },
+                      "title_en": "已授权的 MCP 工具名称列表。",
+                      "title_zh": "已授权的 MCP 工具名称列表。",
                       "type": "array"
                     }
                   },
+                  "title_en": "单个已授权资源。",
+                  "title_zh": "单个已授权资源。",
                   "type": "object"
                 },
+                "title_en": "消费者在目标实例上已获授权的资源列表。",
+                "title_zh": "消费者在目标实例上已获授权的资源列表。",
                 "type": "array"
               }
             },
+            "title_en": "消费者在目标实例上的访问概览及关联实例的授权情况。",
+            "title_zh": "消费者在目标实例上的访问概览及关联实例的授权情况。",
             "type": "object"
           },
           "message": {
             "description_en": "The response message that describes the request processing result",
             "description_zh": "响应消息，用于说明请求处理结果",
             "example": "success",
+            "title_en": "错误原因。请求成功时可省略。",
+            "title_zh": "错误原因。请求成功时可省略。",
             "type": "string"
           },
           "requestId": {
-            "description_en": "The request ID generated by the system to trace the current call",
+            "description_en": "The ID of the request generated by the system to trace the call",
             "description_zh": "请求 ID，由系统生成，用于定位本次调用",
             "example": "473469C7-AA6F-4DC5-B3DB-A3DC0DE3C83E",
-            "title_en": "Id of the request",
-            "title_zh": "Id of the request",
+            "title_en": "本次请求的唯一标识，可用于排查问题。",
+            "title_zh": "本次请求的唯一标识，可用于排查问题。",
             "type": "string"
           }
         },
