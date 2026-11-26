@@ -1,0 +1,1007 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "pai-dlc get-rl-flow-analysis",
+  "cmd_name": "get-rl-flow-analysis",
+  "components": {
+    "schemas": {
+      "RLFlowFunnelStage": {
+        "descriptionEn": "One level of the funnel.",
+        "description_en": "The funnel level",
+        "description_zh": "漏斗层级",
+        "properties": {
+          "Count": {
+            "backendName": "Count",
+            "descriptionEn": "Number of trajectories that reached this level.",
+            "description_en": "The number of trajectories that reach this level",
+            "description_zh": "到达该层级的轨迹数",
+            "example": "96",
+            "format": "int32",
+            "title": "到达该层级的轨迹数",
+            "type": "integer"
+          },
+          "Key": {
+            "backendName": "Key",
+            "descriptionEn": "Level key: traj, dispatch, run, rollout, reward, sampled, or trained.",
+            "description_en": "The level identifier. Valid values: traj, dispatch, run, rollout, reward, sampled, and trained",
+            "description_zh": "层级标识：traj / dispatch / run / rollout / reward / sampled / trained",
+            "example": "traj",
+            "title": "层级标识：traj / dispatch / run / rollout / reward / sampled / trained",
+            "type": "string"
+          },
+          "Label": {
+            "backendName": "Label",
+            "descriptionEn": "Display name of the level: trajectory generated, dispatched to worker, agent started, rollout finished, reward scored, sampled into a batch, or training completed.",
+            "description_en": "The Chinese name of the level. Valid values: 生成轨迹, 下发到 Worker, Agent 启动, Rollout 完成, reward 打分, 采样入批, and 完成训练",
+            "description_zh": "层级中文名：生成轨迹 / 下发到 Worker / Agent 启动 / Rollout 完成 / reward 打分 / 采样入批 / 完成训练",
+            "example": "生成轨迹",
+            "title": "层级中文名：生成轨迹 / 下发到 Worker / Agent 启动 / Rollout 完成 / reward 打分 / 采样入批 / 完成训练",
+            "type": "string"
+          },
+          "Pct": {
+            "backendName": "Pct",
+            "descriptionEn": "Percentage relative to the first level, traj.",
+            "description_en": "The percentage relative to the first traj level",
+            "description_zh": "相对首层 traj 的占比（百分比）",
+            "example": "100",
+            "format": "double",
+            "title": "相对首层 traj 的占比（百分比）",
+            "type": "number"
+          }
+        },
+        "title": "漏斗层级",
+        "type": "object"
+      },
+      "RLFlowMilestoneCount": {
+        "descriptionEn": "Count of in-flight trajectories per milestone.",
+        "description_en": "The in-transit trajectory count by milestone",
+        "description_zh": "在途轨迹按环节计数",
+        "properties": {
+          "Count": {
+            "backendName": "Count",
+            "descriptionEn": "Number of in-flight trajectories waiting at this milestone.",
+            "description_en": "The number of in-transit trajectories at this milestone",
+            "description_zh": "停留在该里程碑的在途轨迹数",
+            "example": "96",
+            "format": "int32",
+            "title": "停留在该里程碑的在途轨迹数",
+            "type": "integer"
+          },
+          "Milestone": {
+            "backendName": "Milestone",
+            "descriptionEn": "Milestone, using the same values as Stuck[].Milestone.",
+            "description_en": "The milestone. The valid values are the same as those of Stuck[].Milestone",
+            "description_zh": "里程碑，取值同 Stuck[].Milestone",
+            "example": "生成中",
+            "title": "里程碑，取值同 Stuck[].Milestone",
+            "type": "string"
+          }
+        },
+        "title": "在途轨迹按环节计数",
+        "type": "object"
+      },
+      "RLFlowSankey": {
+        "descriptionEn": "Sankey diagram.",
+        "description_en": "The Sankey diagram",
+        "description_zh": "桑基图",
+        "properties": {
+          "Columns": {
+            "backendName": "Columns",
+            "descriptionEn": "The five columns of the main chain.",
+            "description_en": "The five columns of the main chain",
+            "description_zh": "主链 5 列",
+            "example": "[{\"Key\":\"traj\",\"Label\":\"生成轨迹\",\"Count\":96}]",
+            "itemName": "Column",
+            "items": {
+              "$ref": "#/components/schemas/RLFlowSankeyColumn",
+              "descriptionEn": "One column of the Sankey diagram.",
+              "description_en": "The Sankey diagram column",
+              "description_zh": "桑基图列",
+              "title": "桑基图列"
+            },
+            "title": "主链 5 列",
+            "type": "array"
+          },
+          "Exits": {
+            "backendName": "Exits",
+            "descriptionEn": "Outgoing edges of each column.",
+            "description_en": "The outflow edges of each column",
+            "description_zh": "各列的流出边",
+            "example": "[{\"From\":\"run\",\"FromIdx\":1,\"Label\":\"未启动\",\"Count\":0}]",
+            "itemName": "Exit",
+            "items": {
+              "$ref": "#/components/schemas/RLFlowSankeyExit",
+              "descriptionEn": "An outgoing edge of the Sankey diagram.",
+              "description_en": "The Sankey diagram outflow edge",
+              "description_zh": "桑基图流出边",
+              "title": "桑基图流出边"
+            },
+            "title": "各列的流出边",
+            "type": "array"
+          }
+        },
+        "title": "桑基图",
+        "type": "object"
+      },
+      "RLFlowSankeyColumn": {
+        "descriptionEn": "One column of the Sankey diagram.",
+        "description_en": "The Sankey chart column",
+        "description_zh": "桑基图列",
+        "properties": {
+          "Count": {
+            "backendName": "Count",
+            "descriptionEn": "Number of trajectories in this column. Counts are monotonic: reaching a later stage implies passing all earlier ones.",
+            "description_en": "The number of trajectories in the column. The value is monotonized: reaching a later stage implies having passed through all preceding stages",
+            "description_zh": "该列轨迹数（已单调化：到达后一环节视为必然经过前面环节）",
+            "example": "96",
+            "format": "int32",
+            "title": "该列轨迹数（已单调化：到达后一环节视为必然经过前面环节）",
+            "type": "integer"
+          },
+          "Key": {
+            "backendName": "Key",
+            "descriptionEn": "Column key: gen, run, rollout, sampled, or trained.",
+            "description_en": "The column identifier. Valid values: gen, run, rollout, sampled, and trained",
+            "description_zh": "列标识：gen / run / rollout / sampled / trained",
+            "example": "traj",
+            "title": "列标识：gen / run / rollout / sampled / trained",
+            "type": "string"
+          },
+          "Label": {
+            "backendName": "Label",
+            "descriptionEn": "Display name of the column: trajectory generated, agent started, rollout finished, sampled into a batch, or training completed.",
+            "description_en": "The Chinese name of the column. Valid values: 轨迹生成, Agent 启动, Rollout 完成, 采样入批, and 完成训练",
+            "description_zh": "列中文名：轨迹生成 / Agent 启动 / Rollout 完成 / 采样入批 / 完成训练",
+            "example": "生成轨迹",
+            "title": "列中文名：轨迹生成 / Agent 启动 / Rollout 完成 / 采样入批 / 完成训练",
+            "type": "string"
+          }
+        },
+        "title": "桑基图列",
+        "type": "object"
+      },
+      "RLFlowSankeyExit": {
+        "descriptionEn": "An outgoing edge of the Sankey diagram.",
+        "description_en": "The Sankey diagram outflow edge",
+        "description_zh": "桑基图流出边",
+        "properties": {
+          "Count": {
+            "backendName": "Count",
+            "descriptionEn": "Number of trajectories on this outgoing edge.",
+            "description_en": "The number of trajectories on the outflow edge",
+            "description_zh": "该条流出边的轨迹数",
+            "example": "96",
+            "format": "int32",
+            "title": "该条流出边的轨迹数",
+            "type": "integer"
+          },
+          "From": {
+            "backendName": "From",
+            "descriptionEn": "Key of the column the edge leaves from.",
+            "description_en": "The key of the outflow source column",
+            "description_zh": "流出起始列的 Key",
+            "example": "DataLoader",
+            "title": "流出起始列的 Key",
+            "type": "string"
+          },
+          "FromIdx": {
+            "backendName": "FromIdx",
+            "descriptionEn": "Zero-based index of the column the edge leaves from.",
+            "description_en": "The index of the outflow source column (0-based)",
+            "description_zh": "流出起始列的下标（0 起）",
+            "example": "0",
+            "format": "int32",
+            "title": "流出起始列的下标（0 起）",
+            "type": "integer"
+          },
+          "Label": {
+            "backendName": "Label",
+            "descriptionEn": "Display name of the exit, chosen by the column it leaves from: in flight and not dispatched, in flight while generating, in flight awaiting sampling, or in flight awaiting training.",
+            "description_en": "The Chinese name of the outflow destination. Valid values vary by the column where the outflow is located: 在途·未下发 / 在途·生成中 / 在途·待采样 / 在途·待训练",
+            "description_zh": "流出去向中文名，按流出所在列取值：在途·未下发 / 在途·生成中 / 在途·待采样 / 在途·待训练",
+            "example": "生成轨迹",
+            "title": "流出去向中文名，按流出所在列取值：在途·未下发 / 在途·生成中 / 在途·待采样 / 在途·待训练",
+            "type": "string"
+          }
+        },
+        "title": "桑基图流出边",
+        "type": "object"
+      },
+      "RLFlowSlowestItem": {
+        "descriptionEn": "One of the slowest entries for a stage duration.",
+        "description_en": "The slowest stage entry",
+        "description_zh": "阶段耗时最慢条目",
+        "properties": {
+          "PromptUid": {
+            "backendName": "PromptUid",
+            "descriptionEn": "Prompt UID of the sample.",
+            "description_en": "The UID of the sample",
+            "description_zh": "样本 uid",
+            "example": "321fa56f-e1e5-4eb3-8047-db7a230c9a75",
+            "title": "样本 uid",
+            "type": "string"
+          },
+          "SampleIndex": {
+            "backendName": "SampleIndex",
+            "descriptionEn": "Trajectory index.",
+            "description_en": "The ordinal number of the event trace",
+            "description_zh": "轨迹序号",
+            "example": "2",
+            "title": "轨迹序号",
+            "type": "string"
+          },
+          "Sec": {
+            "backendName": "Sec",
+            "descriptionEn": "Duration of this stage, in seconds.",
+            "description_en": "The execution duration of the stage, in seconds",
+            "description_zh": "该阶段耗时（秒）",
+            "example": "9.2",
+            "format": "double",
+            "title": "该阶段耗时（秒）",
+            "type": "number"
+          }
+        },
+        "title": "阶段耗时最慢条目",
+        "type": "object"
+      },
+      "RLFlowStep": {
+        "descriptionEn": "One entry of the per-step production and consumption view.",
+        "description_en": "The step production-consumption view entry",
+        "description_zh": "step 生产-消费视图条目",
+        "properties": {
+          "BufferWaitP50": {
+            "backendName": "BufferWaitP50",
+            "descriptionEn": "50th percentile of the duration from entering the buffer to batch formation for this step, in seconds.",
+            "description_en": "The P50 duration in seconds from when trajectories of the step enter the buffer to when they are batched",
+            "description_zh": "该 step 轨迹的入缓冲到成批耗时 P50（秒）",
+            "example": "0.8",
+            "format": "double",
+            "title": "该 step 轨迹的入缓冲到成批耗时 P50（秒）",
+            "type": "number"
+          },
+          "GapSec": {
+            "backendName": "GapSec",
+            "descriptionEn": "Gap in seconds, that is train started minus rollout finished, covering batching and transfer.",
+            "description_en": "The gap duration in seconds, calculated as train started minus rollout finished, representing batching or transfer wait time",
+            "description_zh": "空档（秒）= train started − rollout finished，成批/搬运等待",
+            "example": "0",
+            "format": "double",
+            "title": "空档（秒）= train started − rollout finished，成批/搬运等待",
+            "type": "number"
+          },
+          "IdleSec": {
+            "backendName": "IdleSec",
+            "descriptionEn": "Trainer idle time in seconds, that is this step's training start minus the previous step's training end. Without those markers it falls back to this step's forward-pass start minus the previous step's optimizer end. A value greater than 0 means the trainer is waiting for data.",
+            "description_en": "The idle time in seconds between the training phases of adjacent steps. This value only reflects the time interval and cannot be used alone to determine data waiting or other specific causes",
+            "description_zh": "相邻 step 训练阶段之间的空闲时长，单位为秒；仅反映时间间隔，不能单独用于判断数据等待或其他具体原因",
+            "example": "0",
+            "format": "double",
+            "title": "训练间隔（秒）",
+            "type": "number"
+          },
+          "NSamples": {
+            "backendName": "NSamples",
+            "descriptionEn": "Number of samples (distinct uids) consumed by this step.",
+            "description_en": "The number of samples (UIDs) consumed by the step",
+            "description_zh": "该 step 消费的样本（uid）数",
+            "example": "24",
+            "format": "int32",
+            "title": "该 step 消费的样本（uid）数",
+            "type": "integer"
+          },
+          "NTrajs": {
+            "backendName": "NTrajs",
+            "descriptionEn": "Number of trajectories attributed to this execution of the step.",
+            "description_en": "The number of trajectories belonging to the current execution of the step",
+            "description_zh": "归属该 step 本次执行的轨迹数",
+            "example": "96",
+            "format": "int32",
+            "title": "归属该 step 本次执行的轨迹数",
+            "type": "integer"
+          },
+          "ProdEndMs": {
+            "backendName": "ProdEndMs",
+            "descriptionEn": "Latest time a trajectory of this step entered the buffer, in milliseconds.",
+            "description_en": "The latest time a trajectory of the step enters the buffer in milliseconds",
+            "description_zh": "该 step 轨迹入缓冲的最晚时刻，毫秒",
+            "example": "1787474487713",
+            "format": "int64",
+            "title": "该 step 轨迹入缓冲的最晚时刻，毫秒",
+            "type": "integer"
+          },
+          "ProdStartMs": {
+            "backendName": "ProdStartMs",
+            "descriptionEn": "Earliest time a trajectory of this step entered the buffer, in milliseconds.",
+            "description_en": "The earliest time a trajectory of the step enters the buffer in milliseconds",
+            "description_zh": "该 step 轨迹入缓冲的最早时刻，毫秒",
+            "example": "1787474487713",
+            "format": "int64",
+            "title": "该 step 轨迹入缓冲的最早时刻，毫秒",
+            "type": "integer"
+          },
+          "RolloutP50": {
+            "backendName": "RolloutP50",
+            "descriptionEn": "50th percentile of the duration from execution start to entering the buffer for this step, in seconds.",
+            "description_en": "The P50 duration in seconds from when trajectories of the step start execution to when they enter the buffer",
+            "description_zh": "该 step 轨迹的开始执行到入缓冲耗时 P50（秒）",
+            "example": "0.8",
+            "format": "double",
+            "title": "该 step 轨迹的开始执行到入缓冲耗时 P50（秒）",
+            "type": "number"
+          },
+          "RolloutSec": {
+            "backendName": "RolloutSec",
+            "descriptionEn": "Rollout duration in seconds, that is rollout finished minus rollout started. Empty when the markers are absent.",
+            "description_en": "The rollout duration in seconds, calculated as rollout finished minus rollout started. This value is empty when no markers are available",
+            "description_zh": "Rollout 耗时（秒）= rollout finished − rollout started；无标记时为空",
+            "example": "0",
+            "format": "double",
+            "title": "Rollout 耗时（秒）= rollout finished − rollout started；无标记时为空",
+            "type": "number"
+          },
+          "Step": {
+            "backendName": "Step",
+            "descriptionEn": "Global step number.",
+            "description_en": "The global step number",
+            "description_zh": "global step 序号",
+            "example": "3",
+            "format": "int64",
+            "title": "global step 序号",
+            "type": "integer"
+          },
+          "TFwdStartMs": {
+            "backendName": "TFwdStartMs",
+            "descriptionEn": "Timestamp when the forward pass started, in milliseconds.",
+            "description_en": "The start time of the forward computation in milliseconds",
+            "description_zh": "前向计算开始时刻，毫秒",
+            "example": "1787474487713",
+            "format": "int64",
+            "title": "前向计算开始时刻，毫秒",
+            "type": "integer"
+          },
+          "TOptEndMs": {
+            "backendName": "TOptEndMs",
+            "descriptionEn": "Timestamp when the optimizer finished, in milliseconds.",
+            "description_en": "The end time of the optimizer in milliseconds",
+            "description_zh": "优化器结束时刻，毫秒",
+            "example": "1787474487713",
+            "format": "int64",
+            "title": "优化器结束时刻，毫秒",
+            "type": "integer"
+          },
+          "TRolloutEndMs": {
+            "backendName": "TRolloutEndMs",
+            "descriptionEn": "Timestamp of the task log marker 'Step N rollout finished', in milliseconds.",
+            "description_en": "The time of the \"Step N rollout finished\" entry in the node logs in milliseconds",
+            "description_zh": "任务日志 \"Step N rollout finished\" 时刻，毫秒",
+            "example": "1787474487713",
+            "format": "int64",
+            "title": "任务日志 \"Step N rollout finished\" 时刻，毫秒",
+            "type": "integer"
+          },
+          "TRolloutStartMs": {
+            "backendName": "TRolloutStartMs",
+            "descriptionEn": "Observed rollout start time for the current step, as a millisecond timestamp.",
+            "description_en": "The observed rollout start time for the current step as a millisecond timestamp",
+            "description_zh": "已观测到的当前步采样开始时间，毫秒时间戳",
+            "example": "1787474487713",
+            "format": "int64",
+            "title": "采样开始时间",
+            "type": "integer"
+          },
+          "TTrainEndMs": {
+            "backendName": "TTrainEndMs",
+            "descriptionEn": "Timestamp of the task log marker 'Step N train finished', in milliseconds.",
+            "description_en": "The time of the \"Step N train finished\" entry in the node logs in milliseconds",
+            "description_zh": "任务日志 \"Step N train finished\" 时刻，毫秒",
+            "example": "1787474487713",
+            "format": "int64",
+            "title": "任务日志 \"Step N train finished\" 时刻，毫秒",
+            "type": "integer"
+          },
+          "TTrainStartMs": {
+            "backendName": "TTrainStartMs",
+            "descriptionEn": "Timestamp of the task log marker 'Step N train started', in milliseconds.",
+            "description_en": "The time of the \"Step N train started\" entry in the node logs in milliseconds",
+            "description_zh": "任务日志 \"Step N train started\" 时刻，毫秒",
+            "example": "1787474487713",
+            "format": "int64",
+            "title": "任务日志 \"Step N train started\" 时刻，毫秒",
+            "type": "integer"
+          },
+          "TUpdateMs": {
+            "backendName": "TUpdateMs",
+            "descriptionEn": "Timestamp of TRAIN_UPDATE, that is the parameter update, in milliseconds.",
+            "description_en": "The time of the TRAIN_UPDATE (parameter update) event in milliseconds",
+            "description_zh": "TRAIN_UPDATE（参数更新）时刻，毫秒",
+            "example": "1787474487713",
+            "format": "int64",
+            "title": "TRAIN_UPDATE（参数更新）时刻，毫秒",
+            "type": "integer"
+          },
+          "TrainSec": {
+            "backendName": "TrainSec",
+            "descriptionEn": "Training duration in seconds. Preferably train finished minus train started; without those markers it falls back to batch formation through training completion, and is empty when a job restart makes global_step repeat.",
+            "description_en": "The duration of the training phase for the step in seconds. This value is not provided when the training start and end times are unavailable",
+            "description_zh": "该 step 训练阶段的耗时，单位为秒；缺少可用的训练起止时间时不提供该值",
+            "example": "0",
+            "format": "double",
+            "title": "训练耗时（秒）",
+            "type": "number"
+          }
+        },
+        "title": "step 生产-消费视图条目",
+        "type": "object"
+      },
+      "RLFlowStuckItem": {
+        "descriptionEn": "One stuck in-flight trajectory.",
+        "description_en": "The in-flight checkpoint entry",
+        "description_zh": "在途卡点条目",
+        "properties": {
+          "IdleSec": {
+            "backendName": "IdleSec",
+            "descriptionEn": "Idle seconds relative to NowMs. The Stuck list is sorted by this value in descending order.",
+            "description_en": "The number of idle seconds since NowMs (the descending sort key for the stuck list)",
+            "description_zh": "距 NowMs 的空闲秒数（Stuck 列表的降序排序键）",
+            "example": "0",
+            "format": "int64",
+            "title": "距 NowMs 的空闲秒数（Stuck 列表的降序排序键）",
+            "type": "integer"
+          },
+          "LastTsMs": {
+            "backendName": "LastTsMs",
+            "descriptionEn": "Millisecond timestamp of the last event.",
+            "description_en": "The millisecond timestamp of the last event",
+            "description_zh": "最后一次事件的毫秒时间戳",
+            "example": "1787293215480",
+            "format": "int64",
+            "title": "最后一次事件的毫秒时间戳",
+            "type": "integer"
+          },
+          "Milestone": {
+            "backendName": "Milestone",
+            "descriptionEn": "Milestone the trajectory is currently waiting at, as a Chinese display label such as 生成中 (generating) or 已采样待训练 (sampled, awaiting training).",
+            "description_en": "The current milestone: generated but not dispatched, dispatched but not started, started but pending generation, generating, rollout completed pending scoring, scored pending sampling, or sampled pending training",
+            "description_zh": "当前停留的里程碑：已生成未下发 / 已下发未启动 / 已启动待生成 / 生成中 / Rollout完成待打分 / 已打分待采样 / 已采样待训练",
+            "example": "生成中",
+            "title": "当前停留的里程碑：已生成未下发 / 已下发未启动 / 已启动待生成 / 生成中 / Rollout完成待打分 / 已打分待采样 / 已采样待训练",
+            "type": "string"
+          },
+          "NTurns": {
+            "backendName": "NTurns",
+            "descriptionEn": "Number of generation turns completed so far.",
+            "description_en": "The number of completed generation turns",
+            "description_zh": "已完成的生成轮数",
+            "example": "3",
+            "format": "int32",
+            "title": "已完成的生成轮数",
+            "type": "integer"
+          },
+          "PromptUid": {
+            "backendName": "PromptUid",
+            "descriptionEn": "Prompt UID of the sample.",
+            "description_en": "The sample UID",
+            "description_zh": "样本 uid",
+            "example": "321fa56f-e1e5-4eb3-8047-db7a230c9a75",
+            "title": "样本 uid",
+            "type": "string"
+          },
+          "SampleIndex": {
+            "backendName": "SampleIndex",
+            "descriptionEn": "Trajectory index.",
+            "description_en": "The trajectory index",
+            "description_zh": "轨迹序号",
+            "example": "2",
+            "title": "轨迹序号",
+            "type": "string"
+          }
+        },
+        "title": "在途卡点条目",
+        "type": "object"
+      },
+      "RLFlowTotals": {
+        "descriptionEn": "Aggregate totals of the flow analysis.",
+        "description_en": "The flow analysis total statistics",
+        "description_zh": "流转分析总量统计",
+        "properties": {
+          "Inflight": {
+            "backendName": "Inflight",
+            "descriptionEn": "Number of in-flight trajectories, that is, those without a terminal state.",
+            "description_en": "The number of in-flight trajectories (no desired state)",
+            "description_zh": "在途轨迹数（无终态）",
+            "example": "0",
+            "format": "int32",
+            "title": "在途轨迹数（无终态）",
+            "type": "integer"
+          },
+          "Rewarded": {
+            "backendName": "Rewarded",
+            "descriptionEn": "Number of trajectories scored by reward, identified by the reward_score_computed marker.",
+            "description_en": "The number of trajectories that have completed reward scoring (hit reward_score_computed)",
+            "description_zh": "已完成 reward 打分的轨迹数（命中 reward_score_computed）",
+            "example": "96",
+            "format": "int32",
+            "title": "已完成 reward 打分的轨迹数（命中 reward_score_computed）",
+            "type": "integer"
+          },
+          "Sampled": {
+            "backendName": "Sampled",
+            "descriptionEn": "Number of trajectories the trainer sampled from the replay buffer, identified by the sampled_from_replay_buffer marker.",
+            "description_en": "The number of trajectories sampled into a batch by the trainer (hit sampled_from_replay_buffer)",
+            "description_zh": "已被 trainer 采样入批的轨迹数（命中 sampled_from_replay_buffer）",
+            "example": "96",
+            "format": "int32",
+            "title": "已被 trainer 采样入批的轨迹数（命中 sampled_from_replay_buffer）",
+            "type": "integer"
+          },
+          "Trained": {
+            "backendName": "Trained",
+            "descriptionEn": "Number of trajectories that completed training, identified by the actor_parameters_updated marker.",
+            "description_en": "The number of trajectories that have completed training (hit actor_parameters_updated)",
+            "description_zh": "完成训练的轨迹数（命中 actor_parameters_updated）",
+            "example": "96",
+            "format": "int32",
+            "title": "完成训练的轨迹数（命中 actor_parameters_updated）",
+            "type": "integer"
+          },
+          "Trajs": {
+            "backendName": "Trajs",
+            "descriptionEn": "Total number of trajectories in the time window.",
+            "description_en": "The total number of trajectories in the window",
+            "description_zh": "窗口内轨迹总数",
+            "example": "96",
+            "format": "int32",
+            "title": "窗口内轨迹总数",
+            "type": "integer"
+          },
+          "Uids": {
+            "backendName": "Uids",
+            "descriptionEn": "Number of distinct sample UIDs in the time window.",
+            "description_en": "The number of sample UIDs that appear in the window",
+            "description_zh": "窗口内出现的样本 uid 数",
+            "example": "24",
+            "format": "int32",
+            "title": "窗口内出现的样本 uid 数",
+            "type": "integer"
+          }
+        },
+        "title": "流转分析总量统计",
+        "type": "object"
+      },
+      "RLFlowTransition": {
+        "descriptionEn": "Duration statistics of a stage.",
+        "description_en": "The phase duration statistics",
+        "description_zh": "阶段耗时统计",
+        "properties": {
+          "Avg": {
+            "backendName": "Avg",
+            "descriptionEn": "Average duration, in seconds.",
+            "description_en": "The average duration in seconds",
+            "description_zh": "平均耗时（秒）",
+            "example": "1.9",
+            "format": "double",
+            "title": "平均耗时（秒）",
+            "type": "number"
+          },
+          "Count": {
+            "backendName": "Count",
+            "descriptionEn": "Number of trajectories included in the statistics.",
+            "description_en": "The number of trajectories included in the statistics",
+            "description_zh": "参与统计的轨迹数",
+            "example": "96",
+            "format": "int32",
+            "title": "参与统计的轨迹数",
+            "type": "integer"
+          },
+          "Key": {
+            "backendName": "Key",
+            "descriptionEn": "Stage key: dispatch_wait, start_wait, env_prepare, generation, agent_finish, reward, buffer_wait, logprob, ref_logprob, advantage, update, or e2e.",
+            "description_en": "The phase identifier. Valid values: dispatch_wait, start_wait, env_prepare, generation, agent_finish, reward, buffer_wait, logprob, ref_logprob, advantage, update, and e2e",
+            "description_zh": "阶段标识：dispatch_wait / start_wait / env_prepare / generation / agent_finish / reward / buffer_wait / logprob / ref_logprob / advantage / update / e2e",
+            "example": "traj",
+            "title": "阶段标识：dispatch_wait / start_wait / env_prepare / generation / agent_finish / reward / buffer_wait / logprob / ref_logprob / advantage / update / e2e",
+            "type": "string"
+          },
+          "Label": {
+            "backendName": "Label",
+            "descriptionEn": "Display name of the stage.",
+            "description_en": "The Chinese name of the phase",
+            "description_zh": "阶段中文名",
+            "example": "生成轨迹",
+            "title": "阶段中文名",
+            "type": "string"
+          },
+          "Max": {
+            "backendName": "Max",
+            "descriptionEn": "Maximum duration, in seconds.",
+            "description_en": "The maximum duration in seconds",
+            "description_zh": "最大耗时（秒）",
+            "example": "9.2",
+            "format": "double",
+            "title": "最大耗时（秒）",
+            "type": "number"
+          },
+          "P50": {
+            "backendName": "P50",
+            "descriptionEn": "50th percentile of the duration, in seconds.",
+            "description_en": "The P50 duration in seconds",
+            "description_zh": "耗时 P50（秒）",
+            "example": "0.8",
+            "format": "double",
+            "title": "耗时 P50（秒）",
+            "type": "number"
+          },
+          "P90": {
+            "backendName": "P90",
+            "descriptionEn": "90th percentile of the duration, in seconds.",
+            "description_en": "The P90 duration in seconds",
+            "description_zh": "耗时 P90（秒）",
+            "example": "5.9",
+            "format": "double",
+            "title": "耗时 P90（秒）",
+            "type": "number"
+          },
+          "P99": {
+            "backendName": "P99",
+            "descriptionEn": "99th percentile of the duration, in seconds.",
+            "description_en": "The P99 duration in seconds",
+            "description_zh": "耗时 P99（秒）",
+            "example": "8.6",
+            "format": "double",
+            "title": "耗时 P99（秒）",
+            "type": "number"
+          },
+          "Slowest": {
+            "backendName": "Slowest",
+            "descriptionEn": "The five slowest trajectories.",
+            "description_en": "The slowest 5 trajectories",
+            "description_zh": "最慢 5 条轨迹",
+            "example": "[{\"PromptUid\":\"321fa56f-e1e5-4eb3-8047-db7a230c9a75\",\"SampleIndex\":\"2\",\"Sec\":9.2}]",
+            "itemName": "SlowestItem",
+            "items": {
+              "$ref": "#/components/schemas/RLFlowSlowestItem",
+              "descriptionEn": "One of the slowest entries for a stage duration.",
+              "description_en": "The slowest phase duration entry",
+              "description_zh": "阶段耗时最慢条目",
+              "title": "阶段耗时最慢条目"
+            },
+            "title": "最慢 5 条轨迹",
+            "type": "array"
+          }
+        },
+        "title": "阶段耗时统计",
+        "type": "object"
+      },
+      "RLFlowTurns": {
+        "descriptionEn": "Distribution of generation turns.",
+        "description_en": "The generation round distribution",
+        "description_zh": "生成轮数分布",
+        "properties": {
+          "Avg": {
+            "backendName": "Avg",
+            "descriptionEn": "Average number of generation turns.",
+            "description_en": "The average number of generation rounds",
+            "description_zh": "平均生成轮数",
+            "example": "1.9",
+            "format": "double",
+            "title": "平均生成轮数",
+            "type": "number"
+          },
+          "Count": {
+            "backendName": "Count",
+            "descriptionEn": "Number of trajectories included in the statistics.",
+            "description_en": "The number of traces included in the statistics",
+            "description_zh": "参与统计的轨迹数",
+            "example": "96",
+            "format": "int32",
+            "title": "参与统计的轨迹数",
+            "type": "integer"
+          },
+          "Max": {
+            "backendName": "Max",
+            "descriptionEn": "Maximum number of generation turns.",
+            "description_en": "The maximum number of generation rounds",
+            "description_zh": "最大生成轮数",
+            "example": "5",
+            "format": "int32",
+            "title": "最大生成轮数",
+            "type": "integer"
+          },
+          "P50": {
+            "backendName": "P50",
+            "descriptionEn": "50th percentile of the number of generation turns.",
+            "description_en": "The P50 of generation rounds",
+            "description_zh": "生成轮数 P50",
+            "example": "1",
+            "format": "int32",
+            "title": "生成轮数 P50",
+            "type": "integer"
+          },
+          "P90": {
+            "backendName": "P90",
+            "descriptionEn": "90th percentile of the number of generation turns.",
+            "description_en": "The P90 of generation rounds",
+            "description_zh": "生成轮数 P90",
+            "example": "3",
+            "format": "int32",
+            "title": "生成轮数 P90",
+            "type": "integer"
+          }
+        },
+        "title": "生成轮数分布",
+        "type": "object"
+      },
+      "RLFlowWaste": {
+        "descriptionEn": "Useful-compute statistics.",
+        "description_en": "The effective computing power statistics",
+        "description_zh": "有效算力统计",
+        "properties": {
+          "UsefulSec": {
+            "backendName": "UsefulSec",
+            "descriptionEn": "Cumulative duration of trained trajectories, in seconds.",
+            "description_en": "The cumulative duration of trained trajectories, in seconds",
+            "description_zh": "已训练轨迹的累计耗时（秒）",
+            "example": "183",
+            "format": "int64",
+            "title": "已训练轨迹的累计耗时（秒）",
+            "type": "integer"
+          }
+        },
+        "title": "有效算力统计",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "查询 DLC 作业 RL 轨迹流转分析",
+  "description_zh": "获取DLC作业RL轨迹流转分析",
+  "kebab_example": "",
+  "method": "GET",
+  "multi_version": false,
+  "name": "GetRLFlowAnalysis",
+  "operation": {
+    "action": "GetRLFlowAnalysis",
+    "api_style": "ROA",
+    "api_version": "2020-12-03",
+    "method": "GET",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "get",
+    "url": "/api/v1/jobs/{JobId}/rltrace/flowanalysis"
+  },
+  "parameters": [
+    {
+      "example": "dlc5yfk7eyg95lac",
+      "help_en": "作业 ID",
+      "help_zh": "作业 ID",
+      "location": "path",
+      "name": "job_id",
+      "options": [
+        "--job-id"
+      ],
+      "raw_name": "JobId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "2026-08-04T00:00:00Z",
+      "help_en": "查询窗口起始时间，采用 RFC3339 格式。未提供时默认为 EndTime 前 7 天；必须早于 EndTime，时间跨度不得超过 30 天",
+      "help_zh": "查询窗口起始（UTC RFC3339），缺省 EndTime-7d",
+      "location": "query",
+      "name": "start_time",
+      "options": [
+        "--start-time"
+      ],
+      "raw_name": "StartTime",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "2026-08-07T00:00:00Z",
+      "help_en": "查询窗口截止时间，采用 RFC3339 格式。未提供时使用服务端当前 UTC 时间，并向下对齐到 30 秒边界。为容纳日志采集延迟，实际读取的采集时间上界在该值基础上延后 5 分钟，并非严格按事件发生时间过滤",
+      "help_zh": "查询窗口截止（UTC RFC3339），缺省 now",
+      "location": "query",
+      "name": "end_time",
+      "options": [
+        "--end-time"
+      ],
+      "raw_name": "EndTime",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/api/v1/jobs/[JobId]/rltrace/flowanalysis",
+  "product_code": "pai-dlc",
+  "protocol": "HTTP|HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "RL 轨迹流转分析响应体",
+        "description_zh": "Schema of Response",
+        "properties": {
+          "Found": {
+            "backendName": "Found",
+            "description_en": "窗口内是否有轨迹数据",
+            "description_zh": "窗口内是否有轨迹数据",
+            "example": "true",
+            "title_en": "窗口内是否有轨迹数据",
+            "title_zh": "窗口内是否有轨迹数据",
+            "type": "boolean"
+          },
+          "Funnel": {
+            "backendName": "Funnel",
+            "description_en": "轨迹流转漏斗，按 traj → dispatch → run → rollout → reward → sampled → trained 的七级顺序返回。各级按已观测到的事件独立计数，不保证逐级递减",
+            "description_zh": "漏斗 6 级：traj → dispatch → run → push → selected → trained",
+            "itemName": "Stage",
+            "items": {
+              "$ref": "#/components/schemas/RLFlowFunnelStage",
+              "description_en": "一个漏斗层级，包含层级标识、中文名称、轨迹数及其占当前统计轨迹总数的百分比",
+              "description_zh": "漏斗层级",
+              "title_en": "漏斗层级",
+              "title_zh": "漏斗层级"
+            },
+            "title_en": "漏斗 7 级：traj → dispatch → run → rollout → reward → sampled → trained",
+            "title_zh": "漏斗 7 级：traj → dispatch → run → rollout → reward → sampled → trained",
+            "type": "array"
+          },
+          "InflightByMilestone": {
+            "backendName": "InflightByMilestone",
+            "description_en": "在途轨迹按环节计数（按 Count 降序）",
+            "description_zh": "在途轨迹按环节计数（按 Count 降序）",
+            "itemName": "MilestoneCount",
+            "items": {
+              "$ref": "#/components/schemas/RLFlowMilestoneCount",
+              "description_en": "一个里程碑的在途轨迹计数条目",
+              "description_zh": "里程碑在途轨迹计数",
+              "example": "[]",
+              "title_en": "里程碑在途轨迹计数",
+              "title_zh": "里程碑在途轨迹计数"
+            },
+            "title_en": "在途轨迹按环节计数（按 Count 降序）",
+            "title_zh": "在途轨迹按环节计数（按 Count 降序）",
+            "type": "array"
+          },
+          "JobId": {
+            "backendName": "JobId",
+            "description_en": "作业 ID",
+            "description_zh": "作业 ID",
+            "example": "dlc-20210126170216-xxxxxxx",
+            "title_en": "作业 ID",
+            "title_zh": "作业 ID",
+            "type": "string"
+          },
+          "MegaStepOffset": {
+            "backendName": "MegaStepOffset",
+            "description_en": "megatron 侧 step 编号相对 global_step 的偏移，取值为 0 或 1；缺少可用对齐信息时返回 0",
+            "description_zh": "megatron global_step 相对 FORM_BATCH batch_id 的偏移（0 或 1）",
+            "example": "0",
+            "format": "int64",
+            "title_en": "megatron step 编号偏移",
+            "title_zh": "megatron step 编号偏移",
+            "type": "integer"
+          },
+          "NowMs": {
+            "backendName": "NowMs",
+            "description_en": "服务端观察时刻（毫秒，= min(EndTime, now)），在途 idle 计算基准",
+            "description_zh": "服务端观察时刻（毫秒，= min(EndTime, now)），在途 idle 计算基准",
+            "example": "1787475397000",
+            "format": "int64",
+            "title_en": "服务端观察时刻（毫秒，= min(EndTime, now)），在途 idle 计算基准",
+            "title_zh": "服务端观察时刻（毫秒，= min(EndTime, now)），在途 idle 计算基准",
+            "type": "integer"
+          },
+          "RequestId": {
+            "backendName": "RequestId",
+            "description_en": "请求 ID",
+            "description_zh": "请求 ID",
+            "example": "473469C7-AA6F-4DC5-B3DB-A3DC0DE3C83E",
+            "title_en": "请求 ID",
+            "title_zh": "请求 ID",
+            "type": "string"
+          },
+          "Sankey": {
+            "$ref": "#/components/schemas/RLFlowSankey",
+            "backendName": "Sankey",
+            "description_en": "桑基图",
+            "description_zh": "桑基图",
+            "nullable": true,
+            "title_en": "桑基图",
+            "title_zh": "桑基图"
+          },
+          "StepSource": {
+            "backendName": "StepSource",
+            "description_en": "Steps 的时刻来源：progress 表示取自任务日志的 Step 标记，trace 表示按 trace 里的 global_step 归步，空表示无 step 数据",
+            "description_zh": "Steps 的时刻来源：progress 表示取自任务日志的 Step 标记，trace 表示按 trace 里的 global_step 归步，空表示无 step 数据",
+            "example": "progress",
+            "title_en": "Steps 的时刻来源：progress 表示取自任务日志的 Step 标记，trace 表示按 trace 里的 global_step 归步，空表示无 step 数据",
+            "title_zh": "Steps 的时刻来源：progress 表示取自任务日志的 Step 标记，trace 表示按 trace 里的 global_step 归步，空表示无 step 数据",
+            "type": "string"
+          },
+          "Steps": {
+            "backendName": "Steps",
+            "description_en": "step 生产-消费视图",
+            "description_zh": "step 生产-消费视图",
+            "itemName": "Step",
+            "items": {
+              "$ref": "#/components/schemas/RLFlowStep",
+              "description_en": "一个 step 的生产-消费视图条目",
+              "description_zh": "执行步骤",
+              "example": "[]",
+              "title_en": "step 生产-消费条目",
+              "title_zh": "step 生产-消费条目"
+            },
+            "title_en": "step 生产-消费视图",
+            "title_zh": "step 生产-消费视图",
+            "type": "array"
+          },
+          "Stuck": {
+            "backendName": "Stuck",
+            "description_en": "在途卡点 Top100（按 IdleSec 降序）",
+            "description_zh": "在途卡点 Top100（按 IdleSec 降序）",
+            "itemName": "StuckItem",
+            "items": {
+              "$ref": "#/components/schemas/RLFlowStuckItem",
+              "description_en": "一条在途轨迹的卡点信息",
+              "description_zh": "在途轨迹卡点",
+              "example": "[]",
+              "title_en": "在途轨迹卡点",
+              "title_zh": "在途轨迹卡点"
+            },
+            "title_en": "在途卡点 Top100（按 IdleSec 降序）",
+            "title_zh": "在途卡点 Top100（按 IdleSec 降序）",
+            "type": "array"
+          },
+          "Totals": {
+            "$ref": "#/components/schemas/RLFlowTotals",
+            "backendName": "Totals",
+            "description_en": "总量统计",
+            "description_zh": "总量统计",
+            "example": "{'Sampled': 0, 'Uids': 0, 'Inflight': 0, 'Trained': 0, 'Trajs': 0, 'Rewarded': 0}",
+            "nullable": true,
+            "title_en": "总量统计",
+            "title_zh": "总量统计"
+          },
+          "Transitions": {
+            "backendName": "Transitions",
+            "description_en": "12 个阶段的耗时分位统计，耗时单位为秒",
+            "description_zh": "8 个阶段耗时（秒）分位统计",
+            "itemName": "Transition",
+            "items": {
+              "$ref": "#/components/schemas/RLFlowTransition",
+              "description_en": "一个阶段的耗时统计，包含参与统计的轨迹数、平均和最大耗时、P50/P90/P99 分位值，以及按耗时降序排列的最多 5 条慢轨迹",
+              "description_zh": "转场效果。\n当 TransitionMode 为 Random 和 Sequential 时有效。\n数量上限 10",
+              "title_en": "阶段耗时统计",
+              "title_zh": "阶段耗时统计"
+            },
+            "title_en": "12 个阶段耗时（秒）分位统计",
+            "title_zh": "12 个阶段耗时（秒）分位统计",
+            "type": "array"
+          },
+          "Turns": {
+            "$ref": "#/components/schemas/RLFlowTurns",
+            "backendName": "Turns",
+            "description_en": "生成轮数分布",
+            "description_zh": "生成轮数分布",
+            "example": "{'Count': 0, 'Max': None, 'Avg': None, 'P50': None, 'P90': None}",
+            "nullable": true,
+            "title_en": "生成轮数分布",
+            "title_zh": "生成轮数分布"
+          },
+          "Waste": {
+            "$ref": "#/components/schemas/RLFlowWaste",
+            "backendName": "Waste",
+            "description_en": "有效算力统计。UsefulSec 为已完成训练轨迹的累计执行耗时，单位为整数秒；可包含重叠时段，不等同于作业运行时长或训练更新耗时",
+            "description_zh": "过采样浪费",
+            "example": "{'UsefulSec': 0}",
+            "nullable": true,
+            "title_en": "有效算力统计",
+            "title_zh": "有效算力统计"
+          }
+        },
+        "title_en": "RL 轨迹流转分析响应体",
+        "title_zh": "RL 轨迹流转分析响应体",
+        "type": "object"
+      }
+    }
+  },
+  "timeout_ms": 32000
+}

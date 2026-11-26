@@ -1,0 +1,1181 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "pai-dlc get-rl-training-progress",
+  "cmd_name": "get-rl-training-progress",
+  "components": {
+    "schemas": {
+      "RLProgressBuffer": {
+        "descriptionEn": "Readiness of the data buffers.",
+        "description_en": "The data buffer readiness",
+        "description_zh": "数据 buffer 就绪度",
+        "properties": {
+          "Consumed": {
+            "backendName": "Consumed",
+            "descriptionEn": "Total consumed samples across unfinished buffers.",
+            "description_en": "The total number of consumed samples in unfinished buffers",
+            "description_zh": "未完成 buffer 的已消费样本数合计",
+            "example": "0",
+            "format": "int32",
+            "title": "未完成 buffer 的已消费样本数合计",
+            "type": "integer"
+          },
+          "Detail": {
+            "backendName": "Detail",
+            "descriptionEn": "Per-tag breakdown of the buffers.",
+            "description_en": "The buffer details split by tag",
+            "description_zh": "按 tag 拆分的 buffer 明细",
+            "example": "[{\"Tag\":1,\"Ready\":500,\"Consumed\":0,\"Finished\":500,\"Total\":512}]",
+            "itemName": "DetailItem",
+            "items": {
+              "$ref": "#/components/schemas/RLProgressBufferDetail",
+              "descriptionEn": "One buffer detail entry, keyed by tag.",
+              "description_en": "The buffer detail entries by tag",
+              "description_zh": "buffer 明细条目（按 tag）",
+              "title": "buffer 明细条目（按 tag）"
+            },
+            "title": "按 tag 拆分的 buffer 明细",
+            "type": "array"
+          },
+          "EtaSec": {
+            "backendName": "EtaSec",
+            "descriptionEn": "Estimated seconds remaining until the buffer is full.",
+            "description_en": "The estimated number of seconds remaining to fill the buffer",
+            "description_zh": "预计填满剩余秒数",
+            "example": "0",
+            "format": "int64",
+            "title": "预计填满剩余秒数",
+            "type": "integer"
+          },
+          "FillRatePerMin": {
+            "backendName": "FillRatePerMin",
+            "descriptionEn": "Fill rate in samples per minute, estimated from the rollout completion rate.",
+            "description_en": "The fill rate in entries per minute, estimated by using the rollout completion rate as a proxy",
+            "description_zh": "填充速率（条/分钟），用 rollout 完成速率代理估算",
+            "example": "120.5",
+            "format": "double",
+            "title": "填充速率（条/分钟），用 rollout 完成速率代理估算",
+            "type": "number"
+          },
+          "Finished": {
+            "backendName": "Finished",
+            "descriptionEn": "Total finished samples across unfinished buffers.",
+            "description_en": "The total number of finished samples in unfinished buffers",
+            "description_zh": "未完成 buffer 的已完成样本数合计",
+            "example": "500",
+            "format": "int32",
+            "title": "未完成 buffer 的已完成样本数合计",
+            "type": "integer"
+          },
+          "Pct": {
+            "backendName": "Pct",
+            "descriptionEn": "Readiness percentage, Ready over Target.",
+            "description_en": "The completion percentage of the finished count relative to the target count, up to 100%. This value is provided when the target count is greater than 0. This value is not equivalent to the proportion of currently available samples indicated by the ready count",
+            "description_zh": "已完成数量 Finished 相对于目标数量 Target 的完成百分比，最高为 100%；Target 大于 0 时提供。该值不等同于 Ready 表示的当前可用数量比例",
+            "example": "100",
+            "format": "double",
+            "title": "缓冲区完成度百分比",
+            "type": "number"
+          },
+          "Ready": {
+            "backendName": "Ready",
+            "descriptionEn": "Total ready samples across unfinished buffers.",
+            "description_en": "The total number of ready samples in unfinished buffers",
+            "description_zh": "未完成 buffer 的已就绪样本数合计",
+            "example": "500",
+            "format": "int32",
+            "title": "未完成 buffer 的已就绪样本数合计",
+            "type": "integer"
+          },
+          "Target": {
+            "backendName": "Target",
+            "descriptionEn": "Total target samples across unfinished buffers.",
+            "description_en": "The total number of target samples in unfinished buffers",
+            "description_zh": "未完成 buffer 的目标样本数合计",
+            "example": "512",
+            "format": "int32",
+            "title": "未完成 buffer 的目标样本数合计",
+            "type": "integer"
+          },
+          "TrainBatchSize": {
+            "backendName": "TrainBatchSize",
+            "descriptionEn": "Training batch size from the configuration.",
+            "description_en": "The configured training batch size",
+            "description_zh": "配置的训练 batch 大小",
+            "example": "512",
+            "format": "int32",
+            "title": "配置的训练 batch 大小",
+            "type": "integer"
+          },
+          "Training": {
+            "backendName": "Training",
+            "descriptionEn": "True when Consumed is greater than 0, meaning the batch has been taken and the trainer is updating.",
+            "description_en": "Indicates whether the consumed count is greater than 0, which means that batches have been fetched and the trainer is updating",
+            "description_zh": "Consumed 大于 0，即 batch 已被取走、trainer 正在更新",
+            "example": "true",
+            "title": "Consumed 大于 0，即 batch 已被取走、trainer 正在更新",
+            "type": "boolean"
+          }
+        },
+        "title": "数据 buffer 就绪度",
+        "type": "object"
+      },
+      "RLProgressBufferDetail": {
+        "descriptionEn": "One buffer detail entry, keyed by tag.",
+        "description_en": "The buffer detail entry (by tag)",
+        "description_zh": "buffer 明细条目（按 tag）",
+        "properties": {
+          "Consumed": {
+            "backendName": "Consumed",
+            "descriptionEn": "Number of samples consumed by the trainer.",
+            "description_en": "The number of samples consumed by the trainer",
+            "description_zh": "已被 trainer 消费的样本数",
+            "example": "0",
+            "format": "int32",
+            "title": "已被 trainer 消费的样本数",
+            "type": "integer"
+          },
+          "Finished": {
+            "backendName": "Finished",
+            "descriptionEn": "Number of finished samples.",
+            "description_en": "The number of finished samples",
+            "description_zh": "已完成样本数",
+            "example": "500",
+            "format": "int32",
+            "title": "已完成样本数",
+            "type": "integer"
+          },
+          "Ready": {
+            "backendName": "Ready",
+            "descriptionEn": "Number of ready samples.",
+            "description_en": "The number of ready samples",
+            "description_zh": "已就绪样本数",
+            "example": "500",
+            "format": "int32",
+            "title": "已就绪样本数",
+            "type": "integer"
+          },
+          "Tag": {
+            "backendName": "Tag",
+            "descriptionEn": "Buffer tag, that is the global batch number.",
+            "description_en": "The buffer tag, which is the global batch ordinal number",
+            "description_zh": "buffer 标签，即 global batch 序号",
+            "example": "1",
+            "format": "int32",
+            "title": "buffer 标签，即 global batch 序号",
+            "type": "integer"
+          },
+          "Total": {
+            "backendName": "Total",
+            "descriptionEn": "Target number of samples.",
+            "description_en": "The target number of samples",
+            "description_zh": "目标样本数",
+            "example": "3",
+            "format": "int32",
+            "title": "目标样本数",
+            "type": "integer"
+          }
+        },
+        "title": "buffer 明细条目（按 tag）",
+        "type": "object"
+      },
+      "RLProgressConfig": {
+        "descriptionEn": "Values parsed from the training configuration dump.",
+        "description_en": "The training configuration dump parse result",
+        "description_zh": "训练配置 dump 解析结果",
+        "properties": {
+          "NumMinibatches": {
+            "backendName": "NumMinibatches",
+            "descriptionEn": "Number of mini-batches per step.",
+            "description_en": "The number of mini-batches per step",
+            "description_zh": "每个 step 的 mini-batch 数",
+            "example": "4",
+            "format": "int32",
+            "title": "每个 step 的 mini-batch 数",
+            "type": "integer"
+          },
+          "PpoMiniBatchSize": {
+            "backendName": "PpoMiniBatchSize",
+            "descriptionEn": "PPO mini-batch size.",
+            "description_en": "The PPO mini-batch size",
+            "description_zh": "PPO mini-batch 大小",
+            "example": "128",
+            "format": "int32",
+            "title": "PPO mini-batch 大小",
+            "type": "integer"
+          },
+          "RolloutN": {
+            "backendName": "RolloutN",
+            "descriptionEn": "Number of rollouts per prompt.",
+            "description_en": "The number of rollouts per prompt",
+            "description_zh": "每个 prompt 的 rollout 条数",
+            "example": "8",
+            "format": "int32",
+            "title": "每个 prompt 的 rollout 条数",
+            "type": "integer"
+          },
+          "TotalSteps": {
+            "backendName": "TotalSteps",
+            "descriptionEn": "Total number of training steps.",
+            "description_en": "The total number of training steps",
+            "description_zh": "总训练步数",
+            "example": "3",
+            "format": "int32",
+            "title": "总训练步数",
+            "type": "integer"
+          },
+          "TrainBatchSize": {
+            "backendName": "TrainBatchSize",
+            "descriptionEn": "Training batch size.",
+            "description_en": "The training batch size",
+            "description_zh": "训练 batch 大小",
+            "example": "512",
+            "format": "int32",
+            "title": "训练 batch 大小",
+            "type": "integer"
+          }
+        },
+        "title": "训练配置 dump 解析结果",
+        "type": "object"
+      },
+      "RLProgressEval": {
+        "descriptionEn": "Readiness of the eval buffer, which uses tag -1.",
+        "description_en": "The eval buffer readiness (tag=-1)",
+        "description_zh": "eval buffer 就绪度（tag=-1）",
+        "properties": {
+          "Done": {
+            "backendName": "Done",
+            "descriptionEn": "True when Total is greater than 0 and Finished is not less than Total.",
+            "description_en": "Indicates whether Total is greater than 0 and Finished is not less than Total",
+            "description_zh": "Total 大于 0 且 Finished 不小于 Total",
+            "example": "true",
+            "title": "Total 大于 0 且 Finished 不小于 Total",
+            "type": "boolean"
+          },
+          "Finished": {
+            "backendName": "Finished",
+            "descriptionEn": "Number of finished samples.",
+            "description_en": "The number of finished samples",
+            "description_zh": "已完成样本数",
+            "example": "500",
+            "format": "int32",
+            "title": "已完成样本数",
+            "type": "integer"
+          },
+          "Pct": {
+            "backendName": "Pct",
+            "descriptionEn": "Progress percentage, Progress over Total.",
+            "description_en": "The progress percentage, which is the ratio of Progress to Total",
+            "description_zh": "进度百分比，Progress 占 Total 的比例",
+            "example": "100",
+            "format": "double",
+            "title": "进度百分比，Progress 占 Total 的比例",
+            "type": "number"
+          },
+          "Progress": {
+            "backendName": "Progress",
+            "descriptionEn": "Progress count, the greater of Ready and Finished.",
+            "description_en": "The progress count, which is the greater value of Ready and Finished",
+            "description_zh": "进度计数，取 Ready 与 Finished 的较大值",
+            "example": "500",
+            "format": "int32",
+            "title": "进度计数，取 Ready 与 Finished 的较大值",
+            "type": "integer"
+          },
+          "Ready": {
+            "backendName": "Ready",
+            "descriptionEn": "Number of ready samples.",
+            "description_en": "The number of ready samples",
+            "description_zh": "已就绪样本数",
+            "example": "500",
+            "format": "int32",
+            "title": "已就绪样本数",
+            "type": "integer"
+          },
+          "Total": {
+            "backendName": "Total",
+            "descriptionEn": "Target number of samples.",
+            "description_en": "The target number of samples",
+            "description_zh": "目标样本数",
+            "example": "3",
+            "format": "int32",
+            "title": "目标样本数",
+            "type": "integer"
+          }
+        },
+        "title": "eval buffer 就绪度（tag=-1）",
+        "type": "object"
+      },
+      "RLProgressFatal": {
+        "descriptionEn": "One fatal error entry.",
+        "description_en": "The fatal error entry",
+        "description_zh": "致命错误条目",
+        "properties": {
+          "CollectNs": {
+            "backendName": "CollectNs",
+            "descriptionEn": "Nanosecond timestamp string for precise log positioning. Pass it unchanged to the log-context API; converting it to a number may lose precision.",
+            "description_en": "Raw log collection time in the form of a nanosecond timestamp string, used to help locate raw log context. Pass this value as is when calling raw log context API to avoid precision loss caused by numeric conversion. This value does not guarantee an exact match with the original log",
+            "description_zh": "日志采集时间，采用纳秒时间戳字符串，用于辅助定位日志上下文。调用日志上下文接口时应原样传递，避免转换为数值导致精度丢失；不保证精确命中原始日志",
+            "example": "1787474487713456789",
+            "title": "日志采集时间",
+            "type": "string"
+          },
+          "Message": {
+            "backendName": "Message",
+            "descriptionEn": "Error text, truncated to 500 characters.",
+            "description_en": "The error message, truncated to 500 characters",
+            "description_zh": "错误文案（截断至 500 字符）",
+            "example": "CUDA out of memory. Tried to allocate 2.00 GiB",
+            "title": "错误文案（截断至 500 字符）",
+            "type": "string"
+          },
+          "RawMessage": {
+            "backendName": "RawMessage",
+            "descriptionEn": "Raw log line, truncated to 2000 characters. Pass it as AnchorMessage when calling GetRLLogContext.",
+            "description_en": "The raw log line, truncated to 2000 characters. It is passed as AnchorMessage when calling GetRLLogContext",
+            "description_zh": "原始日志行（截断至 2000 字符）；调用 GetRLLogContext 时作为 AnchorMessage 传入",
+            "example": "[rank0]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 GiB",
+            "title": "原始日志行（截断至 2000 字符）；调用 GetRLLogContext 时作为 AnchorMessage 传入",
+            "type": "string"
+          },
+          "SubsecNs": {
+            "backendName": "SubsecNs",
+            "descriptionEn": "Nanosecond offset within the same second, used to order logs that share a second.",
+            "description_en": "The nanosecond offset within the same second, used for sorting logs within the same second",
+            "description_zh": "同秒内的纳秒偏移，用于同秒日志排序",
+            "example": "123456789",
+            "format": "int64",
+            "title": "同秒内的纳秒偏移，用于同秒日志排序",
+            "type": "integer"
+          },
+          "Time": {
+            "backendName": "Time",
+            "descriptionEn": "Log time, in Unix seconds.",
+            "description_en": "The log time in UNIX seconds",
+            "description_zh": "日志时间（unix 秒）",
+            "example": "1787474487",
+            "format": "int64",
+            "title": "日志时间（unix 秒）",
+            "type": "integer"
+          }
+        },
+        "title": "致命错误条目",
+        "type": "object"
+      },
+      "RLProgressMicro": {
+        "descriptionEn": "Micro-batch progress.",
+        "description_en": "The micro-batch progress",
+        "description_zh": "micro-batch 进度",
+        "properties": {
+          "Current": {
+            "backendName": "Current",
+            "descriptionEn": "Current micro-batch index.",
+            "description_en": "The current micro-batch ordinal number",
+            "description_zh": "当前 micro-batch 序号",
+            "example": "3",
+            "format": "int32",
+            "title": "当前 micro-batch 序号",
+            "type": "integer"
+          },
+          "Total": {
+            "backendName": "Total",
+            "descriptionEn": "Total number of micro-batches.",
+            "description_en": "The micro-batch total count",
+            "description_zh": "micro-batch 总数",
+            "example": "3",
+            "format": "int32",
+            "title": "micro-batch 总数",
+            "type": "integer"
+          }
+        },
+        "title": "micro-batch 进度",
+        "type": "object"
+      },
+      "RLProgressProcessed": {
+        "descriptionEn": "Number of rollouts processed.",
+        "description_en": "The rollout processed count",
+        "description_zh": "rollout 已处理计数",
+        "properties": {
+          "Done": {
+            "backendName": "Done",
+            "descriptionEn": "Number processed.",
+            "description_en": "The processed count",
+            "description_zh": "已处理条数",
+            "example": "2",
+            "format": "int32",
+            "title": "已处理条数",
+            "type": "integer"
+          },
+          "Total": {
+            "backendName": "Total",
+            "descriptionEn": "Total number.",
+            "description_en": "The total count",
+            "description_zh": "总条数",
+            "example": "3",
+            "format": "int32",
+            "title": "总条数",
+            "type": "integer"
+          }
+        },
+        "title": "rollout 已处理计数",
+        "type": "object"
+      },
+      "RLProgressRollout": {
+        "descriptionEn": "Rollout throughput.",
+        "description_en": "The rollout throughput",
+        "description_zh": "rollout 吞吐",
+        "properties": {
+          "Finished": {
+            "backendName": "Finished",
+            "descriptionEn": "Total number completed within the time window.",
+            "description_en": "The total number of completed items within the window",
+            "description_zh": "窗口内完成总数",
+            "example": "500",
+            "format": "int32",
+            "title": "窗口内完成总数",
+            "type": "integer"
+          },
+          "Processed": {
+            "$ref": "#/components/schemas/RLProgressProcessed",
+            "backendName": "Processed",
+            "descriptionEn": "Number of rollouts processed.",
+            "description_en": "The rollout processed count",
+            "description_zh": "rollout 已处理计数",
+            "nullable": true,
+            "title": "rollout 已处理计数"
+          },
+          "RatePerMin": {
+            "backendName": "RatePerMin",
+            "descriptionEn": "Completion rate in items per minute, estimated from the most recent 120 completion events.",
+            "description_en": "The completion rate (items per minute), estimated from the last 120 completion events",
+            "description_zh": "完成速率（条/分钟），由最近 120 条完成事件估算",
+            "example": "31.2",
+            "format": "double",
+            "title": "完成速率（条/分钟），由最近 120 条完成事件估算",
+            "type": "number"
+          }
+        },
+        "title": "rollout 吞吐",
+        "type": "object"
+      },
+      "RLProgressSlow": {
+        "descriptionEn": "Soft alert for slow inference.",
+        "description_en": "The slow inference soft alert",
+        "description_zh": "慢推理软告警",
+        "properties": {
+          "Details": {
+            "backendName": "Details",
+            "descriptionEn": "Slow-inference details, up to 20 entries.",
+            "description_en": "The slow inference details, up to 20 entries",
+            "description_zh": "慢推理明细，最多 20 条",
+            "example": "[{\"Elapsed\":42.5,\"Time\":1787474487,\"Message\":\"rollout generation slow\",\"Rank\":0,\"Pod\":\"dlc193cpaitk8eny-master-0\",\"WorkerPid\":12345,\"Ip\":\"192.168.0.12\",\"Rid\":\"req-8f3a2c1d\",\"TokenizerPid\":\"12360\",\"Ipc\":\"ipc://worker-0\",\"IsPause\":\"false\",\"StatePresent\":\"true\",\"OutQueue\":\"3\"}]",
+            "itemName": "Detail",
+            "items": {
+              "$ref": "#/components/schemas/RLProgressSlowDetail",
+              "descriptionEn": "One slow-inference detail entry.",
+              "description_en": "The slow inference detail entry",
+              "description_zh": "慢推理明细条目",
+              "title": "慢推理明细条目"
+            },
+            "title": "慢推理明细，最多 20 条",
+            "type": "array"
+          },
+          "Elapsed": {
+            "backendName": "Elapsed",
+            "descriptionEn": "Elapsed time of the slowest entry, in seconds.",
+            "description_en": "The elapsed time of the slowest entry in seconds",
+            "description_zh": "最慢一条的已耗时（秒）",
+            "example": "42.5",
+            "format": "double",
+            "title": "最慢一条的已耗时（秒）",
+            "type": "number"
+          },
+          "Time": {
+            "backendName": "Time",
+            "descriptionEn": "Log time of the slowest entry, in Unix seconds.",
+            "description_en": "The log timestamp of the slowest entry in UNIX seconds",
+            "description_zh": "最慢一条的日志时间（unix 秒）",
+            "example": "1787474487",
+            "format": "int64",
+            "title": "最慢一条的日志时间（unix 秒）",
+            "type": "integer"
+          }
+        },
+        "title": "慢推理软告警",
+        "type": "object"
+      },
+      "RLProgressSlowDetail": {
+        "descriptionEn": "One slow-inference detail entry.",
+        "description_en": "The slow inference detail entry",
+        "description_zh": "慢推理明细条目",
+        "properties": {
+          "Elapsed": {
+            "backendName": "Elapsed",
+            "descriptionEn": "Elapsed time of the request, in seconds.",
+            "description_en": "The elapsed time of the request, in seconds",
+            "description_zh": "该请求已耗时（秒）",
+            "example": "42.5",
+            "format": "double",
+            "title": "该请求已耗时（秒）",
+            "type": "number"
+          },
+          "Ip": {
+            "backendName": "Ip",
+            "descriptionEn": "Worker IP address.",
+            "description_en": "worker IP",
+            "description_zh": "worker IP",
+            "example": "192.168.0.12",
+            "title": "worker IP",
+            "type": "string"
+          },
+          "Ipc": {
+            "backendName": "Ipc",
+            "descriptionEn": "IPC channel identifier, from the ipc field of the log.",
+            "description_en": "The IPC channel identifier, which corresponds to the ipc field in the log",
+            "description_zh": "IPC 通道标识（日志 ipc 字段）",
+            "example": "ipc://worker-0",
+            "title": "IPC 通道标识（日志 ipc 字段）",
+            "type": "string"
+          },
+          "IsPause": {
+            "backendName": "IsPause",
+            "descriptionEn": "Whether the worker is paused, as the raw is_pause value from the log.",
+            "description_en": "Indicates whether the request is paused. This is the raw value of the is_pause field in the log",
+            "description_zh": "是否处于 pause（日志 is_pause 原始取值）",
+            "example": "false",
+            "title": "是否处于 pause（日志 is_pause 原始取值）",
+            "type": "string"
+          },
+          "Message": {
+            "backendName": "Message",
+            "descriptionEn": "Log text, truncated to 700 characters.",
+            "description_en": "The log message, truncated to 700 characters",
+            "description_zh": "日志文案（截断至 700 字符）",
+            "example": "CUDA out of memory. Tried to allocate 2.00 GiB",
+            "title": "日志文案（截断至 700 字符）",
+            "type": "string"
+          },
+          "OutQueue": {
+            "backendName": "OutQueue",
+            "descriptionEn": "Output queue length, as the raw out_queue value from the log.",
+            "description_en": "The output queue length. This is the raw value of the out_queue field in the log",
+            "description_zh": "输出队列长度（日志 out_queue 原始取值）",
+            "example": "3",
+            "title": "输出队列长度（日志 out_queue 原始取值）",
+            "type": "string"
+          },
+          "Pod": {
+            "backendName": "Pod",
+            "descriptionEn": "Name of the pod.",
+            "description_en": "The name of the pod",
+            "description_zh": "所在 Pod 名",
+            "example": "dlc193cpaitk8eny-master-0",
+            "title": "所在 Pod 名",
+            "type": "string"
+          },
+          "Rank": {
+            "backendName": "Rank",
+            "descriptionEn": "Training rank.",
+            "description_en": "The training rank",
+            "description_zh": "训练 rank",
+            "example": "0",
+            "format": "int32",
+            "title": "训练 rank",
+            "type": "integer"
+          },
+          "Rid": {
+            "backendName": "Rid",
+            "descriptionEn": "Inference request ID, from the rid field of the log.",
+            "description_en": "The inference request ID, which corresponds to the rid field in the log",
+            "description_zh": "推理请求 ID（日志 rid 字段）",
+            "example": "req-8f3a2c1d",
+            "title": "推理请求 ID（日志 rid 字段）",
+            "type": "string"
+          },
+          "StatePresent": {
+            "backendName": "StatePresent",
+            "descriptionEn": "Whether state is present, as the raw state_present value from the log.",
+            "description_en": "Indicates whether the state is present. This is the raw value of the state_present field in the log",
+            "description_zh": "状态是否存在（日志 state_present 原始取值）",
+            "example": "true",
+            "title": "状态是否存在（日志 state_present 原始取值）",
+            "type": "string"
+          },
+          "Time": {
+            "backendName": "Time",
+            "descriptionEn": "Log time, in Unix seconds.",
+            "description_en": "The log time, in UNIX seconds",
+            "description_zh": "日志时间（unix 秒）",
+            "example": "1787474487",
+            "format": "int64",
+            "title": "日志时间（unix 秒）",
+            "type": "integer"
+          },
+          "TokenizerPid": {
+            "backendName": "TokenizerPid",
+            "descriptionEn": "Tokenizer process ID, from the pid field of the log.",
+            "description_en": "The tokenizer process ID, which corresponds to the pid field in the log",
+            "description_zh": "tokenizer 进程号（日志 pid 字段）",
+            "example": "12360",
+            "title": "tokenizer 进程号（日志 pid 字段）",
+            "type": "string"
+          },
+          "WorkerPid": {
+            "backendName": "WorkerPid",
+            "descriptionEn": "Worker process ID.",
+            "description_en": "The worker process ID",
+            "description_zh": "worker 进程号",
+            "example": "12345",
+            "format": "int32",
+            "title": "worker 进程号",
+            "type": "integer"
+          }
+        },
+        "title": "慢推理明细条目",
+        "type": "object"
+      },
+      "RLProgressStage": {
+        "descriptionEn": "One stage of the training stage pipeline.",
+        "description_en": "The pipeline stage",
+        "description_zh": "阶段流水线单阶段",
+        "properties": {
+          "Duration": {
+            "backendName": "Duration",
+            "descriptionEn": "Stage duration, in seconds with millisecond precision (3 decimals). A whole step often fits inside one second, so the value is not rounded to whole seconds.",
+            "description_en": "The duration of the stage in seconds, with three decimal places. A step often falls entirely within the same second, so the value is not rounded to an integer",
+            "description_zh": "阶段耗时（秒，保留 3 位小数）；一个 step 常整体落在同一秒内，故不取整",
+            "example": "0.483",
+            "format": "double",
+            "title": "阶段耗时（秒，保留 3 位小数）；一个 step 常整体落在同一秒内，故不取整",
+            "type": "number"
+          },
+          "EndTime": {
+            "backendName": "EndTime",
+            "descriptionEn": "Stage end time, in Unix seconds.",
+            "description_en": "The end time of the stage in UNIX seconds",
+            "description_zh": "阶段结束时间（unix 秒）",
+            "example": "1787474487",
+            "format": "int64",
+            "title": "阶段结束时间（unix 秒）",
+            "type": "integer"
+          },
+          "Key": {
+            "backendName": "Key",
+            "descriptionEn": "Stage key.",
+            "description_en": "The stage identifier",
+            "description_zh": "阶段标识",
+            "example": "traj",
+            "title": "阶段标识",
+            "type": "string"
+          },
+          "Label": {
+            "backendName": "Label",
+            "descriptionEn": "Display name of the stage.",
+            "description_en": "The Chinese name of the stage",
+            "description_zh": "阶段中文名",
+            "example": "生成轨迹",
+            "title": "阶段中文名",
+            "type": "string"
+          },
+          "Marker": {
+            "backendName": "Marker",
+            "descriptionEn": "Log marker text that identifies this stage.",
+            "description_en": "The log marker text used to match the stage",
+            "description_zh": "匹配该阶段的日志标记文案",
+            "example": "start/end generation",
+            "title": "匹配该阶段的日志标记文案",
+            "type": "string"
+          },
+          "Optional": {
+            "backendName": "Optional",
+            "descriptionEn": "Whether the stage is optional. An optional stage that does not appear is reported as skipped.",
+            "description_en": "Specifies whether the stage is optional. If an optional stage does not occur, its status is recorded as skipped",
+            "description_zh": "是否为可选阶段；可选阶段未出现时状态记为 skipped",
+            "example": "false",
+            "title": "是否为可选阶段；可选阶段未出现时状态记为 skipped",
+            "type": "boolean"
+          },
+          "StartTime": {
+            "backendName": "StartTime",
+            "descriptionEn": "Stage start time, in Unix seconds.",
+            "description_en": "The start time of the stage in UNIX seconds",
+            "description_zh": "阶段开始时间（unix 秒）",
+            "example": "1787474487",
+            "format": "int64",
+            "title": "阶段开始时间（unix 秒）",
+            "type": "integer"
+          },
+          "Status": {
+            "backendName": "Status",
+            "descriptionEn": "One of done, running, waiting, pending, or skipped.",
+            "description_en": "done / running / waiting / pending / skipped",
+            "description_zh": "done / running / waiting / pending / skipped",
+            "example": "done",
+            "title": "done / running / waiting / pending / skipped",
+            "type": "string"
+          }
+        },
+        "title": "阶段流水线单阶段",
+        "type": "object"
+      },
+      "RLProgressStages": {
+        "descriptionEn": "Training stage pipeline.",
+        "description_en": "The stage pipeline",
+        "description_zh": "阶段流水线",
+        "properties": {
+          "CurrentIndex": {
+            "backendName": "CurrentIndex",
+            "descriptionEn": "Index of the current stage.",
+            "description_en": "The index of the current stage",
+            "description_zh": "当前所处阶段的下标",
+            "example": "6",
+            "format": "int32",
+            "title": "当前所处阶段的下标",
+            "type": "integer"
+          },
+          "Mode": {
+            "backendName": "Mode",
+            "descriptionEn": "Either disagg, colocate, or an empty string.",
+            "description_en": "The disagg, colocate, or empty string",
+            "description_zh": "disagg / colocate / 空串",
+            "example": "colocate",
+            "title": "disagg / colocate / 空串",
+            "type": "string"
+          },
+          "Stages": {
+            "backendName": "Stages",
+            "descriptionEn": "Stages in pipeline order.",
+            "description_en": "The list of stages in pipeline order",
+            "description_zh": "阶段列表，按流水线顺序",
+            "example": "[{\"Key\":\"generation\",\"Label\":\"生成\",\"Marker\":\"start/end generation\",\"Optional\":false,\"Status\":\"done\",\"StartTime\":1787474487,\"EndTime\":1787474487,\"Duration\":0.483}]",
+            "itemName": "Stage",
+            "items": {
+              "$ref": "#/components/schemas/RLProgressStage",
+              "descriptionEn": "One stage of the training stage pipeline.",
+              "description_en": "The single stage in the stage pipeline",
+              "description_zh": "阶段流水线单阶段",
+              "title": "阶段流水线单阶段"
+            },
+            "title": "阶段列表，按流水线顺序",
+            "type": "array"
+          },
+          "StepDone": {
+            "backendName": "StepDone",
+            "descriptionEn": "Whether the stage pipeline of this step has completed.",
+            "description_en": "Indicates whether the stage pipeline for this step is completed",
+            "description_zh": "本 step 的阶段流水线是否已走完",
+            "example": "false",
+            "title": "本 step 的阶段流水线是否已走完",
+            "type": "boolean"
+          }
+        },
+        "title": "阶段流水线",
+        "type": "object"
+      },
+      "RLProgressStep": {
+        "descriptionEn": "Step progress.",
+        "description_en": "The step progress",
+        "description_zh": "step 进度",
+        "properties": {
+          "Current": {
+            "backendName": "Current",
+            "descriptionEn": "Current step.",
+            "description_en": "The current step",
+            "description_zh": "当前 step",
+            "example": "3",
+            "format": "int32",
+            "title": "当前 step",
+            "type": "integer"
+          },
+          "EtaSec": {
+            "backendName": "EtaSec",
+            "descriptionEn": "Estimated remaining seconds, equal to (Total - Current) multiplied by PaceSec.",
+            "description_en": "The estimated time remaining, in seconds. This value is not provided when it cannot be estimated. A value of 0 may be returned when the training is confirmed to be complete, even if PaceSec is not provided",
+            "description_zh": "预计剩余时间，单位为秒。无法估算时不提供；已确认训练完成时可返回 0，即使 PaceSec 未提供",
+            "example": "0",
+            "format": "int64",
+            "title": "预计剩余时间（秒）",
+            "type": "integer"
+          },
+          "PaceSec": {
+            "backendName": "PaceSec",
+            "descriptionEn": "Duration of one step, derived from the difference between two adjacent Step markers, in seconds.",
+            "description_en": "The average time per step over the recent step progress, in seconds. This value is not provided when there is insufficient information",
+            "description_zh": "最近一段 step 进度的平均单步耗时，单位为秒；信息不足时不提供该值",
+            "example": "14",
+            "format": "double",
+            "title": "平均单步耗时（秒）",
+            "type": "number"
+          },
+          "Pct": {
+            "backendName": "Pct",
+            "descriptionEn": "Progress percentage, Current over Total.",
+            "description_en": "The training progress percentage. A value of 100% may be returned for confirmed completed progress, where Current may be less than Total. Do not determine whether the training is complete based solely on the current step number",
+            "description_zh": "训练进度百分比。已确认完成的进度可返回 100%，此时 Current 可能小于 Total；不能仅根据当前 step 编号自行判断训练是否完成",
+            "example": "100",
+            "format": "double",
+            "title": "训练进度百分比",
+            "type": "number"
+          },
+          "Time": {
+            "backendName": "Time",
+            "descriptionEn": "Time of the latest Step marker, in Unix seconds.",
+            "description_en": "The timestamp of the latest step (in UNIX seconds)",
+            "description_zh": "最新 Step 标记时间（unix 秒）",
+            "example": "1787474487",
+            "format": "int64",
+            "title": "最新 Step 标记时间（unix 秒）",
+            "type": "integer"
+          },
+          "Total": {
+            "backendName": "Total",
+            "descriptionEn": "Total number of steps, taken from the configuration dump.",
+            "description_en": "The total number of steps (retrieved from the configuration dump)",
+            "description_zh": "总步数（取自配置 dump）",
+            "example": "3",
+            "format": "int32",
+            "title": "总步数（取自配置 dump）",
+            "type": "integer"
+          }
+        },
+        "title": "step 进度",
+        "type": "object"
+      },
+      "RLProgressSync": {
+        "descriptionEn": "Parameter synchronization state.",
+        "description_en": "The parameter synchronization status",
+        "description_zh": "参数同步状态",
+        "properties": {
+          "Cost": {
+            "backendName": "Cost",
+            "descriptionEn": "Parameter synchronization duration in seconds. Present only when State is end.",
+            "description_en": "The parameter synchronization duration in seconds. This property has a value only when State is end",
+            "description_zh": "参数同步耗时（秒），仅 State 为 end 时有值",
+            "example": "1.5",
+            "format": "double",
+            "title": "参数同步耗时（秒），仅 State 为 end 时有值",
+            "type": "number"
+          },
+          "State": {
+            "backendName": "State",
+            "descriptionEn": "Either begin or end.",
+            "description_en": "begin / end",
+            "description_zh": "begin / end",
+            "example": "end",
+            "title": "begin / end",
+            "type": "string"
+          }
+        },
+        "title": "参数同步状态",
+        "type": "object"
+      },
+      "RLProgressTrainer": {
+        "descriptionEn": "Training execution state and batch processing progress.",
+        "description_en": "The training execution status and batch processing progress",
+        "description_zh": "训练执行状态与批次处理进度",
+        "properties": {
+          "Micro": {
+            "$ref": "#/components/schemas/RLProgressMicro",
+            "backendName": "Micro",
+            "descriptionEn": "Micro-batch progress.",
+            "description_en": "The micro-batch progress",
+            "description_zh": "micro-batch 进度",
+            "nullable": true,
+            "title": "micro-batch 进度"
+          },
+          "MiniIdx": {
+            "backendName": "MiniIdx",
+            "descriptionEn": "Current mini-batch index.",
+            "description_en": "The current mini-batch index",
+            "description_zh": "当前 mini batch 序号",
+            "example": "1",
+            "format": "int32",
+            "title": "当前 mini batch 序号",
+            "type": "integer"
+          },
+          "NumMinibatches": {
+            "backendName": "NumMinibatches",
+            "descriptionEn": "Total number of mini-batches.",
+            "description_en": "The total number of mini-batches",
+            "description_zh": "mini-batch 总数",
+            "example": "4",
+            "format": "int32",
+            "title": "mini-batch 总数",
+            "type": "integer"
+          },
+          "Sync": {
+            "$ref": "#/components/schemas/RLProgressSync",
+            "backendName": "Sync",
+            "descriptionEn": "Parameter synchronization state.",
+            "description_en": "The parameter synchronization status",
+            "description_zh": "参数同步状态",
+            "nullable": true,
+            "title": "参数同步状态"
+          }
+        },
+        "title": "训练执行状态",
+        "type": "object"
+      }
+    }
+  },
+  "deprecated": false,
+  "description_en": "Retrieves the RL training progress of a DLC job",
+  "description_zh": "获取DLC作业RL训练进度",
+  "kebab_example": "",
+  "method": "GET",
+  "multi_version": false,
+  "name": "GetRLTrainingProgress",
+  "operation": {
+    "action": "GetRLTrainingProgress",
+    "api_style": "ROA",
+    "api_version": "2020-12-03",
+    "method": "GET",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "get",
+    "url": "/api/v1/jobs/{JobId}/rltrace/progress"
+  },
+  "parameters": [
+    {
+      "example": "dlc5yfk7eyg95lac",
+      "help_en": "The job ID",
+      "help_zh": "作业 ID",
+      "location": "path",
+      "name": "job_id",
+      "options": [
+        "--job-id"
+      ],
+      "raw_name": "JobId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "2026-08-04T00:00:00Z",
+      "help_en": "The start time of the query window in UTC RFC3339 format. Default value: EndTime-7d",
+      "help_zh": "查询窗口起始（UTC RFC3339），缺省 EndTime-7d",
+      "location": "query",
+      "name": "start_time",
+      "options": [
+        "--start-time"
+      ],
+      "raw_name": "StartTime",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "2026-08-07T00:00:00Z",
+      "help_en": "The end time of the query window in UTC RFC3339 format. Default value: now",
+      "help_zh": "查询窗口截止（UTC RFC3339），缺省 now",
+      "location": "query",
+      "name": "end_time",
+      "options": [
+        "--end-time"
+      ],
+      "raw_name": "EndTime",
+      "required": false,
+      "type": "string"
+    }
+  ],
+  "pathPattern": "/api/v1/jobs/[JobId]/rltrace/progress",
+  "product_code": "pai-dlc",
+  "protocol": "HTTP|HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "description_en": "Schema of Response",
+        "description_zh": "Schema of Response",
+        "properties": {
+          "Buffer": {
+            "$ref": "#/components/schemas/RLProgressBuffer",
+            "backendName": "Buffer",
+            "description_en": "The readiness of the data buffer. The ETA is estimated by using the rollout completion rate as a proxy",
+            "description_zh": "数据 buffer 就绪度；ETA 用 rollout 完成速率代理估算",
+            "nullable": true,
+            "title_en": "数据 buffer 就绪度；ETA 用 rollout 完成速率代理估算",
+            "title_zh": "数据 buffer 就绪度；ETA 用 rollout 完成速率代理估算"
+          },
+          "Config": {
+            "$ref": "#/components/schemas/RLProgressConfig",
+            "backendName": "Config",
+            "description_en": "The parsing result of the training configuration dump. Unparsed fields are empty",
+            "description_zh": "训练配置 dump 解析结果（未解析到的字段为空）",
+            "example": "{}",
+            "nullable": true,
+            "title_en": "训练配置 dump 解析结果（未解析到的字段为空）",
+            "title_zh": "训练配置 dump 解析结果（未解析到的字段为空）"
+          },
+          "Eval": {
+            "$ref": "#/components/schemas/RLProgressEval",
+            "backendName": "Eval",
+            "description_en": "The readiness of the eval buffer (tag=-1)",
+            "description_zh": "eval buffer 就绪度（tag=-1）",
+            "nullable": true,
+            "title_en": "eval buffer 就绪度（tag=-1）",
+            "title_zh": "eval buffer 就绪度（tag=-1）"
+          },
+          "Fatal": {
+            "backendName": "Fatal",
+            "description_en": "The fatal errors. A maximum of 5 errors are included, and sandbox business noise is excluded",
+            "description_zh": "致命错误（最多 5 条，已剔除沙箱业务噪声）",
+            "itemName": "FatalItem",
+            "items": {
+              "$ref": "#/components/schemas/RLProgressFatal",
+              "description_en": "A fatal training error record, including the error log and the time it occurred",
+              "description_zh": "一条训练致命错误记录，包含错误日志及其发生时间",
+              "example": "False",
+              "title_en": "致命错误条目",
+              "title_zh": "致命错误条目"
+            },
+            "title_en": "致命错误（最多 5 条，已剔除沙箱业务噪声）",
+            "title_zh": "致命错误（最多 5 条，已剔除沙箱业务噪声）",
+            "type": "array"
+          },
+          "Found": {
+            "backendName": "Found",
+            "description_en": "Indicates whether master-0 has logs within the window. If the value is false, other fields use default values",
+            "description_zh": "master-0 在窗口内是否有日志；false 时其余字段缺省",
+            "example": "true",
+            "title_en": "是否有训练进度日志",
+            "title_zh": "是否有训练进度日志",
+            "type": "boolean"
+          },
+          "HealthOk": {
+            "backendName": "HealthOk",
+            "description_en": "Indicates whether no fatal errors are found. The value is true if Fatal is empty",
+            "description_zh": "Fatal 为空即 true",
+            "example": "true",
+            "title_en": "是否未发现致命错误",
+            "title_zh": "是否未发现致命错误",
+            "type": "boolean"
+          },
+          "JobId": {
+            "backendName": "JobId",
+            "description_en": "The job ID",
+            "description_zh": "作业 ID",
+            "example": "dlc-20210126170216-xxxxxxx",
+            "title_en": "作业 ID",
+            "title_zh": "作业 ID",
+            "type": "string"
+          },
+          "LastLogTime": {
+            "backendName": "LastLogTime",
+            "description_en": "The time of the last log in UNIX seconds",
+            "description_zh": "最后一条日志时间（unix 秒）",
+            "example": "1787474487",
+            "format": "int64",
+            "title_en": "最后一条日志时间（unix 秒）",
+            "title_zh": "最后一条日志时间（unix 秒）",
+            "type": "integer"
+          },
+          "Phase": {
+            "backendName": "Phase",
+            "description_en": "The original text of the latest trainer phase marker",
+            "description_zh": "最新 trainer 阶段标记原文",
+            "example": "disagg: actor generate sequences",
+            "title_en": "最新 trainer 阶段标记原文",
+            "title_zh": "最新 trainer 阶段标记原文",
+            "type": "string"
+          },
+          "PhaseTime": {
+            "backendName": "PhaseTime",
+            "description_en": "The time of the phase marker in UNIX seconds, used by the frontend to calculate the dwell time",
+            "description_zh": "该阶段标记时间（unix 秒），供前端算 dwell",
+            "example": "1787474487",
+            "format": "int64",
+            "title_en": "该阶段标记时间（unix 秒），供前端算 dwell",
+            "title_zh": "该阶段标记时间（unix 秒），供前端算 dwell",
+            "type": "integer"
+          },
+          "RequestId": {
+            "backendName": "RequestId",
+            "description_en": "The request ID",
+            "description_zh": "请求 ID",
+            "example": "473469C7-AA6F-4DC5-B3DB-A3DC0DE3C83E",
+            "title_en": "请求 ID",
+            "title_zh": "请求 ID",
+            "type": "string"
+          },
+          "Rollout": {
+            "$ref": "#/components/schemas/RLProgressRollout",
+            "backendName": "Rollout",
+            "description_en": "The rollout throughput",
+            "description_zh": "rollout 吞吐",
+            "nullable": true,
+            "title_en": "rollout 吞吐",
+            "title_zh": "rollout 吞吐"
+          },
+          "ServerNow": {
+            "backendName": "ServerNow",
+            "description_en": "The current server time in UNIX seconds, used by the frontend to calculate the time since the last log",
+            "description_zh": "服务端当前时间（unix 秒），供前端算“多久没日志”",
+            "example": "1787475398",
+            "format": "int64",
+            "title_en": "服务端时间",
+            "title_zh": "服务端时间",
+            "type": "integer"
+          },
+          "Slow": {
+            "$ref": "#/components/schemas/RLProgressSlow",
+            "backendName": "Slow",
+            "description_en": "The soft alerts for slow inference. A maximum of 20 details are included",
+            "description_zh": "慢推理软告警（Details 最多 20 条）",
+            "nullable": true,
+            "title_en": "慢推理软告警（Details 最多 20 条）",
+            "title_zh": "慢推理软告警（Details 最多 20 条）"
+          },
+          "Stages": {
+            "$ref": "#/components/schemas/RLProgressStages",
+            "backendName": "Stages",
+            "description_en": "The phase pipeline",
+            "description_zh": "阶段流水线",
+            "example": "[{'Index': 'Group0-Stage0', 'StageInfo': {'Status': 'FAIL', 'EndTime': 0, 'Jobs': [{'Id': 477917255}], 'Name': u'\\u9636\\u6bb51', 'StartTime': 1784858533000}, 'Name': u'\\u9636\\u6bb51'}]",
+            "nullable": true,
+            "title_en": "阶段流水线",
+            "title_zh": "阶段流水线"
+          },
+          "Step": {
+            "$ref": "#/components/schemas/RLProgressStep",
+            "backendName": "Step",
+            "description_en": "The step progress. Pace is calculated based on the difference between two adjacent Step markers. ETA = (Total - Current) × Pace",
+            "description_zh": "step 进度；Pace 由相邻两个 Step 标记差分，ETA =（Total-Current）* Pace",
+            "example": "1",
+            "nullable": true,
+            "title_en": "step 进度",
+            "title_zh": "step 进度"
+          },
+          "Throughput": {
+            "backendName": "Throughput",
+            "description_en": "The latest generation throughput in tokens per second",
+            "description_zh": "最新 gen throughput（token/s）",
+            "example": "1200",
+            "format": "double",
+            "title_en": "最新 gen throughput（token/s）",
+            "title_zh": "最新 gen throughput（token/s）",
+            "type": "number"
+          },
+          "TrainMode": {
+            "backendName": "TrainMode",
+            "description_en": "The training mode. Valid values: disagg (decoupled training and inference), colocate (integrated training and inference), or an empty string (unrecognized)",
+            "description_zh": "disagg（训推分离）/ colocate（训推一体）/ 空串（未识别）",
+            "example": "disagg",
+            "title_en": "disagg（训推分离）/ colocate（训推一体）/ 空串（未识别）",
+            "title_zh": "disagg（训推分离）/ colocate（训推一体）/ 空串（未识别）",
+            "type": "string"
+          },
+          "Trainer": {
+            "$ref": "#/components/schemas/RLProgressTrainer",
+            "backendName": "Trainer",
+            "description_en": "The internal status of the trainer, such as mini-batch, micro-batch, or parameter synchronization",
+            "description_zh": "trainer 内部状态（mini-batch / micro-batch / 参数同步）",
+            "nullable": true,
+            "title_en": "训练执行状态",
+            "title_zh": "训练执行状态"
+          }
+        },
+        "title_en": "RL 训练进度响应体",
+        "title_zh": "RL 训练进度响应体",
+        "type": "object"
+      }
+    }
+  },
+  "timeout_ms": 32000
+}
