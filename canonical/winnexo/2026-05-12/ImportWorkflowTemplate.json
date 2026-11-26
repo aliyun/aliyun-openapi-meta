@@ -3,7 +3,7 @@
   "cmd_full_name": "winnexo import-workflow-template",
   "cmd_name": "import-workflow-template",
   "deprecated": false,
-  "description_en": "Imports a portable template in JSON format and creates a new template, regardless of whether a template with the same name exists",
+  "description_en": "Imports a portable template in JSON format and creates a new template, regardless of whether a template with the same name already exists",
   "description_zh": "有效成员导入可移植模板 JSON 并创建新模板；无论名称是否相同都新建",
   "kebab_example": "aliyun winnexo import-workflow-template --collaboration-group-id cg_9401 --template '{\"schemaVersion\":2,\"name\":\"客户投诉处理流程\",\"edges\":[],\"steps\":[{\"executorType\":\"MEMBER\",\"sortOrder\":1,\"executorUserId\":10086,\"stepId\":\"collect\",\"name\":\"收集客户信息\",\"specification\":[{\"type\":\"text\",\"content\":\"收集客户信息\"}]}]}' --region cn-hangzhou",
   "method": "POST",
@@ -24,7 +24,7 @@
   "parameters": [
     {
       "example": "wn_app_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-      "help_en": "平台应用 Token（控制台签发）。传入后将以 opsUserId 或 opsUserCode 指定的用户身份执行",
+      "help_en": "The platform application token issued by the console. If specified, the operation is executed as the user identified by opsUserId or opsUserCode",
       "help_zh": "平台应用 Token（控制台签发）。传入后将以 opsUserId 或 opsUserCode 指定的用户身份执行",
       "location": "query",
       "name": "app_token",
@@ -37,7 +37,7 @@
     },
     {
       "example": "10001",
-      "help_en": "代理用户ID（WINNEXO 平台用户ID），仅当应用凭证配置为 winnexo_uid 时使用",
+      "help_en": "The proxy user ID, which is the WINNEXO platform user ID. This parameter is used only when the application credential is configured as winnexo_uid",
       "help_zh": "代理用户ID（WINNEXO 平台用户ID），仅当应用凭证配置为 winnexo_uid 时使用",
       "location": "query",
       "name": "ops_user_id",
@@ -50,7 +50,7 @@
     },
     {
       "example": "alice",
-      "help_en": "代理用户编码（租户内唯一），仅当应用凭证配置为 source_uid 时使用",
+      "help_en": "The proxy user code, which is unique within the tenant. This parameter is used only when the application credential is configured as source_uid",
       "help_zh": "代理用户编码（租户内唯一），仅当应用凭证配置为 source_uid 时使用",
       "location": "query",
       "name": "ops_user_code",
@@ -89,7 +89,7 @@
     },
     {
       "example": "{\"name\":\"客户投诉处理流程\",\"schemaVersion\":2,\"steps\":[{\"stepId\":\"collect\",\"sortOrder\":1,\"name\":\"收集客户信息\",\"specification\":[{\"type\":\"text\",\"content\":\"收集客户信息\"}],\"executorType\":\"MEMBER\",\"executorUserId\":10086}],\"edges\":[]}",
-      "help_en": "The portable template in JSON format. The stepId and sortOrder fields can be omitted",
+      "help_en": "The portable template in JSON format, which includes schemaVersion, steps, and edges. Each step must specify stepId and sortOrder",
       "help_zh": "可移植模板 JSON，包含 schemaVersion、steps 和 edges；步骤须指定 stepId 与 sortOrder",
       "location": "formData",
       "name": "template",
@@ -136,12 +136,12 @@
           },
           "edges": {
             "backendName": "edges",
-            "description_en": "The node dependency edges. Each item contains from and to fields that reference stable step IDs. An explicit empty array indicates no dependencies",
-            "description_zh": "节点依赖边；每项包含from/to，引用稳定stepId；显式空数组表示没有依赖",
+            "description_en": "A node dependency edge, where from is the stepId of the predecessor node and to is the stepId of the successor node",
+            "description_zh": "一条节点依赖边，from为前置节点stepId，to为后置节点stepId",
             "example": "[{\"from\":\"collect\",\"to\":\"deliver\"}]",
             "itemName": "edges",
             "items": {
-              "description_en": "A node dependency edge. The from field specifies the step ID of the predecessor node, and the to field specifies the step ID of the successor node",
+              "description_en": "A node dependency edge, where from is the stepId of the predecessor node and to is the stepId of the successor node",
               "description_zh": "一条节点依赖边，from为前置节点stepId，to为后置节点stepId",
               "example": "{\"from\":\"collect\",\"to\":\"deliver\"}",
               "type": "object"
@@ -152,7 +152,7 @@
           },
           "effectiveVersion": {
             "backendName": "effectiveVersion",
-            "description_en": "The current effective version number of the template. An empty value indicates that only a draft exists and the template cannot be used for work items. This field is empty because an import always creates a v1 draft",
+            "description_en": "The current effective version number of the template. An empty value indicates that only a draft exists and it cannot be used for work items. The value is empty for imported templates because a v1 draft is created by default",
             "description_zh": "模板当前生效版本号；为空表示仅有草稿、不可用于工作项（导入固定创建 v1 草稿，本字段为空）",
             "example": "v1",
             "type": "string"
@@ -173,7 +173,7 @@
           },
           "layout": {
             "backendName": "layout",
-            "description_en": "The optional canvas layout, indexed by step ID. This field only affects the display and does not determine dependencies",
+            "description_en": "The optional canvas layout, indexed by stepId. This parameter only affects the display and does not determine dependencies",
             "description_zh": "可选画布布局，按stepId索引；只影响展示，不决定依赖",
             "example": "{\"collect\":{\"x\":0,\"y\":0},\"review\":{\"x\":240,\"y\":0}}",
             "required": false,
@@ -195,14 +195,14 @@
           },
           "requestId": {
             "backendName": "RequestId",
-            "description_en": "The request ID",
+            "description_en": "The request tracking ID",
             "description_zh": "请求追踪ID",
             "example": "019FF406-1B10-0065-A97D-2D1920C2A03D",
             "type": "string"
           },
           "schemaVersion": {
             "backendName": "schemaVersion",
-            "description_en": "The schema version of the template. The current value is 2, which is independent of the business version vN",
+            "description_en": "The template structure version. The current value is 2, which is independent of the business version vN",
             "description_zh": "模板结构版本，当前为2，与业务版本vN独立",
             "example": "2",
             "format": "int64",
@@ -217,7 +217,7 @@
             "items": {
               "description_en": "The ordered steps",
               "description_zh": "有序步骤",
-              "example": "示例流程步骤",
+              "example": "{\"stepId\":\"collect\",\"sortOrder\":1,\"name\":\"收集客户信息\"}",
               "properties": {
                 "modelMode": {
                   "backendName": "modelMode",
@@ -242,7 +242,7 @@
                 },
                 "ownerType": {
                   "backendName": "executorType",
-                  "description_en": "The owner type. Valid values:\n\nUSER: User. This is the default value.\n\nAPP: App",
+                  "description_en": "The owner type. Valid values:\n\nUSER: User type. This is the default value.\n\nAPP: Application type",
                   "description_zh": "owner类型。\n\nUSER：用户类型，默认值\n\nAPP：App类型",
                   "example": "MEMBER",
                   "type": "string"
@@ -257,19 +257,19 @@
                 },
                 "reviewOutput": {
                   "backendName": "reviewOutput",
-                  "description_en": "Specifies whether to manually review the output. By default, this feature is disabled. It can be enabled only for digital employees. Review to-do items are automatically sent to the person in charge",
+                  "description_en": "Specifies whether to manually review the deliverables. By default, this feature is disabled. It can be enabled only for digital employees. Review tasks are automatically sent to the person in charge",
                   "description_zh": "是否人工审核产出物，默认关闭；仅数字员工可开启，审核待办自动发负责人",
                   "example": "false",
                   "type": "boolean"
                 },
                 "reviewerUserIds": {
                   "backendName": "ownerUserIds",
-                  "description_en": "The list of user IDs for the reviewers. This field is valid only for digital employee executor steps and is always empty for member executor steps",
+                  "description_en": "The list of user IDs of the persons in charge. This parameter is valid only for digital employee executor steps and is always empty for member executor steps",
                   "description_zh": "负责人用户ID列表；仅数字员工执行人步骤有效，成员执行人步骤恒为空",
                   "example": "[10001]",
                   "itemName": "reviewerUserIds",
                   "items": {
-                    "description_en": "The list of user IDs for the reviewers. This field is valid only for digital employee executor steps and is always empty for member executor steps",
+                    "description_en": "The list of user IDs of the persons in charge. This parameter is valid only for digital employee executor steps and is always empty for member executor steps",
                     "description_zh": "负责人用户ID列表；仅数字员工执行人步骤有效，成员执行人步骤恒为空",
                     "example": "10086",
                     "format": "int64",
@@ -289,18 +289,18 @@
                 },
                 "specification": {
                   "backendName": "specification",
-                  "description_en": "The processing instructions for the step",
+                  "description_en": "The step processing instructions",
                   "description_zh": "步骤处理说明",
                   "example": "收集客户信息，交给负责人审核",
                   "type": "string"
                 },
                 "specificationJson": {
                   "backendName": "specificationJson",
-                  "description_en": "The ordered array of segments. Supported types include text, mention, skill, app, files, and web_search. The reference identities and order are preserved",
+                  "description_en": "The ordered array of fragments, which supports text, mention, skill, app, files, and web_search. The referenced identities and order are preserved",
                   "description_zh": "有序片段数组，支持text/mention/skill/app/files/web_search；保留引用身份和顺序",
                   "example": "[{\"type\":\"text\",\"content\":\"收集客户信息\"}]",
                   "items": {
-                    "description_en": "The ordered array of segments. Supported types include text, mention, skill, app, files, and web_search. The reference identities and order are preserved",
+                    "description_en": "The ordered array of fragments, which supports text, mention, skill, app, files, and web_search. The referenced identities and order are preserved",
                     "description_zh": "有序片段数组，支持text/mention/skill/app/files/web_search；保留引用身份和顺序",
                     "example": "{\"type\":\"text\",\"content\":\"汇总销售数据\"}",
                     "type": "object"
