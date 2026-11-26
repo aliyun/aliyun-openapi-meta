@@ -18,6 +18,18 @@
       "description_en": "Uploads multiple skill ZIP packages through OSS and returns the processing result for each skill",
       "description_zh": "通过 OSS 中转批量上传 Skill ZIP 包，并返回每个 Skill 的处理结果"
     },
+    "BeginAssetUpload": {
+      "cmd_name": "begin-asset-upload",
+      "deprecated": false,
+      "description_en": "申请知识库资产上传地址",
+      "description_zh": "登记资产上传会话，返回 assetId、uploadId 和实际状态；仅有效的 UPLOADING 会话返回限定其 original 对象的限时 PUT 地址。使用 PUT 上传文件二进制，不使用 JSON 或 multipart 包装，本期文件大小为 1 字节至 50 MiB。clientToken 可选；提供时，省略 assetId 将依据租户、工作空间、知识库和 clientToken 稳定派生资产 ID，便于首次响应丢失后的定位。同时省略 assetId 和 clientToken 时，每次请求创建新资产。未提供 clientToken 时按新的上传意图处理，不保证跨请求重试幂等。覆盖已有资产必须设置 overwrite=true；该参数仅授权覆盖，不强制重新导入。提供 clientToken 时，仅对该资产最近一次 Begin 保存的 token 幂等；后续 Begin（包括省略 clientToken 的请求）会替换最近请求标识。命中且规范化请求相同则复用上传会话，参数不同返回 409，包括 sourceETag 不同；token 不命中则按新的上传意图校验和受理，即使该 token 曾用于更早的上传。来源版本去重独立于 clientToken：指定稳定 assetId、overwrite=true 且提供 sourceETag 时，若来源身份及版本、导入参数和有效处理配置均未变化，即使未提供 clientToken，也可复用当前 uploadId 和加工代次；显式提供且命中最近 token 时仍要求完整规范化请求相同。复用有效 UPLOADING 会话时刷新同一对象路径的签名；复用 PENDING、PROCESSING 或 COMPLETED 会话时返回实际状态且不返回上传地址，PENDING 按相同 taskKey 补交调度，来源版本相同不表示处理完成。客户端 token 幂等命中后的失败状态只返回当前状态；新的上传意图遇到 FAILED、上传意图过期或来源、导入参数、有效处理配置变化时创建新的 uploadId、内部对象路径及加工代次。未提供 sourceETag 时不启用来源版本去重，可使用不同 clientToken 或不提供 clientToken，按新的上传意图重新导入；覆盖已有资产仍须 overwrite=true。新结果发布前仍使用旧发布版本。每个会话的原件对象仍必须禁止覆盖，签名头通过 headers 返回。完成 PUT 上传后，使用返回的 assetId 和 uploadId 调用 CompleteAssetUpload。携带 sourceETag 的 Begin 命中当前上传目标时，PENDING 会按相同 taskKey 补交调度，返回 PENDING、PROCESSING 或 COMPLETED 后无需再次上传或确认；显式提供相同 clientToken 且未传 sourceETag 的 PENDING 重放仍须重试 CompleteAssetUpload，以恢复受理结果未知的调度"
+    },
+    "CompleteAssetUpload": {
+      "cmd_name": "complete-asset-upload",
+      "deprecated": false,
+      "description_en": "Confirms a specified upload session by using the workspaceId, knowledgeBaseId, and assetId in the path and the uploadId in the request body. The server verifies tenant and resource ownership, requires the uploadId to match the current upload session and the upload_epoch to equal the current next_epoch, and then performs a HEAD operation on the bound original object to verify its existence, actual size of 1 byte to 50 MiB, and content type. Using the metadata and chunking configuration saved during acceptance, the server enters the pending state through a CAS operation that includes the upload identity, target generation, UPLOADING status, and deletion marker. Repeatedly confirming the same accepted upload that is still the current target returns the existing status without incrementing the generation or creating a new task. If the scheduling acceptance result is unknown, the server resubmits the task by using the same taskKey. When a subsequent overwrite upload, edit, or rebuild replaces the target, a delayed Complete request returns a status conflict and does not overwrite the new task or resurrect deleted assets. Non-retryable processing failures remain in the FAILED state and are not requeued by the Complete request",
+      "description_zh": "通过路径中的 workspaceId、knowledgeBaseId、assetId 和请求体中的 uploadId 确认指定上传会话。服务端校验租户和资源归属，要求 uploadId 匹配当前上传会话，且 upload_epoch 与当前 next_epoch 相等，再对绑定的 original 对象执行 HEAD，核验存在性、实际大小为 1 字节至 50 MiB 及内容类型。使用受理时保存的元数据和分块配置，通过包含上传身份、目标代次、UPLOADING 状态和删除标记的 CAS 进入待处理状态。重复确认同一已受理且仍为当前目标的上传返回已有状态，不递增代次或创建新任务；调度受理结果未知时按相同 taskKey 补交。后续覆盖上传、编辑或重建已替换目标时，迟到的 Complete 返回状态冲突，不得覆盖新任务或复活删除资产。不可重试的处理失败保持 FAILED，不由 Complete 重新入队"
+    },
     "ConvertMcpToFreeEdit": {
       "cmd_name": "convert-mcp-to-free-edit",
       "deprecated": false,
@@ -63,7 +75,7 @@
     "CreateCustomAgentDebugToken": {
       "cmd_name": "create-custom-agent-debug-token",
       "deprecated": false,
-      "description_en": "Issues a local debug token for a running high-code agent in a specified workspace. The latest configuration of the agent must take effect. The workspace must enable inbound access for the selected network and complete debug routing preparations. The token is valid for 1 hour from the time of issuance. You can call this operation again to obtain a new token after the token expires",
+      "description_en": "Issues a local debugging token for a running high-code agent in a specified workspace. The latest configuration of the agent must be in effect. The workspace must have inbound access enabled for the selected network and debug routing configured. The token is valid for 1 hour from the time of issuance. After the token expires, you can call this operation again to obtain a new one",
       "description_zh": "为指定工作空间中已运行的高代码智能体签发本地调试令牌。智能体的最新配置须已生效，工作空间须已开启所选网络的入站访问并完成调试路由准备。令牌自签发起 1 小时内有效，过期后可重新调用本接口获取"
     },
     "CreateEvents": {
@@ -107,6 +119,12 @@
       "deprecated": false,
       "description_en": "Creates or reuses an image cache for ACR Enterprise Edition images in a workspace, and returns the cache status upon acceptance",
       "description_zh": "为工作空间的 ACR 企业版镜像创建或复用缓存，并返回受理时的缓存状态"
+    },
+    "CreateKnowledgeBase": {
+      "cmd_name": "create-knowledge-base",
+      "deprecated": false,
+      "description_en": "Creates a knowledge base in a specified workspace of the current tenant, and persistently binds the trusted tenantId and workspaceId. The creation process is asynchronous, and the response returns the resource status. You can query the status and lastError by calling GetKnowledgeBase or ListKnowledgeBases",
+      "description_zh": "在当前租户的指定工作空间中创建知识库，持久化绑定可信 tenantId 和 workspaceId。创建为异步过程，响应返回资源状态；通过 GetKnowledgeBase 或 ListKnowledgeBases 查询 status 和 lastError"
     },
     "CreateManagedAgent": {
       "cmd_name": "create-managed-agent",
@@ -216,6 +234,12 @@
       "description_en": "Deletes an agent version",
       "description_zh": "删除智能体版本"
     },
+    "DeleteAsset": {
+      "cmd_name": "delete-asset",
+      "deprecated": false,
+      "description_en": "Writes a deletion tombstone for an asset and initiates asynchronous cleanup. The server authenticates the request, verifies tenant and resource ownership, and checks for existing DELETING or DELETED tombstones. Duplicate requests for assets already in the deletion process return the current status without retriggering the deletion. For undeleted assets that are eligible for deletion, the control plane conditionally writes a tombstone. The operation returns the registered processing status, which does not indicate that the physical data cleanup is complete",
+      "description_zh": "为资产写入删除墓碑并受理异步清理。服务端先鉴权并校验租户及资源归属，再识别 DELETING 或 DELETED 墓碑；已进入删除的重复请求直接返回当前状态，不重复触发删除。对尚未删除且允许删除的资产，管控层条件写入墓碑。返回已登记的处理状态，不表示物理数据已经清理完成"
+    },
     "DeleteCredential": {
       "cmd_name": "delete-credential",
       "deprecated": false,
@@ -257,6 +281,12 @@
       "deprecated": false,
       "description_en": "Deletes the image cache association in a workspace and checks agent references and instance usage before submission",
       "description_zh": "删除工作空间中的镜像缓存关联，提交前检查 Agent 引用和实例占用"
+    },
+    "DeleteKnowledgeBase": {
+      "cmd_name": "delete-knowledge-base",
+      "deprecated": false,
+      "description_en": "Asynchronously deletes a knowledge base. Verifies the trusted tenant identity, workspace ownership, and access permissions for the knowledge base. If the resource is already in the Deleting or Deleted state, repeated deletion requests return the current state without re-initiating cleanup. After the deletion is accepted, GetKnowledgeBase indicates that the resource does not exist, and ListKnowledgeBases no longer displays the resource. The system continues to clean up physical data in the background",
+      "description_zh": "异步删除知识库。先校验可信租户身份、工作空间归属及知识库访问权限；若资源已为 Deleting 或 Deleted，重复删除返回当前状态，不重复发起清理。删除受理后，GetKnowledgeBase 返回资源不存在，ListKnowledgeBases 不再显示该资源；后台继续清理物理数据"
     },
     "DeleteManagedAgent": {
       "cmd_name": "delete-managed-agent",
@@ -438,6 +468,24 @@
       "description_en": "Queries the details of an agent version",
       "description_zh": "查询智能体版本详情"
     },
+    "GetAsset": {
+      "cmd_name": "get-asset",
+      "deprecated": false,
+      "description_en": "Queries the asset management properties and current processing status. For upload, rebuild, and chunk content editing operations, poll the status of this API until it returns COMPLETED or FAILED. For failure causes, refer to lastError. The publishedResultAvailable field indicates whether the published result is still available. This API does not accept clientToken and does not return receipts for chunkUpdate or historical modifications. If a deletion request is accepted, the API returns a resource not found error",
+      "description_zh": "查询资产管理属性及当前处理状态。上传、重建、Chunk 正文编辑均轮询本接口的 status，直到 COMPLETED 或 FAILED，失败原因见 lastError；publishedResultAvailable 表示已发布结果是否仍可用。不接收 clientToken，不返回 chunkUpdate 或某次历史修改的回执；删除受理后返回资源不存在"
+    },
+    "GetAssetDownloadUrl": {
+      "cmd_name": "get-asset-download-url",
+      "deprecated": false,
+      "description_en": "Returns a time-limited download URL for the published original file of an asset, using a unified OSS public endpoint. Returns a status conflict if the asset is not published during initial processing. The published original file remains downloadable during re-chunking or editing, subject to validation of current permissions, enabled status, and deletion status",
+      "description_zh": "返回资产已发布 original 原件的限时下载地址，统一使用 OSS 公网地址。首次处理未发布时返回状态冲突；重新分块或编辑期间仍可下载已发布原件，须通过当前权限、启用及删除状态校验"
+    },
+    "GetChunk": {
+      "cmd_name": "get-chunk",
+      "deprecated": false,
+      "description_en": "Queries a chunk in the currently published generation based on its 1-based logical sequence number within the asset, and verifies the ownership relationship between the chunk and the asset",
+      "description_zh": "按资产内从 1 开始的逻辑切片序号查询当前已发布代次中的 Chunk，并校验 Chunk 与资产的归属关系"
+    },
     "GetCredential": {
       "cmd_name": "get-credential",
       "deprecated": false,
@@ -503,6 +551,12 @@
       "deprecated": false,
       "description_en": "Queries the status, digest, size, and deletion conditions of an image cache in a specified workspace",
       "description_zh": "查询指定工作空间中镜像缓存的状态、摘要、大小及删除条件"
+    },
+    "GetKnowledgeBase": {
+      "cmd_name": "get-knowledge-base",
+      "deprecated": false,
+      "description_en": "Queries the public information, configuration, and current lifecycle status of a knowledge base in a specified workspace of the current tenant. The status and lastError fields indicate the creation and deletion progress and failure causes",
+      "description_zh": "查询当前租户指定工作空间中知识库的公开信息、配置和当前生命周期状态；通过 status 和 lastError 获取创建、删除进度及失败原因"
     },
     "GetManagedAgent": {
       "cmd_name": "get-managed-agent",
@@ -678,6 +732,18 @@
       "description_en": "Queries the list of agent versions",
       "description_zh": "查询智能体版本列表"
     },
+    "ListAssets": {
+      "cmd_name": "list-assets",
+      "deprecated": false,
+      "description_en": "Performs a paged query for undeleted assets in a knowledge base based on the file name prefix and processing status. The results are sorted in descending order by the most recent upload time, and then by assetId in descending order for identical upload times. The upload time refers to the acceptance time of the most recent BeginAssetUpload request. It is updated upon overwrite uploads but remains unchanged for replays with the same token or when you deduplicate the source. It does not represent the processing time. The list index is updated asynchronously and may experience brief delays. The totalCount is cached for 60 seconds based on the resource scope and filter conditions, which may result in brief staleness. Stop paging only when nextToken is empty. If the legacy table lacks the upload time column or sorting index, a ServiceUnavailable error is returned. In this case, use a newly created knowledge base",
+      "description_zh": "按文件名前缀和处理状态分页查询知识库内未删除的资产，按最近上传时间倒序，同一时间按 assetId 倒序。上传时间取最近一次新上传的 BeginAssetUpload 受理时间，覆盖上传会更新，同 token 重放或来源去重复用不变；不是处理时间。列表索引异步更新，可能有短暂延迟。totalCount 按资源作用域和筛选条件缓存 60 秒，可能短暂陈旧；翻页终止只以 nextToken 为空为准。旧表缺少上传时间列或排序索引时返回 ServiceUnavailable，需使用新建知识库"
+    },
+    "ListChunks": {
+      "cmd_name": "list-chunks",
+      "deprecated": false,
+      "description_en": "Performs a paged query for currently published chunks in a knowledge base. Results can be filtered by asset, keyword, and enabled status. If an assetId is specified, results are sorted by chunkSeq, and the nextToken is attached to the current publish result of the asset. A VersionConflict (409) error is returned if the publish result changes. If no assetId is specified, results are sorted by assetId and chunkSeq, and a full-base snapshot is not guaranteed. The token is always attached to the tenant, workspace, knowledge base, filter conditions, and sorting",
+      "description_zh": "分页查询知识库中当前已发布的 Chunk，可按资产、关键词和启用状态过滤。指定 assetId 时按 chunkSeq 排序，nextToken 绑定该资产的当前发布结果，发布结果变化返回 VersionConflict（409）。未指定 assetId 时按 assetId、chunkSeq 排序，不承诺全库快照。令牌始终绑定租户、工作空间、知识库、过滤条件和排序"
+    },
     "ListConnectorModels": {
       "cmd_name": "list-connector-models",
       "deprecated": false,
@@ -737,6 +803,12 @@
       "deprecated": false,
       "description_en": "Performs a paged query on image caches in a workspace, and supports paging and filtering by image source and cache status",
       "description_zh": "分页查询工作空间的镜像缓存，支持按镜像来源和缓存状态筛选"
+    },
+    "ListKnowledgeBases": {
+      "cmd_name": "list-knowledge-bases",
+      "deprecated": false,
+      "description_en": "Queries knowledge bases in a specified workspace of the current tenant by using paging. Each returned item includes the status and lastError fields, which can be used to query the creation and deletion progress of knowledge bases and the causes of failures",
+      "description_zh": "分页查询当前租户指定工作空间中的知识库；每项返回 status 和 lastError，可用于查询知识库创建、删除进度及失败原因"
     },
     "ListManagedAgents": {
       "cmd_name": "list-managed-agents",
@@ -948,6 +1020,12 @@
       "description_en": "Invalidates the specified memory while retaining its content. After revocation, the memory no longer participates in retrieval as a valid memory. You can query it by setting valid=false in ListMemories. Repeated revocations return a success response",
       "description_zh": "将指定记忆设为无效并保留正文。撤销后，该记忆不再作为有效记忆参与检索；可通过 ListMemories 的 valid=false 查询。重复撤销返回成功"
     },
+    "SearchKnowledgeBase": {
+      "cmd_name": "search-knowledge-base",
+      "deprecated": false,
+      "description_en": "Executes keyword, vector, or hybrid search on published and authorized results in a specified knowledge base. Search parameters take effect in the order of the current request, knowledge base search configuration, and system default values. Metadata filtering uses a JSON expression tree and does not accept OTS DSL or tenant fields. The actual number of results after filtering and permission verification may be less than topK. The search feature provides eventual consistency, and newly published results become searchable after index synchronization. Reading candidates still verifies the current publish pointer and permissions",
+      "description_zh": "在指定知识库的已发布且已授权结果中执行关键词、向量或混合检索。检索参数按本次请求、知识库检索配置、系统默认值的顺序生效。元数据过滤使用 JSON 表达式树，不接受 OTS DSL 或租户字段；过滤和权限校验后实际结果数可能少于 topK。一期检索为最终一致性，新发布结果在索引同步后可检索；读取候选仍校验当前发布指针和权限"
+    },
     "SearchMemories": {
       "cmd_name": "search-memories",
       "deprecated": false,
@@ -990,6 +1068,24 @@
       "description_en": "Updates the business tags, version tags, and visibility scope of a specified AgentSpec. Fields not passed remain unchanged",
       "description_zh": "更新指定 AgentSpec 的业务标签、版本标签和可见范围；未传入的字段保持不变"
     },
+    "UpdateAsset": {
+      "cmd_name": "update-asset",
+      "deprecated": false,
+      "description_en": "Updates the asset name, enabled status, metadata patch, or asset-level chunking configuration. At least one of these items must be provided in the request. Metadata is incrementally merged, and chunkConfiguration triggers asynchronous rechunking. Changes that affect retrieval projections cause the backend to create a new generation and conditionally publish it. Before publication, previously published results remain readable as long as the asset is not disabled, deleted, or unauthorized, and published results are not modified in place. Processing failures in the current phase are not retried. For assets in the FAILED state, only the name or enabled status can be modified. Submitting metadata or chunkConfiguration returns InvalidAssetState",
+      "description_zh": "更新资产名称、启用状态、元数据补丁或资产级分块配置，请求至少提供其中一项。metadata 增量合并，chunkConfiguration 触发异步重新分块；影响检索投影的变更由后端创建新代次并条件发布。发布前，旧已发布结果在资产未禁用、未删除且授权仍有效时保持可读，不原地修改已发布结果。本期处理失败后不重试，FAILED 资产仅允许修改 name 或 enabled，提交 metadata 或 chunkConfiguration 返回 InvalidAssetState"
+    },
+    "UpdateChunk": {
+      "cmd_name": "update-chunk",
+      "deprecated": false,
+      "description_en": "Updates the content or enabled status of a chunk by its logical sequence number. You must pass back the opaque chunkToken returned by the query operation. When only the enabled status is modified, the system synchronously writes to OTS after reading the currently published result, validating the token, and fixing the target at the beginning of the request. Enabling or disabling is allowed when a published result exists and is not deleted, including the PENDING, PROCESSING, and FAILED states, without waiting for FC. New results published during this process are not followed, rolled back, or appended with post-write version conflicts. New results are not guaranteed to inherit concurrent enable or disable operations. Indexes are synchronized asynchronously, which may cause a brief delay in retrieval. Modifying the content is only allowed when the status is COMPLETED. The system asynchronously computes the target vectors and publishes the complete result. You can call GetAsset to query the current status, lastError, and publishedResultAvailable of the document. Content edits with the same clientToken are idempotently replayed with the original result. An expired token at the beginning of the request returns Chunk.VersionConflict. Execution generations are managed only on the backend",
+      "description_zh": "按逻辑切片序号更新正文或启用状态，须回传查询返回的不透明 chunkToken。仅修改 enabled 时，Magic 在请求开始读取当前已发布结果、校验令牌并固定目标后同步写 OTS；已有发布结果且未删除时允许启停，包括 PENDING、PROCESSING、FAILED，不等待 FC。期间新结果发布不追随、不回滚，也不追加写后版本冲突；新结果不保证继承并发启停。索引异步同步，检索可能短暂延迟。修改 content 仍仅允许 COMPLETED，异步计算目标向量并发布完整结果，通过 GetAsset 查询文档当前 status、lastError 和 publishedResultAvailable。内容编辑相同 clientToken 幂等重放原结果。请求开始已过期的令牌返回 Chunk.VersionConflict。执行代次只在后端管理"
+    },
+    "UpdateChunks": {
+      "cmd_name": "update-chunks",
+      "deprecated": false,
+      "description_en": "批量启停 Chunk",
+      "description_zh": "批量启停 Chunk"
+    },
     "UpdateConnector": {
       "cmd_name": "update-connector",
       "deprecated": false,
@@ -1025,6 +1121,12 @@
       "deprecated": false,
       "description_en": "Enables or disables SCIM-based user synchronization independently. When enabled, an initial full import is executed asynchronously. You can query the result by calling GetIdentityProviderSCIM. The SAML logon configuration is retained",
       "description_zh": "独立启用或关闭 SCIM 用户同步。开启时异步执行首次全量导入，结果通过 GetIdentityProviderSCIM 查询，保留 SAML 登录配置"
+    },
+    "UpdateKnowledgeBase": {
+      "cmd_name": "update-knowledge-base",
+      "deprecated": false,
+      "description_en": "Updates the name, description, chunking, or search configuration of a knowledge base. The metadataSchema, embeddingModel, and embeddingDimension cannot be modified after creation. The chunking configuration applies only to subsequently uploaded assets and does not implicitly rebuild existing assets",
+      "description_zh": "更新知识库的名称、描述、分块或检索配置。metadataSchema、embeddingModel 和 embeddingDimension 创建后不可修改。分块配置仅作用于后续上传的资产，不会隐式重建已有资产"
     },
     "UpdateManagedAgent": {
       "cmd_name": "update-managed-agent",

@@ -1,0 +1,484 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "agentcore complete-asset-upload",
+  "cmd_name": "complete-asset-upload",
+  "deprecated": false,
+  "description_en": "Confirms a specified upload session by using the workspaceId, knowledgeBaseId, and assetId in the path and the uploadId in the request body. The server verifies tenant and resource ownership, requires the uploadId to match the current upload session and the upload_epoch to equal the current next_epoch, and then performs a HEAD operation on the bound original object to verify its existence, actual size of 1 byte to 50 MiB, and content type. Using the metadata and chunking configuration saved during acceptance, the server enters the pending state through a CAS operation that includes the upload identity, target generation, UPLOADING status, and deletion marker. Repeatedly confirming the same accepted upload that is still the current target returns the existing status without incrementing the generation or creating a new task. If the scheduling acceptance result is unknown, the server resubmits the task by using the same taskKey. When a subsequent overwrite upload, edit, or rebuild replaces the target, a delayed Complete request returns a status conflict and does not overwrite the new task or resurrect deleted assets. Non-retryable processing failures remain in the FAILED state and are not requeued by the Complete request",
+  "description_zh": "通过路径中的 workspaceId、knowledgeBaseId、assetId 和请求体中的 uploadId 确认指定上传会话。服务端校验租户和资源归属，要求 uploadId 匹配当前上传会话，且 upload_epoch 与当前 next_epoch 相等，再对绑定的 original 对象执行 HEAD，核验存在性、实际大小为 1 字节至 50 MiB 及内容类型。使用受理时保存的元数据和分块配置，通过包含上传身份、目标代次、UPLOADING 状态和删除标记的 CAS 进入待处理状态。重复确认同一已受理且仍为当前目标的上传返回已有状态，不递增代次或创建新任务；调度受理结果未知时按相同 taskKey 补交。后续覆盖上传、编辑或重建已替换目标时，迟到的 Complete 返回状态冲突，不得覆盖新任务或复活删除资产。不可重试的处理失败保持 FAILED，不由 Complete 重新入队",
+  "kebab_example": "",
+  "method": "POST",
+  "multi_version": false,
+  "name": "CompleteAssetUpload",
+  "operation": {
+    "action": "CompleteAssetUpload",
+    "api_style": "ROA",
+    "api_version": "2026-08-04",
+    "content_type": "application/x-www-form-urlencoded",
+    "method": "POST",
+    "operation_type": "write",
+    "protocol": "HTTPS",
+    "req_body_type": "formData",
+    "system_operation_type": "update",
+    "url": "/workspaces/{workspaceId}/knowledge-bases/{knowledgeBaseId}/assets/{assetId}/complete-upload"
+  },
+  "parameters": [
+    {
+      "example": "ws-2f5f9c5a8d0e4c3b",
+      "help_en": "The system parses the tenantId from the trusted gateway call identity by using Magic and verifies workspace ownership. Knowledge bases are created or accessed within this tenant and workspace. You cannot perform cross-tenant queries based solely on the knowledgeBaseId",
+      "help_zh": "由 Magic 从可信网关调用身份解析 tenantId 并校验工作空间归属；知识库在该租户及工作空间内创建或访问，不能仅凭 knowledgeBaseId 跨租户查询",
+      "location": "path",
+      "name": "workspace_id",
+      "options": [
+        "--workspace-id"
+      ],
+      "raw_name": "workspaceId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "kb-2f5f9c5a8d0e4c3b",
+      "help_en": "The knowledge base to which the asset belongs",
+      "help_zh": "资产所属知识库",
+      "location": "path",
+      "name": "knowledge_base_id",
+      "options": [
+        "--knowledge-base-id"
+      ],
+      "raw_name": "knowledgeBaseId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "asset-001",
+      "help_en": "The asset to which the upload to be confirmed belongs",
+      "help_zh": "待确认上传所属的资产",
+      "location": "path",
+      "name": "asset_id",
+      "options": [
+        "--asset-id"
+      ],
+      "raw_name": "assetId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "fields": [
+        {
+          "example": "upload-001",
+          "help_en": "The uploadId returned by BeginAssetUpload. It must match the current upload session and the current upload target generation of the asset",
+          "help_zh": "BeginAssetUpload 返回的 uploadId，必须与资产当前上传会话及当前上传目标代次匹配",
+          "name": "upload_id",
+          "options": [
+            "--upload-id"
+          ],
+          "raw_name": "uploadId",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "help_en": "Specifies the upload session returned by BeginAssetUpload to prevent delayed confirmations from affecting subsequent uploads",
+      "help_zh": "明确指定 BeginAssetUpload 返回的上传会话，防止迟到确认作用于后续上传",
+      "location": "formData",
+      "name": "body",
+      "options": [
+        "--biz-body"
+      ],
+      "param_style": "json",
+      "raw_name": "body",
+      "required": true,
+      "type": "object"
+    }
+  ],
+  "pathPattern": "/workspaces/[workspaceId]/knowledge-bases/[knowledgeBaseId]/assets/[assetId]/complete-upload",
+  "product_code": "AgentCore",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "properties": {
+          "code": {
+            "backendName": "code",
+            "description_en": "The stable result code",
+            "description_zh": "稳定结果码",
+            "example": "SUCCESS",
+            "type": "string"
+          },
+          "data": {
+            "backendName": "data",
+            "description_en": "The asset management properties, actual file size, source, metadata, chunking configuration, and processing status after the upload is confirmed. Acceptance does not mean that new results are published. Poll the status of GetAsset until it reaches COMPLETED or FAILED. For the cause of failure, see lastError",
+            "description_zh": "上传确认后的资产管理属性、实际文件大小、来源、元数据、分块配置和处理状态；受理不表示新结果已发布，轮询 GetAsset 的 status 至 COMPLETED 或 FAILED，失败原因见 lastError",
+            "properties": {
+              "assetId": {
+                "backendName": "assetId",
+                "description_en": "The stable ID of the asset. You can specify this ID when creating an asset. If assetId is not specified but clientToken is provided, the platform stably derives the ID based on the resource scope and clientToken. If neither is provided, a new asset is created for each request. Setting overwrite=true allows you to register a new upload session for the same asset, and the previously published version continues to be used until new results are published",
+                "description_zh": "资产的稳定 ID。新建时可指定；未指定 assetId 但提供 clientToken 时由平台按资源范围和 clientToken 稳定派生，两者均未提供时每次请求创建新资产。overwrite=true 可以为同一资产登记新的上传会话，新结果发布前继续使用旧发布版本",
+                "example": "asset-001",
+                "title_en": "资产 ID",
+                "title_zh": "资产 ID",
+                "type": "string"
+              },
+              "chunkConfiguration": {
+                "backendName": "chunkConfiguration",
+                "description_en": "The effective chunking configuration used for the current asset processing. Explicitly uploaded configurations take precedence over the default knowledge base values. Subsequent modifications to the knowledge base configuration do not change this snapshot",
+                "description_zh": "本次资产处理使用的有效分块配置。上传显式配置优先于知识库默认值；后续知识库配置修改不改变该快照",
+                "properties": {
+                  "headingLevel": {
+                    "backendName": "headingLevel",
+                    "description_en": "This parameter is required when the strategy is BY_HEADING, and the value ranges from 1 to 6. Headings at or above this level are used as boundaries. Deeper headings are retained in the body text. Overlong sections fall back to paragraph or sentence splitting. Documents without headings fall back to intelligent splitting. This parameter is ignored for other strategies and is validated by the backend based on the strategy",
+                    "description_zh": "BY_HEADING 下必填且范围为 1 至 6。小于等于此级数的标题均作为边界；更深标题保留在正文，超长节按段落或句子回退，无标题文档退化为智能切分。其他策略忽略，由后端按策略校验",
+                    "example": "2",
+                    "format": "int32",
+                    "title_en": "标题切分级数",
+                    "title_zh": "标题切分级数",
+                    "type": "integer"
+                  },
+                  "maxChunkSize": {
+                    "backendName": "maxChunkSize",
+                    "description_en": "The value ranges from 1 to 6,000 characters. This follows the character length metric of EB and is not the number of tokens. If omitted, the server-side default value is used",
+                    "description_zh": "1 至 6000 字符，沿用 EB 的字符长度口径，不是 Token 数；省略使用服务端默认值",
+                    "example": "512",
+                    "format": "int32",
+                    "maximum": "6000",
+                    "minimum": "1",
+                    "title_en": "最大分块长度",
+                    "title_zh": "最大分块长度",
+                    "type": "integer"
+                  },
+                  "overlapSize": {
+                    "backendName": "overlapSize",
+                    "description_en": "This parameter takes effect only when the strategy is BY_LENGTH. The unit is characters, and the default value is 0. The valid value must be greater than or equal to 0 and less than the valid maxChunkSize. The length after overlapping must not exceed the maximum chunk length. This parameter is ignored for other strategies and is validated by the backend based on the strategy",
+                    "description_zh": "仅 BY_LENGTH 生效，单位为字符，缺省为 0；有效值须大于等于 0 且小于有效 maxChunkSize，重叠后仍不超过最大分块长度。其他策略忽略，由后端按策略校验",
+                    "example": "40",
+                    "format": "int32",
+                    "title_en": "重叠长度",
+                    "title_zh": "重叠长度",
+                    "type": "integer"
+                  },
+                  "preprocessRules": {
+                    "backendName": "preprocessRules",
+                    "description_en": "The text preprocessing rules applied before splitting",
+                    "description_zh": "切分前的文本预处理规则",
+                    "properties": {
+                      "removeUrlsAndEmails": {
+                        "backendName": "removeUrlsAndEmails",
+                        "description_en": "Specifies whether to remove URLs and email addresses during parsing",
+                        "description_zh": "是否在解析时删除 URL 和邮箱地址",
+                        "example": "false",
+                        "title_en": "删除 URL 和邮箱",
+                        "title_zh": "删除 URL 和邮箱",
+                        "type": "boolean"
+                      },
+                      "replaceConsecutiveWhitespace": {
+                        "backendName": "replaceConsecutiveWhitespace",
+                        "description_en": "Specifies whether to replace consecutive spaces, line breaks, and tabs with a single space",
+                        "description_zh": "是否将连续空格、换行、制表符替换为单个空格",
+                        "example": "true",
+                        "title_en": "替换连续空白",
+                        "title_zh": "替换连续空白",
+                        "type": "boolean"
+                      }
+                    },
+                    "title_en": "预处理规则",
+                    "title_zh": "预处理规则",
+                    "type": "object"
+                  },
+                  "separator": {
+                    "backendName": "separator",
+                    "description_en": "This parameter is required and cannot be empty when the strategy is BY_SEPARATOR. It matches the literal string as a whole without using regular expressions. This parameter is ignored for other strategies",
+                    "description_zh": "BY_SEPARATOR 下必填且非空，按字面字符串整体匹配，不使用正则；其他策略忽略",
+                    "example": "\\n\\n",
+                    "maxLength": 32,
+                    "title_en": "分隔符",
+                    "title_zh": "分隔符",
+                    "type": "string"
+                  },
+                  "strategy": {
+                    "backendName": "strategy",
+                    "description_en": "The saved chunking strategy. AUTO indicates automatic chunking, and BY_SEPARATOR indicates chunking by separator. BY_LENGTH and BY_HEADING are returned only for backward compatibility with historical configurations. Only AUTO and BY_SEPARATOR are accepted when creating or updating configurations in the first phase",
+                    "description_zh": "返回已保存的分块策略。AUTO 为自动分块，BY_SEPARATOR 为分隔符分块；BY_LENGTH 和 BY_HEADING 仅为历史配置兼容返回，新建或更新配置时一期仅接受 AUTO 和 BY_SEPARATOR",
+                    "enum": [
+                      "AUTO",
+                      "BY_LENGTH",
+                      "BY_SEPARATOR",
+                      "BY_HEADING"
+                    ],
+                    "enumValueTitles": {
+                      "AUTO": "自动分块",
+                      "BY_HEADING": "按标题分块（历史兼容）",
+                      "BY_LENGTH": "按长度分块（历史兼容）",
+                      "BY_SEPARATOR": "按分隔符分块"
+                    },
+                    "example": "AUTO",
+                    "required": true,
+                    "title_en": "分块策略",
+                    "title_zh": "分块策略",
+                    "type": "string"
+                  }
+                },
+                "title_en": "分块配置快照",
+                "title_zh": "分块配置快照",
+                "type": "object"
+              },
+              "chunkCount": {
+                "backendName": "chunkCount",
+                "description_en": "The total number of chunks in the currently published results. The value is 0 before the first publication. During re-chunking or editing, the count still reflects the published results",
+                "description_zh": "当前已发布结果的 Chunk 总数，首次发布前为 0；重新分块或编辑处理中仍统计已发布结果",
+                "example": "20",
+                "format": "int32",
+                "title_en": "切片数量",
+                "title_zh": "切片数量",
+                "type": "integer"
+              },
+              "contentType": {
+                "backendName": "contentType",
+                "description_en": "The MIME type of the uploaded original file for this asset",
+                "description_zh": "该资产上传原件的 MIME 类型",
+                "example": "application/pdf",
+                "title_en": "原件类型",
+                "title_zh": "原件类型",
+                "type": "string"
+              },
+              "createdAt": {
+                "backendName": "createdAt",
+                "description_en": "The time in ISO 8601 UTC format",
+                "description_zh": "ISO 8601 UTC 时间",
+                "example": "2026-10-27T02:00:00Z",
+                "title_en": "创建时间",
+                "title_zh": "创建时间",
+                "type": "string"
+              },
+              "enabled": {
+                "backendName": "enabled",
+                "description_en": "If disabled, the asset does not participate in regular viewing, retrieval, and downloading. Management APIs are still controlled by management permissions",
+                "description_zh": "禁用后不参与普通查看、检索和下载；管理接口仍受管理权限控制",
+                "example": "true",
+                "title_en": "是否启用",
+                "title_zh": "是否启用",
+                "type": "boolean"
+              },
+              "fileName": {
+                "backendName": "fileName",
+                "description_en": "The file name of the currently uploaded original file. Modifying the display name does not change this value",
+                "description_zh": "当前上传原件的文件名；修改显示名称不改变此值",
+                "example": "guide.pdf",
+                "sensitive": true,
+                "title_en": "原件文件名",
+                "title_zh": "原件文件名",
+                "type": "string"
+              },
+              "knowledgeBaseId": {
+                "backendName": "knowledgeBaseId",
+                "description_en": "The knowledge base to which the asset belongs",
+                "description_zh": "资产所属知识库",
+                "example": "kb-001",
+                "title_en": "知识库 ID",
+                "title_zh": "知识库 ID",
+                "type": "string"
+              },
+              "lastError": {
+                "backendName": "lastError",
+                "description_en": "The masked error of the current upload or processing. It does not contain internal credentials, paths, or run identifiers",
+                "description_zh": "当前上传或处理的脱敏错误；不含内部凭据、路径和运行标识",
+                "properties": {
+                  "code": {
+                    "backendName": "code",
+                    "description_en": "The stable product error code. It does not return internal task identifiers, stack traces, or storage addresses",
+                    "description_zh": "稳定的产品错误码；不返回内部任务标识、堆栈或存储地址",
+                    "example": "ProcessingFailed",
+                    "title_en": "错误码",
+                    "title_zh": "错误码",
+                    "type": "string"
+                  },
+                  "message": {
+                    "backendName": "message",
+                    "description_en": "The masked error summary that can be displayed to users",
+                    "description_zh": "可向用户展示的脱敏错误摘要",
+                    "example": "文件解析失败。",
+                    "title_en": "错误说明",
+                    "title_zh": "错误说明",
+                    "type": "string"
+                  }
+                },
+                "title_en": "最近错误",
+                "title_zh": "最近错误",
+                "type": "object"
+              },
+              "metadata": {
+                "backendName": "metadata",
+                "description_en": "The complete list of effective metadata key-value pairs, including constants and system variable results. Patches involving retrieval projection do not overwrite old effective values until new results are published",
+                "description_zh": "已生效的完整元数据键值列表，含常量和系统变量结果；涉及检索投影的补丁在新结果发布前不覆盖旧生效值",
+                "example": "[{\"key\":\"department\",\"value\":\"engineering\"}]",
+                "items": {
+                  "properties": {
+                    "key": {
+                      "backendName": "key",
+                      "description_en": "The field name declared in metadataSchema. It must not be duplicated in the same request. Fixed value and system variable fields are generated by the server and cannot be overwritten by customers",
+                      "description_zh": "metadataSchema 中声明的字段名；同一请求中不得重复。固定值及系统变量字段由服务端生成，不接受客户覆盖",
+                      "example": "department",
+                      "maxLength": 64,
+                      "required": true,
+                      "title_en": "元数据字段",
+                      "title_zh": "元数据字段",
+                      "type": "string"
+                    },
+                    "value": {
+                      "backendName": "value",
+                      "description_en": "The string parsed based on the schema type. If omitted or set to null during upload, no value is assigned and the value is populated by the schema. In the UpdateAsset operation, omitting the field, setting it to null, or passing an empty string deletes the key. Unsubmitted keys remain unchanged. For the DATETIME type, accepted formats include ISO 8601 with time zone, yyyy-MM-dd HH:mm:ss, and yyyy-MM-dd",
+                      "description_zh": "按 schema 类型解析的字符串。上传时省略或空值表示未赋值，由 schema 填充；UpdateAsset 中省略、null 或空串表示删除该 key，未提交的 key 保持不变。DATETIME 接受 ISO 8601 含时区、yyyy-MM-dd HH:mm:ss 或 yyyy-MM-dd",
+                      "example": "engineering",
+                      "maxLength": 1024,
+                      "sensitive": true,
+                      "title_en": "元数据值",
+                      "title_zh": "元数据值",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "sensitive": true,
+                "title_en": "元数据",
+                "title_zh": "元数据",
+                "type": "array"
+              },
+              "name": {
+                "backendName": "name",
+                "description_en": "The default value is the uploaded file name. You can modify the display name by calling UpdateAsset",
+                "description_zh": "默认采用上传文件名，可通过 UpdateAsset 修改显示名称",
+                "example": "guide.pdf",
+                "sensitive": true,
+                "title_en": "资产名称",
+                "title_zh": "资产名称",
+                "type": "string"
+              },
+              "publishedResultAvailable": {
+                "backendName": "publishedResultAvailable",
+                "description_en": "Indicates whether the published result is available. The value is true if a published version exists and the asset is neither disabled nor deleted. The value may still be true if re-chunking or editing fails, and is false if the initial processing fails",
+                "description_zh": "已发布版本存在且资产未禁用、未删除时为 true；重新分块或编辑失败时可能仍为 true，首次处理失败时为 false",
+                "example": "true",
+                "title_en": "已发布结果是否可用",
+                "title_zh": "已发布结果是否可用",
+                "type": "boolean"
+              },
+              "sizeBytes": {
+                "backendName": "sizeBytes",
+                "description_en": "The size of the current original file in bytes. This parameter is not returned before the upload is confirmed. After confirmation, the actual size verified by the OSS HEAD request is returned",
+                "description_zh": "当前原件字节数；上传确认前不返回，确认后返回经 OSS HEAD 校验的实际大小",
+                "example": "102400",
+                "format": "int64",
+                "title_en": "当前原件大小",
+                "title_zh": "当前原件大小",
+                "type": "integer"
+              },
+              "sourceModifiedTime": {
+                "backendName": "sourceModifiedTime",
+                "description_en": "The last modification time of the source file in UTC epoch milliseconds. This parameter is not returned if the time is not provided",
+                "description_zh": "源文件最后修改时间，UTC epoch 毫秒；未提供时不返回",
+                "example": "1793066400000",
+                "format": "int64",
+                "title_en": "来源修改时间",
+                "title_zh": "来源修改时间",
+                "type": "integer"
+              },
+              "sourceType": {
+                "backendName": "sourceType",
+                "description_en": "The import channel of the asset, such as UPLOAD or OSS. This value is recorded by the platform based on the trusted access path and is not used to grant access permissions",
+                "description_zh": "资产导入渠道，如 UPLOAD、OSS；由平台根据可信接入路径记录，不用于授予访问权限",
+                "example": "UPLOAD",
+                "title_en": "来源类型",
+                "title_zh": "来源类型",
+                "type": "string"
+              },
+              "sourceUri": {
+                "backendName": "sourceUri",
+                "description_en": "The URI of the original source. This value is used only for tracing. It does not grant download authorization or trigger server-side fetching",
+                "description_zh": "原件来源的 URI，仅用于溯源，不是下载授权，也不触发服务端抓取",
+                "example": "oss://source-bucket/path/guide.pdf",
+                "sensitive": true,
+                "title_en": "来源地址",
+                "title_zh": "来源地址",
+                "type": "string"
+              },
+              "status": {
+                "backendName": "status",
+                "description_en": "The current upload or processing status of the document. Upload, rebuild, and chunk body editing are all polled through GetAsset. PENDING indicates waiting for processing, PROCESSING indicates processing in progress, COMPLETED indicates that publication is finished, and FAILED indicates final failure with lastError returned. This does not represent the result of a specific historical request. No readable results are available if the first processing fails. During overwrite upload, rebuild, or editing, and after failure, published results remain readable if the enabled and deleted statuses allow",
+                "description_zh": "文档当前上传或处理状态。上传、重建和 Chunk 正文编辑均通过 GetAsset 轮询；PENDING 为等待处理，PROCESSING 为正在处理，完成发布后为 COMPLETED，最终失败为 FAILED 并返回 lastError。不表示某次历史请求的结果。首次处理失败没有可读结果；覆盖上传、重建或编辑期间以及失败后，已发布结果在启用和删除状态允许时仍可读",
+                "enum": [
+                  "UPLOADING",
+                  "PENDING",
+                  "PROCESSING",
+                  "COMPLETED",
+                  "FAILED",
+                  "DELETING",
+                  "DELETED"
+                ],
+                "enumValueTitles": {
+                  "COMPLETED": "处理完成",
+                  "DELETED": "已删除",
+                  "DELETING": "删除中",
+                  "FAILED": "处理失败",
+                  "PENDING": "待处理",
+                  "PROCESSING": "处理中",
+                  "UPLOADING": "待上传"
+                },
+                "example": "PROCESSING",
+                "title_en": "当前处理状态",
+                "title_zh": "当前处理状态",
+                "type": "string"
+              },
+              "updatedAt": {
+                "backendName": "updatedAt",
+                "description_en": "The time in ISO 8601 UTC format",
+                "description_zh": "ISO 8601 UTC 时间",
+                "example": "2026-10-27T02:05:00Z",
+                "title_en": "更新时间",
+                "title_zh": "更新时间",
+                "type": "string"
+              },
+              "workspaceId": {
+                "backendName": "workspaceId",
+                "description_en": "The workspace to which the asset belongs",
+                "description_zh": "资产所属工作空间",
+                "example": "ws-001",
+                "title_en": "工作空间 ID",
+                "title_zh": "工作空间 ID",
+                "type": "string"
+              }
+            },
+            "title_en": "资产详情",
+            "title_zh": "资产详情",
+            "type": "object"
+          },
+          "httpStatusCode": {
+            "backendName": "httpStatusCode",
+            "description_en": "The actual HTTP status code",
+            "description_zh": "实际 HTTP 状态码",
+            "example": "200",
+            "format": "int32",
+            "type": "integer"
+          },
+          "message": {
+            "backendName": "message",
+            "description_en": "The description of the masked result",
+            "description_zh": "脱敏结果说明",
+            "example": "success",
+            "type": "string"
+          },
+          "requestId": {
+            "backendName": "requestId",
+            "description_en": "The request trace ID",
+            "description_zh": "请求跟踪标识",
+            "example": "01A00000-0000-0000-0000-000000000001",
+            "type": "string"
+          },
+          "success": {
+            "backendName": "success",
+            "description_en": "Indicates whether the request is successful",
+            "description_zh": "请求是否成功",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

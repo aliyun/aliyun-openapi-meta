@@ -1,0 +1,411 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "agentcore update-chunk",
+  "cmd_name": "update-chunk",
+  "deprecated": false,
+  "description_en": "Updates the content or enabled status of a chunk by its logical sequence number. You must pass back the opaque chunkToken returned by the query operation. When only the enabled status is modified, the system synchronously writes to OTS after reading the currently published result, validating the token, and fixing the target at the beginning of the request. Enabling or disabling is allowed when a published result exists and is not deleted, including the PENDING, PROCESSING, and FAILED states, without waiting for FC. New results published during this process are not followed, rolled back, or appended with post-write version conflicts. New results are not guaranteed to inherit concurrent enable or disable operations. Indexes are synchronized asynchronously, which may cause a brief delay in retrieval. Modifying the content is only allowed when the status is COMPLETED. The system asynchronously computes the target vectors and publishes the complete result. You can call GetAsset to query the current status, lastError, and publishedResultAvailable of the document. Content edits with the same clientToken are idempotently replayed with the original result. An expired token at the beginning of the request returns Chunk.VersionConflict. Execution generations are managed only on the backend",
+  "description_zh": "按逻辑切片序号更新正文或启用状态，须回传查询返回的不透明 chunkToken。仅修改 enabled 时，Magic 在请求开始读取当前已发布结果、校验令牌并固定目标后同步写 OTS；已有发布结果且未删除时允许启停，包括 PENDING、PROCESSING、FAILED，不等待 FC。期间新结果发布不追随、不回滚，也不追加写后版本冲突；新结果不保证继承并发启停。索引异步同步，检索可能短暂延迟。修改 content 仍仅允许 COMPLETED，异步计算目标向量并发布完整结果，通过 GetAsset 查询文档当前 status、lastError 和 publishedResultAvailable。内容编辑相同 clientToken 幂等重放原结果。请求开始已过期的令牌返回 Chunk.VersionConflict。执行代次只在后端管理",
+  "kebab_example": "",
+  "method": "PATCH",
+  "multi_version": false,
+  "name": "UpdateChunk",
+  "operation": {
+    "action": "UpdateChunk",
+    "api_style": "ROA",
+    "api_version": "2026-08-04",
+    "content_type": "application/x-www-form-urlencoded",
+    "method": "PATCH",
+    "operation_type": "write",
+    "protocol": "HTTPS",
+    "req_body_type": "formData",
+    "system_operation_type": "update",
+    "url": "/workspaces/{workspaceId}/knowledge-bases/{knowledgeBaseId}/assets/{assetId}/chunks/{chunkSeq}"
+  },
+  "parameters": [
+    {
+      "example": "ws-2f5f9c5a8d0e4c3b",
+      "help_en": "The system resolves the tenantId from the trusted gateway and validates the workspace ownership. Knowledge bases are created or accessed within this tenant and workspace. You cannot query across tenants by using only the knowledgeBaseId",
+      "help_zh": "由 Magic 从可信网关调用身份解析 tenantId 并校验工作空间归属；知识库在该租户及工作空间内创建或访问，不能仅凭 knowledgeBaseId 跨租户查询",
+      "location": "path",
+      "name": "workspace_id",
+      "options": [
+        "--workspace-id"
+      ],
+      "raw_name": "workspaceId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "kb-2f5f9c5a8d0e4c3b",
+      "help_en": "The unique identifier of the knowledge base to which the asset belongs",
+      "help_zh": "资产所属知识库的唯一标识",
+      "location": "path",
+      "name": "knowledge_base_id",
+      "options": [
+        "--knowledge-base-id"
+      ],
+      "raw_name": "knowledgeBaseId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "asset-001",
+      "help_en": "The stable identifier of the asset to which the chunk to be updated belongs",
+      "help_zh": "待更新切片所属资产的稳定标识",
+      "location": "path",
+      "name": "asset_id",
+      "options": [
+        "--asset-id"
+      ],
+      "raw_name": "assetId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "1",
+      "help_en": "The logical sequence number of the chunk within the asset, starting from 1",
+      "help_zh": "切片在资产内的逻辑序号，从 1 开始",
+      "location": "path",
+      "minimum": "1",
+      "name": "chunk_seq",
+      "options": [
+        "--chunk-seq"
+      ],
+      "raw_name": "chunkSeq",
+      "required": true,
+      "type": "int"
+    },
+    {
+      "example": "chunk-update-001",
+      "help_en": "Required when modifying the content. Used for idempotent retries of asynchronous edits. This parameter is not used as a query parameter for GetAsset. If the same token is used with different parameters, IdempotencyConflict is returned. This parameter can be omitted when only modifying the enabled status, and no asynchronous receipt is created",
+      "help_zh": "修改 content 时必填，用于异步编辑幂等重试，不作为 GetAsset 的查询参数；相同 token 不同参数返回 IdempotencyConflict。仅修改 enabled 时可省略，不创建异步回执",
+      "location": "query",
+      "name": "client_token",
+      "options": [
+        "--client-token"
+      ],
+      "raw_name": "clientToken",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "fields": [
+        {
+          "example": "ct-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+          "help_en": "Pass back the chunkToken returned by GetChunk, ListChunks, or SearchKnowledgeBase as is. Do not parse or generate it yourself. If the token has expired at the beginning of the request, Chunk.VersionConflict is returned",
+          "help_zh": "原样回传 GetChunk、ListChunks 或 SearchKnowledgeBase 返回的 chunkToken，不解析或自行生成；请求开始时已过期返回 Chunk.VersionConflict",
+          "name": "chunk_token",
+          "options": [
+            "--chunk-token"
+          ],
+          "raw_name": "chunkToken",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "example": "欢迎使用产品。",
+          "help_en": "Replaces the chunk content. The maximum length is 32,768 characters. Affected vectors are regenerated before the new generation is published. If omitted, the original content is retained",
+          "help_zh": "替换切片正文，最长 32768 个字符；新代次发布前重新生成受影响向量。省略时保留原正文",
+          "max_length": "32768",
+          "name": "content",
+          "options": [
+            "--content"
+          ],
+          "raw_name": "content",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "help_en": "Specifies whether the chunk is enabled. Valid values:\ntrue: Enabled.\nfalse: Disabled.\nEnabling or disabling only modifies the published result determined at the beginning of the request, and does not follow new results during the process. Indexes are synchronized asynchronously, which may cause a brief delay in retrieval. If omitted, the original enabled status is retained",
+          "help_zh": "true 启用，false 禁用；纯启停只修改请求开始确定的已发布结果，期间不追随新结果。索引异步同步，检索可能短暂延迟。省略时保留原启用状态",
+          "name": "enabled",
+          "options": [
+            "--enabled"
+          ],
+          "raw_name": "enabled",
+          "required": false,
+          "type": "bool"
+        }
+      ],
+      "help_en": "You must provide the chunkToken and at least one of the content or enabled parameters",
+      "help_zh": "必须提供 chunkToken，并在 content、enabled 中至少提供一项",
+      "location": "formData",
+      "name": "body",
+      "options": [
+        "--biz-body"
+      ],
+      "param_style": "json",
+      "raw_name": "body",
+      "required": true,
+      "type": "object"
+    }
+  ],
+  "pathPattern": "/workspaces/[workspaceId]/knowledge-bases/[knowledgeBaseId]/assets/[assetId]/chunks/[chunkSeq]",
+  "product_code": "AgentCore",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "properties": {
+          "code": {
+            "backendName": "code",
+            "description_en": "The stable result code",
+            "description_zh": "稳定结果码",
+            "example": "SUCCESS",
+            "type": "string"
+          },
+          "data": {
+            "backendName": "data",
+            "description_en": "For pure enable or disable operations, COMPLETED and the final state of each item are synchronously returned, indicating that the current write operation is complete. This does not change the original processing status of the asset or guarantee that concurrently published new results inherit the modifications. Polling is not required. When content is included, poll the current status of GetAsset until it reaches COMPLETED or FAILED. For failure reasons, see lastError. GetAsset does not accept clientToken or return chunkUpdate. ACCEPTED does not indicate completion",
+            "description_zh": "纯启停同步返回 COMPLETED 和逐项终态，表示本次写入结束，不改变资产原有处理状态、不保证并发发布的新结果继承修改，无需轮询；包含 content 时轮询 GetAsset 的当前 status 至 COMPLETED 或 FAILED，失败原因见 lastError；GetAsset 不接收 clientToken、不返回 chunkUpdate。ACCEPTED 不表示完成",
+            "properties": {
+              "assetId": {
+                "backendName": "assetId",
+                "description_en": "The target asset for processing",
+                "description_zh": "处理目标资产",
+                "example": "asset-001",
+                "title_en": "资产 ID",
+                "title_zh": "资产 ID",
+                "type": "string"
+              },
+              "chunkUpdate": {
+                "backendName": "chunkUpdate",
+                "description_en": "The itemized results returned by UpdateChunk or UpdateChunks. Synchronous enable or disable operations directly return the final results. Asynchronous content edits return the acceptance results, and idempotent replays return the recorded request results. You can query the current status of the document by calling GetAsset. GetAsset does not return this field. The itemized results are not represented by the top-level success parameter of the API operation",
+                "description_zh": "UpdateChunk 或 UpdateChunks 返回的逐项结果。同步启停直接返回最终结果；异步内容编辑返回受理结果，幂等重放返回已记录的请求结果。文档当前状态通过 GetAsset 查询，GetAsset 不返回此字段。逐项结果不由接口顶层 success 表示",
+                "properties": {
+                  "clientToken": {
+                    "backendName": "clientToken",
+                    "description_en": "Only asynchronous content edits return the clientToken of the original UpdateChunk for idempotent retries. GetAsset does not accept or return the clientToken. Pure enable or disable operations do not create asynchronous receipts. If the same token is reused with different parameters within the same asset, IdempotencyConflict is returned",
+                    "description_zh": "仅异步内容编辑返回原 UpdateChunk 的 clientToken，用于幂等重试；GetAsset 不接收或返回 clientToken。纯启停不创建异步回执。同一资产内不同参数复用同 token 返回 IdempotencyConflict",
+                    "example": "chunk-update-001",
+                    "title_en": "客户端请求标识",
+                    "title_zh": "客户端请求标识",
+                    "type": "string"
+                  },
+                  "expiresAt": {
+                    "backendName": "expiresAt",
+                    "description_en": "The reserved expiration time for idempotent result retention. This field is not currently outputted and is not used as a basis for document status queries or automatic retries",
+                    "description_zh": "预留的幂等结果保留截止时间，当前未输出；不作为文档状态查询或自动重试的依据",
+                    "example": "2026-11-03T02:05:00Z",
+                    "title_en": "结果保留截止时间",
+                    "title_zh": "结果保留截止时间",
+                    "type": "string"
+                  },
+                  "failedCount": {
+                    "backendName": "failedCount",
+                    "description_en": "The number of FAILED items in this request. When asynchronous content edits are still in the ACCEPTED state, a value of 0 does not indicate a successful modification",
+                    "description_zh": "本次 FAILED 项数量；异步内容编辑仍为 ACCEPTED 时，不能将 0 视为修改成功",
+                    "example": "0",
+                    "format": "int32",
+                    "title_en": "失败数量",
+                    "title_zh": "失败数量",
+                    "type": "integer"
+                  },
+                  "results": {
+                    "backendName": "results",
+                    "description_en": "The itemized results of the current UpdateChunk or UpdateChunks request. Synchronous enable or disable operations return SUCCEEDED or FAILED, and batch operations allow partial success. Content edits first return ACCEPTED, and idempotent replays may return recorded processing results. You can determine whether the current document is completed by checking the status returned by GetAsset. The itemized results are independent of the top-level success parameter",
+                    "description_zh": "本次 UpdateChunk 或 UpdateChunks 的逐项结果。纯启停同步返回 SUCCEEDED/FAILED，批量允许部分成功；内容编辑先返回 ACCEPTED，幂等重放可返回已记录的处理结果。当前文档是否完成通过 GetAsset 的 status 判断。逐项结果与顶层 success 独立",
+                    "items": {
+                      "properties": {
+                        "chunkSeq": {
+                          "backendName": "chunkSeq",
+                          "description_en": "The target sequence number for this modification",
+                          "description_zh": "本次修改的目标序号",
+                          "example": "1",
+                          "format": "int32",
+                          "title_en": "Chunk 序号",
+                          "title_zh": "Chunk 序号",
+                          "type": "integer"
+                        },
+                        "failureReason": {
+                          "backendName": "failureReason",
+                          "description_en": "The desensitized reason for the failure. It does not contain internal task, execution, or physical storage identifiers",
+                          "description_zh": "失败时的脱敏原因；不包含内部任务、执行或物理存储标识",
+                          "example": "目标 Chunk 不存在。",
+                          "title_en": "失败原因",
+                          "title_zh": "失败原因",
+                          "type": "string"
+                        },
+                        "status": {
+                          "backendName": "status",
+                          "description_en": "ACCEPTED indicates that the content edit is accepted but not completed. SUCCEEDED indicates that the pure enable or disable operation has been written to the target determined at the beginning of the request, or the content edit has been published. It is not guaranteed that concurrently published new results will inherit the enable or disable operations. FAILED indicates that the item is not completed",
+                          "description_zh": "ACCEPTED 表示内容编辑已受理但未完成；SUCCEEDED 表示纯启停已写入请求开始确定的目标或内容编辑已发布；不承诺并发发布的新结果继承启停。FAILED 表示该项未完成",
+                          "enum": [
+                            "ACCEPTED",
+                            "SUCCEEDED",
+                            "FAILED"
+                          ],
+                          "enumValueTitles": {
+                            "ACCEPTED": "已受理（异步编辑中）",
+                            "FAILED": "写入失败",
+                            "SUCCEEDED": "已写入成功"
+                          },
+                          "example": "ACCEPTED",
+                          "title_en": "逐项状态",
+                          "title_zh": "逐项状态",
+                          "type": "string"
+                        },
+                        "success": {
+                          "backendName": "success",
+                          "description_en": "Returned only in the final state. The value is true for SUCCEEDED and false for FAILED. This parameter is not returned for ACCEPTED. An accepted state cannot be treated as a successful write. This parameter is independent of the top-level success parameter, which indicates request acceptance or query success",
+                          "description_zh": "仅终态返回：SUCCEEDED 为 true，FAILED 为 false；ACCEPTED 时不返回，不能将已受理当成写入成功。与表示请求受理或查询成功的接口顶层 success 独立",
+                          "example": "true",
+                          "nullToEmpty": false,
+                          "title_en": "该项是否执行成功",
+                          "title_zh": "该项是否执行成功",
+                          "type": "boolean"
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "title_en": "修改结果",
+                    "title_zh": "修改结果",
+                    "type": "array"
+                  },
+                  "totalCount": {
+                    "backendName": "totalCount",
+                    "description_en": "The number of chunks submitted in this request. The value is 1 for UpdateChunk, and 1 to 100 for UpdateChunks",
+                    "description_zh": "本次提交的 Chunk 数量；UpdateChunk 为 1，UpdateChunks 为 1 至 100",
+                    "example": "1",
+                    "format": "int32",
+                    "title_en": "提交数量",
+                    "title_zh": "提交数量",
+                    "type": "integer"
+                  }
+                },
+                "title_en": "Chunk 修改结果",
+                "title_zh": "Chunk 修改结果",
+                "type": "object"
+              },
+              "knowledgeBaseId": {
+                "backendName": "knowledgeBaseId",
+                "description_en": "The target knowledge base",
+                "description_zh": "目标知识库",
+                "example": "kb-001",
+                "title_en": "知识库 ID",
+                "title_zh": "知识库 ID",
+                "type": "string"
+              },
+              "lastError": {
+                "backendName": "lastError",
+                "description_en": "The desensitized error summary of the current processing",
+                "description_zh": "当前处理的脱敏错误摘要",
+                "properties": {
+                  "code": {
+                    "backendName": "code",
+                    "description_en": "The stable product error code. It does not return internal task identifiers, stack traces, or storage addresses",
+                    "description_zh": "稳定的产品错误码；不返回内部任务标识、堆栈或存储地址",
+                    "example": "ProcessingFailed",
+                    "title_en": "错误码",
+                    "title_zh": "错误码",
+                    "type": "string"
+                  },
+                  "message": {
+                    "backendName": "message",
+                    "description_en": "The desensitized error summary that can be displayed to users",
+                    "description_zh": "可向用户展示的脱敏错误摘要",
+                    "example": "文件解析失败。",
+                    "title_en": "错误说明",
+                    "title_zh": "错误说明",
+                    "type": "string"
+                  }
+                },
+                "title_en": "最近错误",
+                "title_zh": "最近错误",
+                "type": "object"
+              },
+              "publishedResultAvailable": {
+                "backendName": "publishedResultAvailable",
+                "description_en": "The availability of the published result, considering disabled states and tombstones",
+                "description_zh": "考虑禁用和墓碑后的已发布结果可用性",
+                "example": "true",
+                "title_en": "已发布结果是否可用",
+                "title_zh": "已发布结果是否可用",
+                "type": "boolean"
+              },
+              "status": {
+                "backendName": "status",
+                "description_en": "The acceptance or execution result of UpdateChunk or UpdateChunks. The COMPLETED status in the synchronous chunk enable or disable response only indicates that the current write operation is complete, and does not change the original processing status of the asset. The acceptance and idempotent replay results of asynchronous content edits do not represent the current status of the document. You can query the document status by calling GetAsset",
+                "description_zh": "UpdateChunk 或 UpdateChunks 的受理或执行结果；同步 Chunk 启停响应的 COMPLETED 仅表示本次写入结束，不改变资产原处理状态。异步内容编辑的受理和幂等重放结果不代表文档当前状态，文档状态通过 GetAsset 查询",
+                "enum": [
+                  "UPLOADING",
+                  "PENDING",
+                  "PROCESSING",
+                  "COMPLETED",
+                  "FAILED",
+                  "DELETING",
+                  "DELETED"
+                ],
+                "enumValueTitles": {
+                  "COMPLETED": "处理完成",
+                  "DELETED": "已删除",
+                  "DELETING": "删除中",
+                  "FAILED": "处理失败",
+                  "PENDING": "待处理",
+                  "PROCESSING": "处理中",
+                  "UPLOADING": "待上传"
+                },
+                "example": "PENDING",
+                "title_en": "处理状态",
+                "title_zh": "处理状态",
+                "type": "string"
+              },
+              "updatedAt": {
+                "backendName": "updatedAt",
+                "description_en": "The update time in ISO 8601 UTC format",
+                "description_zh": "ISO 8601 UTC 时间",
+                "example": "2026-10-27T02:05:00Z",
+                "title_en": "更新时间",
+                "title_zh": "更新时间",
+                "type": "string"
+              },
+              "workspaceId": {
+                "backendName": "workspaceId",
+                "description_en": "The target workspace",
+                "description_zh": "目标工作空间",
+                "example": "ws-001",
+                "title_en": "工作空间 ID",
+                "title_zh": "工作空间 ID",
+                "type": "string"
+              }
+            },
+            "title_en": "资产处理状态",
+            "title_zh": "资产处理状态",
+            "type": "object"
+          },
+          "httpStatusCode": {
+            "backendName": "httpStatusCode",
+            "description_en": "The actual HTTP status code",
+            "description_zh": "实际 HTTP 状态码",
+            "example": "200",
+            "format": "int32",
+            "type": "integer"
+          },
+          "message": {
+            "backendName": "message",
+            "description_en": "The desensitized result description",
+            "description_zh": "脱敏结果说明",
+            "example": "success",
+            "type": "string"
+          },
+          "requestId": {
+            "backendName": "requestId",
+            "description_en": "The request tracking ID",
+            "description_zh": "请求跟踪标识",
+            "example": "01A00000-0000-0000-0000-000000000001",
+            "type": "string"
+          },
+          "success": {
+            "backendName": "success",
+            "description_en": "Specifies whether the request is successful. Valid values:\ntrue: The request is successfully processed or accepted. For pure enable or disable operations, the final result of each item is checked. For content edits, you must wait for the asynchronous final state.\nfalse: The entire request is rejected due to token expiration, authentication failure, or resource status issues",
+            "description_zh": "true 表示请求成功处理或受理。纯启停检查逐项最终结果；内容编辑须等待异步终态。令牌过期、鉴权或资源状态等整次拒绝时为 false",
+            "title_en": "请求是否成功",
+            "title_zh": "请求是否成功",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

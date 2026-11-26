@@ -1,0 +1,439 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "agentcore search-knowledge-base",
+  "cmd_name": "search-knowledge-base",
+  "deprecated": false,
+  "description_en": "Executes keyword, vector, or hybrid search on published and authorized results in a specified knowledge base. Search parameters take effect in the order of the current request, knowledge base search configuration, and system default values. Metadata filtering uses a JSON expression tree and does not accept OTS DSL or tenant fields. The actual number of results after filtering and permission verification may be less than topK. The search feature provides eventual consistency, and newly published results become searchable after index synchronization. Reading candidates still verifies the current publish pointer and permissions",
+  "description_zh": "在指定知识库的已发布且已授权结果中执行关键词、向量或混合检索。检索参数按本次请求、知识库检索配置、系统默认值的顺序生效。元数据过滤使用 JSON 表达式树，不接受 OTS DSL 或租户字段；过滤和权限校验后实际结果数可能少于 topK。一期检索为最终一致性，新发布结果在索引同步后可检索；读取候选仍校验当前发布指针和权限",
+  "kebab_example": "",
+  "method": "POST",
+  "multi_version": false,
+  "name": "SearchKnowledgeBase",
+  "operation": {
+    "action": "SearchKnowledgeBase",
+    "api_style": "ROA",
+    "api_version": "2026-08-04",
+    "content_type": "application/x-www-form-urlencoded",
+    "method": "POST",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "req_body_type": "formData",
+    "system_operation_type": "none",
+    "url": "/workspaces/{workspaceId}/knowledge-bases/{knowledgeBaseId}/search"
+  },
+  "parameters": [
+    {
+      "example": "ws-2f5f9c5a8d0e4c3b",
+      "help_en": "The workspace ID. Magic resolves the tenant ID from the trusted gateway call identity and verifies workspace ownership. Knowledge bases are created or accessed within this tenant and workspace. Cross-tenant queries cannot be performed by specifying only the knowledge base ID",
+      "help_zh": "由 Magic 从可信网关调用身份解析 tenantId 并校验工作空间归属；知识库在该租户及工作空间内创建或访问，不能仅凭 knowledgeBaseId 跨租户查询",
+      "location": "path",
+      "name": "workspace_id",
+      "options": [
+        "--workspace-id"
+      ],
+      "raw_name": "workspaceId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "kb-2f5f9c5a8d0e4c3b",
+      "help_en": "The unique identifier of the knowledge base to be searched",
+      "help_zh": "待检索的知识库唯一标识",
+      "location": "path",
+      "name": "knowledge_base_id",
+      "options": [
+        "--knowledge-base-id"
+      ],
+      "raw_name": "knowledgeBaseId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "fields": [
+        {
+          "example": "{\"AndAll\":[{\"Key\":\"env\",\"Operator\":\"In\",\"Values\":[\"prod\",\"staging\"]},{\"Key\":\"score\",\"Operator\":\"GreaterThan\",\"Value\":\"0.8\"}]}",
+          "help_en": "The JSON expression tree used to filter search results by document metadata. The maximum length is 8,192 characters. Logical nodes include {\"AndAll\":[child nodes...]} (all conditions met), {\"OrAll\":[child nodes...]} (any condition met), and {\"NotAll\":[child nodes...]} (no conditions met). Nesting is supported. Leaf nodes are in the format of {\"Key\":field name,\"Operator\":operator,\"Value\":value}. For In and NotIn operators, use \"Values\":[values...]. Valid operators include Equals, NotEquals, In, NotIn, GreaterThan, GreaterThanOrEqual, LessThan, LessThanOrEqual, StartsWith, and StringContains. Range operators apply only to LONG, DOUBLE, and DATETIME types. String operators apply only to the STRING type. Fields must be declared in the metadataSchema of the knowledge base. The nesting depth cannot exceed 5, and the total number of leaf conditions cannot exceed 20. DATETIME values accept ISO-8601 format with time zone, yyyy-MM-dd HH:mm:ss, or yyyy-MM-dd. OTS DSL, system fields, and tenant control fields are not accepted",
+          "help_zh": "按文档元数据过滤检索结果的 JSON 表达式树，最长 8192 个字符。逻辑节点为 {\"AndAll\":[子节点...]}（全部满足）、{\"OrAll\":[子节点...]}（任一满足）、{\"NotAll\":[子节点...]}（全部不满足），支持嵌套。叶子为 {\"Key\":字段名,\"Operator\":操作符,\"Value\":值}，In、NotIn 使用 \"Values\":[值...]。操作符为 Equals、NotEquals、In、NotIn、GreaterThan、GreaterThanOrEqual、LessThan、LessThanOrEqual、StartsWith、StringContains；范围操作只适用于 LONG、DOUBLE、DATETIME，字符串操作只适用于 STRING。字段必须在知识库 metadataSchema 中声明；嵌套深度不超过 5，叶子条件总数不超过 20。DATETIME 值接受含时区 ISO-8601、yyyy-MM-dd HH:mm:ss 或 yyyy-MM-dd。不接受 OTS DSL、系统字段或租户控制字段",
+          "max_length": "8192",
+          "name": "metadata_filter",
+          "options": [
+            "--metadata-filter"
+          ],
+          "raw_name": "metadataFilter",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "enum": [
+            "KEYWORD",
+            "VECTOR",
+            "HYBRID"
+          ],
+          "example": "HYBRID",
+          "help_en": "The search mode. KEYWORD indicates keyword retrieve, VECTOR indicates vector retrieve, and HYBRID indicates hybrid retrieve. If this parameter is omitted, the knowledge base configuration is used. If the knowledge base is not configured, the default value is HYBRID",
+          "help_zh": "KEYWORD 为关键词检索，VECTOR 为向量检索，HYBRID 为混合检索。省略时使用知识库配置，未配置时默认 HYBRID",
+          "name": "mode",
+          "options": [
+            "--mode"
+          ],
+          "raw_name": "mode",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "产品文档",
+          "help_en": "The text used for both keyword retrieve and vector retrieve. The maximum length is 4,096 characters",
+          "help_zh": "关键词检索与向量检索均基于该文本，最长 4096 个字符",
+          "max_length": "4096",
+          "name": "query",
+          "options": [
+            "--query"
+          ],
+          "raw_name": "query",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "enum": [
+            "RRF",
+            "WEIGHTED"
+          ],
+          "example": "RRF",
+          "help_en": "The fusion algorithm. RRF indicates reciprocal rank fusion, and WEIGHTED indicates weighted normalization fusion. This parameter takes effect only in HYBRID mode. If WEIGHTED is explicitly passed in a non-HYBRID mode, an InvalidParameter error is returned. If this parameter is omitted, the knowledge base configuration is used. If the knowledge base is not configured, the default value is RRF",
+          "help_zh": "RRF 为倒数排名融合，WEIGHTED 为加权归一融合。仅 HYBRID 模式生效；非 HYBRID 模式显式传入 WEIGHTED 返回 InvalidParameter。省略时使用知识库配置，未配置时默认 RRF",
+          "name": "rank_algorithm",
+          "options": [
+            "--rank-algorithm"
+          ],
+          "raw_name": "rankAlgorithm",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "help_en": "Specifies whether to enable reranking. This parameter applies to the KEYWORD, VECTOR, and HYBRID modes. An explicit value overrides the knowledge base configuration. If this parameter is omitted, the knowledge base configuration is used. If the knowledge base is not configured, the default value is false",
+          "help_zh": "适用于 KEYWORD、VECTOR、HYBRID 全部模式。显式值覆盖知识库配置；省略时使用知识库配置，未配置时默认 false",
+          "name": "rerank",
+          "options": [
+            "--rerank"
+          ],
+          "raw_name": "rerank",
+          "required": false,
+          "type": "bool"
+        },
+        {
+          "enum": [
+            "qwen3-rerank",
+            "qwen3.7-text-rerank",
+            "gte-rerank-v2",
+            "qwen3-vl-rerank"
+          ],
+          "example": "qwen3-rerank",
+          "help_en": "The reranking model. This parameter takes effect in all search modes when reranking is enabled. Valid values: qwen3-rerank, qwen3.7-text-rerank, gte-rerank-v2, and qwen3-vl-rerank. If this parameter is omitted, the knowledge base configuration is used. If the knowledge base is not configured, the default value is qwen3-rerank. Do not compare score distributions across different models. Use the same model for a given knowledge base",
+          "help_zh": "启用重排时在全部检索模式生效。取值为 qwen3-rerank、qwen3.7-text-rerank、gte-rerank-v2、qwen3-vl-rerank。省略时使用知识库配置，未配置时默认 qwen3-rerank。不同模型的分数分布不可横向比较，同一知识库建议固定使用同一模型",
+          "name": "rerank_model",
+          "options": [
+            "--rerank-model"
+          ],
+          "raw_name": "rerankModel",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "60",
+          "help_en": "The RRF fusion parameter k that overrides the knowledge base configuration for the current request. This parameter takes effect only in HYBRID mode and must be greater than 0. If this parameter is omitted, the knowledge base configuration is used. If the knowledge base is not configured, the default value is 60",
+          "help_zh": "本次请求覆盖知识库的 RRF 融合参数，仅 HYBRID 模式生效，必须大于 0。省略时使用知识库配置，未配置时默认 60",
+          "minimum": "1",
+          "name": "rrf_k",
+          "options": [
+            "--rrf-k"
+          ],
+          "raw_name": "rrfK",
+          "required": false,
+          "type": "int"
+        },
+        {
+          "example": "10",
+          "help_en": "The expected number of results. Valid values: 1 to 100. If this parameter is omitted, the knowledge base configuration is used. If the knowledge base is not configured, the default value is 10. The actual number of results may be smaller after permission and filtering verification",
+          "help_zh": "取值范围为 1～100；省略时使用知识库配置，未配置时默认 10。权限和过滤校验后实际结果数可能更少",
+          "maximum": "100",
+          "minimum": "1",
+          "name": "topk",
+          "options": [
+            "--topk"
+          ],
+          "raw_name": "topK",
+          "required": false,
+          "type": "int"
+        },
+        {
+          "example": "0.7",
+          "help_en": "The vector leg weight for WEIGHTED fusion. Valid values: 0 to 1. The keyword leg weight is 1 minus this value. If this parameter is omitted, the knowledge base configuration is used. If the knowledge base is not configured, the default value is 0.7",
+          "help_zh": "WEIGHTED 融合的向量路权重，范围 [0, 1]，关键词路权重为 1 减去该值。省略时使用知识库配置，未配置时默认 0.7",
+          "maximum": "1",
+          "minimum": "0",
+          "name": "vector_weight",
+          "options": [
+            "--vector-weight"
+          ],
+          "raw_name": "vectorWeight",
+          "required": false,
+          "type": "float"
+        }
+      ],
+      "help_en": "The search text and the search configuration overrides for the current request. If the mode, count, fusion, and reranking parameters are omitted, the knowledge base configuration is used. If the knowledge base is not configured, the system default values specified in each field description are used. If metadataFilter is omitted, no metadata filtering is applied",
+      "help_zh": "检索文本及本次请求的检索配置覆盖项。模式、数量、融合和重排参数省略时使用知识库配置，未配置时使用各字段说明中的系统默认值；metadataFilter 省略时不附加元数据过滤",
+      "location": "formData",
+      "name": "body",
+      "options": [
+        "--biz-body"
+      ],
+      "param_style": "json",
+      "raw_name": "body",
+      "required": true,
+      "type": "object"
+    }
+  ],
+  "pathPattern": "/workspaces/[workspaceId]/knowledge-bases/[knowledgeBaseId]/search",
+  "product_code": "AgentCore",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "properties": {
+          "code": {
+            "backendName": "code",
+            "description_en": "The stable result code",
+            "description_zh": "稳定结果码",
+            "example": "SUCCESS",
+            "type": "string"
+          },
+          "data": {
+            "backendName": "data",
+            "description_en": "The published results that the caller has permission to access",
+            "description_zh": "仅包含已发布且调用者有权访问的结果",
+            "properties": {
+              "chunks": {
+                "backendName": "chunks",
+                "description_en": "The final authorized and published candidates. The number of candidates may be less than topK. If a backend failure occurs, an error is returned instead of a fake success with empty results",
+                "description_zh": "最终授权且已发布的候选；可能少于 topK。后端失败返回错误，不以空结果伪装成功",
+                "itemName": "chunks",
+                "items": {
+                  "properties": {
+                    "assetId": {
+                      "backendName": "assetId",
+                      "description_en": "The asset to which the matched chunk belongs",
+                      "description_zh": "命中 Chunk 所属资产",
+                      "example": "asset-001",
+                      "title_en": "资产 ID",
+                      "title_zh": "资产 ID",
+                      "type": "string"
+                    },
+                    "assetName": {
+                      "backendName": "assetName",
+                      "description_en": "The display name of the matched asset",
+                      "description_zh": "命中资产的显示名称",
+                      "example": "guide.pdf",
+                      "sensitive": true,
+                      "title_en": "资产名称",
+                      "title_zh": "资产名称",
+                      "type": "string"
+                    },
+                    "chunkSeq": {
+                      "backendName": "chunkSeq",
+                      "description_en": "The 1-based logical sequence number within the published asset",
+                      "description_zh": "已发布资产内从 1 开始的逻辑序号",
+                      "example": "1",
+                      "format": "int32",
+                      "title_en": "Chunk 序号",
+                      "title_zh": "Chunk 序号",
+                      "type": "integer"
+                    },
+                    "chunkToken": {
+                      "backendName": "chunkToken",
+                      "description_en": "The opaque token passed back as-is during updates. It is verified against the current published results at the start of the request, and an error is returned if it has expired. It does not follow newly published concurrent results after a simple start-stop operation, and must not be parsed or generated manually",
+                      "description_zh": "更新时原样回传的不透明令牌；请求开始时按当前发布结果校验，已过期则报错。纯启停开始后不追随并发发布的新结果，不解析或自行生成",
+                      "example": "ct-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+                      "title_en": "切片校验令牌",
+                      "title_zh": "切片校验令牌",
+                      "type": "string"
+                    },
+                    "content": {
+                      "backendName": "content",
+                      "description_en": "The chunk content that has passed the permission, enablement status, and published version verifications",
+                      "description_zh": "通过权限、启用状态和发布版本校验的 Chunk 正文",
+                      "example": "欢迎使用产品。",
+                      "sensitive": true,
+                      "title_en": "正文",
+                      "title_zh": "正文",
+                      "type": "string"
+                    },
+                    "fileName": {
+                      "backendName": "fileName",
+                      "description_en": "The file name that matches the published original file. It is not affected by changes to the asset display name",
+                      "description_zh": "与已发布原件一致的文件名，不受资产显示名称修改影响",
+                      "example": "guide.pdf",
+                      "sensitive": true,
+                      "title_en": "原件文件名",
+                      "title_zh": "原件文件名",
+                      "type": "string"
+                    },
+                    "score": {
+                      "backendName": "score",
+                      "description_en": "The ranking score interpreted by scoreType. Normalization is not guaranteed, and scores cannot be directly compared across different modes or queries",
+                      "description_zh": "按 scoreType 解释的排序分数，不保证归一化；不同模式或查询间不可直接比较",
+                      "example": "0.0325",
+                      "format": "double",
+                      "title_en": "得分",
+                      "title_zh": "得分",
+                      "type": "number"
+                    },
+                    "scores": {
+                      "backendName": "scores",
+                      "description_en": "The detailed normalized scores for the vector, keyword, fusion, and reranking stages. Stages that are not involved are not returned",
+                      "description_zh": "保留向量、关键词、融合、重排四阶段归一化分数明细，未参与的阶段不返回",
+                      "properties": {
+                        "fusion": {
+                          "backendName": "fusion",
+                          "description_en": "The normalized score for the fusion stage. This field is not returned if the stage is not involved",
+                          "description_zh": "融合阶段归一化分数，未参与时不返回",
+                          "example": "0.85",
+                          "format": "double",
+                          "title_en": "融合得分",
+                          "title_zh": "融合得分",
+                          "type": "number"
+                        },
+                        "keyword": {
+                          "backendName": "keyword",
+                          "description_en": "The normalized score for the keyword channel. This field is not returned if the stage is not involved",
+                          "description_zh": "关键词通道归一化分数，未参与时不返回",
+                          "example": "0.8",
+                          "format": "double",
+                          "title_en": "关键词得分",
+                          "title_zh": "关键词得分",
+                          "type": "number"
+                        },
+                        "rerank": {
+                          "backendName": "rerank",
+                          "description_en": "The normalized score for the reranking stage. This field is not returned if the stage is not involved",
+                          "description_zh": "重排阶段归一化分数，未参与时不返回",
+                          "example": "0.92",
+                          "format": "double",
+                          "title_en": "重排得分",
+                          "title_zh": "重排得分",
+                          "type": "number"
+                        },
+                        "vector": {
+                          "backendName": "vector",
+                          "description_en": "The normalized score for the vector channel. This field is not returned if the stage is not involved",
+                          "description_zh": "向量通道归一化分数，未参与时不返回",
+                          "example": "0.9",
+                          "format": "double",
+                          "title_en": "向量得分",
+                          "title_zh": "向量得分",
+                          "type": "number"
+                        }
+                      },
+                      "title_en": "分阶段得分",
+                      "title_zh": "分阶段得分",
+                      "type": "object"
+                    },
+                    "sourceLocation": {
+                      "backendName": "sourceLocation",
+                      "description_en": "The source location, such as p.3 for a PDF page, s.2 for a PPT slide, or a worksheet name. This field is not returned if the location cannot be mapped",
+                      "description_zh": "PDF 页如 p.3、PPT 页如 s.2 或工作表名；不可映射时不返回",
+                      "example": "p.3",
+                      "title_en": "来源位置",
+                      "title_zh": "来源位置",
+                      "type": "string"
+                    },
+                    "titlePath": {
+                      "backendName": "titlePath",
+                      "description_en": "The title hierarchy to which the matched chunk belongs. This field is not returned if the hierarchy cannot be located",
+                      "description_zh": "命中 Chunk 所属标题层级；不可定位时不返回",
+                      "example": "产品指南 > 配置",
+                      "sensitive": true,
+                      "title_en": "标题路径",
+                      "title_zh": "标题路径",
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "title_en": "命中结果",
+                "title_zh": "命中结果",
+                "type": "array"
+              },
+              "scoreType": {
+                "backendName": "scoreType",
+                "description_en": "The actual final ranking stage, such as keyword, vector, rrf, weighted, or rerank. This does not replace the detailed scores",
+                "description_zh": "keyword、vector、rrf、weighted 或 rerank，标明实际最终排序阶段；不替代 scores 明细",
+                "enum": [
+                  "keyword",
+                  "vector",
+                  "rrf",
+                  "weighted",
+                  "rerank"
+                ],
+                "enumValueTitles": {
+                  "keyword": "关键词检索得分",
+                  "rerank": "重排阶段得分",
+                  "rrf": "倒数排名融合得分",
+                  "vector": "向量检索得分",
+                  "weighted": "加权归一融合得分"
+                },
+                "example": "rrf",
+                "title_en": "得分类型",
+                "title_zh": "得分类型",
+                "type": "string"
+              },
+              "timeSpent": {
+                "backendName": "timeSpent",
+                "description_en": "The server-side processing duration for the current knowledge base retrieval, in milliseconds",
+                "description_zh": "本次知识库检索的服务端处理耗时，单位毫秒",
+                "example": "120",
+                "format": "int64",
+                "title_en": "检索耗时",
+                "title_zh": "检索耗时",
+                "type": "integer"
+              }
+            },
+            "sensitive": true,
+            "title_en": "检索结果",
+            "title_zh": "检索结果",
+            "type": "object"
+          },
+          "httpStatusCode": {
+            "backendName": "httpStatusCode",
+            "description_en": "The actual HTTP status code",
+            "description_zh": "实际 HTTP 状态码",
+            "example": "200",
+            "format": "int32",
+            "type": "integer"
+          },
+          "message": {
+            "backendName": "message",
+            "description_en": "The description of the data masking result",
+            "description_zh": "脱敏结果说明",
+            "example": "success",
+            "type": "string"
+          },
+          "requestId": {
+            "backendName": "requestId",
+            "description_en": "The request trace ID",
+            "description_zh": "请求跟踪标识",
+            "example": "01A00000-0000-0000-0000-000000000001",
+            "type": "string"
+          },
+          "success": {
+            "backendName": "success",
+            "description_en": "Indicates whether the request is successful",
+            "description_zh": "请求是否成功",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  },
+  "timeout_ms": 62000
+}

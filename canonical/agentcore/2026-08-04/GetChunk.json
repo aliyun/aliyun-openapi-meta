@@ -1,0 +1,240 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "agentcore get-chunk",
+  "cmd_name": "get-chunk",
+  "deprecated": false,
+  "description_en": "Queries a chunk in the currently published generation based on its 1-based logical sequence number within the asset, and verifies the ownership relationship between the chunk and the asset",
+  "description_zh": "按资产内从 1 开始的逻辑切片序号查询当前已发布代次中的 Chunk，并校验 Chunk 与资产的归属关系",
+  "kebab_example": "",
+  "method": "GET",
+  "multi_version": false,
+  "name": "GetChunk",
+  "operation": {
+    "action": "GetChunk",
+    "api_style": "ROA",
+    "api_version": "2026-08-04",
+    "method": "GET",
+    "operation_type": "read",
+    "protocol": "HTTPS",
+    "system_operation_type": "get",
+    "url": "/workspaces/{workspaceId}/knowledge-bases/{knowledgeBaseId}/assets/{assetId}/chunks/{chunkSeq}"
+  },
+  "parameters": [
+    {
+      "example": "ws-2f5f9c5a8d0e4c3b",
+      "help_en": "Resolves the tenant ID and verifies workspace ownership through a trusted gateway call by Magic. Knowledge bases are created or accessed within this tenant and workspace. Cross-tenant queries cannot be performed by using only the knowledge base ID",
+      "help_zh": "由 Magic 从可信网关调用身份解析 tenantId 并校验工作空间归属；知识库在该租户及工作空间内创建或访问，不能仅凭 knowledgeBaseId 跨租户查询",
+      "location": "path",
+      "name": "workspace_id",
+      "options": [
+        "--workspace-id"
+      ],
+      "raw_name": "workspaceId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "kb-2f5f9c5a8d0e4c3b",
+      "help_en": "The unique identifier of the knowledge base to which the asset belongs",
+      "help_zh": "资产所属知识库的唯一标识",
+      "location": "path",
+      "name": "knowledge_base_id",
+      "options": [
+        "--knowledge-base-id"
+      ],
+      "raw_name": "knowledgeBaseId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "asset-001",
+      "help_en": "The stable identifier of the asset to which the chunk to be queried belongs",
+      "help_zh": "待查询切片所属资产的稳定标识",
+      "location": "path",
+      "name": "asset_id",
+      "options": [
+        "--asset-id"
+      ],
+      "raw_name": "assetId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "1",
+      "help_en": "The 1-based logical sequence number of the chunk within the asset",
+      "help_zh": "切片在资产内的逻辑序号，从 1 开始",
+      "location": "path",
+      "minimum": "1",
+      "name": "chunk_seq",
+      "options": [
+        "--chunk-seq"
+      ],
+      "raw_name": "chunkSeq",
+      "required": true,
+      "type": "int"
+    }
+  ],
+  "pathPattern": "/workspaces/[workspaceId]/knowledge-bases/[knowledgeBaseId]/assets/[assetId]/chunks/[chunkSeq]",
+  "product_code": "AgentCore",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "properties": {
+          "code": {
+            "backendName": "code",
+            "description_en": "The stable result code",
+            "description_zh": "稳定结果码",
+            "example": "SUCCESS",
+            "type": "string"
+          },
+          "data": {
+            "backendName": "data",
+            "description_en": "The details of the chunk with the specified sequence number in the currently published generation of the asset",
+            "description_zh": "资产当前已发布代次中指定序号的 Chunk 详情",
+            "properties": {
+              "assetId": {
+                "backendName": "assetId",
+                "description_en": "The asset to which the chunk belongs",
+                "description_zh": "Chunk 所属资产",
+                "example": "asset-001",
+                "title_en": "资产 ID",
+                "title_zh": "资产 ID",
+                "type": "string"
+              },
+              "chunkSeq": {
+                "backendName": "chunkSeq",
+                "description_en": "The 1-based logical sequence number within the published asset. Re-chunking may change the sequence number. You must pass back the chunkToken of this item when editing",
+                "description_zh": "已发布资产内从 1 开始的逻辑序号；重切分可能改变序号，编辑时须同时回传该项 chunkToken",
+                "example": "1",
+                "format": "int32",
+                "minimum": "1",
+                "title_en": "Chunk 序号",
+                "title_zh": "Chunk 序号",
+                "type": "integer"
+              },
+              "chunkSize": {
+                "backendName": "chunkSize",
+                "description_en": "The number of UTF-16 code units in the chunk content, using the same ChunkSize metric as EB",
+                "description_zh": "Chunk 正文的 UTF-16 码元数量，沿用 EB 的 ChunkSize 口径",
+                "example": "512",
+                "format": "int32",
+                "title_en": "正文长度",
+                "title_zh": "正文长度",
+                "type": "integer"
+              },
+              "chunkToken": {
+                "backendName": "chunkToken",
+                "description_en": "An opaque token that must be passed back as-is during updates. It is verified against the current published result at the beginning of the request, and an error is reported if it has expired. After a pure enable or disable operation starts, it does not follow new results from concurrent publishing. Do not parse or generate it manually",
+                "description_zh": "更新时原样回传的不透明令牌；请求开始时按当前发布结果校验，已过期则报错。纯启停开始后不追随并发发布的新结果，不解析或自行生成",
+                "example": "ct-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+                "title_en": "切片校验令牌",
+                "title_zh": "切片校验令牌",
+                "type": "string"
+              },
+              "content": {
+                "backendName": "content",
+                "description_en": "The content of the currently published chunk",
+                "description_zh": "当前已发布 Chunk 正文",
+                "example": "欢迎使用产品。",
+                "sensitive": true,
+                "title_en": "正文",
+                "title_zh": "正文",
+                "type": "string"
+              },
+              "createdAt": {
+                "backendName": "createdAt",
+                "description_en": "The time in ISO 8601 UTC format",
+                "description_zh": "ISO 8601 UTC 时间",
+                "example": "2026-10-27T02:00:00Z",
+                "title_en": "创建时间",
+                "title_zh": "创建时间",
+                "type": "string"
+              },
+              "enabled": {
+                "backendName": "enabled",
+                "description_en": "Disabled chunks do not participate in retrieval. Administrative permissions are still required for chunk O&M queries",
+                "description_zh": "禁用的 Chunk 不参与检索；Chunk 运维查询仍须管理权限",
+                "example": "true",
+                "title_en": "是否启用",
+                "title_zh": "是否启用",
+                "type": "boolean"
+              },
+              "fileName": {
+                "backendName": "fileName",
+                "description_en": "The name of the original file corresponding to the published chunk",
+                "description_zh": "该已发布 Chunk 对应的原件文件名",
+                "example": "guide.pdf",
+                "sensitive": true,
+                "title_en": "原件文件名",
+                "title_zh": "原件文件名",
+                "type": "string"
+              },
+              "sourceLocation": {
+                "backendName": "sourceLocation",
+                "description_en": "Uses the EB location format, such as p.3 for PDF, s.2 for PPT, or the worksheet name for spreadsheets. The old location is not returned when manual editing invalidates the mapping",
+                "description_zh": "沿用 EB 定位形式，如 PDF 的 p.3、PPT 的 s.2 或表格工作表名。人工编辑使映射失效时不返回旧位置",
+                "example": "p.3",
+                "title_en": "原件位置",
+                "title_zh": "原件位置",
+                "type": "string"
+              },
+              "titlePath": {
+                "backendName": "titlePath",
+                "description_en": "The hierarchical title path where the chunk is located. This field is not returned if the location cannot be determined",
+                "description_zh": "Chunk 所在的标题层级路径；不可定位时不返回",
+                "example": "产品指南 > 配置",
+                "sensitive": true,
+                "title_en": "标题路径",
+                "title_zh": "标题路径",
+                "type": "string"
+              },
+              "updatedAt": {
+                "backendName": "updatedAt",
+                "description_en": "The time in ISO 8601 UTC format",
+                "description_zh": "ISO 8601 UTC 时间",
+                "example": "2026-10-27T02:05:00Z",
+                "title_en": "更新时间",
+                "title_zh": "更新时间",
+                "type": "string"
+              }
+            },
+            "sensitive": true,
+            "title_en": "Chunk 详情",
+            "title_zh": "Chunk 详情",
+            "type": "object"
+          },
+          "httpStatusCode": {
+            "backendName": "httpStatusCode",
+            "description_en": "The actual HTTP status code",
+            "description_zh": "实际 HTTP 状态码",
+            "example": "200",
+            "format": "int32",
+            "type": "integer"
+          },
+          "message": {
+            "backendName": "message",
+            "description_en": "The description of the data masking result",
+            "description_zh": "脱敏结果说明",
+            "example": "success",
+            "type": "string"
+          },
+          "requestId": {
+            "backendName": "requestId",
+            "description_en": "The request tracking ID",
+            "description_zh": "请求跟踪标识",
+            "example": "01A00000-0000-0000-0000-000000000001",
+            "type": "string"
+          },
+          "success": {
+            "backendName": "success",
+            "description_en": "Indicates whether the request is successful",
+            "description_zh": "请求是否成功",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

@@ -1,0 +1,470 @@
+{
+  "camel_example": "",
+  "cmd_full_name": "agentcore begin-asset-upload",
+  "cmd_name": "begin-asset-upload",
+  "deprecated": false,
+  "description_en": "申请知识库资产上传地址",
+  "description_zh": "登记资产上传会话，返回 assetId、uploadId 和实际状态；仅有效的 UPLOADING 会话返回限定其 original 对象的限时 PUT 地址。使用 PUT 上传文件二进制，不使用 JSON 或 multipart 包装，本期文件大小为 1 字节至 50 MiB。clientToken 可选；提供时，省略 assetId 将依据租户、工作空间、知识库和 clientToken 稳定派生资产 ID，便于首次响应丢失后的定位。同时省略 assetId 和 clientToken 时，每次请求创建新资产。未提供 clientToken 时按新的上传意图处理，不保证跨请求重试幂等。覆盖已有资产必须设置 overwrite=true；该参数仅授权覆盖，不强制重新导入。提供 clientToken 时，仅对该资产最近一次 Begin 保存的 token 幂等；后续 Begin（包括省略 clientToken 的请求）会替换最近请求标识。命中且规范化请求相同则复用上传会话，参数不同返回 409，包括 sourceETag 不同；token 不命中则按新的上传意图校验和受理，即使该 token 曾用于更早的上传。来源版本去重独立于 clientToken：指定稳定 assetId、overwrite=true 且提供 sourceETag 时，若来源身份及版本、导入参数和有效处理配置均未变化，即使未提供 clientToken，也可复用当前 uploadId 和加工代次；显式提供且命中最近 token 时仍要求完整规范化请求相同。复用有效 UPLOADING 会话时刷新同一对象路径的签名；复用 PENDING、PROCESSING 或 COMPLETED 会话时返回实际状态且不返回上传地址，PENDING 按相同 taskKey 补交调度，来源版本相同不表示处理完成。客户端 token 幂等命中后的失败状态只返回当前状态；新的上传意图遇到 FAILED、上传意图过期或来源、导入参数、有效处理配置变化时创建新的 uploadId、内部对象路径及加工代次。未提供 sourceETag 时不启用来源版本去重，可使用不同 clientToken 或不提供 clientToken，按新的上传意图重新导入；覆盖已有资产仍须 overwrite=true。新结果发布前仍使用旧发布版本。每个会话的原件对象仍必须禁止覆盖，签名头通过 headers 返回。完成 PUT 上传后，使用返回的 assetId 和 uploadId 调用 CompleteAssetUpload。携带 sourceETag 的 Begin 命中当前上传目标时，PENDING 会按相同 taskKey 补交调度，返回 PENDING、PROCESSING 或 COMPLETED 后无需再次上传或确认；显式提供相同 clientToken 且未传 sourceETag 的 PENDING 重放仍须重试 CompleteAssetUpload，以恢复受理结果未知的调度",
+  "kebab_example": "",
+  "method": "POST",
+  "multi_version": false,
+  "name": "BeginAssetUpload",
+  "operation": {
+    "action": "BeginAssetUpload",
+    "api_style": "ROA",
+    "api_version": "2026-08-04",
+    "content_type": "application/x-www-form-urlencoded",
+    "method": "POST",
+    "operation_type": "write",
+    "protocol": "HTTPS",
+    "req_body_type": "formData",
+    "system_operation_type": "create",
+    "url": "/workspaces/{workspaceId}/knowledge-bases/{knowledgeBaseId}/assets/begin-upload"
+  },
+  "parameters": [
+    {
+      "example": "ws-2f5f9c5a8d0e4c3b",
+      "help_en": "由 Magic 从可信网关调用身份解析 tenantId 并校验工作空间归属；知识库在该租户及工作空间内创建或访问，不能仅凭 knowledgeBaseId 跨租户查询",
+      "help_zh": "由 Magic 从可信网关调用身份解析 tenantId 并校验工作空间归属；知识库在该租户及工作空间内创建或访问，不能仅凭 knowledgeBaseId 跨租户查询",
+      "location": "path",
+      "name": "workspace_id",
+      "options": [
+        "--workspace-id"
+      ],
+      "raw_name": "workspaceId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "kb-2f5f9c5a8d0e4c3b",
+      "help_en": "接收资产的知识库",
+      "help_zh": "接收资产的知识库",
+      "location": "path",
+      "name": "knowledge_base_id",
+      "options": [
+        "--knowledge-base-id"
+      ],
+      "raw_name": "knowledgeBaseId",
+      "required": true,
+      "type": "string"
+    },
+    {
+      "example": "asset-upload-001",
+      "help_en": "可选。提供时须为非空白字符串，最长 128 个字符；仅对该资产最近一次 Begin 保存的 token 幂等，后续 Begin（包括省略 clientToken 的请求）会替换最近请求标识。命中时必须使用相同规范化请求，包括 sourceETag，否则返回幂等冲突。未提供时按新的上传意图处理，不保证跨请求重试幂等；同时未指定 assetId 时每次请求创建新资产。与来源版本去重独立：被后续 Begin 替换的旧 token 再次到来时按新意图处理；覆盖已有资产仍须 overwrite=true，并可在指定稳定 assetId 时按 sourceETag 规则复用当前会话",
+      "help_zh": "可选。提供时须为非空白字符串，最长 128 个字符；仅对该资产最近一次 Begin 保存的 token 幂等，后续 Begin（包括省略 clientToken 的请求）会替换最近请求标识。命中时必须使用相同规范化请求，包括 sourceETag，否则返回幂等冲突。未提供时按新的上传意图处理，不保证跨请求重试幂等；同时未指定 assetId 时每次请求创建新资产。与来源版本去重独立：被后续 Begin 替换的旧 token 再次到来时按新意图处理；覆盖已有资产仍须 overwrite=true，并可在指定稳定 assetId 时按 sourceETag 规则复用当前会话",
+      "location": "query",
+      "name": "client_token",
+      "options": [
+        "--client-token"
+      ],
+      "raw_name": "clientToken",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "fields": [
+        {
+          "example": "asset-001",
+          "help_en": "可选的稳定资产标识，限定在当前租户、工作空间和知识库内。未指定 assetId 但提供 clientToken 时，按完整资源范围和 clientToken 稳定派生；两者均未提供时，每次请求创建新资产。指定已有资产且开始新会话时必须设置 overwrite=true；来源版本去重也要求指定稳定 assetId 和 overwrite=true",
+          "help_zh": "可选的稳定资产标识，限定在当前租户、工作空间和知识库内。未指定 assetId 但提供 clientToken 时，按完整资源范围和 clientToken 稳定派生；两者均未提供时，每次请求创建新资产。指定已有资产且开始新会话时必须设置 overwrite=true；来源版本去重也要求指定稳定 assetId 和 overwrite=true",
+          "name": "asset_id",
+          "options": [
+            "--asset-id"
+          ],
+          "raw_name": "assetId",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "{\"strategy\":\"AUTO\",\"maxChunkSize\":1000}",
+          "fields": [
+            {
+              "example": "2",
+              "help_en": "BY_HEADING 下必填且范围为 1 至 6。小于等于此级数的标题均作为边界；更深标题保留在正文，超长节按段落或句子回退，无标题文档退化为智能切分。其他策略忽略，由后端按策略校验",
+              "help_zh": "BY_HEADING 下必填且范围为 1 至 6。小于等于此级数的标题均作为边界；更深标题保留在正文，超长节按段落或句子回退，无标题文档退化为智能切分。其他策略忽略，由后端按策略校验",
+              "name": "heading_level",
+              "options": [
+                "--heading-level"
+              ],
+              "raw_name": "headingLevel",
+              "required": false,
+              "type": "int"
+            },
+            {
+              "example": "512",
+              "help_en": "1 至 6000 字符，沿用 EB 的字符长度口径，不是 Token 数；省略使用服务端默认值",
+              "help_zh": "1 至 6000 字符，沿用 EB 的字符长度口径，不是 Token 数；省略使用服务端默认值",
+              "maximum": "6000",
+              "minimum": "1",
+              "name": "max_chunk_size",
+              "options": [
+                "--max-chunk-size"
+              ],
+              "raw_name": "maxChunkSize",
+              "required": false,
+              "type": "int"
+            },
+            {
+              "example": "40",
+              "help_en": "仅 BY_LENGTH 生效，单位为字符，缺省为 0；有效值须大于等于 0 且小于有效 maxChunkSize，重叠后仍不超过最大分块长度。其他策略忽略，由后端按策略校验",
+              "help_zh": "仅 BY_LENGTH 生效，单位为字符，缺省为 0；有效值须大于等于 0 且小于有效 maxChunkSize，重叠后仍不超过最大分块长度。其他策略忽略，由后端按策略校验",
+              "name": "overlap_size",
+              "options": [
+                "--overlap-size"
+              ],
+              "raw_name": "overlapSize",
+              "required": false,
+              "type": "int"
+            },
+            {
+              "fields": [
+                {
+                  "example": "false",
+                  "help_en": "是否在解析时删除 URL 和邮箱地址",
+                  "help_zh": "是否在解析时删除 URL 和邮箱地址",
+                  "name": "remove_urls_and_emails",
+                  "options": [
+                    "--remove-urls-and-emails"
+                  ],
+                  "raw_name": "removeUrlsAndEmails",
+                  "required": false,
+                  "type": "bool"
+                },
+                {
+                  "example": "true",
+                  "help_en": "是否将连续空格、换行、制表符替换为单个空格",
+                  "help_zh": "是否将连续空格、换行、制表符替换为单个空格",
+                  "name": "replace_consecutive_whitespace",
+                  "options": [
+                    "--replace-consecutive-whitespace"
+                  ],
+                  "raw_name": "replaceConsecutiveWhitespace",
+                  "required": false,
+                  "type": "bool"
+                }
+              ],
+              "help_en": "切分前的文本预处理规则",
+              "help_zh": "切分前的文本预处理规则",
+              "name": "preprocess_rules",
+              "options": [
+                "--preprocess-rules"
+              ],
+              "raw_name": "preprocessRules",
+              "required": false,
+              "type": "object"
+            },
+            {
+              "example": "\\n\\n",
+              "help_en": "BY_SEPARATOR 下必填且非空，按字面字符串整体匹配，不使用正则；其他策略忽略",
+              "help_zh": "BY_SEPARATOR 下必填且非空，按字面字符串整体匹配，不使用正则；其他策略忽略",
+              "max_length": "32",
+              "name": "separator",
+              "options": [
+                "--separator"
+              ],
+              "raw_name": "separator",
+              "required": false,
+              "type": "string"
+            },
+            {
+              "enum": [
+                "AUTO",
+                "BY_LENGTH",
+                "BY_SEPARATOR",
+                "BY_HEADING"
+              ],
+              "example": "AUTO",
+              "help_en": "返回已保存的分块策略。AUTO 为自动分块，BY_SEPARATOR 为分隔符分块；BY_LENGTH 和 BY_HEADING 仅为历史配置兼容返回，新建或更新配置时一期仅接受 AUTO 和 BY_SEPARATOR",
+              "help_zh": "返回已保存的分块策略。AUTO 为自动分块，BY_SEPARATOR 为分隔符分块；BY_LENGTH 和 BY_HEADING 仅为历史配置兼容返回，新建或更新配置时一期仅接受 AUTO 和 BY_SEPARATOR",
+              "name": "strategy",
+              "options": [
+                "--strategy"
+              ],
+              "raw_name": "strategy",
+              "required": true,
+              "type": "string"
+            }
+          ],
+          "help_en": "仅对本次资产内容生效的分块策略快照；省略时使用知识库默认配置。maxChunkSize 以字符计，范围 1 至 6000，一期仅支持 AUTO 和 BY_SEPARATOR，其他限制见 KnowledgeBaseChunkConfigurationInput",
+          "help_zh": "仅对本次资产内容生效的分块策略快照；省略时使用知识库默认配置。maxChunkSize 以字符计，范围 1 至 6000，一期仅支持 AUTO 和 BY_SEPARATOR，其他限制见 KnowledgeBaseChunkConfigurationInput",
+          "name": "chunk_configuration",
+          "options": [
+            "--chunk-configuration"
+          ],
+          "raw_name": "chunkConfiguration",
+          "required": false,
+          "type": "object"
+        },
+        {
+          "example": "application/pdf",
+          "help_en": "可选的原件 MIME 类型；省略时平台根据 fileName 推导。有效类型通过响应 contentType 和签名 headers 返回，上传时必须原样携带 Content-Type；CompleteAssetUpload 再与 OSS 对象核验",
+          "help_zh": "可选的原件 MIME 类型；省略时平台根据 fileName 推导。有效类型通过响应 contentType 和签名 headers 返回，上传时必须原样携带 Content-Type；CompleteAssetUpload 再与 OSS 对象核验",
+          "name": "content_type",
+          "options": [
+            "--content-type"
+          ],
+          "raw_name": "contentType",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "guide.pdf",
+          "help_en": "原件文件名，最长 255 个字符；不得包含由客户端控制的 OSS 路径",
+          "help_zh": "原件文件名，最长 255 个字符；不得包含由客户端控制的 OSS 路径",
+          "max_length": "255",
+          "name": "file_name",
+          "options": [
+            "--file-name"
+          ],
+          "raw_name": "fileName",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "element": {
+            "fields": [
+              {
+                "example": "department",
+                "help_en": "metadataSchema 中声明的字段名；同一请求中不得重复。固定值及系统变量字段由服务端生成，不接受客户覆盖",
+                "help_zh": "metadataSchema 中声明的字段名；同一请求中不得重复。固定值及系统变量字段由服务端生成，不接受客户覆盖",
+                "max_length": "64",
+                "name": "key",
+                "options": [
+                  "--key"
+                ],
+                "raw_name": "key",
+                "required": true,
+                "type": "string"
+              },
+              {
+                "example": "engineering",
+                "help_en": "按 schema 类型解析的字符串。上传时省略或空值表示未赋值，由 schema 填充；UpdateAsset 中省略、null 或空串表示删除该 key，未提交的 key 保持不变。DATETIME 接受 ISO 8601 含时区、yyyy-MM-dd HH:mm:ss 或 yyyy-MM-dd",
+                "help_zh": "按 schema 类型解析的字符串。上传时省略或空值表示未赋值，由 schema 填充；UpdateAsset 中省略、null 或空串表示删除该 key，未提交的 key 保持不变。DATETIME 接受 ISO 8601 含时区、yyyy-MM-dd HH:mm:ss 或 yyyy-MM-dd",
+                "max_length": "1024",
+                "name": "value",
+                "options": [
+                  "--value"
+                ],
+                "raw_name": "value",
+                "required": false,
+                "type": "string"
+              }
+            ],
+            "type": "object"
+          },
+          "example": "[{\"key\":\"category\",\"value\":\"manual\"}]",
+          "help_en": "资产级元数据键值对，仅允许 metadataSchema 声明的字段，value 使用字符串表示并按字段类型校验。value 省略、为 null 或空字符串时视为未提供，按 schema 中的固定值或系统变量自动填充；客户端显式覆盖固定值或系统变量字段时由后端拒绝",
+          "help_zh": "资产级元数据键值对，仅允许 metadataSchema 声明的字段，value 使用字符串表示并按字段类型校验。value 省略、为 null 或空字符串时视为未提供，按 schema 中的固定值或系统变量自动填充；客户端显式覆盖固定值或系统变量字段时由后端拒绝",
+          "name": "metadata",
+          "options": [
+            "--metadata"
+          ],
+          "raw_name": "metadata",
+          "required": false,
+          "type": "array"
+        },
+        {
+          "example": "false",
+          "help_en": "默认 false。true 授权覆盖同一 assetId，但不强制重新导入；满足 sourceETag 去重条件时复用当前会话，否则创建新的上传会话和加工代次。旧发布结果在新结果处理成功前保持可用，不会原地覆盖旧会话的 OSS 对象",
+          "help_zh": "默认 false。true 授权覆盖同一 assetId，但不强制重新导入；满足 sourceETag 去重条件时复用当前会话，否则创建新的上传会话和加工代次。旧发布结果在新结果处理成功前保持可用，不会原地覆盖旧会话的 OSS 对象",
+          "name": "overwrite",
+          "options": [
+            "--overwrite"
+          ],
+          "raw_name": "overwrite",
+          "required": false,
+          "type": "bool"
+        },
+        {
+          "example": "source-etag-v1",
+          "help_en": "可选的上游来源不透明版本标记，最长 1024 个字符；非 null 时不得为空字符串或仅包含空白，由后端校验。OSS 来源使用源对象 ETag，飞书来源可使用毫秒更新时间字符串。仅用于来源版本相等判断，不与目标 OSS 对象 ETag 比较，也不用于版本排序。指定稳定 assetId、overwrite=true 且来源身份及版本、导入参数和有效处理配置均未变化时可复用当前会话，是否提供 clientToken 不影响此规则；显式提供且命中最近 clientToken 时仍要求完整规范化请求相同。未提供 sourceETag 时不启用来源版本去重",
+          "help_zh": "可选的上游来源不透明版本标记，最长 1024 个字符；非 null 时不得为空字符串或仅包含空白，由后端校验。OSS 来源使用源对象 ETag，飞书来源可使用毫秒更新时间字符串。仅用于来源版本相等判断，不与目标 OSS 对象 ETag 比较，也不用于版本排序。指定稳定 assetId、overwrite=true 且来源身份及版本、导入参数和有效处理配置均未变化时可复用当前会话，是否提供 clientToken 不影响此规则；显式提供且命中最近 clientToken 时仍要求完整规范化请求相同。未提供 sourceETag 时不启用来源版本去重",
+          "max_length": "1024",
+          "name": "source_e_tag",
+          "options": [
+            "--source-e-tag"
+          ],
+          "raw_name": "sourceETag",
+          "required": false,
+          "type": "string"
+        },
+        {
+          "example": "1788000000000",
+          "help_en": "可选的上游源系统最后修改时间，epoch 毫秒，由客户声明、系统不核实；用于 SOURCE_MODIFIED_TIME 系统变量，不传时该变量为空，事件流导入时由系统维护",
+          "help_zh": "可选的上游源系统最后修改时间，epoch 毫秒，由客户声明、系统不核实；用于 SOURCE_MODIFIED_TIME 系统变量，不传时该变量为空，事件流导入时由系统维护",
+          "name": "source_modified_time",
+          "options": [
+            "--source-modified-time"
+          ],
+          "raw_name": "sourceModifiedTime",
+          "required": false,
+          "type": "int"
+        },
+        {
+          "example": "oss://my-bucket/docs/guide.pdf",
+          "help_en": "可选的上游原件出处，最长 1024 个字符，由客户声明、系统不核实；用于 SOURCE_URI 系统变量，不传时该变量为空，事件流导入时由系统维护",
+          "help_zh": "可选的上游原件出处，最长 1024 个字符，由客户声明、系统不核实；用于 SOURCE_URI 系统变量，不传时该变量为空，事件流导入时由系统维护",
+          "max_length": "1024",
+          "name": "source_uri",
+          "options": [
+            "--source-uri"
+          ],
+          "raw_name": "sourceUri",
+          "required": false,
+          "type": "string"
+        }
+      ],
+      "help_en": "登记新资产，或为指定资产创建、复用上传会话。覆盖授权、最近 token 幂等检查、来源版本去重与加工代次分配由管控层原子完成",
+      "help_zh": "登记新资产，或为指定资产创建、复用上传会话。覆盖授权、最近 token 幂等检查、来源版本去重与加工代次分配由管控层原子完成",
+      "location": "formData",
+      "name": "body",
+      "options": [
+        "--biz-body"
+      ],
+      "param_style": "json",
+      "raw_name": "body",
+      "required": true,
+      "type": "object"
+    }
+  ],
+  "pathPattern": "/workspaces/[workspaceId]/knowledge-bases/[knowledgeBaseId]/assets/begin-upload",
+  "product_code": "AgentCore",
+  "protocol": "HTTPS",
+  "responses": {
+    "200": {
+      "schema": {
+        "properties": {
+          "code": {
+            "backendName": "code",
+            "description_zh": "稳定结果码",
+            "example": "SUCCESS",
+            "type": "string"
+          },
+          "data": {
+            "backendName": "data",
+            "description_en": "包含 assetId、uploadId、实际 status、contentType，以及有效 UPLOADING 会话的 uploadUrl、headers 和 expiresAt。携带 sourceETag 的 Begin 复用当前上传目标时，可返回 PENDING、PROCESSING 或 COMPLETED，此时不返回上传地址，无需再次上传或确认；应依据 status 判断是否完成。显式提供相同 clientToken 且未传 sourceETag 的 PENDING 重放仍须通过 CompleteAssetUpload 补交调度。完成 PUT 上传后，CompleteAssetUpload 必须传回此 uploadId。uploadUrl 统一使用 OSS 公网地址；不返回固定上传方法或固定大小上限。签名到期不代表上传意图失效",
+            "description_zh": "包含 assetId、uploadId、实际 status、contentType，以及有效 UPLOADING 会话的 uploadUrl、headers 和 expiresAt。携带 sourceETag 的 Begin 复用当前上传目标时，可返回 PENDING、PROCESSING 或 COMPLETED，此时不返回上传地址，无需再次上传或确认；应依据 status 判断是否完成。显式提供相同 clientToken 且未传 sourceETag 的 PENDING 重放仍须通过 CompleteAssetUpload 补交调度。完成 PUT 上传后，CompleteAssetUpload 必须传回此 uploadId。uploadUrl 统一使用 OSS 公网地址；不返回固定上传方法或固定大小上限。签名到期不代表上传意图失效",
+            "properties": {
+              "assetId": {
+                "backendName": "assetId",
+                "description_en": "本次上传所属资产的稳定 ID",
+                "description_zh": "本次上传所属资产的稳定 ID",
+                "example": "asset-001",
+                "title_en": "资产 ID",
+                "title_zh": "资产 ID",
+                "type": "string"
+              },
+              "contentType": {
+                "backendName": "contentType",
+                "description_en": "平台校验或推导后的原件 MIME 类型；返回上传签名时与 headers 中的 Content-Type 一致，上传必须原样携带",
+                "description_zh": "平台校验或推导后的原件 MIME 类型；返回上传签名时与 headers 中的 Content-Type 一致，上传必须原样携带",
+                "example": "application/pdf",
+                "title_en": "上传内容类型",
+                "title_zh": "上传内容类型",
+                "type": "string"
+              },
+              "expiresAt": {
+                "backendName": "expiresAt",
+                "description_en": "ISO 8601 UTC 时间，仅随有效 UPLOADING 会话的 uploadUrl 返回；客户端 token 幂等重放（须显式提供并命中最近一次 Begin 保存的 token）或来源版本去重命中有效上传会话时可获取刷新后的签名。签名过期不等于上传意图过期",
+                "description_zh": "ISO 8601 UTC 时间，仅随有效 UPLOADING 会话的 uploadUrl 返回；客户端 token 幂等重放（须显式提供并命中最近一次 Begin 保存的 token）或来源版本去重命中有效上传会话时可获取刷新后的签名。签名过期不等于上传意图过期",
+                "example": "2026-10-27T02:15:00Z",
+                "title_en": "签名过期时间",
+                "title_zh": "签名过期时间",
+                "type": "string"
+              },
+              "headers": {
+                "additionalProperties": {
+                  "description_zh": "必须原样带入的签名请求头取值，包括 Content-Type",
+                  "example": "application/pdf",
+                  "type": "string"
+                },
+                "backendName": "headers",
+                "description_en": "仅随有效 UPLOADING 会话的 uploadUrl 返回。上传必须原样带入的签名请求头，包括 Content-Type 及不可覆盖写入约束所需的头；不得自行增加、更改或省略参与签名的头。旧上传地址也不得改写已存在的原件对象",
+                "description_zh": "仅随有效 UPLOADING 会话的 uploadUrl 返回。上传必须原样带入的签名请求头，包括 Content-Type 及不可覆盖写入约束所需的头；不得自行增加、更改或省略参与签名的头。旧上传地址也不得改写已存在的原件对象",
+                "example": "{\"Content-Type\":\"application/pdf\"}",
+                "sensitive": true,
+                "title_en": "上传请求头",
+                "title_zh": "上传请求头",
+                "type": "object"
+              },
+              "status": {
+                "backendName": "status",
+                "description_en": "新登记上传为 UPLOADING；客户端 token 幂等重放（须显式提供并命中最近一次 Begin 保存的 token）或来源版本去重均返回实际状态，仅 UPLOADING 且上传意图有效时可签发 URL。携带 sourceETag 的 Begin 复用当前上传目标时，可返回 PENDING、PROCESSING 或 COMPLETED，无需再次上传或确认；PENDING 按相同 taskKey 补交调度，不递增加工代次。显式提供相同 clientToken 且未传 sourceETag 的 PENDING 重放仍须通过 CompleteAssetUpload 补交调度。版本相同不表示处理完成。客户端 token 幂等命中 FAILED 时返回失败状态；新的上传意图遇到 FAILED 或上传意图过期时按规则创建新会话",
+                "description_zh": "新登记上传为 UPLOADING；客户端 token 幂等重放（须显式提供并命中最近一次 Begin 保存的 token）或来源版本去重均返回实际状态，仅 UPLOADING 且上传意图有效时可签发 URL。携带 sourceETag 的 Begin 复用当前上传目标时，可返回 PENDING、PROCESSING 或 COMPLETED，无需再次上传或确认；PENDING 按相同 taskKey 补交调度，不递增加工代次。显式提供相同 clientToken 且未传 sourceETag 的 PENDING 重放仍须通过 CompleteAssetUpload 补交调度。版本相同不表示处理完成。客户端 token 幂等命中 FAILED 时返回失败状态；新的上传意图遇到 FAILED 或上传意图过期时按规则创建新会话",
+                "enum": [
+                  "UPLOADING",
+                  "PENDING",
+                  "PROCESSING",
+                  "COMPLETED",
+                  "FAILED",
+                  "DELETING",
+                  "DELETED"
+                ],
+                "enumValueTitles": {
+                  "COMPLETED": "处理完成",
+                  "DELETED": "已删除",
+                  "DELETING": "删除中",
+                  "FAILED": "处理失败",
+                  "PENDING": "待处理",
+                  "PROCESSING": "处理中",
+                  "UPLOADING": "待上传"
+                },
+                "example": "UPLOADING",
+                "title_en": "资产状态",
+                "title_zh": "资产状态",
+                "type": "string"
+              },
+              "uploadId": {
+                "backendName": "uploadId",
+                "description_en": "本次上传会话的稳定标识，完成 PUT 上传后调用 CompleteAssetUpload 时必传。客户端提供的 clientToken 命中最近一次 Begin 保存的 token 且规范化请求相同，或指定稳定 assetId、overwrite=true 并满足 sourceETag 去重条件时复用当前 uploadId 和加工代次；来源版本去重不要求提供 clientToken。其他合法的新上传意图生成新的 uploadId 和内部原件路径，未提供 clientToken 不保证跨请求重试幂等",
+                "description_zh": "本次上传会话的稳定标识，完成 PUT 上传后调用 CompleteAssetUpload 时必传。客户端提供的 clientToken 命中最近一次 Begin 保存的 token 且规范化请求相同，或指定稳定 assetId、overwrite=true 并满足 sourceETag 去重条件时复用当前 uploadId 和加工代次；来源版本去重不要求提供 clientToken。其他合法的新上传意图生成新的 uploadId 和内部原件路径，未提供 clientToken 不保证跨请求重试幂等",
+                "example": "upload-001",
+                "title_en": "上传会话 ID",
+                "title_zh": "上传会话 ID",
+                "type": "string"
+              },
+              "uploadUrl": {
+                "backendName": "uploadUrl",
+                "description_en": "仅限该资产原件对象的短期预签名 PUT URL，统一使用 OSS 公网地址；仅 UPLOADING 且上传意图有效时返回。客户端 token 幂等重放（须显式提供并命中最近一次 Begin 保存的 token）或来源版本去重命中有效上传会话时刷新同一对象路径的签名，不用于覆盖已确认上传的原件；PENDING、PROCESSING、COMPLETED 或 FAILED 均不返回。不得记录到普通日志",
+                "description_zh": "仅限该资产原件对象的短期预签名 PUT URL，统一使用 OSS 公网地址；仅 UPLOADING 且上传意图有效时返回。客户端 token 幂等重放（须显式提供并命中最近一次 Begin 保存的 token）或来源版本去重命中有效上传会话时刷新同一对象路径的签名，不用于覆盖已确认上传的原件；PENDING、PROCESSING、COMPLETED 或 FAILED 均不返回。不得记录到普通日志",
+                "example": "https://example.com/tenants/1234567890123456/workspaces/ws-001/kb/kb-001/assets/asset-001/original/upload-001/source?signature=REDACTED",
+                "sensitive": true,
+                "title_en": "临时上传地址",
+                "title_zh": "临时上传地址",
+                "type": "string"
+              }
+            },
+            "title_en": "上传信息",
+            "title_zh": "上传信息",
+            "type": "object"
+          },
+          "httpStatusCode": {
+            "backendName": "httpStatusCode",
+            "description_zh": "实际 HTTP 状态码",
+            "example": "200",
+            "format": "int32",
+            "type": "integer"
+          },
+          "message": {
+            "backendName": "message",
+            "description_zh": "脱敏结果说明",
+            "example": "success",
+            "type": "string"
+          },
+          "requestId": {
+            "backendName": "requestId",
+            "description_zh": "请求跟踪标识",
+            "example": "01A00000-0000-0000-0000-000000000001",
+            "type": "string"
+          },
+          "success": {
+            "backendName": "success",
+            "description_zh": "请求是否成功",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}
