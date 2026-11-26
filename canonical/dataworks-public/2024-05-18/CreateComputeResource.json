@@ -3,7 +3,7 @@
   "cmd_full_name": "dataworks-public create-compute-resource",
   "cmd_name": "create-compute-resource",
   "deprecated": false,
-  "description_en": "Creates a compute resource in a specified workspace. The compute resource can be used in the development or production environment",
+  "description_en": "Creates a compute resource in a specified workspace for the development or production environment",
   "description_zh": "在指定项目空间创建一条计算资源，可以是开发环境或生产环境",
   "kebab_example": "aliyun dataworks-public create-compute-resource --project-id 2 --name demo_holo_cs --type hologres --connection-properties-mode InstanceMode --connection-properties '{     \"EndpointMode\": \"custom\",     \"Database\": \"testdb\",     \"TaskSubmitter\": \"1107550004253538\",     \"InstanceId\": \"hgprecn-cn-x0r3oun4k001\",     \"SecurityProtocol\": \"authTypeNone\",     \"RegionId\": \"cn-beijing\",     \"EnvType\": \"Prod\",     \"AuthType\": \"Executor\" }' --api-version 2024-05-18 --region cn-hangzhou",
   "method": "POST",
@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "2",
-      "help_en": "The DataWorks workspace ID",
+      "help_en": "The ID of the DataWorks workspace",
       "help_zh": "Dataworks项目空间ID",
       "location": "query",
       "minimum": "0",
@@ -36,7 +36,7 @@
     },
     {
       "example": "demo_holo_cs",
-      "help_en": "The name of the compute resource. The name can contain letters, digits, and underscores (_), and cannot start with a digit or an underscore. The name can be up to 255 characters in length",
+      "help_en": "The name of the compute resource. The name can contain letters, digits, and underscores (_), and cannot start with a digit or an underscore. It can be up to 255 characters in length",
       "help_zh": "计算资源的名称，由字母、数字、下划线组合，且不能以数字和下划线开头，最长255 个字符",
       "location": "query",
       "name": "name",
@@ -49,8 +49,8 @@
     },
     {
       "example": "hologres",
-      "help_en": "The type of the compute resource. Multiple compute resource types are supported",
-      "help_zh": "计算资源的类型，目前已经支持多种计算资源类型",
+      "help_en": "The type of the compute engine to bind. Common valid values include hologres for Hologres, odps for MaxCompute, and starrocks for StarRocks. The Type parameter determines the available ConnectionPropertiesMode and the corresponding connection properties",
+      "help_zh": "要绑定的计算引擎类型。常见取值包括 `hologres`（Hologres）、`odps`（MaxCompute）和 `starrocks`（StarRocks）。`Type` 决定可用的 `ConnectionPropertiesMode` 和对应的连接属性",
       "location": "query",
       "name": "type",
       "options": [
@@ -67,8 +67,8 @@
         "CdhMode"
       ],
       "example": "InstanceMode",
-      "help_en": "The mode in which the compute resource is added. Different types have different subtypes and corresponding parameter constraints. For example, for a Hologres compute resource, valid values include InstanceMode (instance mode) and UrlMode (connection string mode)",
-      "help_zh": "据源添加的类别，不同Type下会有不同的子类型，对应有不同的参数约束，以Hologres计算资源举例有：InstanceMode（实例模式）、UrlMode（连接串模式）",
+      "help_en": "The connection configuration mode of the compute resource. Select a mode based on the Type parameter. Common combinations in Alibaba Cloud public cloud are InstanceMode for hologres, UrlMode for odps, and InstanceMode or UrlMode for starrocks. After selecting a mode, configure the ConnectionProperties parameter accordingly",
+      "help_zh": "计算资源的连接配置模式。根据 `Type` 选择；公有云的常见组合为 `hologres` 使用 `InstanceMode`、`odps` 使用 `UrlMode`、`starrocks` 使用 `InstanceMode` 或 `UrlMode`。选择模式后，按该模式填写 `ConnectionProperties`",
       "location": "query",
       "name": "connection_properties_mode",
       "options": [
@@ -93,9 +93,9 @@
     },
     {
       "doc_required": true,
-      "example": "{     \"EndpointMode\": \"custom\",     \"Database\": \"testdb\",     \"TaskSubmitter\": \"1107550004253538\",     \"InstanceId\": \"hgprecn-cn-x0r3oun4k001\",     \"SecurityProtocol\": \"authTypeNone\",     \"RegionId\": \"cn-beijing\",     \"EnvType\": \"Prod\",     \"AuthType\": \"Executor\" }",
-      "help_en": "The specific connection configuration information of the compute resource, including the endpoint, access identity, and environment context. The environment type (EnvType) of the compute resource is a member property of this object. Valid values include DEV (development environment) and PROD (production environment). The EnvType value is not case-sensitive",
-      "help_zh": "计算资源具体连接配置信息，包括连接地址、访问身份、环境信息等。计算资源环境EnvType信息是此对象的成员属性，包括DEV（开发环境）和PROD（生产环境），EnvType取值不区分大小写",
+      "example": "{\n  \"envType\": \"Prod\",\n  \"regionId\": \"cn-beijing\",\n  \"instanceId\": \"hgprecn-cn-x0r3oun4k001\",\n  \"database\": \"testdb\",\n  \"authType\": \"PrimaryAccount\",\n  \"securityProtocol\": \"authTypeNone\"\n}",
+      "help_en": "The JSON string for connection configurations. JSON properties use lower camel case and correspond to the Type and ConnectionPropertiesMode parameters. The required envType property specifies the development environment Dev or the production environment Prod. Specify a valid instance or project identifier that the calling identity has permissions to access. The backend reads the configurations of the instance or project.\n\nWhen using the Hologres instance mode in Alibaba Cloud public cloud, you must also specify regionId, instanceId, database, and authType. For example, if you use the same account, you can use Executor for the development environment and PrimaryAccount for the production environment. If you select SubAccount for the production environment, you must also specify authIdentity. If you enable securityProtocol=authTypeSsl, you must specify sslMode=require.\n\nWhen using the MaxCompute URL mode, specify project, regionId, endpointMode, and authType. For StarRocks, the instance mode uses regionId, instanceId, and instanceType, while the URL mode uses the connection endpoint. For the complete list of fields, refer to the configuration requirements of the corresponding compute engine",
+      "help_zh": "连接配置的 JSON 字符串。JSON 属性使用小驼峰，与 `Type` 和 `ConnectionPropertiesMode` 对应。必填的 `envType` 用于指定开发环境 `Dev` 或生产环境 `Prod`。请填写真实且调用身份有权访问的实例或项目标识，后端会读取实例或项目的配置。\n\n在公有云使用 Hologres 实例模式时，还需填写 `regionId`、`instanceId`、`database` 和 `authType`。以同账号为例，开发环境可使用 `Executor`，生产环境可使用 `PrimaryAccount`；选择生产环境的 `SubAccount` 时还需填写 `authIdentity`。启用 `securityProtocol=authTypeSsl` 时须填写 `sslMode=require`。\n\n使用 MaxCompute 连接串模式时，填写 `project`、`regionId`、`endpointMode` 和 `authType`。StarRocks 的实例模式使用 `regionId`、`instanceId` 和 `instanceType`；连接串模式使用连接地址。完整字段以对应计算引擎的配置要求为准",
       "location": "query",
       "name": "connection_properties",
       "options": [
@@ -112,7 +112,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The returned result",
+        "description_en": "The response",
         "description_zh": "返回结果",
         "properties": {
           "Id": {
