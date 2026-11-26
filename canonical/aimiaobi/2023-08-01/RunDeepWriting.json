@@ -3,7 +3,7 @@
   "cmd_full_name": "aimiaobi run-deep-writing",
   "cmd_name": "run-deep-writing",
   "deprecated": false,
-  "description_en": "Queries deep writing events. The system returns detailed information about the task execution as a stream of Server-Sent Events (SSE)",
+  "description_en": "Queries deep writing events. The system delivers detailed information during task execution in the form of Server-Sent Events (SSE)",
   "description_zh": "查询深度写作事件。\n系统以SSE事件的形式下发任务执行过程中的详细信息",
   "kebab_example": "aliyun aimiaobi run-deep-writing --workspace-id llm-ir8zkqry2fncaxwq --region cn-hangzhou",
   "method": "POST",
@@ -25,7 +25,7 @@
   "parameters": [
     {
       "example": "llm-ir8zkqry2fncaxwq",
-      "help_en": "The unique identifier of the Alibaba Cloud Model Studio workspace. For more information, see https://help.aliyun.com/document_detail/2782167.html",
+      "help_en": "The unique identifier of the workspace in Alibaba Cloud Model Studio. To obtain the workspace ID, see https://help.aliyun.com/document_detail/2782167.html",
       "help_zh": "阿里云百炼业务空间唯一标识：获取https://help.aliyun.com/document_detail/2782167.html",
       "location": "formData",
       "name": "workspace_id",
@@ -51,7 +51,7 @@
     },
     {
       "example": "10",
-      "help_en": "The cursor, which is the ordinal number of the streaming event",
+      "help_en": "The cursor. The sequence number of the streaming event",
       "help_zh": "游标。流式事件的序号",
       "location": "formData",
       "name": "cursor",
@@ -100,8 +100,14 @@
               },
               "Event": {
                 "backendName": "event",
-                "description_en": "The Server-Sent Event (SSE)",
+                "description_en": "The SSE event",
                 "description_zh": "SSE事件",
+                "enumValueTitles": {
+                  "response.completed": "任务完成",
+                  "response.created": "任务已创建",
+                  "response.output_item.done": "中间结果输出完成",
+                  "response.sub_task.created": "子任务已创建"
+                },
                 "example": "response.output_item.done",
                 "type": "string"
               },
@@ -129,7 +135,7 @@
               },
               "TraceId": {
                 "backendName": "traceId",
-                "description_en": "The trace ID",
+                "description_en": "The end-to-end trace ID",
                 "description_zh": "全链路ID",
                 "example": "FAB10D42-F081-557B-8DCB-D6FB7AAF100B",
                 "type": "string"
@@ -163,26 +169,26 @@
                 "properties": {
                   "Item": {
                     "backendName": "item",
-                    "description_en": "The new output item for this event",
+                    "description_en": "The output item added in this event",
                     "description_zh": "本次事件新加的输出item",
                     "properties": {
                       "Agent": {
                         "backendName": "agent",
-                        "description_en": "The name of the agent that generated this item",
+                        "description_en": "The name of the agent that outputs this item",
                         "description_zh": "输出此item的agent名字",
                         "example": "ProjectManager",
                         "type": "string"
                       },
                       "Arguments": {
                         "backendName": "arguments",
-                        "description_en": "Parameter",
+                        "description_en": "The arguments",
                         "description_zh": "参数",
                         "example": "item类型为function_call时，此字段有值，为调用函数的入参",
                         "type": "string"
                       },
                       "Content": {
                         "backendName": "content",
-                        "description_en": "This field has a value when the item type is \\`message\\`. The value is a list of output content",
+                        "description_en": "When the item type is message, this field has a value, which is a list of output content",
                         "description_zh": "item类型为message时，此字段有值，是输出content的列表",
                         "itemName": "content",
                         "items": {
@@ -191,14 +197,14 @@
                           "properties": {
                             "Text": {
                               "backendName": "text",
-                              "description_en": "The text content that is output when the item type is \\`message\\`",
+                              "description_en": "The output text content when the item type is message",
                               "description_zh": "item类型为message时, 输出的文本内容",
                               "example": "<TASK_DONE>",
                               "type": "string"
                             },
                             "Type": {
                               "backendName": "type",
-                              "description_en": "When the item type is \\`message\\`, the value of this field is \\`output\\_text\\`",
+                              "description_en": "When the item type is message, the value of this field is output_text",
                               "description_zh": "item类型为message时，此字段的值是output_text",
                               "example": "output_text",
                               "type": "string"
@@ -210,21 +216,21 @@
                       },
                       "Id": {
                         "backendName": "id",
-                        "description_en": "The unique ID of the item",
+                        "description_en": "The unique identifier of the item",
                         "description_zh": "item的唯一标识",
                         "example": "88f6ed9e85c4f9377378da23e6a370d1",
                         "type": "string"
                       },
                       "Name": {
                         "backendName": "name",
-                        "description_en": "The name of the parameter",
+                        "description_en": "The parameter name",
                         "description_zh": "参数名称",
                         "example": "item类型为function_call时，此字段有值，为调用的函数名字",
                         "type": "string"
                       },
                       "Result": {
                         "backendName": "result",
-                        "description_en": "The item's result",
+                        "description_en": "The result of the item",
                         "description_zh": "item的结果",
                         "example": "item类型为function_call时，此字段有值，为调用的函数的输出",
                         "type": "string"
@@ -233,6 +239,10 @@
                         "backendName": "status",
                         "description_en": "The status of the item",
                         "description_zh": "item的状态",
+                        "enumValueTitles": {
+                          "completed": "completed",
+                          "in_progress": "in_progress"
+                        },
                         "example": "completed",
                         "type": "string"
                       },
@@ -240,6 +250,10 @@
                         "backendName": "type",
                         "description_en": "The type of the item",
                         "description_zh": "item的类型",
+                        "enumValueTitles": {
+                          "function_call": "function_call",
+                          "message": "message"
+                        },
                         "example": "function_call",
                         "type": "string"
                       }
@@ -248,7 +262,7 @@
                   },
                   "OutputIndex": {
                     "backendName": "outputIndex",
-                    "description_en": "The ordinal number of the new output item in this event",
+                    "description_en": "The sequence number of the output item added in this event",
                     "description_zh": "本次事件新加的输出item的序号",
                     "example": "1",
                     "format": "int32",
@@ -261,15 +275,19 @@
                     "properties": {
                       "Id": {
                         "backendName": "id",
-                        "description_en": "The unique ID of the task",
+                        "description_en": "The unique identifier of the current task",
                         "description_zh": "本次任务的唯一标识",
                         "example": "b2dc224b38694e0b668020159a7c5732",
                         "type": "string"
                       },
                       "Status": {
                         "backendName": "status",
-                        "description_en": "The execution status of the task",
+                        "description_en": "The execution status of the current task",
                         "description_zh": "本次任务的执行状态",
+                        "enumValueTitles": {
+                          "completed": "已完成",
+                          "in_progress": "处理中"
+                        },
                         "example": "in_progress",
                         "type": "string"
                       }
@@ -278,7 +296,7 @@
                   },
                   "SequenceNumber": {
                     "backendName": "sequenceNumber",
-                    "description_en": "The ordinal number of the streaming event",
+                    "description_en": "The sequence number of the streaming event",
                     "description_zh": "流式事件的序号",
                     "example": "1",
                     "type": "string"
@@ -305,7 +323,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request was successful",
+            "description_en": "Indicates whether the request is successful",
             "description_zh": "此次请求是否成功",
             "example": "true",
             "type": "boolean"

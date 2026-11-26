@@ -3,7 +3,7 @@
   "cmd_full_name": "aimiaobi run-search-generation",
   "cmd_name": "run-search-generation",
   "deprecated": false,
-  "description_en": "Generates intelligent search results for Miaosou. This operation provides the search and generation capabilities for the Miaosou homepage. It supports general search and media asset search, and provides capabilities such as user question clarification, multimodal knowledge search, and multi-agent generation.\nGeneral search: Retrieves knowledge in datasets semantically and applies multi-agent post-processing to search results, including summary generation, excerpting, and timeline summarization.\nMedia asset search: Performs exhaustive full-text retrieval to recall more relevant knowledge and applies multi-agent post-processing, including clustering and news element extraction",
+  "description_en": "Generates intelligent search results for AI Miaosou, corresponding to the search generation capabilities on the Miaosou homepage. This API supports general search and media asset search, and provides capabilities such as user question clarification, multimodal knowledge search, and multi-agent generation.\nGeneral search: can retrieve knowledge in datasets based on semantics, and applies multi-agent post-processing to search results, including summary generation, excerpting, and timeline summarization.\nMedia asset search: uses exhaustive full-text index to recall more relevant knowledge and applies multi-agent post-processing, including clustering and news element extraction",
   "description_zh": "AI妙搜-智能搜索生成：对应妙搜首页的搜索生成能力。此接口支持通用搜索和媒资搜索。支持用户问题澄清、多模态知识搜索、多agent生成等能力。\n通用搜索：可以对数据集中知识进行语义检索，并对搜索结果进行多agent后处理，包括总结生成、摘编、时间线总结等。\n媒资搜索：应搜尽搜，全文检索，召回更多相关知识，并可进行多agent后处理，包括聚类、新闻抽取等",
   "kebab_example": "aliyun aimiaobi run-search-generation --workspace-id llm-xxx --region cn-hangzhou",
   "method": "POST",
@@ -25,7 +25,7 @@
   "parameters": [
     {
       "example": "llm-xxx",
-      "help_en": "The ID of the Model Studio workspace. For information about how to obtain the ID, see https://help.aliyun.com/document_detail/2782167.html",
+      "help_en": "The ID of the Alibaba Cloud Model Studio workspace. For information about how to obtain the ID, see https://help.aliyun.com/document_detail/2782167.html",
       "help_zh": "阿里云百炼业务空间 ID。获取方式请参见https://help.aliyun.com/document_detail/2782167.html",
       "location": "formData",
       "name": "workspace_id",
@@ -64,7 +64,7 @@
     },
     {
       "example": "xxx",
-      "help_en": "The unique identifier of the original session. This parameter is usually empty. If it is not empty, it indicates that the current conversation is generated based on this session. The system loads the parameters and search results of the original session and replaces the generated results. This is applicable to scenarios such as regenerating, modifying data sources, and adding agent generation",
+      "help_en": "The unique identifier of the original session. It is usually empty. When it is not empty, it indicates that the current conversation is generated based on this session. The original session parameters and search results are loaded, and the generated results are replaced. This applies to scenarios such as regeneration, modifying data sources, and adding agent generation",
       "help_zh": "原会话唯一标识：通常为空，非空时，表示当前对话基于此轮对话生成，会加载原始轮对话参数，搜索结果等，同时会替换生成结果，适用于，重新生成、修改数据源、新增agent生成场景",
       "location": "formData",
       "name": "original_session_id",
@@ -76,7 +76,6 @@
       "type": "string"
     },
     {
-      "example": "xxx",
       "fields": [
         {
           "example": "false",
@@ -105,8 +104,12 @@
           "type": "array"
         },
         {
+          "enum": [
+            "concise",
+            "enhance"
+          ],
           "example": "concise",
-          "help_en": "The detail level of the response. Valid values:\nconcise: Concise (default).\nenhance: Enhanced.\nfree: Free.\ndeepResearch: Research",
+          "help_en": "The detail level of the answer. Valid values:\nconcise: concise (default).\nenhance: enhanced.\nfree: free.\ndeepResearch: research",
           "help_zh": "回答的详细程度：\nconcise：简洁（默认）\nenhance：增强\nfree：自由\ndeepResearch：研究",
           "name": "generate_level",
           "options": [
@@ -117,8 +120,12 @@
           "type": "string"
         },
         {
+          "enum": [
+            "copilotPrecise",
+            "copilotReference"
+          ],
           "example": "copilotReference",
-          "help_en": "The generation technology. Valid values:\ncopilotReference: Q&A search.\ncopilotPrecise: Pure search",
+          "help_en": "The generation technology. Valid values:\ncopilotReference: Q&A search.\ncopilotPrecise: pure search",
           "help_zh": "生成技术：\ncopilotReference：问答式搜索\ncopilotPrecise：纯搜索",
           "name": "generate_technology",
           "options": [
@@ -130,7 +137,7 @@
         },
         {
           "example": "# 角色\n你是一个专业的文章检索和问答专家，擅长文章检索和回答用户问题。\n\n# 任务目标\n请你根据检索到的相关文章，回答或表述用户问题“{query}”。\n\n# 任务限制\n- 如果用户问题中提到具体日期，请考虑知识日期做筛选。\n- 生成内容结构条理。\n- 生成内容尽量精简。\n- 不要使用其他数据，不要杜撰。\n- 如果不能回答用户问题，请输出对应语言的拒识文案:\n  - 中文：\"根据已知信息无法回答。\"\n  - 英文：\"Unable to answer based on the known information.\"\n\n# 输入数据\n## 检索到的相关文章\n{content}",
-          "help_en": "The plain text prompt template for Q&A search and summary generation. The template must include the query and content variables. Example:\n```text\n# Role\nYou are a professional article retrieval and Q&A expert, skilled in article retrieval and answering user questions.\n\n# Task objective\nBased on the retrieved relevant articles, answer or express the user's question \"{query}\".\n\n# Task constraints\n- If the user's question mentions a specific date, consider the knowledge date for filtering.\n- The generated content must be well-structured.\n- The generated content must be as concise as possible.\n- Do not use other data or fabricate information.\n- If you cannot answer the user's question, output the rejection text in the corresponding language:\n  - Chinese: \"根据已知信息无法回答。\"\n  - English: \"Unable to answer based on the known information.\"\n\n# Input data\n## Retrieved relevant articles\n{content}\n```",
+          "help_en": "The plain text prompt template for Q&A search and summary generation. The template must include the variables query and content. Example:\n```text\n# Role\nYou are a professional article retrieval and Q&A expert, skilled in article retrieval and answering user questions.\n\n# Task objective\nBased on the retrieved relevant articles, answer or express the user's question \"{query}\".\n\n# Task constraints\n- If the user's question mentions a specific date, consider the knowledge date for filtering.\n- The generated content must be well-structured.\n- The generated content must be as concise as possible.\n- Do not use other data or fabricate information.\n- If you cannot answer the user's question, output the rejection text in the corresponding language:\n  - Chinese: \"根据已知信息无法回答。\"\n  - English: \"Unable to answer based on the known information.\"\n\n# Input data\n## Retrieved relevant articles\n{content}\n```",
           "help_zh": "问答式搜索-总结生成答案-纯文本prompt模版，必须包含变量 query、content，比如：\n```text\n# 角色\n你是一个专业的文章检索和问答专家，擅长文章检索和回答用户问题。\n\n# 任务目标\n请你根据检索到的相关文章，回答或表述用户问题“{query}”。\n\n# 任务限制\n- 如果用户问题中提到具体日期，请考虑知识日期做筛选。\n- 生成内容结构条理。\n- 生成内容尽量精简。\n- 不要使用其他数据，不要杜撰。\n- 如果不能回答用户问题，请输出对应语言的拒识文案:\n  - 中文：\"根据已知信息无法回答。\"\n  - 英文：\"Unable to answer based on the known information.\"\n\n# 输入数据\n## 检索到的相关文章\n{content}\n```",
           "name": "model_custom_prompt_template",
           "options": [
@@ -142,7 +149,7 @@
         },
         {
           "example": "# 角色\n你是一个专业的文章检索和问答专家，擅长文章检索和回答用户问题。\n\n# 任务目标\n请你根据检索到的相关文章和图片，回答或表述用户问题“{query}”。\n\n# 任务限制\n- 如果用户问题中提到具体日期，请考虑知识日期做筛选。\n- 生成内容结构条理。\n- 生成内容尽量精简。\n- 如果图片内容可以回答，可以忽略文章内容。\n- 不要使用其他数据，不要杜撰。\n- 如果不能回答用户问题，请输出对应语言的拒识文案:\n    - 中文：\"根据已知信息无法回答。\"\n    - 英文：\"Unable to answer based on the known information.\"\n\n# 输入数据\n## 检索到的相关文章\n{content}\n",
-          "help_en": "The text and image prompt template for Q&A search and summary generation. The template must include the query and content variables. Example:\n```text\n# Role\nYou are a professional article retrieval and Q&A expert, skilled in article retrieval and answering user questions.\n\n# Task objective\nBased on the retrieved relevant articles and images, answer or express the user's question \"{query}\".\n\n# Task constraints\n- If the user's question mentions a specific date, consider the knowledge date for filtering.\n- The generated content must be well-structured.\n- The generated content must be as concise as possible.\n- If the image content can answer the question, you can ignore the article content.\n- Do not use other data or fabricate information.\n- If you cannot answer the user's question, output the rejection text in the corresponding language:\n    - Chinese: \"根据已知信息无法回答。\"\n    - English: \"Unable to answer based on the known information.\"\n\n# Input data\n## Retrieved relevant articles\n{content}\n```",
+          "help_en": "The text and image prompt template for Q&A search and summary generation. The template must include the variables query and content. Example:\n```text\n# Role\nYou are a professional article retrieval and Q&A expert, skilled in article retrieval and answering user questions.\n\n# Task objective\nBased on the retrieved relevant articles and images, answer or express the user's question \"{query}\".\n\n# Task constraints\n- If the user's question mentions a specific date, consider the knowledge date for filtering.\n- The generated content must be well-structured.\n- The generated content must be as concise as possible.\n- If the image content can answer the question, you can ignore the article content.\n- Do not use other data or fabricate information.\n- If you cannot answer the user's question, output the rejection text in the corresponding language:\n    - Chinese: \"根据已知信息无法回答。\"\n    - English: \"Unable to answer based on the known information.\"\n\n# Input data\n## Retrieved relevant articles\n{content}\n```",
           "help_zh": "问答式搜索-总结生成答案-纯文本prompt模版，必须包含变量 query、content，比如：\n```text\n# 角色\n你是一个专业的文章检索和问答专家，擅长文章检索和回答用户问题。\n\n# 任务目标\n请你根据检索到的相关文章和图片，回答或表述用户问题“{query}”。\n\n# 任务限制\n- 如果用户问题中提到具体日期，请考虑知识日期做筛选。\n- 生成内容结构条理。\n- 生成内容尽量精简。\n- 如果图片内容可以回答，可以忽略文章内容。\n- 不要使用其他数据，不要杜撰。\n- 如果不能回答用户问题，请输出对应语言的拒识文案:\n    - 中文：\"根据已知信息无法回答。\"\n    - 英文：\"Unable to answer based on the known information.\"\n\n# 输入数据\n## 检索到的相关文章\n{content}\n```",
           "name": "model_custom_vl_prompt_template",
           "options": [
@@ -236,7 +243,7 @@
             },
             {
               "example": "1725983999999",
-              "help_en": "The end time. Use a millisecond-level UNIX timestamp",
+              "help_en": "The end time. Use a Unix timestamp in milliseconds",
               "help_zh": "结束时间，使用毫秒级 Unix 时间戳",
               "name": "end_time",
               "options": [
@@ -248,7 +255,7 @@
             },
             {
               "example": "xxx",
-              "help_en": "Extension field 1",
+              "help_en": "The first extension field",
               "help_zh": "扩展字段1",
               "name": "extend_1",
               "options": [
@@ -260,7 +267,7 @@
             },
             {
               "example": "xxx",
-              "help_en": "Extension field 2",
+              "help_en": "The second extension field",
               "help_zh": "扩展字段2",
               "name": "extend_2",
               "options": [
@@ -272,7 +279,7 @@
             },
             {
               "example": "xxx",
-              "help_en": "Extension field 3",
+              "help_en": "The third extension field",
               "help_zh": "扩展字段3",
               "name": "extend_3",
               "options": [
@@ -324,8 +331,13 @@
               "element": {
                 "fields": [
                   {
+                    "enum": [
+                      "CustomSemanticSearch",
+                      "SystemSearch",
+                      "ThirdSearch"
+                    ],
                     "example": "SystemSearch",
-                    "help_en": "The type of the search source. Valid values:\nSystemSearch: Built-in system search.\nCustomSemanticSearch: Custom semantic index search.\nThirdSearch: Third-party API search",
+                    "help_en": "The search source type. Valid values:\nSystemSearch: built-in system search.\nCustomSemanticSearch: custom semantic index search.\nThirdSearch: third-party API search",
                     "help_zh": "搜索源类型：\nSystemSearch：系统内置搜索\nCustomSemanticSearch：自建语义索引搜索\nThirdSearch：三方API搜索",
                     "name": "code",
                     "options": [
@@ -337,7 +349,7 @@
                   },
                   {
                     "example": "QuarkCommonNews",
-                    "help_en": "The unique identifier of the search source. This corresponds to the dataset name on the page, such as 4cb0eda3fad841758262dbe8d61191",
+                    "help_en": "The unique identifier of the search source. It corresponds to the dataset name on the page, such as 4cb0eda3fad841758262dbe8d61191",
                     "help_zh": "搜索源唯一标识：对应页面数据集名称，比如 4cb0eda3fad841758262dbe8d61191",
                     "name": "dataset_name",
                     "options": [
@@ -386,7 +398,7 @@
             },
             {
               "example": "1725983999999",
-              "help_en": "The start time. Use a millisecond-level UNIX timestamp",
+              "help_en": "The start time. Use a Unix timestamp in milliseconds",
               "help_zh": "开始时间，使用毫秒级 Unix 时间戳",
               "name": "start_time",
               "options": [
@@ -492,7 +504,7 @@
                 },
                 {
                   "example": "TextGenerate",
-                  "help_en": "The search model used for secondary clustering of subcategory content. This parameter is applicable only to clustering scenarios. Set the value to ClusterGenerate",
+                  "help_en": "The search model. This parameter is passed only for clustering when performing secondary clustering on subcategory content. Set the value to ClusterGenerate",
                   "help_zh": "仅聚类，对聚类子类内容二次聚类时传入，ClusterGenerate",
                   "name": "search_model",
                   "options": [
@@ -504,7 +516,7 @@
                 },
                 {
                   "example": "分类1",
-                  "help_en": "The data value for the search model. When SearchModel is set to ClusterGenerate, specify the name of the subcategory topic. If the original value contains quotation marks, retain them",
+                  "help_en": "The data value for the search model. When searchModel is set to ClusterGenerate, this parameter specifies the name of the subcategory topic. If the original value contains quotation marks, retain them",
                   "help_zh": "searchModel=ClusterGenerate时，取子类topic名称，注意如果原值有引号时也要带上",
                   "name": "search_model_data_value",
                   "options": [
@@ -726,7 +738,7 @@
                   "type": "object"
                 }
               ],
-              "help_en": "The user input or selected multimodal data",
+              "help_en": "The user-input or selected multimodal data",
               "help_zh": "用户输入或选中的多模态数据",
               "name": "multimodal_media_selection",
               "options": [
@@ -849,7 +861,7 @@
     },
     {
       "example": "http://xxxx",
-      "help_en": "The image URL. This parameter applies to scenarios such as image search and hybrid search generation with image and text prompts",
+      "help_en": "The image URL. This parameter is applicable to scenarios such as image search and image-text (prompt) hybrid search generation",
       "help_zh": "图片url：适用于图搜、图文（prompt）混合搜索生成等场景",
       "location": "formData",
       "name": "file_url",
@@ -874,7 +886,7 @@
         "properties": {
           "Header": {
             "backendName": "header",
-            "description_en": "The response header",
+            "description_en": "The response headers",
             "description_zh": "响应头",
             "properties": {
               "ErrorCode": {
@@ -924,7 +936,7 @@
               },
               "ResponseTime": {
                 "backendName": "responseTime",
-                "description_en": "The response time, in milliseconds",
+                "description_en": "The response time in milliseconds",
                 "description_zh": "响应时间，单位为毫秒（ms）",
                 "example": "1",
                 "format": "int64",
@@ -1026,16 +1038,16 @@
                             "properties": {
                               "AudioSearchResult": {
                                 "backendName": "audioSearchResult",
-                                "description_en": "The audio results",
+                                "description_en": "The audio result",
                                 "description_zh": "语音结果",
                                 "properties": {
                                   "SearchResult": {
                                     "backendName": "searchResult",
-                                    "description_en": "The audio results",
+                                    "description_en": "The audio result",
                                     "description_zh": "语音结果",
                                     "itemName": "SearchResult",
                                     "items": {
-                                      "description_en": "The audio results",
+                                      "description_en": "The audio result",
                                       "description_zh": "语音结果",
                                       "properties": {
                                         "Article": {
@@ -1070,21 +1082,21 @@
                                             },
                                             "Extend1": {
                                               "backendName": "extend1",
-                                              "description_en": "Extension field 1",
+                                              "description_en": "The first extension field",
                                               "description_zh": "扩展字段1",
                                               "example": "xx",
                                               "type": "string"
                                             },
                                             "Extend2": {
                                               "backendName": "extend2",
-                                              "description_en": "Extension field 2",
+                                              "description_en": "The second extension field",
                                               "description_zh": "扩展字段2",
                                               "example": "xx",
                                               "type": "string"
                                             },
                                             "Extend3": {
                                               "backendName": "extend3",
-                                              "description_en": "Extension field 3",
+                                              "description_en": "The third extension field",
                                               "description_zh": "扩展字段3",
                                               "example": "xx",
                                               "type": "string"
@@ -1115,7 +1127,7 @@
                                               "items": {
                                                 "description_en": "The tag value",
                                                 "description_zh": "标签值",
-                                                "example": "x",
+                                                "example": "技术文档",
                                                 "type": "string"
                                               },
                                               "type": "array"
@@ -1124,7 +1136,7 @@
                                               "backendName": "title",
                                               "description_en": "The title",
                                               "description_zh": "标题",
-                                              "example": "xx",
+                                              "example": "示例文章标题",
                                               "title_en": "标题",
                                               "title_zh": "标题",
                                               "type": "string"
@@ -1176,7 +1188,7 @@
                                                 "backendName": "text",
                                                 "description_en": "The text content",
                                                 "description_zh": "文本内容",
-                                                "example": "xx",
+                                                "example": "本文介绍了接口的使用方法。",
                                                 "title_en": "文本内容",
                                                 "title_zh": "文本内容",
                                                 "type": "string"
@@ -1266,7 +1278,7 @@
                                       "properties": {
                                         "AudioSearchResult": {
                                           "backendName": "audioSearchResult",
-                                          "description_en": "The audio results",
+                                          "description_en": "The audio result",
                                           "description_zh": "语音结果",
                                           "properties": {
                                             "Current": {
@@ -1281,7 +1293,7 @@
                                             },
                                             "SearchResult": {
                                               "backendName": "searchResult",
-                                              "description_en": "The audio results",
+                                              "description_en": "The audio result",
                                               "description_zh": "语音结果",
                                               "properties": {
                                                 "Article": {
@@ -1316,21 +1328,21 @@
                                                     },
                                                     "Extend1": {
                                                       "backendName": "extend1",
-                                                      "description_en": "Extension field 1",
+                                                      "description_en": "The first extension field",
                                                       "description_zh": "扩展字段1",
                                                       "example": "xx",
                                                       "type": "string"
                                                     },
                                                     "Extend2": {
                                                       "backendName": "extend2",
-                                                      "description_en": "Extension field 2",
+                                                      "description_en": "The second extension field",
                                                       "description_zh": "扩展字段2",
                                                       "example": "xx",
                                                       "type": "string"
                                                     },
                                                     "Extend3": {
                                                       "backendName": "extend3",
-                                                      "description_en": "Extension field 3",
+                                                      "description_en": "The third extension field",
                                                       "description_zh": "扩展字段3",
                                                       "example": "xx",
                                                       "type": "string"
@@ -1375,7 +1387,7 @@
                                                       "items": {
                                                         "description_en": "The tag value",
                                                         "description_zh": "标签值",
-                                                        "example": "xx",
+                                                        "example": "技术文档",
                                                         "type": "string"
                                                       },
                                                       "type": "array"
@@ -1384,7 +1396,7 @@
                                                       "backendName": "title",
                                                       "description_en": "The title",
                                                       "description_zh": "标题",
-                                                      "example": "xx",
+                                                      "example": "示例文章标题",
                                                       "title_en": "标题",
                                                       "title_zh": "标题",
                                                       "type": "string"
@@ -1436,7 +1448,7 @@
                                                         "backendName": "text",
                                                         "description_en": "The text content",
                                                         "description_zh": "文本内容",
-                                                        "example": "xx",
+                                                        "example": "本文介绍了接口的使用方法。",
                                                         "title_en": "文本内容",
                                                         "title_zh": "文本内容",
                                                         "type": "string"
@@ -1573,21 +1585,21 @@
                                                       },
                                                       "Extend1": {
                                                         "backendName": "extend1",
-                                                        "description_en": "Extension field 1",
+                                                        "description_en": "The first extension field",
                                                         "description_zh": "扩展字段1",
                                                         "example": "xx",
                                                         "type": "string"
                                                       },
                                                       "Extend2": {
                                                         "backendName": "extend2",
-                                                        "description_en": "Extension field 2",
+                                                        "description_en": "The second extension field",
                                                         "description_zh": "扩展字段2",
                                                         "example": "xx",
                                                         "type": "string"
                                                       },
                                                       "Extend3": {
                                                         "backendName": "extend3",
-                                                        "description_en": "Extension field 3",
+                                                        "description_en": "The third extension field",
                                                         "description_zh": "扩展字段3",
                                                         "example": "xx",
                                                         "type": "string"
@@ -1632,7 +1644,7 @@
                                                         "items": {
                                                           "description_en": "The tags",
                                                           "description_zh": "标签",
-                                                          "example": "xx",
+                                                          "example": "技术文档",
                                                           "type": "string"
                                                         },
                                                         "type": "array"
@@ -1641,7 +1653,7 @@
                                                         "backendName": "title",
                                                         "description_en": "The title",
                                                         "description_zh": "标题",
-                                                        "example": "xx",
+                                                        "example": "示例文章标题",
                                                         "title_en": "标题",
                                                         "title_zh": "标题",
                                                         "type": "string"
@@ -1759,32 +1771,32 @@
                                                   },
                                                   "Extend1": {
                                                     "backendName": "extend1",
-                                                    "description_en": "Extension field 1",
+                                                    "description_en": "The first extension field",
                                                     "description_zh": "扩展字段1",
                                                     "example": "xx",
                                                     "type": "string"
                                                   },
                                                   "Extend2": {
                                                     "backendName": "extend2",
-                                                    "description_en": "Extension field 2",
+                                                    "description_en": "The second extension field",
                                                     "description_zh": "扩展字段2",
                                                     "example": "xx",
                                                     "type": "string"
                                                   },
                                                   "Extend3": {
                                                     "backendName": "extend3",
-                                                    "description_en": "Extension field 3",
+                                                    "description_en": "The third extension field",
                                                     "description_zh": "扩展字段3",
                                                     "example": "xx",
                                                     "type": "string"
                                                   },
                                                   "MultimodalMedias": {
                                                     "backendName": "multimodalMedias",
-                                                    "description_en": "The list of multimodal media",
+                                                    "description_en": "The list of multimodal information",
                                                     "description_zh": "多模态信息列表",
                                                     "itemName": "MultimodalMedia",
                                                     "items": {
-                                                      "description_en": "The multimodal media",
+                                                      "description_en": "The multimodal information",
                                                       "description_zh": "多模态信息",
                                                       "properties": {
                                                         "FileUrl": {
@@ -1807,7 +1819,7 @@
                                                         },
                                                         "MediaType": {
                                                           "backendName": "mediaType",
-                                                          "description_en": "The multimodal data file type. Valid values:\nvideo: Video.\nimage: Image",
+                                                          "description_en": "The data file type of the multimodal modality. Valid values:\nvideo: Video.\nimage: Image",
                                                           "description_zh": "多模态数据文件类型，取值：\nvideo：视频。\nimage：图片",
                                                           "example": "image",
                                                           "title_en": "多模态数据类型",
@@ -1881,7 +1893,7 @@
                                                     "backendName": "title",
                                                     "description_en": "The title",
                                                     "description_zh": "标题",
-                                                    "example": "xx",
+                                                    "example": "示例文章标题",
                                                     "title_en": "标题",
                                                     "title_zh": "标题",
                                                     "type": "string"
@@ -1992,21 +2004,21 @@
                                                       },
                                                       "Extend1": {
                                                         "backendName": "extend1",
-                                                        "description_en": "Extension field 1",
+                                                        "description_en": "The first extension field",
                                                         "description_zh": "扩展字段1",
                                                         "example": "xx",
                                                         "type": "string"
                                                       },
                                                       "Extend2": {
                                                         "backendName": "extend2",
-                                                        "description_en": "Extension field 2",
+                                                        "description_en": "The second extension field",
                                                         "description_zh": "扩展字段2",
                                                         "example": "xx",
                                                         "type": "string"
                                                       },
                                                       "Extend3": {
                                                         "backendName": "extend3",
-                                                        "description_en": "Extension field 3",
+                                                        "description_en": "The third extension field",
                                                         "description_zh": "扩展字段3",
                                                         "example": "x",
                                                         "type": "string"
@@ -2060,7 +2072,7 @@
                                                         "backendName": "title",
                                                         "description_en": "The title",
                                                         "description_zh": "标题",
-                                                        "example": "xx",
+                                                        "example": "示例文章标题",
                                                         "title_en": "标题",
                                                         "title_zh": "标题",
                                                         "type": "string"
@@ -2112,7 +2124,7 @@
                                                           "backendName": "text",
                                                           "description_en": "The corresponding text, such as the ASR transcription result",
                                                           "description_zh": "对应文本，比如asr转写结果",
-                                                          "example": "xx",
+                                                          "example": "请介绍如何调用接口。",
                                                           "title_en": "如果是asr，那就是asr转写结果",
                                                           "title_zh": "如果是asr，那就是asr转写结果",
                                                           "type": "string"
@@ -2209,7 +2221,7 @@
                                     "backendName": "textGenerate",
                                     "description_en": "The text result",
                                     "description_zh": "文本结果",
-                                    "example": "xx",
+                                    "example": "本文介绍了接口的使用方法。",
                                     "type": "string"
                                   }
                                 },
@@ -2233,7 +2245,7 @@
                                   },
                                   "GenerateLevel": {
                                     "backendName": "generateLevel",
-                                    "description_en": "The level of detail for the response. Valid values:\nconcise: Concise (default).\nenhance: Enhanced",
+                                    "description_en": "The level of detail for the response. Valid values:\nconcise: Concise.\nenhance: Enhanced.\nDefault value: concise",
                                     "description_zh": "回答的详细程度：\nconcise：简洁（默认）\nenhance：增强",
                                     "example": "concise",
                                     "title_en": "生成等级",
@@ -2318,37 +2330,37 @@
                                         },
                                         "Extend1": {
                                           "backendName": "extend1",
-                                          "description_en": "Extension field 1",
+                                          "description_en": "The first extension field",
                                           "description_zh": "扩展字段1",
                                           "example": "xx",
                                           "type": "string"
                                         },
                                         "Extend2": {
                                           "backendName": "extend2",
-                                          "description_en": "Extension field 2",
+                                          "description_en": "The second extension field",
                                           "description_zh": "扩展字段2",
                                           "example": "xx",
                                           "type": "string"
                                         },
                                         "Extend3": {
                                           "backendName": "extend3",
-                                          "description_en": "Extension field 3",
+                                          "description_en": "The third extension field",
                                           "description_zh": "扩展字段3",
                                           "example": "xx",
                                           "type": "string"
                                         },
                                         "MultimodalMedias": {
                                           "backendName": "multimodalMedias",
-                                          "description_en": "The list of multimodal media",
+                                          "description_en": "The list of multimodal information",
                                           "description_zh": "多模态信息列表",
                                           "itemName": "MultimodalMedia",
                                           "items": {
-                                            "description_en": "The multimodal media",
+                                            "description_en": "The multimodal information",
                                             "description_zh": "多模态信息",
                                             "properties": {
                                               "FileUrl": {
                                                 "backendName": "fileUrl",
-                                                "description_en": "The URL of the file",
+                                                "description_en": "The file URL",
                                                 "description_zh": "文件 URL",
                                                 "example": "xx",
                                                 "title_en": "图片或视频文件地址",
@@ -2366,7 +2378,7 @@
                                               },
                                               "MediaType": {
                                                 "backendName": "mediaType",
-                                                "description_en": "The data file type of the multimodal modality. Valid values:\nvideo: Video.\nimage: Image",
+                                                "description_en": "The file type of the multimodal data. Valid values:\nvideo: Video.\nimage: Image",
                                                 "description_zh": "多模态数据文件类型，取值：\nvideo：视频。\nimage：图片",
                                                 "example": "image",
                                                 "title_en": "多模态数据类型",
@@ -2528,7 +2540,7 @@
                                                           "backendName": "title",
                                                           "description_en": "The title",
                                                           "description_zh": "标题",
-                                                          "example": "xx",
+                                                          "example": "示例文章标题",
                                                           "title_en": "文章标题",
                                                           "title_zh": "文章标题",
                                                           "type": "string"
@@ -2567,7 +2579,7 @@
                                                     },
                                                     "MediaType": {
                                                       "backendName": "mediaType",
-                                                      "description_en": "The data file type of the multimodal modality. Valid values:\nvideo: Video.\nimage: Image",
+                                                      "description_en": "The file type of the multimodal data. Valid values:\nvideo: Video.\nimage: Image",
                                                       "description_zh": "多模态数据文件类型，取值：\nvideo：视频。\nimage：图片",
                                                       "example": "image",
                                                       "title_en": "多模态数据类型",
@@ -2602,14 +2614,14 @@
                                           "backendName": "title",
                                           "description_en": "The title",
                                           "description_zh": "标题",
-                                          "example": "xx",
+                                          "example": "示例文章标题",
                                           "title_en": "标题",
                                           "title_zh": "标题",
                                           "type": "string"
                                         },
                                         "TraceabilityId": {
                                           "backendName": "traceabilityId",
-                                          "description_en": "The traceability positioning ID",
+                                          "description_en": "The traceability location ID",
                                           "description_zh": "溯源定位id",
                                           "example": "1",
                                           "format": "int32",
@@ -2637,7 +2649,7 @@
                                     "backendName": "textGenerate",
                                     "description_en": "The generated text",
                                     "description_zh": "生成文本",
-                                    "example": "xx",
+                                    "example": "接口调用前，请先准备必要的请求参数。",
                                     "title_en": "文本生成结果",
                                     "title_zh": "文本生成结果",
                                     "type": "string"
@@ -2693,21 +2705,21 @@
                                             },
                                             "Extend1": {
                                               "backendName": "extend1",
-                                              "description_en": "The extended field 1",
+                                              "description_en": "The extension field 1",
                                               "description_zh": "扩展字段 1",
                                               "example": "xx",
                                               "type": "string"
                                             },
                                             "Extend2": {
                                               "backendName": "extend2",
-                                              "description_en": "Extension field 2",
+                                              "description_en": "The second extension field",
                                               "description_zh": "扩展字段2",
                                               "example": "xx",
                                               "type": "string"
                                             },
                                             "Extend3": {
                                               "backendName": "extend3",
-                                              "description_en": "Extension field 3",
+                                              "description_en": "The third extension field",
                                               "description_zh": "扩展字段3",
                                               "example": "xx",
                                               "type": "string"
@@ -2747,7 +2759,7 @@
                                               "backendName": "title",
                                               "description_en": "The title",
                                               "description_zh": "标题",
-                                              "example": "xx",
+                                              "example": "示例文章标题",
                                               "title_en": "标题",
                                               "title_zh": "标题",
                                               "type": "string"
@@ -2819,11 +2831,11 @@
                                   },
                                   "NewsElementArticleList": {
                                     "backendName": "newsElementArticleList",
-                                    "description_en": "The list of extracted news",
+                                    "description_en": "The news extraction list",
                                     "description_zh": "新闻抽取列表",
                                     "itemName": "NewsElementArticleList",
                                     "items": {
-                                      "description_en": "The extracted news",
+                                      "description_en": "The news extraction",
                                       "description_zh": "新闻抽取",
                                       "properties": {
                                         "Article": {
@@ -2867,21 +2879,21 @@
                                             },
                                             "Extend1": {
                                               "backendName": "extend1",
-                                              "description_en": "Extension field 1",
+                                              "description_en": "The first extension field",
                                               "description_zh": "扩展字段1",
                                               "example": "xx",
                                               "type": "string"
                                             },
                                             "Extend2": {
                                               "backendName": "extend2",
-                                              "description_en": "Extension field 2",
+                                              "description_en": "The second extension field",
                                               "description_zh": "扩展字段2",
                                               "example": "xx",
                                               "type": "string"
                                             },
                                             "Extend3": {
                                               "backendName": "extend3",
-                                              "description_en": "Extension field 3",
+                                              "description_en": "The third extension field",
                                               "description_zh": "扩展字段3",
                                               "example": "xx",
                                               "type": "string"
@@ -2967,7 +2979,7 @@
                                               "backendName": "title",
                                               "description_en": "The title",
                                               "description_zh": "标题",
-                                              "example": "xx",
+                                              "example": "示例文章标题",
                                               "title_en": "标题",
                                               "title_zh": "标题",
                                               "type": "string"
@@ -2988,11 +3000,11 @@
                                         },
                                         "NewsElementList": {
                                           "backendName": "newsElementList",
-                                          "description_en": "The list of news articles",
+                                          "description_en": "The news list",
                                           "description_zh": "新闻列表",
                                           "itemName": "NewsElementList",
                                           "items": {
-                                            "description_en": "The news article",
+                                            "description_en": "The news item",
                                             "description_zh": "新闻",
                                             "properties": {
                                               "Event": {
@@ -3089,7 +3101,7 @@
                                           "backendName": "textGenerate",
                                           "description_en": "The text generation content",
                                           "description_zh": "文本生成内容",
-                                          "example": "xx",
+                                          "example": "接口调用前，请先准备必要的请求参数。",
                                           "title_en": "文本生成结果",
                                           "title_zh": "文本生成结果",
                                           "type": "string"
@@ -3105,7 +3117,7 @@
                                     "backendName": "textGenerate",
                                     "description_en": "The text generation content",
                                     "description_zh": "文本生成内容",
-                                    "example": "x",
+                                    "example": "接口调用前，请先准备必要的请求参数。",
                                     "title_en": "文本生成结果",
                                     "title_zh": "文本生成结果",
                                     "type": "string"
@@ -3131,7 +3143,7 @@
                                   },
                                   "GenerateLevel": {
                                     "backendName": "generateLevel",
-                                    "description_en": "The level of detail for the response. Valid values:\nconcise: Concise (default).\nenhance: Enhanced",
+                                    "description_en": "The level of detail for the response. Valid values:\nconcise: Concise.\nenhance: Enhanced.\nDefault value: concise",
                                     "description_zh": "回答的详细程度：\nconcise：简洁（默认）\nenhance：增强",
                                     "example": "concise",
                                     "title_en": "生成等级",
@@ -3159,7 +3171,7 @@
                                               "properties": {
                                                 "X": {
                                                   "backendName": "x",
-                                                  "description_en": "The number starting from 1",
+                                                  "description_en": "The number, starting from 1",
                                                   "description_zh": "编号：1开始",
                                                   "example": "1",
                                                   "format": "int32",
@@ -3208,7 +3220,7 @@
                                                 },
                                                 "X": {
                                                   "backendName": "x",
-                                                  "description_en": "The number starting from 1",
+                                                  "description_en": "The number, starting from 1",
                                                   "description_zh": "编号：1开始",
                                                   "example": "1",
                                                   "format": "int32",
@@ -3328,7 +3340,7 @@
                                                     "backendName": "searchSourceName",
                                                     "description_en": "The name of the search source",
                                                     "description_zh": "搜索源名称",
-                                                    "example": "xx",
+                                                    "example": "示例搜索源",
                                                     "title_en": "搜索信源名称",
                                                     "title_zh": "搜索信源名称",
                                                     "type": "string"
@@ -3346,7 +3358,7 @@
                                                     "backendName": "title",
                                                     "description_en": "The title",
                                                     "description_zh": "标题",
-                                                    "example": "xx",
+                                                    "example": "示例文章标题",
                                                     "title_en": "标题",
                                                     "title_zh": "标题",
                                                     "type": "string"
@@ -3398,7 +3410,7 @@
                                                       "backendName": "text",
                                                       "description_en": "The corresponding text, such as the ASR transcription result",
                                                       "description_zh": "对应文本，比如asr转写结果",
-                                                      "example": "xx",
+                                                      "example": "请介绍如何调用接口。",
                                                       "title_en": "如果是asr，那就是asr转写结果",
                                                       "title_zh": "如果是asr，那就是asr转写结果",
                                                       "type": "string"
@@ -3415,7 +3427,7 @@
                                                     },
                                                     "Type": {
                                                       "backendName": "type",
-                                                      "description_en": "The type, such as ASR",
+                                                      "description_en": "The type, such as asr",
                                                       "description_zh": "类型：比如asr",
                                                       "example": "asr",
                                                       "title_en": "默认空",
@@ -3449,7 +3461,7 @@
                                               },
                                               "MediaType": {
                                                 "backendName": "mediaType",
-                                                "description_en": "The multimodal data file type. Valid values:\nvideo: Video.\nimage: Image",
+                                                "description_en": "The multimodal data file type. Valid values: video: Video. image: Image",
                                                 "description_zh": "多模态数据文件类型，取值： video：视频。 image：图片",
                                                 "example": "image",
                                                 "title_en": "多模态数据类型",
@@ -3521,7 +3533,7 @@
                                     "description_zh": "文本生成结果引用的参考文章列表",
                                     "itemName": "ReferenceList",
                                     "items": {
-                                      "description_en": "The information about a reference article cited in the text generation result",
+                                      "description_en": "The reference article information cited in the text generation result",
                                       "description_zh": "文本生成结果引用的参考文章信息",
                                       "properties": {
                                         "CategoryUuid": {
@@ -3575,21 +3587,21 @@
                                         },
                                         "Extend1": {
                                           "backendName": "extend1",
-                                          "description_en": "The extended field 1",
+                                          "description_en": "The extension field 1",
                                           "description_zh": "扩展字段 1",
                                           "example": "xx",
                                           "type": "string"
                                         },
                                         "Extend2": {
                                           "backendName": "extend2",
-                                          "description_en": "Extension field 2",
+                                          "description_en": "The second extension field",
                                           "description_zh": "扩展字段2",
                                           "example": "xx",
                                           "type": "string"
                                         },
                                         "Extend3": {
                                           "backendName": "extend3",
-                                          "description_en": "Extension field 3",
+                                          "description_en": "The third extension field",
                                           "description_zh": "扩展字段3",
                                           "example": "xx",
                                           "type": "string"
@@ -3684,14 +3696,14 @@
                                           "backendName": "title",
                                           "description_en": "The title",
                                           "description_zh": "标题",
-                                          "example": "xx",
+                                          "example": "示例文章标题",
                                           "title_en": "标题",
                                           "title_zh": "标题",
                                           "type": "string"
                                         },
                                         "TraceabilityId": {
                                           "backendName": "traceabilityId",
-                                          "description_en": "The traceability positioning ID",
+                                          "description_en": "The traceability location ID",
                                           "description_zh": "溯源定位id",
                                           "example": "1",
                                           "format": "int32",
@@ -3719,7 +3731,7 @@
                                     "backendName": "textGenerate",
                                     "description_en": "The text generation result",
                                     "description_zh": "文本生成结果",
-                                    "example": "xx",
+                                    "example": "接口调用前，请先准备必要的请求参数。",
                                     "title_en": "文本生成结构",
                                     "title_zh": "文本生成结构",
                                     "type": "string"
@@ -3779,7 +3791,7 @@
                                                     "backendName": "searchSourceName",
                                                     "description_en": "The name of the search source",
                                                     "description_zh": "搜索源名称",
-                                                    "example": "xx",
+                                                    "example": "示例搜索源",
                                                     "title_en": "搜索信源名称",
                                                     "title_zh": "搜索信源名称",
                                                     "type": "string"
@@ -3797,7 +3809,7 @@
                                                     "backendName": "title",
                                                     "description_en": "The title",
                                                     "description_zh": "标题",
-                                                    "example": "xx",
+                                                    "example": "示例文章标题",
                                                     "title_en": "标题",
                                                     "title_zh": "标题",
                                                     "type": "string"
@@ -3836,7 +3848,7 @@
                                               },
                                               "MediaType": {
                                                 "backendName": "mediaType",
-                                                "description_en": "The multimodal data file type. Valid values:\nvideo: Video.\nimage: Image",
+                                                "description_en": "The multimodal data file type. Valid values: video: Video. image: Image",
                                                 "description_zh": "多模态数据文件类型，取值： video：视频。 image：图片",
                                                 "example": "image",
                                                 "title_en": "多模态数据类型",
@@ -3872,7 +3884,7 @@
                               },
                               "TextSearchResult": {
                                 "backendName": "textSearchResult",
-                                "description_en": "The text document search result",
+                                "description_en": "The text document search results",
                                 "description_zh": "文本文档搜索结果",
                                 "properties": {
                                   "Current": {
@@ -3921,7 +3933,7 @@
                                         },
                                         "DocUuid": {
                                           "backendName": "docUuid",
-                                          "description_en": "The unique internal identifier of the document in the system",
+                                          "description_en": "The internal unique identifier of the document in the system",
                                           "description_zh": "系统内部文档唯一标识",
                                           "example": "xx",
                                           "title_en": "系统内部文档唯一标识",
@@ -3930,21 +3942,21 @@
                                         },
                                         "Extend1": {
                                           "backendName": "extend1",
-                                          "description_en": "Extension field 1",
+                                          "description_en": "The first extension field",
                                           "description_zh": "扩展字段1",
                                           "example": "xx",
                                           "type": "string"
                                         },
                                         "Extend2": {
                                           "backendName": "extend2",
-                                          "description_en": "Extension field 2",
+                                          "description_en": "The second extension field",
                                           "description_zh": "扩展字段2",
                                           "example": "xx",
                                           "type": "string"
                                         },
                                         "Extend3": {
                                           "backendName": "extend3",
-                                          "description_en": "Extension field 3",
+                                          "description_en": "The third extension field",
                                           "description_zh": "扩展字段3",
                                           "example": "xx",
                                           "type": "string"
@@ -4011,7 +4023,7 @@
                                           "backendName": "title",
                                           "description_en": "The title",
                                           "description_zh": "标题",
-                                          "example": "xx",
+                                          "example": "示例文章标题",
                                           "title_en": "标题",
                                           "title_zh": "标题",
                                           "type": "string"
@@ -4070,7 +4082,7 @@
                               },
                               "TimelineResult": {
                                 "backendName": "timelineResult",
-                                "description_en": "The summary result organized by time",
+                                "description_en": "The summary result organized by timeline",
                                 "description_zh": "按时间总结结果",
                                 "properties": {
                                   "GenerateFinished": {
@@ -4103,7 +4115,7 @@
                                               "properties": {
                                                 "X": {
                                                   "backendName": "x",
-                                                  "description_en": "The number starting from 1",
+                                                  "description_en": "The number, starting from 1",
                                                   "description_zh": "编号：1开始",
                                                   "example": "1",
                                                   "format": "int32",
@@ -4152,7 +4164,7 @@
                                                 },
                                                 "X": {
                                                   "backendName": "x",
-                                                  "description_en": "The number starting from 1",
+                                                  "description_en": "The number, starting from 1",
                                                   "description_zh": "编号：1开始",
                                                   "example": "1",
                                                   "format": "int32",
@@ -4270,7 +4282,7 @@
                                                     "backendName": "title",
                                                     "description_en": "The title",
                                                     "description_zh": "标题",
-                                                    "example": "xx",
+                                                    "example": "示例文章标题",
                                                     "title_en": "标题",
                                                     "title_zh": "标题",
                                                     "type": "string"
@@ -4322,7 +4334,7 @@
                                                       "backendName": "text",
                                                       "description_en": "The corresponding text, such as the ASR transcription result",
                                                       "description_zh": "对应文本，比如asr转写结果",
-                                                      "example": "xx",
+                                                      "example": "请介绍如何调用接口。",
                                                       "title_en": "如果是asr，那就是asr转写结果",
                                                       "title_zh": "如果是asr，那就是asr转写结果",
                                                       "type": "string"
@@ -4339,7 +4351,7 @@
                                                     },
                                                     "Type": {
                                                       "backendName": "type",
-                                                      "description_en": "The type, such as ASR",
+                                                      "description_en": "The type, such as asr",
                                                       "description_zh": "类型：比如asr",
                                                       "example": "asr",
                                                       "title_en": "默认空",
@@ -4355,7 +4367,7 @@
                                               },
                                               "FileUrl": {
                                                 "backendName": "fileUrl",
-                                                "description_en": "The URL of the file",
+                                                "description_en": "The file URL",
                                                 "description_zh": "文件 URL",
                                                 "example": "xx",
                                                 "title_en": "图片或视频文件地址",
@@ -4470,21 +4482,21 @@
                                         },
                                         "Extend1": {
                                           "backendName": "extend1",
-                                          "description_en": "Extension field 1",
+                                          "description_en": "The first extension field",
                                           "description_zh": "扩展字段1",
                                           "example": "xx",
                                           "type": "string"
                                         },
                                         "Extend2": {
                                           "backendName": "extend2",
-                                          "description_en": "Extension field 2",
+                                          "description_en": "The second extension field",
                                           "description_zh": "扩展字段2",
                                           "example": "xx",
                                           "type": "string"
                                         },
                                         "Extend3": {
                                           "backendName": "extend3",
-                                          "description_en": "Extension field 3",
+                                          "description_en": "The third extension field",
                                           "description_zh": "扩展字段3",
                                           "example": "xx",
                                           "type": "string"
@@ -4579,14 +4591,14 @@
                                           "backendName": "title",
                                           "description_en": "The title",
                                           "description_zh": "标题",
-                                          "example": "xx",
+                                          "example": "示例文章标题",
                                           "title_en": "标题",
                                           "title_zh": "标题",
                                           "type": "string"
                                         },
                                         "TraceabilityId": {
                                           "backendName": "traceabilityId",
-                                          "description_en": "The traceability positioning ID",
+                                          "description_en": "The traceability location ID",
                                           "description_zh": "溯源定位id",
                                           "example": "1",
                                           "format": "int32",
@@ -4614,7 +4626,7 @@
                                     "backendName": "textGenerate",
                                     "description_en": "The text generation result",
                                     "description_zh": "文本生成结果",
-                                    "example": "xx",
+                                    "example": "接口调用前，请先准备必要的请求参数。",
                                     "title_en": "文本生成结果",
                                     "title_zh": "文本生成结果",
                                     "type": "string"
@@ -4692,7 +4704,7 @@
                                                     "backendName": "title",
                                                     "description_en": "The title",
                                                     "description_zh": "标题",
-                                                    "example": "xxxx",
+                                                    "example": "示例文章标题",
                                                     "title_en": "标题",
                                                     "title_zh": "标题",
                                                     "type": "string"
@@ -4811,21 +4823,21 @@
                                             },
                                             "Extend1": {
                                               "backendName": "extend1",
-                                              "description_en": "Extension field 1",
+                                              "description_en": "The first extension field",
                                               "description_zh": "扩展字段1",
                                               "example": "xx",
                                               "type": "string"
                                             },
                                             "Extend2": {
                                               "backendName": "extend2",
-                                              "description_en": "Extension field 2",
+                                              "description_en": "The second extension field",
                                               "description_zh": "扩展字段2",
                                               "example": "xx",
                                               "type": "string"
                                             },
                                             "Extend3": {
                                               "backendName": "extend3",
-                                              "description_en": "Extension field 3",
+                                              "description_en": "The third extension field",
                                               "description_zh": "扩展字段3",
                                               "example": "xx",
                                               "type": "string"
@@ -4865,7 +4877,7 @@
                                               "backendName": "title",
                                               "description_en": "The title",
                                               "description_zh": "标题",
-                                              "example": "xx",
+                                              "example": "示例文章标题",
                                               "title_en": "标题",
                                               "title_zh": "标题",
                                               "type": "string"
@@ -4917,7 +4929,7 @@
                                                 "backendName": "text",
                                                 "description_en": "The corresponding text, such as the ASR transcription result",
                                                 "description_zh": "对应文本，比如asr转写结果",
-                                                "example": "xx",
+                                                "example": "请介绍如何调用接口。",
                                                 "title_en": "如果是asr，那就是asr转写结果",
                                                 "title_zh": "如果是asr，那就是asr转写结果",
                                                 "type": "string"
@@ -4934,7 +4946,7 @@
                                               },
                                               "Type": {
                                                 "backendName": "type",
-                                                "description_en": "The type, such as ASR",
+                                                "description_en": "The type, such as asr",
                                                 "description_zh": "类型：比如asr",
                                                 "example": "asr",
                                                 "title_en": "默认空",
@@ -5008,11 +5020,11 @@
                           },
                           "RecommendSearchQueryList": {
                             "backendName": "recommendSearchQueryList",
-                            "description_en": "The list of recommended searches for generation",
+                            "description_en": "The list of recommended search queries",
                             "description_zh": "生成-推荐列表",
                             "itemName": "RecommendSearchQueryList",
                             "items": {
-                              "description_en": "The recommended search for generation",
+                              "description_en": "The recommended search query",
                               "description_zh": "生成-推荐",
                               "example": "xx",
                               "type": "string"
@@ -5023,11 +5035,11 @@
                           },
                           "SearchKeywords": {
                             "backendName": "searchKeywords",
-                            "description_en": "The list of query understanding keywords for thinking",
+                            "description_en": "The list of query understanding keywords in thinking mode",
                             "description_zh": "思考-query理解关键词列表",
                             "itemName": "SearchKeyword",
                             "items": {
-                              "description_en": "The query understanding keyword for thinking",
+                              "description_en": "The query understanding keyword in thinking mode",
                               "description_zh": "思考-query理解关键词",
                               "example": "xx",
                               "type": "string"
@@ -5044,7 +5056,7 @@
                             "items": {
                               "description_en": "The text search query",
                               "description_zh": "文本搜索query",
-                              "example": "xx",
+                              "example": "接口调用示例",
                               "type": "string"
                             },
                             "title_en": "搜素-文本搜索query",
@@ -5158,14 +5170,14 @@
                           "backendName": "content",
                           "description_en": "The generated text",
                           "description_zh": "生成文本",
-                          "example": "xx",
+                          "example": "接口调用前，请先准备必要的请求参数。",
                           "title_en": "生成文本",
                           "title_zh": "生成文本",
                           "type": "string"
                         },
                         "GenerateFinished": {
                           "backendName": "generateFinished",
-                          "description_en": "Indicates whether the current node is finished",
+                          "description_en": "Indicates whether the current node is completed",
                           "description_zh": "当前节点是否完成",
                           "title_en": "当前节点是否完成",
                           "title_zh": "当前节点是否完成",
@@ -5208,7 +5220,7 @@
                         },
                         "SearchQuery": {
                           "backendName": "searchQuery",
-                          "description_en": "The search query for the current node",
+                          "description_en": "The search query of the current node",
                           "description_zh": "当前节点搜索query",
                           "example": "xx",
                           "title_en": "当前节点搜索query",
@@ -5409,7 +5421,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The unique ID of the request",
+            "description_en": "The unique identifier of the request",
             "description_zh": "请求唯一标识",
             "example": "xx",
             "title_en": "请求唯一标识",
