@@ -3,8 +3,8 @@
   "cmd_full_name": "csas list-device-belong-identifiers",
   "cmd_name": "list-device-belong-identifiers",
   "deprecated": false,
-  "description_en": "查询设备归属标识",
-  "description_zh": "查询设备归属标识",
+  "description_en": "Performs a paging query on the device ownership identifiers of the current tenant. You can filter the results by identifier type, record ID, or the intersection of both. The IDs returned by the batch add operation can be used to query newly added records. The returned record IDs can be used for batch removal",
+  "description_zh": "分页查询当前租户的设备归属标识，支持按标识类型、记录 ID 或两者的交集筛选。可用批量添加接口返回的 ID 查询新增记录。返回的记录 ID 可用于批量移除",
   "kebab_example": "",
   "method": "POST",
   "multi_version": false,
@@ -26,8 +26,8 @@
       "element": {
         "type": "string"
       },
-      "help_en": "待查询的标识记录 ID 列表，每批 1 至 1000 个。可单独传入，也可与 IdentifierType 一起传入并取交集",
-      "help_zh": "待查询的标识记录 ID 列表，每批 1 至 1000 个。可单独传入，也可与 IdentifierType 一起传入并取交集",
+      "help_en": "The list of record IDs to query. You can specify 1 to 100 positive integer decimal strings at a time. If this parameter is specified along with other filter parameters, the records that meet all the conditions are returned",
+      "help_zh": "待查询的记录 ID 列表。每次可传 1 至 100 个正整数十进制字符串。与其他筛选参数同时传入时，返回同时满足条件的记录",
       "location": "formData",
       "name": "identifier_ids",
       "options": [
@@ -44,8 +44,9 @@
         "SystemSN",
         "BIOSSN"
       ],
-      "help_en": "The IdentifierType",
-      "help_zh": "The IdentifierType",
+      "example": "MAC",
+      "help_en": "The identifier type. MAC indicates the MAC address of the network interface controller (NIC), SystemSN indicates the system serial number, and BIOSSN indicates the BIOS serial number. This parameter is required when IdentifierValues is specified",
+      "help_zh": "标识类型。MAC 表示网卡 MAC 地址，SystemSN 表示系统序列号，BIOSSN 表示 BIOS 序列号。传入 IdentifierValues 时必须指定此参数",
       "location": "formData",
       "name": "identifier_type",
       "options": [
@@ -56,8 +57,25 @@
       "type": "string"
     },
     {
-      "help_en": "页码，取值范围为 1 至 2147483647",
-      "help_zh": "页码，取值范围为 1 至 2147483647",
+      "element": {
+        "type": "string"
+      },
+      "help_en": "The list of identifier values for exact match. You can specify 1 to 100 items at a time, and each item can contain 1 to 128 characters. You must specify IdentifierType at the same time. Records that match any value in the array are returned. MAC addresses are uniformly converted to the lowercase colon-separated format. System serial numbers and BIOS serial numbers are case-sensitive and space-sensitive",
+      "help_zh": "待精确匹配的标识值列表。每次可传 1 至 100 项，每项 1 至 128 个字符。必须同时指定 IdentifierType，匹配数组中任一值即可。MAC 统一转为小写冒号格式，系统 SN 和 BIOS SN 区分大小写和空白",
+      "location": "formData",
+      "name": "identifier_values",
+      "options": [
+        "--identifier-values"
+      ],
+      "param_style": "flat",
+      "raw_name": "IdentifierValues",
+      "required": false,
+      "type": "array"
+    },
+    {
+      "example": "1",
+      "help_en": "The current page number. Valid values: 1 to 2147483647",
+      "help_zh": "当前页码，取值范围为 1 至 2147483647",
       "location": "formData",
       "name": "current_page",
       "options": [
@@ -68,8 +86,9 @@
       "type": "int"
     },
     {
-      "help_en": "每页条数，取值范围为 1 至 1000",
-      "help_zh": "每页条数，取值范围为 1 至 1000",
+      "example": "100",
+      "help_en": "The maximum number of records to return per page. Valid values: 1 to 1000",
+      "help_zh": "每页返回的最大记录数，取值范围为 1 至 1000",
       "location": "formData",
       "name": "page_size",
       "options": [
@@ -80,8 +99,9 @@
       "type": "int"
     },
     {
-      "help_en": "暂未启用，请使用 CurrentPage 和 PageSize 分页",
-      "help_zh": "暂未启用，请使用 CurrentPage 和 PageSize 分页",
+      "example": "100",
+      "help_en": "A reserved pagination parameter. This value is not used in the current version. Use PageSize to specify the number of entries per page",
+      "help_zh": "预留分页参数，当前版本不使用该值。请通过 PageSize 指定每页条数",
       "location": "formData",
       "name": "max_results",
       "options": [
@@ -92,8 +112,9 @@
       "type": "int"
     },
     {
-      "help_en": "暂未启用，请使用 CurrentPage 和 PageSize 分页",
-      "help_zh": "暂未启用，请使用 CurrentPage 和 PageSize 分页",
+      "example": "d9fbd0d1ac24be90",
+      "help_en": "A reserved pagination cursor. This value is not used in the current version. Use CurrentPage to specify the page number",
+      "help_zh": "预留分页游标，当前版本不使用该值。请通过 CurrentPage 指定页码",
       "location": "formData",
       "name": "next_token",
       "options": [
@@ -113,28 +134,47 @@
         "properties": {
           "Identifiers": {
             "backendName": "data.identifiers",
+            "description_en": "The device ownership identifier records on the current page. An empty list is returned if no matching records are found",
+            "description_zh": "当前页的设备归属标识记录。没有匹配记录时返回空列表",
             "itemName": "identifier",
             "items": {
               "properties": {
                 "CreateTime": {
                   "backendName": "createTime",
+                  "description_en": "The time when the record was created. The time is in RFC 3339 format and includes time zone information",
+                  "description_zh": "记录创建时间，采用 RFC 3339 格式，包含时区信息",
+                  "example": "2026-11-24T10:30:00+08:00",
                   "type": "string"
                 },
                 "IdentifierId": {
                   "backendName": "identifierId",
+                  "description_en": "The ID of the identifier record, returned as a decimal string. You can use the ID to query or remove the record",
+                  "description_zh": "标识记录的 ID，以十进制字符串返回。可用于再次查询或移除该记录",
+                  "example": "482731",
                   "type": "string"
                 },
                 "IdentifierType": {
                   "backendName": "identifierType",
+                  "description_en": "The identifier type. MAC indicates the MAC address of the network interface controller (NIC), SystemSN indicates the system serial number, and BIOSSN indicates the BIOS serial number",
+                  "description_zh": "标识类型。MAC 表示网卡 MAC 地址，SystemSN 表示系统序列号，BIOSSN 表示 BIOS 序列号",
                   "enum": [
                     "MAC",
                     "SystemSN",
                     "BIOSSN"
                   ],
+                  "enumValueTitles": {
+                    "BIOSSN": "BIOS 序列号",
+                    "MAC": "网卡 MAC 地址",
+                    "SystemSN": "系统序列号"
+                  },
+                  "example": "MAC",
                   "type": "string"
                 },
                 "IdentifierValue": {
                   "backendName": "identifierValue",
+                  "description_en": "The identifier value in the record. MAC addresses are in the lowercase colon-separated format. System serial numbers and BIOS serial numbers are returned as recorded",
+                  "description_zh": "记录中的标识值。MAC 采用小写冒号分隔格式，系统 SN 和 BIOS SN 返回记录值",
+                  "example": "02:00:00:00:00:01",
                   "sensitive": true,
                   "type": "string"
                 }
@@ -145,6 +185,9 @@
           },
           "MaxResults": {
             "backendName": "data.maxResults",
+            "description_en": "A reserved pagination field. No valid value is returned in the current version",
+            "description_zh": "预留分页字段，当前版本不返回有效值",
+            "example": "0",
             "format": "int32",
             "title_en": "暂未启用，请以 PageSize 为准。",
             "title_zh": "暂未启用，请以 PageSize 为准。",
@@ -152,16 +195,25 @@
           },
           "NextToken": {
             "backendName": "data.nextToken",
+            "description_en": "A reserved pagination cursor. No valid value is returned in the current version",
+            "description_zh": "预留分页游标，当前版本不返回有效值",
+            "example": "d9fbd0d1ac24be90",
             "title_en": "暂未启用，不返回有效游标。",
             "title_zh": "暂未启用，不返回有效游标。",
             "type": "string"
           },
           "RequestId": {
             "backendName": "requestId",
+            "description_en": "The request ID",
+            "description_zh": "请求 ID，可用于定位该次调用",
+            "example": "7A92B549-EC82-5F79-8301-63711AFC9DCE",
             "type": "string"
           },
           "TotalCount": {
             "backendName": "data.totalCount",
+            "description_en": "The total number of records that match the filter conditions for the current tenant",
+            "description_zh": "当前租户在本次筛选条件下匹配的记录总数",
+            "example": "2",
             "format": "int64",
             "type": "integer"
           }
