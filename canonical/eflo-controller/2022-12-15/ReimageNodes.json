@@ -3,7 +3,7 @@
   "cmd_full_name": "eflo-controller reimage-nodes",
   "cmd_name": "reimage-nodes",
   "deprecated": false,
-  "description_en": "Reinstalls nodes",
+  "description_en": "Reinstalls the operating system on a machine",
   "description_zh": "机器重装",
   "kebab_example": "aliyun eflo-controller reimage-nodes --cluster-id i15dfa12e8f27c44f4a006c2c8bb --nodes '[{\"Hostname\":\"457db5ca-241d-11ed-9fd7-acde48001122\",\"NodeId\":\"e01-cn-zvp2tgykr0b\",\"ImageId\":\"m-8vbf8rpv2nn14y7oybjy\",\"LoginPassword\":\"Demo****123!\"}]' --ignore-failed-node-tasks false --user-data ZWNobyBoZWxsbyBlY3Mh --region cn-hangzhou",
   "method": "POST",
@@ -85,11 +85,83 @@
             "raw_name": "NodeId",
             "required": false,
             "type": "string"
+          },
+          {
+            "fields": [
+              {
+                "example": "cloud_essd",
+                "help_en": "The disk category",
+                "help_zh": "磁盘类型",
+                "name": "category",
+                "options": [
+                  "--category"
+                ],
+                "raw_name": "Category",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "example": "false",
+                "help_en": "Specifies whether to encrypt the system disk. Valid values:\ntrue: Encrypts the system disk.\nfalse: Does not encrypt the system disk.\n\nDefault value: false.\n\n\n<notice>When you use a shared encrypted image to create a cloud disk from an encrypted snapshot, you must specify the request parameter Encrypted=true for the cloud disk to ensure that the created cloud disk is encrypted by using the key of the recipient account.></notice>\n\nSystem disk encryption during instance creation is not supported in Hong Kong (China) active zone D and Singapore active zone A",
+                "help_zh": "系统盘是否加密。取值范围：\ntrue：加密。\nfalse：不加密。\n\n默认值：false。\n\n\n<notice>当使用共享加密镜像，创建基于加密快照的云盘时，必须指定该云盘的请求参数 Encrypted=true，以确保创建出的云盘使用的是被共享方自己的密钥。></notice>\n\n中国（香港）D 可用区、新加坡 A 可用区暂不支持在创建实例时加密系统盘",
+                "name": "encrypted",
+                "options": [
+                  "--encrypted"
+                ],
+                "raw_name": "Encrypted",
+                "required": false,
+                "type": "bool"
+              },
+              {
+                "example": "5b21a1c4-e2e8-43b2-a982-720fa9e6b9d7",
+                "help_en": "The KMS key ID for the system disk.\n\nIf the Encrypted Settings is true but KMSKeyId is not specified, the default key is used for encryption, and the KMSKeyId value is returned after the instance is created.\nIf the cloud disk is created from a non-shared encrypted snapshot, the encryption key used for the snapshot is used by default.\nIf the cloud disk is created from a shared encrypted snapshot, the service key is used by default.\nIf the cloud disk is created in a region where account-level default encryption for block storage is enabled, the specified account-level key is used by default.\nIn other cases, the service key is used by default",
+                "help_zh": "系统盘对应的 KMS 密钥 ID。\n\n若 Encrypted 设置为 true，不指定 KMSKeyId，则使用默认的密钥进行加密，并在创建实例成功后返回 KMSKeyId 值。\n云盘通过非共享而来的加密快照创建：默认使用该快照所使用的加密密钥进行加密。\n云盘通过共享而来的加密快照创建：默认使用服务密钥进行加密。\n在已开启块存储账号级默认加密的地域创建：默认使用指定的账号级密钥进行加密。\n其他情况：默认使用服务密钥进行加密",
+                "name": "kms_key_id",
+                "options": [
+                  "--kms-key-id"
+                ],
+                "raw_name": "KMSKeyId",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "help_en": "The performance level",
+                "help_zh": "性能等级",
+                "name": "performance_level",
+                "options": [
+                  "--performance-level"
+                ],
+                "raw_name": "PerformanceLevel",
+                "required": false,
+                "type": "string"
+              },
+              {
+                "example": "100",
+                "help_en": "The disk size",
+                "help_zh": "磁盘大小",
+                "name": "size",
+                "options": [
+                  "--size"
+                ],
+                "raw_name": "Size",
+                "required": false,
+                "type": "int"
+              }
+            ],
+            "help_en": "The system disk configuration",
+            "help_zh": "系统盘配置",
+            "name": "system_disk",
+            "options": [
+              "--system-disk"
+            ],
+            "raw_name": "SystemDisk",
+            "required": false,
+            "type": "object"
           }
         ],
         "type": "object"
       },
-      "help_en": "The list of nodes",
+      "help_en": "The list of nodes. The node IDs must belong to created Lingjun nodes. You can obtain the node IDs by calling the ListClusterNodes or ListFreeNodes operation",
       "help_zh": "节点列表。节点 ID 需为已创建的灵骏节点，可通过 ListClusterNodes 或 ListFreeNodes 查询获取",
       "location": "formData",
       "name": "nodes",
@@ -103,7 +175,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to skip failed nodes. Default value: false",
+      "help_en": "Specifies whether to allow skipping failed nodes. Default value: false",
       "help_zh": "是否允许跳过失败节点，默认值为False",
       "location": "formData",
       "name": "ignore_failed_node_tasks",
@@ -116,7 +188,7 @@
     },
     {
       "example": "ZWNobyBoZWxsbyBlY3Mh",
-      "help_en": "The custom executable shell script. The script must be Base64-encoded, and the maximum size of the raw data is 16 KB",
+      "help_en": "The custom executable shell script. The script must be Base64-encoded. The maximum size of the raw data is 16 KB",
       "help_zh": "自定义可执行shell脚本，需要以 Base64 方式编码，原始数据最多为 16 KB",
       "location": "formData",
       "name": "user_data",
