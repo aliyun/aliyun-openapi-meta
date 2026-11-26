@@ -3,8 +3,8 @@
   "cmd_full_name": "ndr update-delivery-destination",
   "cmd_name": "update-delivery-destination",
   "deprecated": false,
-  "description_en": "Updates the enabled new-version log storage destination, including the target site collection, region, storage quota, and log retention period. The Sites parameter must contain the complete site collection after this update. No task is submitted if the configuration remains unchanged and no restoration is required. If only the retention period is adjusted for a single site, the change is processed synchronously. Other changes submit an asynchronous task and return a TaskId. You can call the DescribeDeliveryDestination operation to query the latest task status and configuration",
-  "description_zh": "更新已开通的新版日志存储目的地，包括目标站点集合、地域、存储配额和日志保存天数。Sites 应包含本次更新后的完整站点集合。配置无变化且无需恢复时不提交任务；单站点仅调整保存天数时同步处理，其余变更提交异步任务并返回 TaskId。可通过 DescribeDeliveryDestination 查询最新任务状态与配置",
+  "description_en": "Updates the sites, regions, storage quotas, or log retention periods for the new version of log storage. You must submit the complete site configuration after changes. The Simple Log Service (SLS) projects and historical logs in original regions that are no longer used in the target configuration are deleted. Shortening the retention period deletes historical logs that exceed the new limit. No task is submitted if the configuration remains unchanged and no recovery is required. Adjusting only the retention period for a single site is processed synchronously, whereas other changes are executed as asynchronous tasks. You can call DescribeDeliveryDestination to obtain the current configuration and call DescribeLogDeliveryTask by using the returned TaskId to query the task status",
+  "description_zh": "更新新版日志存储的站点、地域、存储配额或日志保存天数。请提交变更后的完整站点配置。目标配置中不再使用的原地域，其 SLS Project 和历史日志将被删除。缩短保存天数会删除超过新期限的历史日志。配置无变化且无需恢复时不提交任务。单站点仅调整保存天数时同步处理，其余变更通过异步任务执行。可调用 DescribeDeliveryDestination 获取当前配置，通过返回的 TaskId 调用 DescribeLogDeliveryTask 查询任务状态",
   "kebab_example": "aliyun ndr update-delivery-destination --sites Site=global SpaceQuota=1099511627776 Region=cn-hangzhou TTL=30 --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": false,
@@ -25,8 +25,8 @@
         "fields": [
           {
             "example": "cn-hangzhou",
-            "help_en": "The region ID of the Simple Log Service destination. If this parameter is not specified, the existing region for the site is retained. For a new site, the default region of the site is used. The final regions used by different sites cannot be the same",
-            "help_zh": "日志服务目的地的地域 ID。不传时保留该站点已有地域；新站点使用站点默认地域。不同站点最终使用的地域不能相同",
+            "help_en": "The ID of the SLS region for log delivery. If this parameter is omitted, existing sites retain their original regions, and new sites use the default region. The final regions used by different sites must be different. When you switch regions, historical logs are not migrated to the new region. If the original region is still used by other sites in the target configuration, the system reuses the SLS project in that region. If the original region is no longer used in the final target configuration, the system deletes the SLS project and historical logs in that region",
+            "help_zh": "日志投递到的 SLS 地域 ID。省略时，已有站点沿用原地域，新站点使用默认地域。各站点最终使用的地域必须不同。切换地域时，历史日志不会迁移到新地域。若原地域仍被目标配置中的其他站点使用，系统复用该地域的 SLS Project。若最终目标配置不再使用原地域，系统删除该地域的 SLS Project 及历史日志",
             "name": "region",
             "options": [
               "--region"
@@ -43,7 +43,7 @@
               "gov"
             ],
             "example": "global",
-            "help_en": "The identifier of the target site. A value of global indicates unified delivery for a single site. A value of cn indicates the China site, intl indicates the international site, and gov indicates the Alibaba Gov Cloud site",
+            "help_en": "The identifier of the target site. global indicates unified delivery for a single site. cn indicates the China site, intl indicates the international site, and gov indicates the Alibaba Gov Cloud site",
             "help_zh": "目标站点标识。global 表示单站点统一投递；cn 表示中国站，intl 表示国际站，gov 表示政务云站点",
             "name": "site",
             "options": [
@@ -55,7 +55,7 @@
           },
           {
             "example": "1099511627776",
-            "help_en": "The storage quota for the site, in bytes. The value must be a positive integer multiple of 1099511627776 bytes (1 TiB) or 1073741824000 bytes (1000 GiB). The sum of the quotas for all sites cannot exceed the total purchased quota. If the target is a single site, leaving this parameter empty or specifying 0 automatically uses the total purchased quota. If a single site remains a single site during the update, its quota must equal the total purchased quota. In a multi-site update, the quota for an existing site whose region remains unchanged cannot be less than the used capacity",
+            "help_en": "The storage quota for the site, in bytes. The value must be a positive integer multiple of 1099511627776 bytes (1 TiB) or 1073741824000 bytes (1000 GiB). The sum of quotas for all sites cannot exceed the total purchased quota. If the target is a single site, omitting this parameter or passing 0 automatically uses the total purchased quota. If a single site remains a single site after the update, its quota must equal the total purchased quota. In a multi-site update, the quota for an existing site whose region remains unchanged cannot be less than the used capacity",
             "help_zh": "该站点的存储配额，单位为字节。须为 1099511627776 字节（1 TiB）或 1073741824000 字节（1000 GiB）的正整数倍；各站点配额之和不能超过已购买总配额。目标为单站点时，不传或传 0 自动使用已购买总配额；单站点保持单站点的更新，其配额须等于已购买总配额。多站点更新中，地域不变的已有站点配额不能低于已使用量",
             "name": "space_quota",
             "options": [
@@ -67,8 +67,8 @@
           },
           {
             "example": "30",
-            "help_en": "The number of days to retain logs for the site. This parameter is required. Valid values: 7 to 730",
-            "help_zh": "该站点日志的保存天数，必须传入，取值为 7～730",
+            "help_en": "The number of days to retain logs. This parameter is required. Valid values: 7 to 730. After you shorten log retention period, SLS deletes historical logs that exceed the new retention period. Deleted logs cannot be recovered. For example, if you shorten log retention period from 180 days to 30 days, logs that have been retained for more than 30 days are deleted",
+            "help_zh": "日志保存天数，必填，取值范围为 7～730。缩短保存天数后，SLS 会删除已超过新保存期限的历史日志，删除后无法恢复。例如，从 180 天缩短到 30 天后，已保存超过 30 天的日志将被删除",
             "name": "ttl",
             "options": [
               "--ttl"
@@ -80,8 +80,8 @@
         ],
         "type": "object"
       },
-      "help_en": "The complete list of target site configurations after the update. This parameter cannot be empty. In single-site mode, pass only global. In multi-site mode, pass sites from cn, intl, and gov, and do not include global. You must specify Site and TTL for each site. Switching between single-site and multi-site modes is limited by the remaining number of switches allowed for the current month",
-      "help_zh": "更新后的完整目标站点配置列表，不能为空。单站点模式只传 global；多站点模式传 cn、intl、gov 中的站点，不能包含 global。每个站点须传入 Site 和 TTL。单站点与多站点之间的切换受本月剩余切换次数限制",
+      "help_en": "The complete list of target site configurations after the update. This parameter cannot be empty. Call DescribeDeliveryDestination first to obtain the current configuration, and submit all sites that need to be retained. Pass each site only once. For single-site mode, pass only global. For multi-site mode, pass sites from cn, intl, and gov, and do not include global. You must pass Site and TTL for each site. Switching the delivery mode is subject to the remaining number of switches allowed for the current month. If an original region is no longer used in the final target configuration, the SLS project and historical logs in that region are deleted",
+      "help_zh": "更新后的完整目标站点配置列表，不能为空。请先调用 DescribeDeliveryDestination 获取当前配置，将需要保留的站点一并提交。每个 Site 只传一次。单站点模式仅传 global。多站点模式传 cn、intl、gov 中的站点，不能包含 global。每个站点须传入 Site 和 TTL。切换投递模式受本月剩余切换次数限制。若某个原地域在最终目标配置中不再使用，该地域的 SLS Project 及历史日志将被删除",
       "location": "query",
       "name": "sites",
       "options": [
@@ -99,17 +99,17 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response structure of the operation",
+        "description_en": "The API response structure",
         "description_zh": "接口响应结构",
         "properties": {
           "Data": {
             "backendName": "data",
-            "description_en": "The update result of the delivery destination",
+            "description_en": "The update result for the delivery destination",
             "description_zh": "投递目的地更新结果",
             "properties": {
               "TaskId": {
                 "backendName": "taskId",
-                "description_en": "The ID of the asynchronous task submitted for this update. This field is not returned if the configuration remains unchanged and no restoration is required, or if only the retention period is adjusted for a single site and the synchronous update is completed. The absence of a TaskId does not indicate that the request failed",
+                "description_en": "The ID of the asynchronous task submitted in this request. This field is not returned if the configuration remains unchanged and no recovery is required, or if only the retention period for a single site is adjusted and the adjustment is completed synchronously. The absence of TaskId does not indicate that the request fails",
                 "description_zh": "本次提交的异步任务 ID。配置未变化且无需恢复，或单站点仅调整保存天数并同步完成时，不返回本字段；无 TaskId 不表示请求失败",
                 "example": "12345",
                 "format": "int64",
@@ -127,14 +127,14 @@
           },
           "Message": {
             "backendName": "message",
-            "description_en": "The request result message. This parameter describes the cause of the error when the request fails. The example shows a parameter validation failure scenario",
+            "description_en": "The result message of the request. This parameter describes the cause of the error when the request fails. The example shows a parameter validation failure scenario",
             "description_zh": "请求结果信息；失败时用于说明错误原因。示例展示参数校验失败场景",
             "example": "请求参数无效。",
             "type": "string"
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID, which is used to locate the request",
+            "description_en": "The request ID",
             "description_zh": "请求 ID，用于定位本次请求",
             "example": "D8216F01-0DF2-4F44-98F7-20144BA97AA1",
             "title_en": "Id of the request",

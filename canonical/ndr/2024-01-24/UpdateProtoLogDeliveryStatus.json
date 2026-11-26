@@ -3,8 +3,8 @@
   "cmd_full_name": "ndr update-proto-log-delivery-status",
   "cmd_name": "update-proto-log-delivery-status",
   "deprecated": false,
-  "description_en": "Updates the protocol log and attack log delivery switches for specified sites in batches. You must provide a non-empty StatusList and explicitly specify the target switch values for both log types for each site. You can invoke DescribeProtoLogDeliveryStatus to read the current configuration",
-  "description_zh": "批量更新指定站点的协议日志和攻击日志投递开关。调用时必须传入非空 StatusList，并为每个站点明确传入两类日志的目标开关值；可先调用 DescribeProtoLogDeliveryStatus 读取当前配置",
+  "description_en": "Updates the delivery switches for protocol logs and attack logs of specified sites in batches. For each site in StatusList, the system writes both types of switches simultaneously. If either switch is omitted, log delivery for the corresponding type is disabled. To modify only one type of switch, call DescribeProtoLogDeliveryStatus to query the current configuration and pass the current value of the other switch",
+  "description_zh": "批量更新指定站点的协议日志和攻击日志投递开关。对 StatusList 中的每个站点，系统同时写入两类开关。任一开关省略时，对应类型的日志投递会被关闭。只修改一类开关时，请先调用 DescribeProtoLogDeliveryStatus 查询当前配置，并将另一类开关的当前值一并传入",
   "kebab_example": "aliyun ndr update-proto-log-delivery-status --delivery-type sls --status-list Site=global AttackLogStatus=1 ProtoLogStatus=1 DeliveryType=sls --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": false,
@@ -41,8 +41,8 @@
         "fields": [
           {
             "example": "1",
-            "help_en": "The target switch value for attack log delivery. A value of 0 indicates that the switch is turned off, and a value of 1 indicates that the switch is turned on. Explicitly specify this parameter. If this parameter is omitted, it is processed as 0",
-            "help_zh": "攻击日志投递的目标开关值。0 表示关闭，1 表示开启。请显式传入；省略时按 0 处理",
+            "help_en": "The attack log delivery switch. Valid values:\n0: Disabled.\n1: Enabled.\nIf omitted, it is treated as 0, which disables attack log delivery for the site. To retain the current state, explicitly pass the queried current value",
+            "help_zh": "攻击日志投递开关。0 表示关闭，1 表示开启。省略时按 0 处理，会关闭该站点的攻击日志投递。如需保留当前状态，请显式传入查询到的当前值",
             "name": "attack_log_status",
             "options": [
               "--attack-log-status"
@@ -68,8 +68,8 @@
           },
           {
             "example": "1",
-            "help_en": "The target switch value for protocol log delivery. A value of 0 indicates that the switch is turned off, and a value of 1 indicates that the switch is turned on. Explicitly specify this parameter. If this parameter is omitted, it is processed as 0",
-            "help_zh": "协议日志投递的目标开关值。0 表示关闭，1 表示开启。请显式传入；省略时按 0 处理",
+            "help_en": "The protocol log delivery switch. Valid values:\n0: Disabled.\n1: Enabled.\nIf omitted, it is treated as 0, which disables protocol log delivery for the site. To retain the current state, explicitly pass the queried current value",
+            "help_zh": "协议日志投递开关。0 表示关闭，1 表示开启。省略时按 0 处理，会关闭该站点的协议日志投递。如需保留当前状态，请显式传入查询到的当前值",
             "name": "proto_log_status",
             "options": [
               "--proto-log-status"
@@ -93,8 +93,8 @@
         ],
         "type": "object"
       },
-      "help_en": "The list of switch configurations for the sites to be updated. This parameter cannot be empty. You must explicitly specify DeliveryType, Site, ProtoLogStatus, and AttackLogStatus for each item. Only the sites in the list are updated",
-      "help_zh": "待更新站点的开关配置列表，不能为空。每项需明确传入 DeliveryType、Site、ProtoLogStatus 和 AttackLogStatus；只更新列表中的站点",
+      "help_en": "The list of switch configurations for the sites to be updated. This parameter cannot be empty. Each item must include DeliveryType and Site, and explicitly provide ProtoLogStatus and AttackLogStatus. The system updates only the sites in the list, but writes both switches for each listed site simultaneously. If either switch is omitted, it is treated as 0, and log delivery for that type is disabled",
+      "help_zh": "待更新站点的开关配置列表，不能为空。每项传入 DeliveryType 和 Site，并显式提供 ProtoLogStatus 和 AttackLogStatus。系统仅更新列表中的站点，但对每个列出的站点会同时写入两个开关。任一开关省略时按 0 处理，该类型的日志投递会被关闭",
       "location": "query",
       "name": "status_list",
       "options": [
@@ -112,7 +112,7 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "The response structure of the operation",
+        "description_en": "The API response structure",
         "description_zh": "接口响应结构",
         "properties": {
           "ErrorCode": {
@@ -131,7 +131,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID, which is used to locate the request",
+            "description_en": "The request ID, used to locate the request",
             "description_zh": "请求 ID，用于定位本次请求",
             "example": "D8216F01-0DF2-4F44-98F7-20144BA97AA1",
             "title_en": "Id of the request",
@@ -140,7 +140,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request is successful. A value of true indicates success, and a value of false indicates failure",
+            "description_en": "Indicates whether the request is successful. Valid values:\ntrue: Successful.\nfalse: Failed",
             "description_zh": "请求是否成功。true 表示成功，false 表示失败",
             "type": "boolean"
           }
