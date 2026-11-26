@@ -19,6 +19,7 @@
       "description": "description",
       "enable": "enable",
       "expire_at": "expireAt",
+      "ext_info": "extInfo",
       "gateway_type": "gatewayType",
       "jwt_identity_config": "jwtIdentityConfig",
       "name": "name"
@@ -266,7 +267,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The identity configuration for API key authentication",
+      "help_en": "The API key authentication identity configuration",
       "help_zh": "APIKEY鉴权方式身份配置",
       "location": "body",
       "name": "apikey_identity_config",
@@ -308,7 +309,7 @@
     },
     {
       "example": "1893456000",
-      "help_en": "The expiration time of the consumer. The value must be a positive integer that represents a UNIX timestamp in seconds and is later than the current time. If this parameter is left empty, the consumer never expires. The API key, JWT, and HMAC of the same consumer share this expiration time. Milliseconds are not automatically converted to seconds",
+      "help_en": "The expiration time of the consumer, in UTC UNIX seconds. The value must be a positive integer and later than the current time. If this parameter is not specified, the consumer is permanently valid. The API key, JWT, and HMAC of the same consumer share this expiration time. Milliseconds are not automatically converted",
       "help_zh": "消费者失效时间，UTC Unix 秒，正整数且晚于当前时间。缺省表示永久有效；同一消费者的 API Key、JWT、HMAC 共用该时间，不接受毫秒自动转换",
       "location": "body",
       "name": "expire_at",
@@ -321,8 +322,22 @@
       "type": "int"
     },
     {
+      "example": "partner-a",
+      "help_en": "The extended information of the consumer. The value is saved as a raw string and can be up to 65,535 UTF-8 bytes in length. If this parameter is omitted, no extended information is configured",
+      "help_zh": "消费者扩展信息。保存原样字符串，最多 65535 UTF-8 字节。省略时不配置扩展信息",
+      "location": "body",
+      "name": "ext_info",
+      "options": [
+        "--ext-info"
+      ],
+      "param_style": "json",
+      "raw_name": "extInfo",
+      "required": false,
+      "type": "string"
+    },
+    {
       "example": "API",
-      "help_en": "The gateway type. Valid values:\nAPI: the consumer of a cloud-native API gateway.\nAI: the consumer of an AI gateway",
+      "help_en": "The gateway type. Valid values:\nAPI: consumer of a cloud-native API gateway\nAI: consumer of an AI gateway",
       "help_zh": "网关类型。\nAPI：云原生API网关的消费者\nAI：AI网关的消费者",
       "location": "body",
       "name": "gateway_type",
@@ -567,7 +582,7 @@
     },
     {
       "example": "5f7a2c1e-9b3d-4e8f-a1c6-0d2b8e4f7a13",
-      "help_en": "The idempotence identity. You can invoke the API with a globally unique value (a UUID is recommended) that does not exceed 64 characters in length. If you invoke a duplicate request with the same ClientToken and identical request parameters within 24 hours after the first request succeeds, the system directly returns the consumer ID created by the first request without creating a new consumer. If you invoke a request with the same ClientToken but different request parameters, the system returns IdempotentParameterMismatch. If the first request is still being processed, the system returns IdempotentProcessing. If this parameter is left empty, idempotence control is disabled, and the behavior is the same as that of the existing version",
+      "help_en": "The idempotency token. The caller generates a globally unique value, such as a UUID, with a maximum length of 64 characters. Within approximately 24 hours after the first request succeeds, a repeated request with the same ClientToken and identical request parameters directly returns the consumer ID created in the first request without creating a new consumer. If the request parameters are different, an IdempotentParameterMismatch error is returned. If the first request is still being processed, an IdempotentProcessing error is returned. If this parameter is not specified, idempotency control is disabled, and the behavior is the same as that of the existing version",
       "help_zh": "幂等标识，由调用方生成全局唯一值（推荐 UUID），长度不超过 64 个字符。首次请求成功后约 24 小时内，携带相同 ClientToken 且请求参数一致的重复请求直接返回首次创建的 consumerId，不重复创建消费者；携带相同 ClientToken 但请求参数不一致时返回 IdempotentParameterMismatch；首次请求仍在处理中时返回 IdempotentProcessing；缺省时不启用幂等控制，行为与现有版本一致",
       "location": "query",
       "name": "client_token",
@@ -579,7 +594,7 @@
       "type": "string"
     },
     {
-      "help_en": "Specifies whether to perform only a dry run. If you set this parameter to true, the system performs the same parameter, permission, IAM, resource policy, resource existence, and business rule checks as a real creation request, but does not create the consumer, write data to the database, create or delete a SecretRef, or generate audit logs. If this parameter is left empty or set to false, the behavior is the same as that of the previous version",
+      "help_en": "Specifies whether to perform a dry run. If you set this parameter to true, the system performs the same parameter, permission, IAM, resource policy, resource existence, and business rule checks as a real creation request. However, the system does not create the consumer, write data to the database, create or delete a SecretRef, or cause side effects such as generating audit logs. If this parameter is not specified or is set to false, the behavior is the same as that of the existing version",
       "help_zh": "是否只做预检校验（dry run）。true 时执行与真实创建一致的参数、权限、IAM、资源策略、资源存在性和业务规则校验，但不创建消费者、不写入数据库、不创建或删除 SecretRef、不产生审计等副作用；缺省或 false 时行为与现有版本一致",
       "location": "query",
       "name": "dry_run",

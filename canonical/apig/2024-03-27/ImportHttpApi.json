@@ -4,6 +4,48 @@
   "cmd_name": "import-http-api",
   "components": {
     "schemas": {
+      "AiBasicGuardrailConfig": {
+        "descriptionEn": "Display eligibility and response inspection settings for basic guardrails. This object is a sibling of the policy-level enable field, which controls whether the policy is enabled.",
+        "description_en": "The display eligibility and response detection configuration for basic security protection. This object is at the same level as the enable field of the policy item. The overall protection switch is controlled by the outer enable field",
+        "description_zh": "基础安全防护的展示资格和响应检测配置。该对象与策略项的 enable 字段同级；整体防护开关由外层 enable 控制",
+        "properties": {
+          "display": {
+            "backendName": "display",
+            "descriptionEn": "Read-only display eligibility calculated by the server from gateway capabilities, regional rollout, and existing configuration. true allows the entry to be displayed; false hides it. This field does not indicate that the policy is enabled or successfully deployed. Ignore it when writing configuration; it is not persisted.",
+            "description_en": "The read-only display eligibility, which is calculated by the server based on instance capabilities, regional canary releases, and existing configurations. A value of true indicates that the entry can be displayed, and false indicates that it is not displayed. This value does not indicate that the protection is enabled or published successfully. The client does not need to set this value. It is ignored and not saved when passed back",
+            "description_zh": "只读展示资格，由服务端根据实例能力、地域灰度和已有配置计算。true 表示可以展示入口，false 表示不展示；该值不表示防护已开启或发布成功。客户端无需设置，回传时忽略且不保存",
+            "example": "true",
+            "notResourceProperty": true,
+            "readOnly": true,
+            "title": "是否展示基础安全防护",
+            "type": "boolean"
+          },
+          "responseEnabled": {
+            "backendName": "responseEnabled",
+            "descriptionEn": "Whether to inspect model responses: true enables inspection and false disables it. Only an explicitly supplied boolean updates the saved value. Omission or null preserves the saved value. If no value has been saved, response inspection is enabled by default. The policy-level enable field still controls the overall policy.",
+            "description_en": "Specifies whether to enable basic security detection for model responses. A value of true indicates that the detection is enabled, and false indicates that it is disabled. The field is updated only when a Boolean value is explicitly submitted. If the field is omitted or null is passed, the saved value is retained. If this field has not been saved, response detection is enabled by default at runtime. The overall policy is still controlled by the outer enable field",
+            "description_zh": "是否对模型响应启用基础安全检测。true 表示启用，false 表示禁用。仅显式提交布尔值时更新；省略或传入 null 时保留已保存值。未保存过该字段时，运行行为默认启用响应检测。整体策略仍由外层 enable 控制",
+            "example": "true",
+            "notResourceProperty": true,
+            "nullable": true,
+            "title": "是否检测模型响应",
+            "type": "boolean"
+          },
+          "responseMode": {
+            "backendName": "responseMode",
+            "descriptionEn": "Response inspection mode. Only the exact string async updates the saved mode. Any other value, an empty string, null, or omission leaves it unchanged. If no mode has been saved, x-ai-guard-response-mode is not sent. async is an example of an explicit option, not a default.",
+            "description_en": "The response detection mode, which only processes the exact string async. The mode is updated only when async is explicitly submitted. Other values, empty strings, null, or omissions do not modify the saved mode. If no mode is saved, x-ai-guard-response-mode is not delivered. async is an example of an optional configuration, not a default value",
+            "description_zh": "响应检测模式，仅处理精确字符串 async。显式提交 async 时更新；其他值、空字符串、null 或省略均不修改已保存模式。未保存模式时不下发 x-ai-guard-response-mode。async 是可选配置的示例，不是默认值",
+            "example": "async",
+            "notResourceProperty": true,
+            "nullable": true,
+            "title": "响应检测模式",
+            "type": "string"
+          }
+        },
+        "title": "基础安全防护配置",
+        "type": "object"
+      },
       "AiCacheConfig": {
         "description_en": "The AI cache configuration",
         "description_zh": "AI 缓存配置",
@@ -2667,9 +2709,20 @@
         "type": "object"
       },
       "HttpApiPolicyConfigs": {
+        "descriptionEn": "A policy configuration entry for an HTTP API. type selects the policy and enable controls whether it is enabled. Basic guardrails use type=AiBasicGuardrail, with aiBasicGuardrailConfig as a sibling of enable.",
         "description_en": "body",
         "description_zh": "body",
         "properties": {
+          "aiBasicGuardrailConfig": {
+            "$ref": "#/components/schemas/AiBasicGuardrailConfig",
+            "backendName": "aiBasicGuardrailConfig",
+            "descriptionEn": "Optional settings for an AiBasicGuardrail policy, at the same level as enable. display is read-only eligibility; responseEnabled controls response inspection, and responseMode only processes async. Omitting response fields or this object on update preserves saved values. Without saved values, responses are inspected and no response mode is sent. To toggle the policy, change the policy-level enable field and retain the API's other required parameters; this object is not required.",
+            "description_en": "The optional configuration object used exclusively for the AiBasicGuardrail policy, at the same level as the enable field of the policy item. The display field indicates read-only display eligibility. The responseEnabled field controls Detection and Response, and the responseMode field only processes asynchronous requests. If an update omits response fields or the configuration object, the previously saved values are retained. If no saved values exist, Detection and Response is enabled by default without declaring a response pattern. To simply enable or disable protection, modify the outer enable field while retaining other required API parameters. You do not need to resubmit this object",
+            "description_zh": "仅用于 AiBasicGuardrail 策略的可选配置对象，与策略项 enable 同级。display 是只读展示资格；responseEnabled 控制响应检测，responseMode 仅处理 async。更新省略响应字段或配置对象时保留已保存值；无已保存值时默认检测响应且不声明响应模式。仅启停防护时修改外层 enable 并保留 API 的其他必要参数，无需补传本对象",
+            "example": "{\"responseEnabled\":true}",
+            "nullable": true,
+            "title": "基础安全防护配置"
+          },
           "aiCacheConfig": {
             "$ref": "#/components/schemas/AiCacheConfig",
             "backendName": "aiCacheConfig",
@@ -2694,7 +2747,7 @@
           "aiSecurityGuardConfig": {
             "$ref": "#/components/schemas/AiSecurityGuardConfig",
             "backendName": "aiSecurityGuardConfig",
-            "description_en": "The AI security protection configuration",
+            "description_en": "The AI security Protection Settings",
             "description_zh": "AI 安全防护配置",
             "nullable": false
           },
@@ -2709,7 +2762,7 @@
             "$ref": "#/components/schemas/AiTokenRateLimitConfig",
             "backendName": "aiTokenRateLimitConfig",
             "deprecated": true,
-            "description_en": "The AI token rate limiting configuration",
+            "description_en": "The AI token rate limit configuration",
             "description_zh": "AI 令牌速率限制配置",
             "nullable": false
           },
@@ -2722,7 +2775,7 @@
           },
           "enable": {
             "backendName": "enable",
-            "description_en": "Indicates whether the feature is enabled",
+            "description_en": "Specifies whether it is enabled",
             "description_zh": "是否启用",
             "example": "false",
             "type": "boolean"
@@ -2730,7 +2783,7 @@
           "policyReference": {
             "$ref": "#/components/schemas/HttpApiPolicyReference",
             "backendName": "policyReference",
-            "description_en": "The read-only compatible reference. GetHttpApi returns the policyId and policyAttachmentId for ModelAPI AiTokenRateLimit. This field must be stripped before write-path persistence and is not used as a bind or unbind instruction",
+            "description_en": "The read-only compatibility reference. GetHttpApi returns the policyId or policyAttachmentId for the ModelAPI AiTokenRateLimit. This reference must be removed before persistence in the write path and must not be used as a bind or unbind instruction",
             "description_zh": "只读兼容引用：GetHttpApi 为 ModelAPI AiTokenRateLimit 返回的 policyId/policyAttachmentId；写路径持久化前必须剥离，不作为绑定/解绑指令",
             "nullable": true,
             "onlyRead": true,
@@ -2744,7 +2797,7 @@
             "properties": {
               "timeoutMillisecond": {
                 "backendName": "timeoutMillisecond",
-                "description_en": "The timeout period, in milliseconds",
+                "description_en": "The timeout period in milliseconds",
                 "description_zh": "超时时间（毫秒）",
                 "example": "2000",
                 "format": "int32",
@@ -2755,12 +2808,13 @@
           },
           "type": {
             "backendName": "type",
-            "description_en": "The policy template type",
+            "description_en": "The policy templatetype",
             "description_zh": "策略模板类型",
             "example": "K8S",
             "type": "string"
           }
         },
+        "title": "HTTP API 策略配置",
         "type": "object"
       },
       "HttpApiPolicyReference": {
@@ -3399,6 +3453,55 @@
           {
             "element": {
               "fields": [
+                {
+                  "fields": [
+                    {
+                      "example": "true",
+                      "help_en": "The read-only display eligibility, which is calculated by the server based on instance capabilities, regional canary releases, and existing configurations. A value of true indicates that the entry can be displayed, and false indicates that it is not displayed. This value does not indicate that the protection is enabled or published successfully. The client does not need to set this value. It is ignored and not saved when passed back",
+                      "help_zh": "只读展示资格，由服务端根据实例能力、地域灰度和已有配置计算。true 表示可以展示入口，false 表示不展示；该值不表示防护已开启或发布成功。客户端无需设置，回传时忽略且不保存",
+                      "name": "display",
+                      "options": [
+                        "--display"
+                      ],
+                      "raw_name": "display",
+                      "required": false,
+                      "type": "bool"
+                    },
+                    {
+                      "example": "true",
+                      "help_en": "Specifies whether to enable basic security detection for model responses. A value of true indicates that the detection is enabled, and false indicates that it is disabled. The field is updated only when a Boolean value is explicitly submitted. If the field is omitted or null is passed, the saved value is retained. If this field has not been saved, response detection is enabled by default at runtime. The overall policy is still controlled by the outer enable field",
+                      "help_zh": "是否对模型响应启用基础安全检测。true 表示启用，false 表示禁用。仅显式提交布尔值时更新；省略或传入 null 时保留已保存值。未保存过该字段时，运行行为默认启用响应检测。整体策略仍由外层 enable 控制",
+                      "name": "response_enabled",
+                      "options": [
+                        "--response-enabled"
+                      ],
+                      "raw_name": "responseEnabled",
+                      "required": false,
+                      "type": "bool"
+                    },
+                    {
+                      "example": "async",
+                      "help_en": "The response detection mode, which only processes the exact string async. The mode is updated only when async is explicitly submitted. Other values, empty strings, null, or omissions do not modify the saved mode. If no mode is saved, x-ai-guard-response-mode is not delivered. async is an example of an optional configuration, not a default value",
+                      "help_zh": "响应检测模式，仅处理精确字符串 async。显式提交 async 时更新；其他值、空字符串、null 或省略均不修改已保存模式。未保存模式时不下发 x-ai-guard-response-mode。async 是可选配置的示例，不是默认值",
+                      "name": "response_mode",
+                      "options": [
+                        "--response-mode"
+                      ],
+                      "raw_name": "responseMode",
+                      "required": false,
+                      "type": "string"
+                    }
+                  ],
+                  "help_en": "The display eligibility and response detection configuration for basic security protection. This object is at the same level as the enable field of the policy item. The overall protection switch is controlled by the outer enable field",
+                  "help_zh": "基础安全防护的展示资格和响应检测配置。该对象与策略项的 enable 字段同级；整体防护开关由外层 enable 控制",
+                  "name": "ai_basic_guardrail_config",
+                  "options": [
+                    "--ai-basic-guardrail-config"
+                  ],
+                  "raw_name": "aiBasicGuardrailConfig",
+                  "required": false,
+                  "type": "object"
+                },
                 {
                   "fields": [
                     {
@@ -5817,7 +5920,7 @@
                 },
                 {
                   "example": "false",
-                  "help_en": "Indicates whether the feature is enabled",
+                  "help_en": "Specifies whether it is enabled",
                   "help_zh": "是否启用",
                   "name": "enable",
                   "options": [
@@ -5868,7 +5971,7 @@
                   "fields": [
                     {
                       "example": "2000",
-                      "help_en": "The timeout period, in milliseconds",
+                      "help_en": "The timeout period in milliseconds",
                       "help_zh": "超时时间（毫秒）",
                       "name": "timeout_millisecond",
                       "options": [
@@ -5891,7 +5994,7 @@
                 },
                 {
                   "example": "K8S",
-                  "help_en": "The policy template type",
+                  "help_en": "The policy templatetype",
                   "help_zh": "策略模板类型",
                   "name": "type",
                   "options": [
@@ -6710,7 +6813,7 @@
     },
     {
       "example": "测试专用API",
-      "help_en": "The description of the imported API. If you do not specify this parameter, the description is extracted from the API definition. The maximum length is 255 bytes",
+      "help_en": "The description of the API to be imported. If you do not specify this parameter, the description is extracted from the API definition file. The maximum length is 255 bytes",
       "help_zh": "导入的API描述字段，若未填写则从API定义中提取。限制长度255字节",
       "location": "body",
       "name": "description",
@@ -6724,7 +6827,7 @@
     },
     {
       "example": "false",
-      "help_en": "Specifies whether to perform a dry run. If you set this parameter to true, only a check is performed and no import operation is executed",
+      "help_en": "Specifies whether to perform a dry run. If this parameter is set to true, only the check is performed and no import operation is executed",
       "help_zh": "导入预检，若开启则仅进行检测，不进行导入动作",
       "location": "body",
       "name": "dry_run",
@@ -6766,7 +6869,7 @@
     },
     {
       "example": "import-test",
-      "help_en": "The name of the imported API. If you do not specify this parameter, the name is extracted from the API definition file. If an API with the same name and versioning configuration already exists, the existing API definition is updated based on the strategy parameter during this import",
+      "help_en": "The name of the API to be imported. If you do not specify this parameter, the name is extracted from the API definition file. If an API with the same name and version configuration already exists, the existing API definition is updated based on the strategy parameter",
       "help_zh": "导入的API名称，若不填则从API定义文件中提取。若API名称与版本化配置已存在，则本次导入会根据strategy字段对已有API定义做更新",
       "location": "body",
       "name": "name",
@@ -6794,7 +6897,7 @@
     },
     {
       "example": "b3BlbmFwaTogMy4wLjAKaW5mbzoKICAgIHRpdGxlOiBkZW1vCiAgICBkZXNjcmlwdGlvbjogdGhpc2lzZGVtbwogICAgdmVyc2lvbjogIiIKcGF0aHM6CiAgICAvdXNlci97dXNlcklkfToKICAgICAgICBnZXQ6CiAgICAgICAgICAgIHN1bW1hcnk6IOiOt+WPlueUqOaIt+S/oeaBrwogICAgICAgICAgICBkZXNjcmlwdGlvbjog6I635Y+W55So5oi35L+h5oGvCiAgICAgICAgICAgIG9wZXJhdGlvbklkOiBHZXRVc2VySW5mbwogICAgICAgICAgICByZXNwb25zZXM6CiAgICAgICAgICAgICAgICAiMjAwIjoKICAgICAgICAgICAgICAgICAgICBkZXNjcmlwdGlvbjog5oiQ5YqfCiAgICAgICAgICAgICAgICAgICAgY29udGVudDoKICAgICAgICAgICAgICAgICAgICAgICAgYXBwbGljYXRpb24vanNvbjtjaGFyc2V0PXV0Zi04OgogICAgICAgICAgICAgICAgICAgICAgICAgICAgc2NoZW1hOiBudWxsCnNlcnZlcnM6CiAgICAtIHVybDogaHR0cDovL2FwaS5leGFtcGxlLmNvbS92MQo=",
-      "help_en": "The Base64-encoded API definition. Supports OAS 2.0 and OAS 3.0 specifications in YAML and JSON formats. This parameter has a higher priority than the specFileUrl parameter. If the file size exceeds 10 MB, use the specFileUrl parameter instead",
+      "help_en": "The Base64-encoded API definition. Supports OAS 2.0 and OAS 3.0 specifications in YAML or JSON format. This parameter takes precedence over the specFileUrl parameter. If the file size exceeds 10 MB, use the specFileUrl parameter",
       "help_zh": "Bse64编码的API定义，支持OAS2.0和OAS3.0规范，支持YAML格式和JSON格式。优先级高于specFileUrl参数。 若文件大小超过10MB请使用specFileUrl参数传递",
       "location": "body",
       "name": "spec_content_base64",
@@ -6808,7 +6911,7 @@
     },
     {
       "example": "https://bucket.oss-cn-hangzhou.aliyuncs.com/**/*.yaml",
-      "help_en": "The download URL of the API definition file. The file must be downloadable over the Internet or through the internal network of OSS in the same region. The URL must have download permissions. For OSS file links that are not publicly readable, see References https://help.aliyun.com/document_detail/39607.html and provide a URL with download permissions. Currently, only API definition files stored in OSS are supported",
+      "help_en": "The download URL of the API definition file. The file must be downloadable over the Internet or by using an internal network download URL of OSS in the same region. The URL must have download permissions. For OSS file links that are not publicly readable, refer to References https://help.aliyun.com/document_detail/39607.html and provide a URL with download permissions. Currently, only API definition files stored in OSS are supported",
       "help_zh": "API定义文件的下载地址，需要公网可以下载或使用相同region的OSS内网下载地址。文件地址要求拥有下载权限，对于OSS非公开读的文件链接，请参考文档https://help.aliyun.com/document_detail/39607.html，填写带有下载权限的地址。目前仅支持OSS上存储的API定义文件",
       "location": "body",
       "name": "spec_file_url",
@@ -6878,7 +6981,7 @@
         "ExistFirst"
       ],
       "example": "ExistFirst",
-      "help_en": "The update policy to use when the imported API name and version management are the same as those of an existing API. Valid values:\nSpecOnly: The imported file completely overwrites the existing API.\nSpecFirst: The imported file takes precedence. New operations are added and existing operations are updated. Operations not mentioned in the file remain unchanged.\nExistFirst: The existing API takes precedence. Only new operations are added, and existing operations are not updated.\nDefault value: ExistFirst",
+      "help_en": "The update policy to specify when the imported API name and version management are the same as those of an existing API. Valid values:\nSpecOnly: The imported file completely overwrites the existing API.\nSpecFirst: The imported file takes precedence. New operations are added and existing operations are updated. Operations not mentioned in the file remain unchanged.\nExistFirst: The existing API takes precedence. Only new operations are added, and existing operations are not updated.\nDefault value: ExistFirst",
       "help_zh": "当导入的API名称与版本管理与已存在API相同时，需要指定更新策略。\nSpecOnly：完全以导入文件为准。\nSpecFirst：以导入文件为优先，新增接口与更新已有接口，文件中未提及的接口保持不动。\nExistFirst：以存在的API为优先，只新增接口，不更新已有接口。\n为空时默认ExistFirst策略",
       "location": "body",
       "name": "strategy",
@@ -6892,7 +6995,7 @@
     },
     {
       "example": "api-xxxx",
-      "help_en": "If you specify this parameter, this import updates the specified API instead of importing a new API or searching for an existing API based on the API name and version management configuration. The target API must be of the REST type",
+      "help_en": "The ID of the HTTP API to be overwritten by the import. If you specify this parameter, the import operation updates the specified API instead of importing a new API or searching for an existing API based on the API name and version management configuration. The name and versionConfig parameters become invalid. The target API must be of the REST type",
       "help_zh": "若指定该字段，则本次导入将更新指定API而非导入或根据API名称与版本管理配置搜索已存在API。目标API必须是REST类型",
       "location": "body",
       "name": "target_http_api_id",
@@ -6972,7 +7075,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The API versioning configuration. If versioning is enabled and an API with the same name and version number already exists, this import is treated as an update. If versioning is disabled and an API with the same name already exists, this import is also treated as an update",
+      "help_en": "The API versioning configuration. If versioning is enabled and an API with the same name and version number already exists, the import operation is treated as an update. If versioning is disabled and an API with the same name already exists, the import operation is also treated as an update",
       "help_zh": "API版本化配置，若开启版本化配置，则版本号API名称与已存在API相同时，本次导入将视为更新动作。若未开启版本化配置，则API名称与已存在API相同时，本次导入将视为更新动作",
       "location": "body",
       "name": "version_config",
@@ -7021,11 +7124,11 @@
             "description_zh": "API信息",
             "properties": {
               "dryRunInfo": {
-                "description_en": "The dry run result",
+                "description_en": "The dry run results",
                 "description_zh": "预检结果",
                 "properties": {
                   "errorMessages": {
-                    "description_en": "The error messages. If the error messages are not empty, the API cannot be imported successfully",
+                    "description_en": "The error messages. If this field is not empty, the API cannot be imported successfully",
                     "description_zh": "错误信息，若错误信息非空，则无法成功导入API",
                     "itemName": "errorMessage",
                     "items": {
@@ -7102,7 +7205,7 @@
                     "description_zh": "失败的路由列表",
                     "itemName": "failureRoute",
                     "items": {
-                      "description_en": "The route information",
+                      "description_en": "The route",
                       "description_zh": "路由列表",
                       "properties": {
                         "errorMessage": {
@@ -7139,7 +7242,7 @@
                       "description_zh": "数据结构信息",
                       "properties": {
                         "action": {
-                          "description_en": "The action to perform after the dry run.\nCreate: Create.\nUpdate: Update",
+                          "description_en": "The action to be performed after the dry run.\nCreate: Create.\nUpdate: Update",
                           "description_zh": "预检后将执行的动作。\nCreate：创建。\nUpdate: 更新",
                           "enumValueTitles": {
                             "Create": "创建",
@@ -7168,7 +7271,7 @@
                       "description_zh": "接口信息",
                       "properties": {
                         "action": {
-                          "description_en": "The action to perform after the dry run.\nCreate: Create.\nUpdate: Update",
+                          "description_en": "The action to be performed after the dry run.\nCreate: Create.\nUpdate: Update",
                           "description_zh": "预检后将执行的动作。\nCreate：创建。\nUpdate: 更新",
                           "enumValueTitles": {
                             "Create": "创建",
@@ -7205,7 +7308,7 @@
                     "description_zh": "成功导入的路由列表",
                     "itemName": "successRoute",
                     "items": {
-                      "description_en": "The route information",
+                      "description_en": "The route",
                       "description_zh": "路由列表",
                       "properties": {
                         "action": {
@@ -7226,7 +7329,7 @@
                     "type": "array"
                   },
                   "warningMessages": {
-                    "description_en": "The warning messages. If the warning messages are not empty, some operations or data structures may fail to import",
+                    "description_en": "The warning messages. If this field is not empty, some operations or data structures may fail to import",
                     "description_zh": "告警信息，告警信息非空，则部分接口/数据接口可能导入不成功",
                     "itemName": "warningMessage",
                     "items": {
@@ -7281,7 +7384,7 @@
   "timeout_ms": 62000,
   "v1_body_parameters": [
     {
-      "help_en": "The request body parameters",
+      "help_en": "The request body",
       "help_zh": "请求体参数",
       "name": "body",
       "param_style": "json",

@@ -4,6 +4,48 @@
   "cmd_name": "get-http-api-operation",
   "components": {
     "schemas": {
+      "AiBasicGuardrailConfig": {
+        "descriptionEn": "Display eligibility and response inspection settings for basic guardrails. This object is a sibling of the policy-level enable field, which controls whether the policy is enabled.",
+        "description_en": "The display eligibility and response detection configuration for basic security protection. This object is at the same level as the enable field of the policy item. The overall protection switch is controlled by the outer enable field",
+        "description_zh": "基础安全防护的展示资格和响应检测配置。该对象与策略项的 enable 字段同级；整体防护开关由外层 enable 控制",
+        "properties": {
+          "display": {
+            "backendName": "display",
+            "descriptionEn": "Read-only display eligibility calculated by the server from gateway capabilities, regional rollout, and existing configuration. true allows the entry to be displayed; false hides it. This field does not indicate that the policy is enabled or successfully deployed. Ignore it when writing configuration; it is not persisted.",
+            "description_en": "The read-only display eligibility, which is calculated by the server based on instance capabilities, regional canary releases, and existing configurations. A value of true indicates that the entry can be displayed, and false indicates that it is not displayed. This value does not indicate that the protection is enabled or published successfully. The client does not need to set this value. It is ignored and not saved when passed back",
+            "description_zh": "只读展示资格，由服务端根据实例能力、地域灰度和已有配置计算。true 表示可以展示入口，false 表示不展示；该值不表示防护已开启或发布成功。客户端无需设置，回传时忽略且不保存",
+            "example": "true",
+            "notResourceProperty": true,
+            "readOnly": true,
+            "title": "是否展示基础安全防护",
+            "type": "boolean"
+          },
+          "responseEnabled": {
+            "backendName": "responseEnabled",
+            "descriptionEn": "Whether to inspect model responses: true enables inspection and false disables it. Only an explicitly supplied boolean updates the saved value. Omission or null preserves the saved value. If no value has been saved, response inspection is enabled by default. The policy-level enable field still controls the overall policy.",
+            "description_en": "Specifies whether to enable basic security detection for model responses. A value of true indicates that the detection is enabled, and false indicates that it is disabled. The field is updated only when a Boolean value is explicitly submitted. If the field is omitted or null is passed, the saved value is retained. If this field has not been saved, response detection is enabled by default at runtime. The overall policy is still controlled by the outer enable field",
+            "description_zh": "是否对模型响应启用基础安全检测。true 表示启用，false 表示禁用。仅显式提交布尔值时更新；省略或传入 null 时保留已保存值。未保存过该字段时，运行行为默认启用响应检测。整体策略仍由外层 enable 控制",
+            "example": "true",
+            "notResourceProperty": true,
+            "nullable": true,
+            "title": "是否检测模型响应",
+            "type": "boolean"
+          },
+          "responseMode": {
+            "backendName": "responseMode",
+            "descriptionEn": "Response inspection mode. Only the exact string async updates the saved mode. Any other value, an empty string, null, or omission leaves it unchanged. If no mode has been saved, x-ai-guard-response-mode is not sent. async is an example of an explicit option, not a default.",
+            "description_en": "The response detection mode, which only processes the exact string async. The mode is updated only when async is explicitly submitted. Other values, empty strings, null, or omissions do not modify the saved mode. If no mode is saved, x-ai-guard-response-mode is not delivered. async is an example of an optional configuration, not a default value",
+            "description_zh": "响应检测模式，仅处理精确字符串 async。显式提交 async 时更新；其他值、空字符串、null 或省略均不修改已保存模式。未保存模式时不下发 x-ai-guard-response-mode。async 是可选配置的示例，不是默认值",
+            "example": "async",
+            "notResourceProperty": true,
+            "nullable": true,
+            "title": "响应检测模式",
+            "type": "string"
+          }
+        },
+        "title": "基础安全防护配置",
+        "type": "object"
+      },
       "AiCacheConfig": {
         "description_en": "The AI cache configuration",
         "description_zh": "AI 缓存配置",
@@ -2093,7 +2135,7 @@
           "authConfig": {
             "$ref": "#/components/schemas/AuthConfig",
             "backendName": "authConfig",
-            "description_en": "The authentication configuration",
+            "description_en": "The permission authentication configuration",
             "description_zh": "权限认证配置"
           },
           "createTimestamp": {
@@ -2107,7 +2149,7 @@
           },
           "deployConfigs": {
             "backendName": "deployConfigs",
-            "description_en": "The backend service deployment information for the operation",
+            "description_en": "The API operation backend service deployment information",
             "description_zh": "接口后端服务部署信息",
             "items": {
               "$ref": "#/components/schemas/HttpApiDeployConfig",
@@ -2135,7 +2177,7 @@
           },
           "method": {
             "backendName": "method",
-            "description_en": "The operation method",
+            "description_en": "The API operation method",
             "description_zh": "接口方法",
             "enumValueTitles": {
               "CONNECT": "CONNECT",
@@ -2155,13 +2197,13 @@
           "mock": {
             "$ref": "#/components/schemas/HttpApiMockContract",
             "backendName": "mock",
-            "description_en": "The operation mock parameter settings",
+            "description_en": "The API operation mock parameter settings",
             "description_zh": "接口Mock参数配置",
             "title": "接口Mock参数配置。"
           },
           "name": {
             "backendName": "name",
-            "description_en": "The operation name",
+            "description_en": "The API operation name",
             "description_zh": "接口名称",
             "example": "GetUserInfo",
             "title": "接口名称。",
@@ -2169,7 +2211,7 @@
           },
           "operationId": {
             "backendName": "operationId",
-            "description_en": "The operation ID",
+            "description_en": "The API operation ID",
             "description_zh": "接口ID",
             "example": "op-xxx",
             "title": "接口ID。",
@@ -2177,7 +2219,7 @@
           },
           "path": {
             "backendName": "path",
-            "description_en": "The operation path",
+            "description_en": "The API operation path",
             "description_zh": "接口路径",
             "example": "/user/123",
             "title": "接口路径。",
@@ -2186,24 +2228,31 @@
           "request": {
             "$ref": "#/components/schemas/HttpApiRequestContract",
             "backendName": "request",
-            "description_en": "The operation request parameter definition",
+            "description_en": "The API operation request parameter definition",
             "description_zh": "接口请求参数定义",
             "title": "接口请求参数定义。"
           },
           "response": {
             "$ref": "#/components/schemas/HttpApiResponseContract",
             "backendName": "response",
-            "description_en": "The operation response parameter definition",
+            "description_en": "The API operation response parameter definition",
             "description_zh": "接口响应参数定义",
             "title": "接口响应参数定义。"
           },
           "status": {
             "backendName": "status",
-            "description_en": "The publish status of the operation on the gateway",
+            "description_en": "The publish status of the API operation on the gateway",
             "description_zh": "网关上接口发布状态",
             "example": "Deployed",
             "title": "网关上接口发布状态",
             "type": "string"
+          },
+          "systemParameters": {
+            "$ref": "#/components/schemas/HttpApiSystemParameters",
+            "backendName": "systemParameters",
+            "description_en": "Maps the system parameters of the current API operation to backend request headers or query parameters. Each source can be configured only once across the two locations",
+            "description_zh": "将当前接口的系统参数映射到后端请求 Header 或 Query。每个来源在两个位置中合计只能配置一次",
+            "title": "接口系统参数配置。"
           }
         },
         "title": "HttpApiOperationInfo",
@@ -2274,9 +2323,20 @@
         "type": "object"
       },
       "HttpApiPolicyConfigs": {
+        "descriptionEn": "A policy configuration entry for an HTTP API. type selects the policy and enable controls whether it is enabled. Basic guardrails use type=AiBasicGuardrail, with aiBasicGuardrailConfig as a sibling of enable.",
         "description_en": "body",
         "description_zh": "body",
         "properties": {
+          "aiBasicGuardrailConfig": {
+            "$ref": "#/components/schemas/AiBasicGuardrailConfig",
+            "backendName": "aiBasicGuardrailConfig",
+            "descriptionEn": "Optional settings for an AiBasicGuardrail policy, at the same level as enable. display is read-only eligibility; responseEnabled controls response inspection, and responseMode only processes async. Omitting response fields or this object on update preserves saved values. Without saved values, responses are inspected and no response mode is sent. To toggle the policy, change the policy-level enable field and retain the API's other required parameters; this object is not required.",
+            "description_en": "The optional configuration object used exclusively for the AiBasicGuardrail policy, at the same level as the enable field of the policy item. The display field indicates read-only display eligibility. The responseEnabled field controls Detection and Response, and the responseMode field only processes asynchronous requests. If an update omits response fields or the configuration object, the previously saved values are retained. If no saved values exist, Detection and Response is enabled by default without declaring a response pattern. To simply enable or disable protection, modify the outer enable field while retaining other required API parameters. You do not need to resubmit this object",
+            "description_zh": "仅用于 AiBasicGuardrail 策略的可选配置对象，与策略项 enable 同级。display 是只读展示资格；responseEnabled 控制响应检测，responseMode 仅处理 async。更新省略响应字段或配置对象时保留已保存值；无已保存值时默认检测响应且不声明响应模式。仅启停防护时修改外层 enable 并保留 API 的其他必要参数，无需补传本对象",
+            "example": "{\"responseEnabled\":true}",
+            "nullable": true,
+            "title": "基础安全防护配置"
+          },
           "aiCacheConfig": {
             "$ref": "#/components/schemas/AiCacheConfig",
             "backendName": "aiCacheConfig",
@@ -2301,7 +2361,7 @@
           "aiSecurityGuardConfig": {
             "$ref": "#/components/schemas/AiSecurityGuardConfig",
             "backendName": "aiSecurityGuardConfig",
-            "description_en": "The AI security protection configuration",
+            "description_en": "The AI security Protection Settings",
             "description_zh": "AI 安全防护配置",
             "nullable": false
           },
@@ -2316,7 +2376,7 @@
             "$ref": "#/components/schemas/AiTokenRateLimitConfig",
             "backendName": "aiTokenRateLimitConfig",
             "deprecated": true,
-            "description_en": "The AI token rate limiting configuration",
+            "description_en": "The AI token rate limit configuration",
             "description_zh": "AI 令牌速率限制配置",
             "nullable": false
           },
@@ -2329,7 +2389,7 @@
           },
           "enable": {
             "backendName": "enable",
-            "description_en": "Indicates whether the feature is enabled",
+            "description_en": "Specifies whether it is enabled",
             "description_zh": "是否启用",
             "example": "false",
             "type": "boolean"
@@ -2337,7 +2397,7 @@
           "policyReference": {
             "$ref": "#/components/schemas/HttpApiPolicyReference",
             "backendName": "policyReference",
-            "description_en": "The read-only compatible reference. GetHttpApi returns the policyId and policyAttachmentId for ModelAPI AiTokenRateLimit. This field must be stripped before write-path persistence and is not used as a bind or unbind instruction",
+            "description_en": "The read-only compatibility reference. GetHttpApi returns the policyId or policyAttachmentId for the ModelAPI AiTokenRateLimit. This reference must be removed before persistence in the write path and must not be used as a bind or unbind instruction",
             "description_zh": "只读兼容引用：GetHttpApi 为 ModelAPI AiTokenRateLimit 返回的 policyId/policyAttachmentId；写路径持久化前必须剥离，不作为绑定/解绑指令",
             "nullable": true,
             "onlyRead": true,
@@ -2351,7 +2411,7 @@
             "properties": {
               "timeoutMillisecond": {
                 "backendName": "timeoutMillisecond",
-                "description_en": "The timeout period, in milliseconds",
+                "description_en": "The timeout period in milliseconds",
                 "description_zh": "超时时间（毫秒）",
                 "example": "2000",
                 "format": "int32",
@@ -2362,12 +2422,13 @@
           },
           "type": {
             "backendName": "type",
-            "description_en": "The policy template type",
+            "description_en": "The policy templatetype",
             "description_zh": "策略模板类型",
             "example": "K8S",
             "type": "string"
           }
         },
+        "title": "HTTP API 策略配置",
         "type": "object"
       },
       "HttpApiPolicyReference": {
@@ -2543,6 +2604,74 @@
         "title": "HttpApiResponseContract",
         "type": "object"
       },
+      "HttpApiSystemParameterMapping": {
+        "description_en": "The API system parameter mapping, which specifies the source of system parameters and the parameter names in backend requests",
+        "description_zh": "指定系统参数来源及后端请求中的参数名称",
+        "properties": {
+          "name": {
+            "backendName": "name",
+            "description_en": "Optional. If this parameter is omitted or is an empty string, the default name based on the source is used. The default names for Header and Query are the same. The header name must be valid and cannot be Host, a pseudo-header, X-Mse-Consumer, or X-Mse-Consumer-Id",
+            "description_zh": "可选。省略或为空字符串时按来源使用默认名称，Header 与 Query 的默认名称相同。Header 名称需合法，不能使用 Host、伪 Header、X-Mse-Consumer 或 X-Mse-Consumer-Id",
+            "example": "x-apig-api-id",
+            "title": "后端参数名称。",
+            "type": "string"
+          },
+          "source": {
+            "backendName": "source",
+            "description_en": "Required when configuring each mapping. The request is rejected if this parameter is omitted or empty. APIID and APIName represent the identifier and name of the current API. OperationId and OperationName represent the identifier and name of the current operation. ConsumerID, ConsumerName, and ConsumerExtInfo represent the identifier, name, and extended information of the currently authenticated consumer",
+            "description_zh": "配置每一项映射时必填，省略或为空会被拒绝。APIID 和 APIName 表示当前 API 标识和名称；OperationId 和 OperationName 表示当前接口标识和名称；ConsumerID、ConsumerName、ConsumerExtInfo 表示当前已认证消费者的标识、名称和扩展信息",
+            "docRequired": true,
+            "enum": [
+              "APIID",
+              "APIName",
+              "OperationId",
+              "OperationName",
+              "ConsumerID",
+              "ConsumerName",
+              "ConsumerExtInfo"
+            ],
+            "example": "APIID",
+            "title": "系统参数来源。",
+            "type": "string"
+          }
+        },
+        "title": "接口系统参数映射。",
+        "type": "object"
+      },
+      "HttpApiSystemParameters": {
+        "description_en": "The API system parameter configuration. Writes system parameters to backend requests. Each source can appear only once across headerParameters and queryParameters. Header and query parameters share a set of default names. APIID, APIName, OperationId, OperationName, ConsumerID, ConsumerName, and ConsumerExtInfo correspond to x-apig-api-id, x-apig-api-name, x-apig-operation-id, x-apig-operation-name, x-apig-consumer-id, x-apig-consumer-name, and x-apig-consumer-ext-info, respectively",
+        "description_zh": "将系统参数写入后端请求。每个 source 在 headerParameters 与 queryParameters 中合计只能出现一次。Header 与 Query 共用一套默认名称，APIID、APIName、OperationId、OperationName、ConsumerID、ConsumerName、ConsumerExtInfo 依次对应 x-apig-api-id、x-apig-api-name、x-apig-operation-id、x-apig-operation-name、x-apig-consumer-id、x-apig-consumer-name、x-apig-consumer-ext-info",
+        "properties": {
+          "headerParameters": {
+            "backendName": "headerParameters",
+            "description_en": "The backend request header system parameters. If name is omitted or is an empty string, the default name for the source is used",
+            "description_zh": "name 省略或为空字符串时使用该来源的默认名称",
+            "items": {
+              "$ref": "#/components/schemas/HttpApiSystemParameterMapping",
+              "description_en": "The system parameter mapping for a backend request header. Writes the value specified by source to the backend request header specified by name",
+              "description_zh": "将 source 指定的值写入 name 指定的后端请求头",
+              "title": "一条写入后端请求 Header 的系统参数映射。"
+            },
+            "title": "后端请求 Header 系统参数。",
+            "type": "array"
+          },
+          "queryParameters": {
+            "backendName": "queryParameters",
+            "description_en": "The backend request query system parameters. If name is omitted or is an empty string, the default name for the source is used",
+            "description_zh": "name 省略或为空字符串时使用该来源的默认名称",
+            "items": {
+              "$ref": "#/components/schemas/HttpApiSystemParameterMapping",
+              "description_en": "The system parameter mapping for a backend request query. Writes the value specified by source to the backend query parameter specified by name",
+              "description_zh": "将 source 指定的值写入 name 指定的后端查询参数",
+              "title": "一条写入后端请求 Query 的系统参数映射。"
+            },
+            "title": "后端请求 Query 系统参数。",
+            "type": "array"
+          }
+        },
+        "title": "接口系统参数配置。",
+        "type": "object"
+      },
       "HttpDubboTranscoder": {
         "description_en": "The HTTP-to-Dubbo protocol conversion definition",
         "description_zh": "Http Dubbo协议转换定义",
@@ -2673,7 +2802,7 @@
     }
   },
   "deprecated": false,
-  "description_en": "Retrieves the API operation information",
+  "description_en": "Retrieves API operation information",
   "description_zh": "获取接口信息",
   "kebab_example": "aliyun apig get-http-api-operation --http-api-id api-xxx --operation-id op-xxx --region cn-hangzhou",
   "method": "GET",

@@ -4,6 +4,48 @@
   "cmd_name": "get-consumer-authorization-rule",
   "components": {
     "schemas": {
+      "AiBasicGuardrailConfig": {
+        "descriptionEn": "Display eligibility and response inspection settings for basic guardrails. This object is a sibling of the policy-level enable field, which controls whether the policy is enabled.",
+        "description_en": "The display eligibility and response detection configuration for basic security protection. This object is at the same level as the enable field of the policy item. The overall protection switch is controlled by the outer enable field",
+        "description_zh": "基础安全防护的展示资格和响应检测配置。该对象与策略项的 enable 字段同级；整体防护开关由外层 enable 控制",
+        "properties": {
+          "display": {
+            "backendName": "display",
+            "descriptionEn": "Read-only display eligibility calculated by the server from gateway capabilities, regional rollout, and existing configuration. true allows the entry to be displayed; false hides it. This field does not indicate that the policy is enabled or successfully deployed. Ignore it when writing configuration; it is not persisted.",
+            "description_en": "The read-only display eligibility, which is calculated by the server based on instance capabilities, regional canary releases, and existing configurations. A value of true indicates that the entry can be displayed, and false indicates that it is not displayed. This value does not indicate that the protection is enabled or published successfully. The client does not need to set this value. It is ignored and not saved when passed back",
+            "description_zh": "只读展示资格，由服务端根据实例能力、地域灰度和已有配置计算。true 表示可以展示入口，false 表示不展示；该值不表示防护已开启或发布成功。客户端无需设置，回传时忽略且不保存",
+            "example": "true",
+            "notResourceProperty": true,
+            "readOnly": true,
+            "title": "是否展示基础安全防护",
+            "type": "boolean"
+          },
+          "responseEnabled": {
+            "backendName": "responseEnabled",
+            "descriptionEn": "Whether to inspect model responses: true enables inspection and false disables it. Only an explicitly supplied boolean updates the saved value. Omission or null preserves the saved value. If no value has been saved, response inspection is enabled by default. The policy-level enable field still controls the overall policy.",
+            "description_en": "Specifies whether to enable basic security detection for model responses. A value of true indicates that the detection is enabled, and false indicates that it is disabled. The field is updated only when a Boolean value is explicitly submitted. If the field is omitted or null is passed, the saved value is retained. If this field has not been saved, response detection is enabled by default at runtime. The overall policy is still controlled by the outer enable field",
+            "description_zh": "是否对模型响应启用基础安全检测。true 表示启用，false 表示禁用。仅显式提交布尔值时更新；省略或传入 null 时保留已保存值。未保存过该字段时，运行行为默认启用响应检测。整体策略仍由外层 enable 控制",
+            "example": "true",
+            "notResourceProperty": true,
+            "nullable": true,
+            "title": "是否检测模型响应",
+            "type": "boolean"
+          },
+          "responseMode": {
+            "backendName": "responseMode",
+            "descriptionEn": "Response inspection mode. Only the exact string async updates the saved mode. Any other value, an empty string, null, or omission leaves it unchanged. If no mode has been saved, x-ai-guard-response-mode is not sent. async is an example of an explicit option, not a default.",
+            "description_en": "The response detection mode, which only processes the exact string async. The mode is updated only when async is explicitly submitted. Other values, empty strings, null, or omissions do not modify the saved mode. If no mode is saved, x-ai-guard-response-mode is not delivered. async is an example of an optional configuration, not a default value",
+            "description_zh": "响应检测模式，仅处理精确字符串 async。显式提交 async 时更新；其他值、空字符串、null 或省略均不修改已保存模式。未保存模式时不下发 x-ai-guard-response-mode。async 是可选配置的示例，不是默认值",
+            "example": "async",
+            "notResourceProperty": true,
+            "nullable": true,
+            "title": "响应检测模式",
+            "type": "string"
+          }
+        },
+        "title": "基础安全防护配置",
+        "type": "object"
+      },
       "AiCacheConfig": {
         "description_en": "The AI cache configuration",
         "description_zh": "AI 缓存配置",
@@ -2759,9 +2801,20 @@
         "type": "object"
       },
       "HttpApiPolicyConfigs": {
+        "descriptionEn": "A policy configuration entry for an HTTP API. type selects the policy and enable controls whether it is enabled. Basic guardrails use type=AiBasicGuardrail, with aiBasicGuardrailConfig as a sibling of enable.",
         "description_en": "body",
         "description_zh": "body",
         "properties": {
+          "aiBasicGuardrailConfig": {
+            "$ref": "#/components/schemas/AiBasicGuardrailConfig",
+            "backendName": "aiBasicGuardrailConfig",
+            "descriptionEn": "Optional settings for an AiBasicGuardrail policy, at the same level as enable. display is read-only eligibility; responseEnabled controls response inspection, and responseMode only processes async. Omitting response fields or this object on update preserves saved values. Without saved values, responses are inspected and no response mode is sent. To toggle the policy, change the policy-level enable field and retain the API's other required parameters; this object is not required.",
+            "description_en": "The optional configuration object used exclusively for the AiBasicGuardrail policy, at the same level as the enable field of the policy item. The display field indicates read-only display eligibility. The responseEnabled field controls Detection and Response, and the responseMode field only processes asynchronous requests. If an update omits response fields or the configuration object, the previously saved values are retained. If no saved values exist, Detection and Response is enabled by default without declaring a response pattern. To simply enable or disable protection, modify the outer enable field while retaining other required API parameters. You do not need to resubmit this object",
+            "description_zh": "仅用于 AiBasicGuardrail 策略的可选配置对象，与策略项 enable 同级。display 是只读展示资格；responseEnabled 控制响应检测，responseMode 仅处理 async。更新省略响应字段或配置对象时保留已保存值；无已保存值时默认检测响应且不声明响应模式。仅启停防护时修改外层 enable 并保留 API 的其他必要参数，无需补传本对象",
+            "example": "{\"responseEnabled\":true}",
+            "nullable": true,
+            "title": "基础安全防护配置"
+          },
           "aiCacheConfig": {
             "$ref": "#/components/schemas/AiCacheConfig",
             "backendName": "aiCacheConfig",
@@ -2786,7 +2839,7 @@
           "aiSecurityGuardConfig": {
             "$ref": "#/components/schemas/AiSecurityGuardConfig",
             "backendName": "aiSecurityGuardConfig",
-            "description_en": "The AI security protection configuration",
+            "description_en": "The AI security Protection Settings",
             "description_zh": "AI 安全防护配置",
             "nullable": false
           },
@@ -2801,7 +2854,7 @@
             "$ref": "#/components/schemas/AiTokenRateLimitConfig",
             "backendName": "aiTokenRateLimitConfig",
             "deprecated": true,
-            "description_en": "The AI token rate limiting configuration",
+            "description_en": "The AI token rate limit configuration",
             "description_zh": "AI 令牌速率限制配置",
             "nullable": false
           },
@@ -2814,7 +2867,7 @@
           },
           "enable": {
             "backendName": "enable",
-            "description_en": "Indicates whether the feature is enabled",
+            "description_en": "Specifies whether it is enabled",
             "description_zh": "是否启用",
             "example": "false",
             "type": "boolean"
@@ -2822,7 +2875,7 @@
           "policyReference": {
             "$ref": "#/components/schemas/HttpApiPolicyReference",
             "backendName": "policyReference",
-            "description_en": "The read-only compatible reference. GetHttpApi returns the policyId and policyAttachmentId for ModelAPI AiTokenRateLimit. This field must be stripped before write-path persistence and is not used as a bind or unbind instruction",
+            "description_en": "The read-only compatibility reference. GetHttpApi returns the policyId or policyAttachmentId for the ModelAPI AiTokenRateLimit. This reference must be removed before persistence in the write path and must not be used as a bind or unbind instruction",
             "description_zh": "只读兼容引用：GetHttpApi 为 ModelAPI AiTokenRateLimit 返回的 policyId/policyAttachmentId；写路径持久化前必须剥离，不作为绑定/解绑指令",
             "nullable": true,
             "onlyRead": true,
@@ -2836,7 +2889,7 @@
             "properties": {
               "timeoutMillisecond": {
                 "backendName": "timeoutMillisecond",
-                "description_en": "The timeout period, in milliseconds",
+                "description_en": "The timeout period in milliseconds",
                 "description_zh": "超时时间（毫秒）",
                 "example": "2000",
                 "format": "int32",
@@ -2847,12 +2900,13 @@
           },
           "type": {
             "backendName": "type",
-            "description_en": "The policy template type",
+            "description_en": "The policy templatetype",
             "description_zh": "策略模板类型",
             "example": "K8S",
             "type": "string"
           }
         },
+        "title": "HTTP API 策略配置",
         "type": "object"
       },
       "HttpApiPolicyReference": {
@@ -3105,7 +3159,7 @@
     }
   },
   "deprecated": true,
-  "description_en": "Retrieves consumer authorization rules",
+  "description_en": "Retrieves a consumer authorization rule",
   "description_zh": "获取消费者授权规则",
   "kebab_example": "aliyun apig get-consumer-authorization-rule --consumer-authorization-rule-id car-ctgdn8em1hko5krqq03g --consumer-id cs-ctgdn2um1hkossul8gvg --region cn-hangzhou",
   "method": "GET",
