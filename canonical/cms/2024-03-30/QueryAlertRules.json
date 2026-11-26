@@ -1037,7 +1037,7 @@
               "CRITICAL"
             ],
             "example": "INFO",
-            "title": "无数据告警级别（PROMETHEUS_SIMPLE_CONDITION / PROMETHEUS_MULTI_CONDITION / UMODEL_METRICSET_CONDITION / UMODEL_METRICSET_MULTI_CONDITION，noDataPolicy=NO_DATA_TO_ALERT 时生效）。UMODEL_METRICSET_* 下该字段为条件必填：noDataPolicy=NO_DATA_TO_ALERT 必填，其余策略禁止携带。SLS_MULTI_CONDITION 仍使用 noDataAlertLevel",
+            "title": "无数据告警级别（PROMETHEUS_SIMPLE_CONDITION / PROMETHEUS_MULTI_CONDITION，noDataPolicy=NO_DATA_TO_ALERT 时生效，其余策略禁止携带）。不推荐用于 UMODEL_METRICSET_CONDITION / UMODEL_METRICSET_MULTI_CONDITION（暂不支持）：该两种条件下传入本字段会返回 400 ParameterInvalid，待 UModel 无数据能力发布后另行公告。SLS_MULTI_CONDITION 仍使用 noDataAlertLevel",
             "type": "string"
           },
           "noDataAppendValue": {
@@ -1052,10 +1052,10 @@
           "noDataDurationSecs": {
             "backendName": "noDataDurationSecs",
             "description_en": "The tolerance duration in seconds before determining that no data is available. This parameter applies to UMODEL_METRICSET_CONDITION and UMODEL_METRICSET_MULTI_CONDITION, and takes effect when noDataPolicy is not empty. The no-data policy is applied only after the continuous no-data period exceeds this duration. This is used to offset single-cycle empty queries caused by UModel data write jitter. The value must be a positive integer. If not specified, the backend defaults to the maximum of twice the collection interval and 300",
-            "description_zh": "判定无数据前的容忍时长（秒，UMODEL_METRICSET_CONDITION / UMODEL_METRICSET_MULTI_CONDITION，noDataPolicy 非空时生效）：连续无数据超过该时长才按 noDataPolicy 处理，用于抵消 UModel 数据写入抖动带来的单周期查空。正整数；不填由后端按 max(采集间隔 × 2, 300) 兜底",
+            "description_zh": "判定无数据前的容忍时长（秒）。字段已预留，不推荐使用（暂不支持）：本字段唯一适用条件 UMODEL_METRICSET_CONDITION / UMODEL_METRICSET_MULTI_CONDITION 传入会返回 400 ParameterInvalid，待 UModel 无数据能力发布后启用。启用后语义：连续无数据超过该时长才按 noDataPolicy 处理，用于抵消 UModel 数据写入抖动带来的单周期查空；正整数；不填由后端按 max(采集间隔 × 2, 300) 兜底",
             "example": "600",
             "format": "int32",
-            "title": "判定无数据前的容忍时长（秒，UMODEL_METRICSET_CONDITION / UMODEL_METRICSET_MULTI_CONDITION，noDataPolicy 非空时生效）：连续无数据超过该时长才按 noDataPolicy 处理，用于抵消 UModel 数据写入抖动带来的单周期查空。正整数；不填由后端按 max(采集间隔 × 2, 300) 兜底",
+            "title": "判定无数据前的容忍时长（秒）。字段已预留，不推荐使用（暂不支持）：本字段唯一适用条件 UMODEL_METRICSET_CONDITION / UMODEL_METRICSET_MULTI_CONDITION 传入会返回 400 ParameterInvalid，待 UModel 无数据能力发布后启用。启用后语义：连续无数据超过该时长才按 noDataPolicy 处理，用于抵消 UModel 数据写入抖动带来的单周期查空；正整数；不填由后端按 max(采集间隔 × 2, 300) 兜底",
             "type": "integer"
           },
           "noDataPolicy": {
@@ -1063,7 +1063,7 @@
             "description_en": "The no-data processing policy (CLOUD_MONITORING_CONDITION / PROMETHEUS_MULTI_CONDITION / PROMETHEUS_SIMPLE_CONDITION / APM_SIMPLE_CONDITION / APM_COMPOSITE_CONDITION). Valid values: NO_DATA_TO_OK, NO_DATA_TO_ALERT, KEEP_LAST_STATE, and APPEND_VALUE (APM only)",
             "description_zh": "无数据处理策略（CLOUD_MONITORING_CONDITION / PROMETHEUS_MULTI_CONDITION / PROMETHEUS_SIMPLE_CONDITION / APM_SIMPLE_CONDITION / APM_COMPOSITE_CONDITION）：NO_DATA_TO_OK / NO_DATA_TO_ALERT / KEEP_LAST_STATE / APPEND_VALUE（仅 APM）",
             "example": "示例值",
-            "title": "无数据处理策略（CLOUD_MONITORING_CONDITION / PROMETHEUS_MULTI_CONDITION / PROMETHEUS_SIMPLE_CONDITION / APM_SIMPLE_CONDITION / APM_COMPOSITE_CONDITION / UMODEL_METRICSET_CONDITION / UMODEL_METRICSET_MULTI_CONDITION）：NO_DATA_TO_OK 无数据视为正常并恢复存量告警 / NO_DATA_TO_ALERT 无数据本身触发告警 / KEEP_LAST_STATE 维持无数据前的最后状态 / APPEND_VALUE（仅 APM）。不填表示不启用无数据判定，行为与该能力上线前一致。UMODEL_METRICSET_CONDITION / UMODEL_METRICSET_MULTI_CONDITION 不支持 APPEND_VALUE（其数据源无回填语义）",
+            "title": "无数据处理策略（CLOUD_MONITORING_CONDITION / PROMETHEUS_MULTI_CONDITION / PROMETHEUS_SIMPLE_CONDITION / APM_SIMPLE_CONDITION / APM_COMPOSITE_CONDITION）：NO_DATA_TO_OK 无数据视为正常并恢复存量告警 / NO_DATA_TO_ALERT 无数据本身触发告警 / KEEP_LAST_STATE 维持无数据前的最后状态 / APPEND_VALUE（仅 APM）。不填表示不启用无数据判定，行为与该能力上线前一致。不推荐用于 UMODEL_METRICSET_CONDITION / UMODEL_METRICSET_MULTI_CONDITION（暂不支持）：该两种条件下传入本字段会返回 400 ParameterInvalid，待 UModel 无数据能力发布后另行公告",
             "type": "string"
           },
           "operator": {
@@ -1202,7 +1202,7 @@
             ],
             "example": "PROMETHEUS_SIMPLE_CONDITION",
             "required": true,
-            "title": "检测条件类型。合法枚举与配套字段：PROMETHEUS_SIMPLE_CONDITION（必填 operator、threshold、durationSecs、severity）；UMODEL_METRICSET_CONDITION（必填 operator、durationSecs、severity；非区间算子必填 threshold；operator=IN_RANGE/OUT_OF_RANGE 必填 min、max；可选 noDataPolicy、noDataDurationSecs，noDataPolicy=NO_DATA_TO_ALERT 时必填 noDataAlertSeverity）；UMODEL_LOGSET_CONDITION（必填 matchOperator、durationSecs、severity；matchOperator=CONTAINS/EQUALS/REGEX 必填 matchField、matchValue；countOperator/countThreshold 可选）；UMODEL_METRICSET_MULTI_CONDITION（必填 triggers[*]；可选 durationSecs 作为全局默认、enableSeveritySuppression；可选 noDataPolicy、noDataDurationSecs，noDataPolicy=NO_DATA_TO_ALERT 时必填 noDataAlertSeverity）；APM_SIMPLE_CONDITION（必填 operator、aggregate；配 thresholdList 或 threshold；operator=YOY_UP/YOY_DOWN 必填 yoyTimeUnit、yoyTimeValue；可选 noDataPolicy、noDataAppendValue）；APM_COMPOSITE_CONDITION（必填 compareList、relation、severity；可选 noDataPolicy、noDataAppendValue）；CLOUD_MONITORING_CONDITION（必填 escalationType；escalationType=SIMPLE 必填 simpleEscalation；escalationType=COMPOSITE 必填 compositeEscalation；可选 noDataPolicy）；UNKNOWN_CONDITION（只读兜底，写路径请勿使用）。禁止使用非枚举值（如 SLS_CONDITION/CMS_BASIC_CONDITION 等），后端会返回 Invalidtype 400",
+            "title": "检测条件类型。合法枚举与配套字段：PROMETHEUS_SIMPLE_CONDITION（必填 operator、threshold、durationSecs、severity）；UMODEL_METRICSET_CONDITION（必填 operator、durationSecs、severity；非区间算子必填 threshold；operator=IN_RANGE/OUT_OF_RANGE 必填 min、max）；UMODEL_LOGSET_CONDITION（必填 matchOperator、durationSecs、severity；matchOperator=CONTAINS/EQUALS/REGEX 必填 matchField、matchValue；countOperator/countThreshold 可选）；UMODEL_METRICSET_MULTI_CONDITION（必填 triggers[*]；可选 durationSecs 作为全局默认、enableSeveritySuppression）；APM_SIMPLE_CONDITION（必填 operator、aggregate；配 thresholdList 或 threshold；operator=YOY_UP/YOY_DOWN 必填 yoyTimeUnit、yoyTimeValue；可选 noDataPolicy、noDataAppendValue）；APM_COMPOSITE_CONDITION（必填 compareList、relation、severity；可选 noDataPolicy、noDataAppendValue）；CLOUD_MONITORING_CONDITION（必填 escalationType；escalationType=SIMPLE 必填 simpleEscalation；escalationType=COMPOSITE 必填 compositeEscalation；可选 noDataPolicy）；UNKNOWN_CONDITION（只读兜底，写路径请勿使用）。UMODEL_METRICSET_CONDITION 与 UMODEL_METRICSET_MULTI_CONDITION 暂不支持无数据字段（noDataPolicy / noDataAlertSeverity / noDataDurationSecs），不推荐使用：线上版本传入任一字段均返回 400 ParameterInvalid，待 UModel 无数据能力发布后另行公告。禁止使用非枚举值（如 SLS_CONDITION/CMS_BASIC_CONDITION 等），后端会返回 Invalidtype 400",
             "type": "string"
           },
           "yoyTimeUnit": {
