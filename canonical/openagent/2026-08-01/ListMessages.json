@@ -22,7 +22,7 @@
   "parameters": [
     {
       "example": "session_example_001",
-      "help_en": "The ID of the session whose message history is to be queried",
+      "help_en": "The ID of the session for which the message history is queried",
       "help_zh": "待查询消息历史的会话 ID",
       "location": "path",
       "name": "session_id",
@@ -61,7 +61,7 @@
     },
     {
       "example": "example-next-token",
-      "help_en": "The pagination token. Do not pass this parameter in the first request. For subsequent requests, use the value returned from the previous page",
+      "help_en": "The pagination token. Do not specify this parameter for the first request. For subsequent requests, use the value returned from the previous page",
       "help_zh": "分页令牌。首次请求不传，后续原样使用上一页返回值",
       "location": "query",
       "name": "next_token",
@@ -87,6 +87,80 @@
             "description_en": "The message history and pagination information",
             "description_zh": "消息历史及分页信息",
             "properties": {
+              "contextUsage": {
+                "backendName": "contextUsage",
+                "description_en": "The latest context observation of the current session. It has the same structure as the value of SSE openagent.context.usage and does not roll back with historical pagination or runId filtering. The value is null when no run exists",
+                "description_zh": "当前会话最新上下文观测；与 SSE openagent.context.usage 的 value 同形，不随历史分页或 runId 筛选回退；尚无 Run 时为 null",
+                "nullable": true,
+                "properties": {
+                  "limit": {
+                    "backendName": "limit",
+                    "description_en": "The maximum context capacity available for the current run, in tokens. When the capacity is unknown, this value is null along with used and usedPercentage",
+                    "description_zh": "当前运行可用的上下文容量上限，单位为 token。容量未知时，与 used、usedPercentage 同时为 null",
+                    "example": "100000",
+                    "format": "int64",
+                    "nullable": true,
+                    "type": "integer"
+                  },
+                  "runId": {
+                    "backendName": "runId",
+                    "description_en": "The ID of the run to which the context capacity snapshot belongs",
+                    "description_zh": "该上下文容量快照所属的运行 ID",
+                    "example": "run_example_001",
+                    "type": "string"
+                  },
+                  "unit": {
+                    "backendName": "unit",
+                    "description_en": "The unit. The value is fixed as token",
+                    "description_zh": "固定为 token",
+                    "example": "token",
+                    "type": "string"
+                  },
+                  "used": {
+                    "backendName": "used",
+                    "description_en": "The number of tokens used in the current context. When the capacity is unknown, this value is null along with limit and usedPercentage",
+                    "description_zh": "当前上下文已使用的 token 数。容量未知时，与 limit、usedPercentage 同时为 null",
+                    "example": "31000",
+                    "format": "int64",
+                    "nullable": true,
+                    "type": "integer"
+                  },
+                  "usedPercentage": {
+                    "backendName": "usedPercentage",
+                    "description_en": "The context usage ratio, which is equal to used divided by limit, without being multiplied by 100. For example, 0.31 indicates 31%. Results of 0 and greater than 1 are retained. When the capacity is unknown, this value is null along with used and limit",
+                    "description_zh": "上下文使用比例，等于 used / limit，未乘以 100。例如 0.31 表示 31%；保留 0 和大于 1 的结果。容量未知时，与 used、limit 同时为 null",
+                    "example": "0.31",
+                    "format": "double",
+                    "nullable": true,
+                    "type": "number"
+                  },
+                  "version": {
+                    "backendName": "version",
+                    "description_en": "The ordered version of the capacity snapshot. The run is compared first, and then the observation within the same run is compared. A larger version indicates a newer observation",
+                    "description_zh": "容量快照的有序版本。先比较 run，再比较同一运行内的 observation；较大的版本表示较新的观测",
+                    "properties": {
+                      "observation": {
+                        "backendName": "observation",
+                        "description_en": "The capacity observation version sequence number within the same run. Observations with unknown capacity also carry a version",
+                        "description_zh": "同一运行内的容量观测版本序号。未知容量的观测也携带版本",
+                        "example": "3",
+                        "format": "int64",
+                        "type": "integer"
+                      },
+                      "run": {
+                        "backendName": "run",
+                        "description_en": "The run version sequence number, which is used to compare the order of capacity snapshots across different runs",
+                        "description_zh": "运行版本序号，用于比较不同运行的容量快照先后",
+                        "example": "42",
+                        "format": "int64",
+                        "type": "integer"
+                      }
+                    },
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              },
               "nextToken": {
                 "backendName": "nextToken",
                 "description_en": "The pagination token for the next page. A value of null indicates that no more data is available",
@@ -107,7 +181,7 @@
                 "description_zh": "按时间线返回的消息记录",
                 "itemName": "timeline",
                 "items": {
-                  "description_en": "A run and message association record",
+                  "description_en": "A record that associates a run with a message",
                   "description_zh": "一条运行与消息关联记录",
                   "properties": {
                     "message": {
@@ -145,7 +219,7 @@
                         },
                         "id": {
                           "backendName": "id",
-                          "description_en": "The ID of the message",
+                          "description_en": "The message ID",
                           "description_zh": "消息 ID",
                           "example": "message_example_001",
                           "type": "string"
@@ -199,7 +273,7 @@
                                       },
                                       "approvalId": {
                                         "backendName": "approvalId",
-                                        "description_en": "The ID of the associated approval ticket",
+                                        "description_en": "The ID of the associated approval request",
                                         "description_zh": "关联审批单 ID",
                                         "example": "approval_example_001",
                                         "type": "string"
@@ -213,7 +287,7 @@
                                       },
                                       "cancellable": {
                                         "backendName": "cancellable",
-                                        "description_en": "Indicates whether the approval can be canceled",
+                                        "description_en": "Specifies whether the approval can be canceled",
                                         "description_zh": "是否允许取消审批",
                                         "example": "true",
                                         "type": "boolean"
@@ -244,7 +318,7 @@
                                   },
                                   "id": {
                                     "backendName": "id",
-                                    "description_en": "The ID of the interrupt",
+                                    "description_en": "The interrupt ID",
                                     "description_zh": "中断 ID",
                                     "example": "interrupt_example_001",
                                     "type": "string"
@@ -265,7 +339,7 @@
                                   },
                                   "reason": {
                                     "backendName": "reason",
-                                    "description_en": "The reason for the interrupt. Valid values: `tool_call` (the tool invocation needs to be processed), `input_required` (user input is required), `confirmation` (confirmation is required), and `out_of_band_approval` (waiting for out-of-band approval)",
+                                    "description_en": "The reason for the interrupt. Valid values: `tool_call` (a tool invocation needs to be processed), `input_required` (user input is required), `confirmation` (confirmation is required), and `out_of_band_approval` (waiting for out-of-band approval)",
                                     "description_zh": "中断原因：`tool_call`（工具调用需要处理）、`input_required`（需要用户输入）、`confirmation`（需要确认）、`out_of_band_approval`（等待带外审批）",
                                     "enum": [
                                       "tool_call",
@@ -297,7 +371,7 @@
                             },
                             "type": {
                               "backendName": "type",
-                              "description_en": "The type of the interrupt result. The value is fixed to `interrupt`",
+                              "description_en": "The type of the interrupt result. The value is fixed as `interrupt`",
                               "description_zh": "中断结果类型，固定为 `interrupt`",
                               "enum": [
                                 "success",
@@ -356,7 +430,7 @@
                                   },
                                   "payload": {
                                     "backendName": "payload",
-                                    "description_en": "The processing result for the corresponding interrupt. The result must comply with the responseSchema of the interrupt",
+                                    "description_en": "The processing result for the corresponding interrupt, which must comply with the responseSchema of the interrupt",
                                     "description_zh": "对应中断的处理结果，须符合该中断的 responseSchema",
                                     "example": "{\"region\":\"cn-hangzhou\"}",
                                     "type": "any"
@@ -460,7 +534,7 @@
                               },
                               "id": {
                                 "backendName": "id",
-                                "description_en": "The ID of the tool invocation",
+                                "description_en": "The tool invocation ID",
                                 "description_zh": "工具调用 ID",
                                 "example": "tool_call_example_001",
                                 "type": "string"
@@ -474,7 +548,7 @@
                               },
                               "type": {
                                 "backendName": "type",
-                                "description_en": "The type of the tool invocation. The value is fixed to `function`",
+                                "description_en": "The type of the tool invocation. The value is fixed as `function`",
                                 "description_zh": "工具调用类型，固定为 `function`",
                                 "enum": [
                                   "function"
@@ -515,7 +589,7 @@
           },
           "requestId": {
             "backendName": "requestId",
-            "description_en": "The ID of the request. You can use the ID to locate and troubleshoot issues",
+            "description_en": "The request ID, which is used to locate and troubleshoot issues",
             "description_zh": "请求 ID，用于定位和排查问题",
             "example": "00000000-0000-4000-8000-000000000001",
             "type": "string"
