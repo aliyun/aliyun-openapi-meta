@@ -1,5 +1,5 @@
 {
-  "camel_example": "aliyun sas DescribeContainerCriteria --region cn-hangzhou --GroupField clusterId --Value 'cfb41a869c71e4678a97021582dd8a****'",
+  "camel_example": "aliyun sas DescribeContainerCriteria --region cn-hangzhou --GroupField clusterId --IncludeMulticloud true --Value 'cfb41a869c71e4678a97021582dd8a****'",
   "cmd_full_name": "sas describe-container-criteria",
   "cmd_name": "describe-container-criteria",
   "deprecated": false,
@@ -34,6 +34,19 @@
       "type": "string"
     },
     {
+      "example": "true",
+      "help_en": "Specifies whether to include connected multi-cloud clusters in the cluster search criteria. If this parameter is set to true, GroupField must be set to clusterId. If this parameter is not specified or is set to false, the original search criteria are used",
+      "help_zh": "是否在集群检索条件中包含已接入的多云集群。取值为 true 时，GroupField 必须为 clusterId；未传或为 false 时沿用原有检索条件",
+      "location": "query",
+      "name": "include_multicloud",
+      "options": [
+        "--include-multicloud"
+      ],
+      "raw_name": "IncludeMulticloud",
+      "required": false,
+      "type": "bool"
+    },
+    {
       "example": "cfb41a869c71e4678a97021582dd8a****",
       "help_en": "The value of the search field. Fuzzy search is supported for application names, node names, namespaces, cluster names, public IP addresses, pod IP addresses, regions, pods, instance IDs, cluster IDs, and container IDs",
       "help_zh": "检索项对应值。支持应用名称、节点名称、命名空间、集群名称、公网IP、Pod地址、地域、Pod、实例ID、集群ID、容器ID模糊搜索",
@@ -63,26 +76,33 @@
             "description_zh": "支持检索项信息列表",
             "itemName": "Criteria",
             "items": {
-              "description_en": "The supported search criterion",
+              "description_en": "The information about a supported search criterion",
               "description_zh": "支持检索项信息",
               "properties": {
+                "MultiValues": {
+                  "backendName": "multiValues",
+                  "description_en": "The JSON string of multi-level filter values. The region filter returns available regions grouped by cloud provider ID (vendor) and region group (regionIds). This parameter can be empty if there are no multi-level filter values",
+                  "description_zh": "多级筛选值的 JSON 字符串。地域筛选项按云厂商编号 vendor 和地域分组 regionIds 返回可选地域；没有多级筛选值时可为空",
+                  "example": "[{\"vendor\":7,\"regionIds\":{\"default\":[\"cn-north-1\"]}}]",
+                  "type": "string"
+                },
                 "Name": {
                   "backendName": "name",
-                  "description_en": "The name of the search criterion. Valid values:\n\ninstanceId: Container instance ID.\nclusterId: Cluster ID.\nregionId: Container region.\nclusterName: Cluster name.\nimage: Image name.\nimageRepoName: Image repository name.\nimageRepoNamespace: Image repository namespace.\nimageRepoTag: Image repository tag.\nimageDigest: Image digest.\nclusterType: Cluster type.\nhostIp: Public IP address.\npod: Pod.\npodIp: Pod IP address.\ncontainerId: Container ID.\nvulStatus: Indicates whether the container has vulnerabilities.\nalarmStatus: Indicates whether the container has security alerts.\nriskStatus: Indicates whether the container has risks.\nriskLevel: Container risk level.\ncontainerScope: Container type",
+                  "description_en": "The name of the search criterion. Valid values:\n\ninstanceId: Container instance ID.\nclusterId: Cluster ID.\nregionId: Container region.\nclusterName: Cluster name.\nimage: Image name.\nimageRepoName: Image repository name.\nimageRepoNamespace: Image repository namespace.\nimageRepoTag: Image repository tag.\nimageDigest: Image digest.\nclusterType: Cluster type.\nhostIp: Public IP address.\npod: Pod.\npodIp: Pod IP address.\ncontainerId: Container ID.\nvulStatus: Whether the container has vulnerabilities.\nalarmStatus: Whether the container has security alerts.\nriskStatus: Whether the container has risks.\nriskLevel: Container risk level.\ncontainerScope: Container type",
                   "description_zh": "对应的查询条件的名称。\n\ninstanceId：容器实例ID。\nclusterId：集群ID。\nregionId：容器地域。\nclusterName：集群名称。\nimage：镜像名称。\nimageRepoName：镜像仓名称。\nimageRepoNamespace：镜像仓命名空间。\nimageRepoTag：镜像仓标签。\nimageDigest：镜像digest。\nclusterType：集群类型。\nhostIp：公网IP。\npod：pod。\npodIp：pod IP。\ncontainerId：容器ID。\nvulStatus：容器是否存在漏洞。\nalarmStatus：容器是否存在安全告警。\nriskStatus：容器是否存在风险。\nriskLevel：容器风险等级。\ncontainerScope：容器类型",
                   "example": "clusterId",
                   "type": "string"
                 },
                 "Type": {
                   "backendName": "type",
-                  "description_en": "The type of the search criterion. Valid values:\n\ninput: Manual input. You must manually enter the search value.\nselect: Drop-down list. You must select a subtype from the drop-down list",
+                  "description_en": "The type of the search criterion. Valid values:\n\ninput: Requires manual input for the search field.\nselect: Requires selecting the subtype of the search criterion from a drop-down list",
                   "description_zh": "查询条件的类型。取值：\n\ninput：需要手动输入查询字段。\nselect：需要从下拉列表中选择查询条件的子类型",
                   "example": "input",
                   "type": "string"
                 },
                 "Values": {
                   "backendName": "values",
-                  "description_en": "The available options when Type is select.\nIf Type is input, this parameter is left empty",
+                  "description_en": "The available options when Type is select.\nIf Type is input, this parameter is empty",
                   "description_zh": "Type（查询条件的类型）为select（选择型）时，可选项的值。\nType（查询条件的类型）为input（输入型）时，该参数返回值为空",
                   "example": "ManagedKubernetes,NotManagedKubernetes,PrivateKubernetes",
                   "type": "string"
@@ -95,7 +115,7 @@
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The ID of the request. This is a unique identifier generated by Alibaba Cloud for the request and can be used for troubleshooting",
+            "description_en": "The request ID. It is a unique identifier generated by Alibaba Cloud for the request and can be used for troubleshooting",
             "description_zh": "本次调用请求的ID，是由阿里云为该请求生成的唯一标识符，可用于排查和定位问题",
             "example": "A4EB8B1C-1DEC-5E18-BCD0-D1BBB3936FA7",
             "type": "string"
