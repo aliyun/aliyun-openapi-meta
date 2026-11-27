@@ -88,7 +88,7 @@
     },
     {
       "example": "123***56",
-      "help_en": "The ID of the DingTalk user that performs the operation",
+      "help_en": "The ID of the DingTalk operator",
       "help_zh": "钉钉操作用户 ID",
       "location": "query",
       "max_length": "255",
@@ -102,7 +102,7 @@
     },
     {
       "example": "-1",
-      "help_en": "The validity period of the successful snapshot of Lark chat members for fallback reuse, in seconds. This parameter can be explicitly set only for Lark synchronization links. A value of -1 indicates that the snapshot never expires. A value of 0 indicates that snapshot fallback reuse is disabled. A positive integer indicates the maximum age of the snapshot allowed for reuse. Default value: -1. If this parameter is not specified, the default value -1 is used",
+      "help_en": "The time-to-live (TTL) of a successful snapshot of Feishu chat members for fallback reuse, in seconds. This parameter can be explicitly set only for FEISHU synchronization links. A value of -1 indicates that the snapshot never expires. A value of 0 indicates that snapshot fallback reuse is disabled. A positive integer indicates the maximum age of a snapshot allowed for reuse. Default value: -1. If this parameter is omitted, the default value -1 takes effect",
       "help_zh": "飞书群成员成功快照用于降级复用的有效期，单位为秒。仅 FEISHU 同步链路可显式设置；-1 表示永不过期，0 表示禁用快照降级复用，正整数表示允许复用的快照最大年龄；默认值为 -1，省略时按 -1 生效",
       "location": "query",
       "maximum": "2147483647",
@@ -112,6 +112,21 @@
         "--feishu-chat-member-stale-ttl-seconds"
       ],
       "raw_name": "FeishuChatMemberStaleTtlSeconds",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "-1",
+      "help_en": "The TTL of a successful snapshot of chat members for fallback reuse, in seconds. This parameter applies to DINGTALK and FEISHU synchronization links. If this parameter is explicitly configured, it takes precedence. If it is not configured, Feishu uses the value of FeishuChatMemberStaleTtlSeconds. A value of -1 indicates that the snapshot never expires. A value of 0 indicates that snapshot fallback reuse is disabled. A positive integer indicates the maximum age of a successful snapshot in the same workspace, enterprise, and chat group allowed for reuse. If this parameter is omitted, Feishu uses the legacy dedicated field. If neither is configured, the default value is -1",
+      "help_zh": "群成员成功快照用于降级复用的有效期，单位为秒。适用于 DINGTALK、FEISHU 同步链路；显式配置本字段时优先使用本字段，未配置时飞书沿用 FeishuChatMemberStaleTtlSeconds；-1 表示永不过期，0 表示禁用快照降级复用，正整数表示允许复用的同空间、同企业、同群成功快照的最大年龄；省略时飞书沿用旧专用字段，均未配置时默认 -1",
+      "location": "query",
+      "maximum": "2147483647",
+      "minimum": "-1",
+      "name": "chat_member_stale_ttl_seconds",
+      "options": [
+        "--chat-member-stale-ttl-seconds"
+      ],
+      "raw_name": "ChatMemberStaleTtlSeconds",
       "required": false,
       "type": "int"
     },
@@ -143,7 +158,7 @@
     },
     {
       "example": "example-user-access-token",
-      "help_en": "The Lark user access token. This token is used only when the application identity cannot expand chat members because the bot is not in the chat",
+      "help_en": "The Feishu user access token. This token is used only when the application identity cannot expand chat members because the bot is not in the chat group",
       "help_zh": "飞书用户访问令牌，仅在应用身份因机器人不在群聊而无法展开群成员时使用",
       "location": "query",
       "name": "user_access_token",
@@ -156,7 +171,7 @@
     },
     {
       "example": "example-user-refresh-token",
-      "help_en": "The Lark user refresh token. This token must be provided together with UserAccessToken and is used to automatically rotate the fallback identity for expanding chat members",
+      "help_en": "The Feishu user refresh token. This token must be provided together with UserAccessToken to automatically rotate the fallback identity for expanding chat members",
       "help_zh": "飞书用户刷新令牌，须与 UserAccessToken 一起提供，用于自动轮转群成员展开回退身份",
       "location": "query",
       "name": "user_refresh_token",
@@ -192,6 +207,20 @@
         "--sheet-mcp-endpoint"
       ],
       "raw_name": "SheetMcpEndpoint",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "https://mcp-gw.dingtalk.com/server/example",
+      "help_en": "The endpoint of the DingTalk AI table MCP server",
+      "help_zh": "钉钉 AI 表格 MCP Server 地址",
+      "location": "query",
+      "max_length": "2048",
+      "name": "ai_table_mcp_endpoint",
+      "options": [
+        "--ai-table-mcp-endpoint"
+      ],
+      "raw_name": "AiTableMcpEndpoint",
       "required": false,
       "type": "string"
     },
@@ -234,6 +263,45 @@
       "raw_name": "SyncIntervalMinutes",
       "required": false,
       "type": "int"
+    },
+    {
+      "example": "SELECTED",
+      "help_en": "The synchronization scope mode. This parameter applies only to DINGTALK sources and must be set together with SelectionRules. Valid values:\nALL: Synchronizes files in the source directory that are not excluded by excludes. The includes array must be empty.\nSELECTED: Synchronizes only files that match includes and are not excluded by excludes. If includes is empty, no files are selected.\nNew configurations take effect starting from the next synchronization",
+      "help_zh": "仅适用于钉钉来源（DINGTALK），须与 SelectionRules 同时设置。ALL：同步来源目录内未被 excludes 排除的文件，includes 必须为空数组。SELECTED：仅同步 includes 匹配且未被 excludes 排除的文件；includes 为空时不选择任何文件。新配置从下次同步开始生效",
+      "location": "query",
+      "name": "selection_mode",
+      "options": [
+        "--selection-mode"
+      ],
+      "raw_name": "SelectionMode",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "{\"includes\":[\"**/*.pdf\"],\"excludes\":[\"**/草稿/**\"]}",
+      "help_en": "The file path filtering rules in JSON format. This parameter contains only two required string arrays: includes and excludes. Paths are relative to SourceDir, and exclusion rules take precedence. GLOB is supported: * and ? do not cross directories, and ** matches zero or more directory levels when it occupies a path segment alone. The two arrays can contain a maximum of 256 entries in total. Each entry must be 1 to 512 characters in length. The maximum size of the JSON text is 65,536 UTF-8 bytes. After a file is removed from the synchronization scope, the corresponding document imported by this synchronization link is cleaned up, without affecting the source file or documents of other synchronization links",
+      "help_zh": "JSON 格式的文件路径筛选规则，仅包含 includes、excludes 两个必填的字符串数组。路径相对 SourceDir，排除规则优先。支持 GLOB：* 和 ? 不跨目录，** 独占路径段时匹配零到多级目录。两数组合计最多 256 条，每条长度为 1～512 个字符，JSON 文本最大为 65536 个 UTF-8 字节。移出同步范围后，将清理本同步链路已导入的对应文档，不影响源文件和其他同步链路的文档",
+      "location": "query",
+      "name": "selection_rules",
+      "options": [
+        "--selection-rules"
+      ],
+      "raw_name": "SelectionRules",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "false",
+      "help_en": "Specifies whether to enable synchronization for source deletions",
+      "help_zh": "源端删除同步开关",
+      "location": "query",
+      "name": "source_delete_sync_enabled",
+      "options": [
+        "--source-delete-sync-enabled"
+      ],
+      "raw_name": "SourceDeleteSyncEnabled",
+      "required": false,
+      "type": "bool"
     }
   ],
   "pathPattern": "",
@@ -256,7 +324,7 @@
           },
           "CreationTime": {
             "backendName": "data.creationTime",
-            "description_en": "The creation time. The time is displayed in ISO 8601 format in the UTC time zone (format: YYYY-MM-DDTHH:mm:ssZ)",
+            "description_en": "The creation time. The time follows the ISO 8601 standard and uses the UTC time zone (format: YYYY-MM-DDTHH:mm:ssZ)",
             "description_zh": "创建时间\n\n时间采用 ISO 8601 格式，时区为 UTC（格式：YYYY-MM-DDTHH:mm:ssZ）",
             "example": "2026-08-14T05:58:42Z",
             "type": "string"
@@ -300,6 +368,24 @@
             "title_zh": "Id of the request",
             "type": "string"
           },
+          "SelectionMode": {
+            "backendName": "data.selectionMode",
+            "description_en": "The current configuration. This does not indicate that synchronization is complete. This parameter may not be returned if it is not set",
+            "description_zh": "返回当前配置，不代表同步已完成；未设置时可能不返回",
+            "example": "SELECTED",
+            "title_en": "已配置的同步范围模式",
+            "title_zh": "已配置的同步范围模式",
+            "type": "string"
+          },
+          "SelectionRules": {
+            "backendName": "data.selectionRules",
+            "description_en": "The current configuration. This does not indicate that synchronization is complete. This parameter may not be returned if it is not set",
+            "description_zh": "返回当前配置，不代表同步已完成；未设置时可能不返回",
+            "example": "{\"includes\":[\"**/*.pdf\"],\"excludes\":[\"**/草稿/**\"]}",
+            "title_en": "已配置的同步范围规则",
+            "title_zh": "已配置的同步范围规则",
+            "type": "string"
+          },
           "SourceDir": {
             "backendName": "data.sourceDir",
             "description_en": "The address of the source directory for synchronization",
@@ -323,6 +409,16 @@
             "description_zh": "同步状态，取值：\nCREATING\nRUNNING\nPAUSED\nDELETING",
             "example": "CREATING",
             "type": "string"
+          },
+          "TaskId": {
+            "backendName": "data.taskId",
+            "description_en": "The ID of the asynchronous configuration task",
+            "description_zh": "异步配置任务ID",
+            "example": "123456",
+            "format": "int32",
+            "title_en": "异步配置任务ID",
+            "title_zh": "异步配置任务ID",
+            "type": "integer"
           }
         },
         "title_en": "Schema of Response",

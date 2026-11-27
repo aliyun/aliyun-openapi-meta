@@ -3,7 +3,7 @@
   "cmd_full_name": "polardb update-kb-sync-link",
   "cmd_name": "update-kb-sync-link",
   "deprecated": false,
-  "description_en": "Updates the synchronization link for a knowledge base",
+  "description_en": "Updates a knowledge base synchronization link",
   "description_zh": "更新知识库同步链路",
   "kebab_example": "aliyun polardb update-kb-sync-link --biz-region-id cn-hangzhou --knowledge-base-id pkb-xxxxx --link-id pkbl-xxxxx --region cn-hangzhou",
   "method": "GET|POST",
@@ -74,6 +74,19 @@
     },
     {
       "example": "false",
+      "help_en": "Specifies whether to synchronize deletions from the source",
+      "help_zh": "源端删除同步开关",
+      "location": "query",
+      "name": "source_delete_sync_enabled",
+      "options": [
+        "--source-delete-sync-enabled"
+      ],
+      "raw_name": "SourceDeleteSyncEnabled",
+      "required": false,
+      "type": "bool"
+    },
+    {
+      "example": "false",
       "help_en": "Specifies whether to enable automatic synchronization. This parameter can only be modified individually and cannot be changed along with other configurations",
       "help_zh": "是否启用自动同步，仅支持单独修改，不可与其他配置同时变更",
       "location": "query",
@@ -100,7 +113,7 @@
     },
     {
       "example": "example-client-secret",
-      "help_en": "The client secret",
+      "help_en": "The client secret information",
       "help_zh": "客户端密钥信息",
       "location": "query",
       "name": "client_secret",
@@ -126,7 +139,7 @@
     },
     {
       "example": "example-user-refresh-token",
-      "help_en": "The new Lark user refresh token. Pass this parameter together with UserAccessToken. Passing empty strings for both parameters deletes the tokens",
+      "help_en": "The new Lark user refresh token. It must be provided together with UserAccessToken. Passing two empty strings indicates deletion",
       "help_zh": "新的飞书用户刷新令牌；与 UserAccessToken 同时传入，两个空字符串表示删除",
       "location": "query",
       "name": "user_refresh_token",
@@ -139,7 +152,7 @@
     },
     {
       "example": "123***56",
-      "help_en": "The ID of the DingTalk user who performs the operation",
+      "help_en": "The ID of the DingTalk operator",
       "help_zh": "钉钉操作用户 ID",
       "location": "query",
       "max_length": "255",
@@ -153,7 +166,7 @@
     },
     {
       "example": "-1",
-      "help_en": "The validity period of the successful snapshot of Lark group members for fallback reuse, in seconds. This parameter can be explicitly set only for FEISHU synchronization links. A value of -1 indicates that the snapshot never expires. A value of 0 disables snapshot fallback reuse. A positive integer indicates the maximum age of the snapshot allowed for reuse. If this parameter is omitted, the original value is retained. Explicitly passing -1 restores the default behavior",
+      "help_en": "The validity period of the successful Lark group member snapshot used for fallback reuse, in seconds. This parameter can only be explicitly set for Lark synchronization links. A value of -1 indicates that the snapshot never expires. A value of 0 disables snapshot fallback reuse. A positive integer indicates the maximum age of the snapshot allowed for reuse. If omitted, the original value is retained. Explicitly passing -1 restores the default behavior",
       "help_zh": "飞书群成员成功快照用于降级复用的有效期，单位为秒。仅 FEISHU 同步链路可显式设置；-1 表示永不过期，0 表示禁用快照降级复用，正整数表示允许复用的快照最大年龄；省略时保持原值，显式传入 -1 可恢复默认行为",
       "location": "query",
       "maximum": "2147483647",
@@ -163,6 +176,21 @@
         "--feishu-chat-member-stale-ttl-seconds"
       ],
       "raw_name": "FeishuChatMemberStaleTtlSeconds",
+      "required": false,
+      "type": "int"
+    },
+    {
+      "example": "-1",
+      "help_en": "The validity period of the successful group member snapshot used for fallback reuse, in seconds. This parameter applies to DingTalk and Lark synchronization links. If this field is explicitly configured, it takes precedence. If not configured, Lark uses FeishuChatMemberStaleTtlSeconds. A value of -1 indicates that the snapshot never expires. A value of 0 disables snapshot fallback reuse. A positive integer indicates the maximum age of successful snapshots in the same workspace, enterprise, and group allowed for reuse. If omitted, the original value is retained. Explicitly passing -1 restores the default behavior",
+      "help_zh": "群成员成功快照用于降级复用的有效期，单位为秒。适用于 DINGTALK、FEISHU 同步链路；显式配置本字段时优先使用本字段，未配置时飞书沿用 FeishuChatMemberStaleTtlSeconds；-1 表示永不过期，0 表示禁用快照降级复用，正整数表示允许复用的同空间、同企业、同群成功快照的最大年龄；省略时保持原值，显式传入 -1 可恢复默认行为",
+      "location": "query",
+      "maximum": "2147483647",
+      "minimum": "-1",
+      "name": "chat_member_stale_ttl_seconds",
+      "options": [
+        "--chat-member-stale-ttl-seconds"
+      ],
+      "raw_name": "ChatMemberStaleTtlSeconds",
       "required": false,
       "type": "int"
     },
@@ -193,6 +221,46 @@
       "raw_name": "SheetMcpEndpoint",
       "required": false,
       "type": "string"
+    },
+    {
+      "example": "SELECTED",
+      "help_en": "This parameter applies only to DingTalk sources and must be set together with SelectionRules. Valid values: ALL: Synchronizes files in the source directory that are not excluded by excludes. The includes parameter must be an empty array. SELECTED: Synchronizes only files that match includes and are not excluded by excludes. If includes is empty, no files are selected. If this parameter is not provided, the original configuration is retained. If both parameters are provided, the original rules are replaced. This parameter cannot be modified at the same time as SyncEnabled. The new configuration takes effect starting from the next synchronization",
+      "help_zh": "仅适用于钉钉来源（DINGTALK），须与 SelectionRules 同时设置。ALL：同步来源目录内未被 excludes 排除的文件，includes 必须为空数组。SELECTED：仅同步 includes 匹配且未被 excludes 排除的文件；includes 为空时不选择任何文件。不传时保留原配置；同时提供两个参数时替换原规则。不能与 SyncEnabled 同时修改。新配置从下次同步开始生效",
+      "location": "query",
+      "name": "selection_mode",
+      "options": [
+        "--selection-mode"
+      ],
+      "raw_name": "SelectionMode",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "{\"includes\":[\"**/*.pdf\"],\"excludes\":[\"**/草稿/**\"]}",
+      "help_en": "The file path filtering rules in JSON format. It only contains two required string arrays: includes and excludes. Paths are relative to SourceDir, and exclusion rules take precedence. GLOB is supported: * and ? do not cross directories, and ** matches zero or more directory levels when it occupies a path segment alone. The two arrays can contain a maximum of 256 entries in total. Each entry must be 1 to 512 characters in length. The maximum size of the JSON text is 65,536 UTF-8 bytes. After a file is removed from the synchronization scope, the corresponding documents imported by this synchronization link are cleared, without affecting the source files and documents of other synchronization links",
+      "help_zh": "JSON 格式的文件路径筛选规则，仅包含 includes、excludes 两个必填的字符串数组。路径相对 SourceDir，排除规则优先。支持 GLOB：* 和 ? 不跨目录，** 独占路径段时匹配零到多级目录。两数组合计最多 256 条，每条长度为 1～512 个字符，JSON 文本最大为 65536 个 UTF-8 字节。移出同步范围后，将清理本同步链路已导入的对应文档，不影响源文件和其他同步链路的文档",
+      "location": "query",
+      "name": "selection_rules",
+      "options": [
+        "--selection-rules"
+      ],
+      "raw_name": "SelectionRules",
+      "required": false,
+      "type": "string"
+    },
+    {
+      "example": "https://mcp-gw.dingtalk.com/server/example",
+      "help_en": "The endpoint of the DingTalk AI Tables MCP server. An empty string indicates deletion",
+      "help_zh": "钉钉 AI 表格 MCP Server 地址，空字符串表示删除",
+      "location": "query",
+      "max_length": "2048",
+      "name": "ai_table_mcp_endpoint",
+      "options": [
+        "--ai-table-mcp-endpoint"
+      ],
+      "raw_name": "AiTableMcpEndpoint",
+      "required": false,
+      "type": "string"
     }
   ],
   "pathPattern": "",
@@ -220,12 +288,40 @@
             "title_zh": "Id of the request",
             "type": "string"
           },
+          "SelectionMode": {
+            "backendName": "data.selectionMode",
+            "description_en": "Returns the current configuration, which does not indicate that the synchronization is complete. This parameter may not be returned if it is not set",
+            "description_zh": "返回当前配置，不代表同步已完成；未设置时可能不返回",
+            "example": "SELECTED",
+            "title_en": "已配置的同步范围模式",
+            "title_zh": "已配置的同步范围模式",
+            "type": "string"
+          },
+          "SelectionRules": {
+            "backendName": "data.selectionRules",
+            "description_en": "Returns the current configuration, which does not indicate that the synchronization is complete. This parameter may not be returned if it is not set",
+            "description_zh": "返回当前配置，不代表同步已完成；未设置时可能不返回",
+            "example": "{\"includes\":[\"**/*.pdf\"],\"excludes\":[\"**/草稿/**\"]}",
+            "title_en": "已配置的同步范围规则",
+            "title_zh": "已配置的同步范围规则",
+            "type": "string"
+          },
           "SyncSchedule": {
             "backendName": "data.syncSchedule",
             "description_en": "The scheduled time of the synchronization task",
             "description_zh": "同步任务调度时间",
             "example": "*/20 * * * *",
             "type": "string"
+          },
+          "TaskId": {
+            "backendName": "data.taskId",
+            "description_en": "The ID of the asynchronous configuration task",
+            "description_zh": "异步配置任务ID",
+            "example": "123456",
+            "format": "int32",
+            "title_en": "异步配置任务ID",
+            "title_zh": "异步配置任务ID",
+            "type": "integer"
           }
         },
         "title_en": "Schema of Response",
