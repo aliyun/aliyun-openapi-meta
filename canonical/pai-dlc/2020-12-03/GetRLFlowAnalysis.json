@@ -1,5 +1,5 @@
 {
-  "camel_example": "",
+  "camel_example": "aliyun pai-dlc GET /api/v1/jobs/dlc5yfk7eyg95lac/rltrace/flowanalysis --region cn-hangzhou --header \"Content-Type=application/json\"",
   "cmd_full_name": "pai-dlc get-rl-flow-analysis",
   "cmd_name": "get-rl-flow-analysis",
   "components": {
@@ -752,9 +752,9 @@
     }
   },
   "deprecated": false,
-  "description_en": "查询 DLC 作业 RL 轨迹流转分析",
+  "description_en": "Retrieves the RL trajectory flow analysis of a DLC job",
   "description_zh": "获取DLC作业RL轨迹流转分析",
-  "kebab_example": "",
+  "kebab_example": "aliyun pai-dlc get-rl-flow-analysis --job-id dlc5yfk7eyg95lac --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
   "name": "GetRLFlowAnalysis",
@@ -771,7 +771,7 @@
   "parameters": [
     {
       "example": "dlc5yfk7eyg95lac",
-      "help_en": "作业 ID",
+      "help_en": "The job ID",
       "help_zh": "作业 ID",
       "location": "path",
       "name": "job_id",
@@ -784,7 +784,7 @@
     },
     {
       "example": "2026-08-04T00:00:00Z",
-      "help_en": "查询窗口起始时间，采用 RFC3339 格式。未提供时默认为 EndTime 前 7 天；必须早于 EndTime，时间跨度不得超过 30 天",
+      "help_en": "The start time of the query window in UTC RFC3339 format. Default value: EndTime-7d",
       "help_zh": "查询窗口起始（UTC RFC3339），缺省 EndTime-7d",
       "location": "query",
       "name": "start_time",
@@ -797,7 +797,7 @@
     },
     {
       "example": "2026-08-07T00:00:00Z",
-      "help_en": "查询窗口截止时间，采用 RFC3339 格式。未提供时使用服务端当前 UTC 时间，并向下对齐到 30 秒边界。为容纳日志采集延迟，实际读取的采集时间上界在该值基础上延后 5 分钟，并非严格按事件发生时间过滤",
+      "help_en": "The end time of the query window in UTC RFC3339 format. Default value: now",
       "help_zh": "查询窗口截止（UTC RFC3339），缺省 now",
       "location": "query",
       "name": "end_time",
@@ -815,12 +815,12 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "RL 轨迹流转分析响应体",
+        "description_en": "Schema of Response",
         "description_zh": "Schema of Response",
         "properties": {
           "Found": {
             "backendName": "Found",
-            "description_en": "窗口内是否有轨迹数据",
+            "description_en": "Indicates whether trajectory data exists within the query window",
             "description_zh": "窗口内是否有轨迹数据",
             "example": "true",
             "title_en": "窗口内是否有轨迹数据",
@@ -829,12 +829,12 @@
           },
           "Funnel": {
             "backendName": "Funnel",
-            "description_en": "轨迹流转漏斗，按 traj → dispatch → run → rollout → reward → sampled → trained 的七级顺序返回。各级按已观测到的事件独立计数，不保证逐级递减",
+            "description_en": "The 6-level funnel: traj → dispatch → run → push → selected → trained",
             "description_zh": "漏斗 6 级：traj → dispatch → run → push → selected → trained",
             "itemName": "Stage",
             "items": {
               "$ref": "#/components/schemas/RLFlowFunnelStage",
-              "description_en": "一个漏斗层级，包含层级标识、中文名称、轨迹数及其占当前统计轨迹总数的百分比",
+              "description_en": "The funnel level",
               "description_zh": "漏斗层级",
               "title_en": "漏斗层级",
               "title_zh": "漏斗层级"
@@ -845,12 +845,12 @@
           },
           "InflightByMilestone": {
             "backendName": "InflightByMilestone",
-            "description_en": "在途轨迹按环节计数（按 Count 降序）",
+            "description_en": "The count of in-flight trajectories by milestone, sorted in descending order of Count",
             "description_zh": "在途轨迹按环节计数（按 Count 降序）",
             "itemName": "MilestoneCount",
             "items": {
               "$ref": "#/components/schemas/RLFlowMilestoneCount",
-              "description_en": "一个里程碑的在途轨迹计数条目",
+              "description_en": "The count of in-flight trajectories for the milestone",
               "description_zh": "里程碑在途轨迹计数",
               "example": "[]",
               "title_en": "里程碑在途轨迹计数",
@@ -862,7 +862,7 @@
           },
           "JobId": {
             "backendName": "JobId",
-            "description_en": "作业 ID",
+            "description_en": "The job ID",
             "description_zh": "作业 ID",
             "example": "dlc-20210126170216-xxxxxxx",
             "title_en": "作业 ID",
@@ -871,7 +871,7 @@
           },
           "MegaStepOffset": {
             "backendName": "MegaStepOffset",
-            "description_en": "megatron 侧 step 编号相对 global_step 的偏移，取值为 0 或 1；缺少可用对齐信息时返回 0",
+            "description_en": "The offset of the Megatron global_step relative to the FORM_BATCH batch_id. Valid values: 0 or 1",
             "description_zh": "megatron global_step 相对 FORM_BATCH batch_id 的偏移（0 或 1）",
             "example": "0",
             "format": "int64",
@@ -881,7 +881,7 @@
           },
           "NowMs": {
             "backendName": "NowMs",
-            "description_en": "服务端观察时刻（毫秒，= min(EndTime, now)），在途 idle 计算基准",
+            "description_en": "The server observation time in milliseconds, calculated as min(EndTime, now). This value serves as the baseline for calculating in-flight idle time",
             "description_zh": "服务端观察时刻（毫秒，= min(EndTime, now)），在途 idle 计算基准",
             "example": "1787475397000",
             "format": "int64",
@@ -891,7 +891,7 @@
           },
           "RequestId": {
             "backendName": "RequestId",
-            "description_en": "请求 ID",
+            "description_en": "The request ID",
             "description_zh": "请求 ID",
             "example": "473469C7-AA6F-4DC5-B3DB-A3DC0DE3C83E",
             "title_en": "请求 ID",
@@ -901,7 +901,7 @@
           "Sankey": {
             "$ref": "#/components/schemas/RLFlowSankey",
             "backendName": "Sankey",
-            "description_en": "桑基图",
+            "description_en": "The Sankey diagram",
             "description_zh": "桑基图",
             "nullable": true,
             "title_en": "桑基图",
@@ -909,7 +909,7 @@
           },
           "StepSource": {
             "backendName": "StepSource",
-            "description_en": "Steps 的时刻来源：progress 表示取自任务日志的 Step 标记，trace 表示按 trace 里的 global_step 归步，空表示无 step 数据",
+            "description_en": "The time source for steps. A value of progress indicates that the time is extracted from the step markers in the task logs. A value of trace indicates that the time is grouped by global_step in the trace. An empty value indicates that no step data is available",
             "description_zh": "Steps 的时刻来源：progress 表示取自任务日志的 Step 标记，trace 表示按 trace 里的 global_step 归步，空表示无 step 数据",
             "example": "progress",
             "title_en": "Steps 的时刻来源：progress 表示取自任务日志的 Step 标记，trace 表示按 trace 里的 global_step 归步，空表示无 step 数据",
@@ -918,12 +918,12 @@
           },
           "Steps": {
             "backendName": "Steps",
-            "description_en": "step 生产-消费视图",
+            "description_en": "The step production-consumption view",
             "description_zh": "step 生产-消费视图",
             "itemName": "Step",
             "items": {
               "$ref": "#/components/schemas/RLFlowStep",
-              "description_en": "一个 step 的生产-消费视图条目",
+              "description_en": "The execution step",
               "description_zh": "执行步骤",
               "example": "[]",
               "title_en": "step 生产-消费条目",
@@ -935,12 +935,12 @@
           },
           "Stuck": {
             "backendName": "Stuck",
-            "description_en": "在途卡点 Top100（按 IdleSec 降序）",
+            "description_en": "The top 100 in-flight stuck points, sorted in descending order of IdleSec",
             "description_zh": "在途卡点 Top100（按 IdleSec 降序）",
             "itemName": "StuckItem",
             "items": {
               "$ref": "#/components/schemas/RLFlowStuckItem",
-              "description_en": "一条在途轨迹的卡点信息",
+              "description_en": "The in-flight trajectory stuck point",
               "description_zh": "在途轨迹卡点",
               "example": "[]",
               "title_en": "在途轨迹卡点",
@@ -953,7 +953,7 @@
           "Totals": {
             "$ref": "#/components/schemas/RLFlowTotals",
             "backendName": "Totals",
-            "description_en": "总量统计",
+            "description_en": "The total statistics",
             "description_zh": "总量统计",
             "example": "{'Sampled': 0, 'Uids': 0, 'Inflight': 0, 'Trained': 0, 'Trajs': 0, 'Rewarded': 0}",
             "nullable": true,
@@ -962,12 +962,12 @@
           },
           "Transitions": {
             "backendName": "Transitions",
-            "description_en": "12 个阶段的耗时分位统计，耗时单位为秒",
+            "description_en": "The percentile statistics for the duration in seconds of 8 stages",
             "description_zh": "8 个阶段耗时（秒）分位统计",
             "itemName": "Transition",
             "items": {
               "$ref": "#/components/schemas/RLFlowTransition",
-              "description_en": "一个阶段的耗时统计，包含参与统计的轨迹数、平均和最大耗时、P50/P90/P99 分位值，以及按耗时降序排列的最多 5 条慢轨迹",
+              "description_en": "The transition effect. Valid when TransitionMode is set to Random or Sequential. Maximum limit: 10",
               "description_zh": "转场效果。\n当 TransitionMode 为 Random 和 Sequential 时有效。\n数量上限 10",
               "title_en": "阶段耗时统计",
               "title_zh": "阶段耗时统计"
@@ -979,7 +979,7 @@
           "Turns": {
             "$ref": "#/components/schemas/RLFlowTurns",
             "backendName": "Turns",
-            "description_en": "生成轮数分布",
+            "description_en": "The distribution of generation turns",
             "description_zh": "生成轮数分布",
             "example": "{'Count': 0, 'Max': None, 'Avg': None, 'P50': None, 'P90': None}",
             "nullable": true,
@@ -989,7 +989,7 @@
           "Waste": {
             "$ref": "#/components/schemas/RLFlowWaste",
             "backendName": "Waste",
-            "description_en": "有效算力统计。UsefulSec 为已完成训练轨迹的累计执行耗时，单位为整数秒；可包含重叠时段，不等同于作业运行时长或训练更新耗时",
+            "description_en": "The oversampling waste",
             "description_zh": "过采样浪费",
             "example": "{'UsefulSec': 0}",
             "nullable": true,

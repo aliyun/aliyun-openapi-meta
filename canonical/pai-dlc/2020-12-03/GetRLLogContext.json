@@ -1,5 +1,5 @@
 {
-  "camel_example": "",
+  "camel_example": "aliyun pai-dlc GET /api/v1/jobs/dlc5yfk7eyg95lac/rltrace/logcontext --region cn-hangzhou --AnchorTime '2026-08-05T16:36:55Z' --header \"Content-Type=application/json\"",
   "cmd_full_name": "pai-dlc get-rl-log-context",
   "cmd_name": "get-rl-log-context",
   "components": {
@@ -35,9 +35,9 @@
     }
   },
   "deprecated": false,
-  "description_en": "查询 DLC 作业 RL 日志上下文",
+  "description_en": "Retrieves the context of a specific exception log for a DLC job",
   "description_zh": "获取DLC作业某条异常日志的上下文",
-  "kebab_example": "",
+  "kebab_example": "aliyun pai-dlc get-rl-log-context --job-id dlc5yfk7eyg95lac --anchor-time 2026-08-05T16:36:55Z --region cn-hangzhou",
   "method": "GET",
   "multi_version": false,
   "name": "GetRLLogContext",
@@ -54,7 +54,7 @@
   "parameters": [
     {
       "example": "dlc5yfk7eyg95lac",
-      "help_en": "作业 ID",
+      "help_en": "The job ID",
       "help_zh": "作业 ID",
       "location": "path",
       "name": "job_id",
@@ -67,7 +67,7 @@
     },
     {
       "example": "2026-08-05T16:36:55Z",
-      "help_en": "锚点日志行的时间，采用 RFC3339 格式",
+      "help_en": "The timestamp of the anchor log line in UTC RFC 3339 format with second precision",
       "help_zh": "锚点日志行时间（UTC RFC3339，秒级）",
       "location": "query",
       "name": "anchor_time",
@@ -80,7 +80,7 @@
     },
     {
       "example": "[rank0]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 GiB",
-      "help_en": "用于辅助定位的锚点日志消息，可取自 GetRLTrainingProgress 返回的 Fatal[].RawMessage",
+      "help_en": "The text of the anchor log. The fallback path locates the log by prefix matching. This value is derived from Fatal[].RawMessage",
       "help_zh": "锚点日志文案（回退路径按前缀匹配定位；来自 Fatal[].RawMessage）",
       "location": "query",
       "name": "anchor_message",
@@ -93,7 +93,7 @@
     },
     {
       "example": "1785947815190122847",
-      "help_en": "锚点日志采集时间，采用纯数字的纳秒时间戳字符串，可取自 GetRLTrainingProgress 返回的 Fatal[].CollectNs，用于辅助定位上下文。实际定位方式由 Mode 返回，结果不保证包含原始锚点日志",
+      "help_en": "The agent_collect_time of the anchor line as a nanosecond string. This value is derived from Fatal[].CollectNs. If provided, the exact path is used",
       "help_zh": "锚点行 agent_collect_time（纳秒字符串，来自 Fatal[].CollectNs）；提供时走精确路径",
       "location": "query",
       "name": "collect_time",
@@ -111,12 +111,12 @@
   "responses": {
     "200": {
       "schema": {
-        "description_en": "RL 日志上下文响应体",
+        "description_en": "Schema of Response",
         "description_zh": "Schema of Response",
         "properties": {
           "AnchorIndex": {
             "backendName": "AnchorIndex",
-            "description_en": "Lines 数组中用于定位的参考行下标，从 0 开始；可能对应锚点或其邻近日志，不保证与原始锚点消息精确匹配。未提供时表示本次未返回可用的参考下标",
+            "description_en": "The index of the anchor line in Lines. This value is empty if the fallback path does not match the anchor. In this case, Lines contains all lines in the window",
             "description_zh": "锚点行在 Lines 中的下标；回退路径未匹配到锚点时为空（Lines 为全窗口行）",
             "example": "100",
             "format": "int32",
@@ -126,7 +126,7 @@
           },
           "JobId": {
             "backendName": "JobId",
-            "description_en": "作业 ID",
+            "description_en": "The job ID",
             "description_zh": "作业 ID",
             "example": "dlc-20210126170216-xxxxxxxx",
             "title_en": "作业 ID",
@@ -135,12 +135,12 @@
           },
           "Lines": {
             "backendName": "Lines",
-            "description_en": "按定位时间升序排列的上下文日志。采集时间定位最多返回 201 行；日志时间定位返回锚点前后 5 秒范围内的日志，并可能缩小返回范围。结果不保证包含原始锚点日志",
+            "description_en": "The context log lines in ascending order of time",
             "description_zh": "上下文行（时间升序）",
             "itemName": "Line",
             "items": {
               "$ref": "#/components/schemas/RLLogContextLine",
-              "description_en": "一条日志上下文记录，包含日志内容及可用的毫秒时间戳",
+              "description_en": "A single line of content from the log file",
               "description_zh": "一行log文件内容",
               "example": "100",
               "title_en": "日志上下文行",
@@ -152,7 +152,7 @@
           },
           "Mode": {
             "backendName": "Mode",
-            "description_en": "日志定位方式。agent_collect_time 表示按采集时间定位，raw_time_cluster 表示按日志时间定位；定位方式本身不保证精确命中锚点",
+            "description_en": "The log locating mode. Valid values: agent_collect_time for the exact path, and raw_time_cluster for the fallback path",
             "description_zh": "agent_collect_time（精确路径）/ raw_time_cluster（回退路径）",
             "example": "agent_collect_time",
             "title_en": "日志定位方式",
@@ -161,7 +161,7 @@
           },
           "RequestId": {
             "backendName": "RequestId",
-            "description_en": "请求 ID",
+            "description_en": "The request ID",
             "description_zh": "请求 ID",
             "example": "473469C7-AA6F-4DC5-B3DB-A3DC0DE3C83E",
             "title_en": "请求 ID",
@@ -170,7 +170,7 @@
           },
           "Truncated": {
             "backendName": "Truncated",
-            "description_en": "日志时间定位是否触及 5000 条的数量限制，为 true 时上下文可能不完整；采集时间定位时为 false，不能据此判断全部日志是否已完整返回",
+            "description_en": "Indicates whether the number of raw lines in the fallback path reaches the upper limit of 5,000",
             "description_zh": "回退路径原始行达到 5000 上限时为 true",
             "example": "False",
             "title_en": "日志数量限制标记",
