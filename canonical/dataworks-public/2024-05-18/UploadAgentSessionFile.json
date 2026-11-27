@@ -3,7 +3,7 @@
   "cmd_full_name": "dataworks-public upload-agent-session-file",
   "cmd_name": "upload-agent-session-file",
   "deprecated": false,
-  "description_en": "Issues a file upload URL for an agent session and confirms that the file has been written to the session instance for use in later messages. This operation is available during a canary release. Before calling it, make sure the canary release is enabled for your account and the target region",
+  "description_en": "Issues a file upload URL for an agent session and confirms writing the file to the session instance for reference in subsequent conversations. This API operation is available only when the canary release feature is enabled. Before you call this operation, verify that the canary release feature is enabled for your account and the target region",
   "description_zh": "为 Agent 会话签发文件上传地址，并确认将文件写入会话实例，供后续对话引用。本接口需要开启灰度才可以使用。调用前请确认当前账号及目标地域已开启相应灰度",
   "kebab_example": "aliyun dataworks-public upload-agent-session-file --params '{\"ContentMd5\":\"b1946ac92492d2347c6235b4d2611184\",\"UploadMode\":\"prepare\",\"Size\":6,\"SessionId\":\"session\",\"Name\":\"sample.csv\"}' --api-version 2024-05-18 --region cn-hangzhou",
   "method": "POST",
@@ -37,7 +37,7 @@
     },
     {
       "example": "attachment-rpc-001",
-      "help_en": "The JSON-RPC correlation identifier for the current request. The Id in the response returns this value as is to correlate the request and response",
+      "help_en": "The JSON-RPC correlation ID for the current request. The Id in the response returns this value as is to correlate the request and response",
       "help_zh": "本次请求的 JSON-RPC 关联标识。响应中的 Id 原样返回该值，便于关联请求与响应",
       "location": "formData",
       "name": "id",
@@ -52,7 +52,7 @@
       "fields": [
         {
           "example": "b1946ac92492d2347c6235b4d2611184",
-          "help_en": "The MD5 hash of the original bytes in 32-character lowercase hexadecimal format. This parameter is required for both prepare and complete, and the values must be consistent",
+          "help_en": "The MD5 hash of the original bytes, represented as a 32-character lowercase hexadecimal string. This parameter is required for both prepare and complete, and the values must be consistent",
           "help_zh": "原始字节的 MD5，32 位小写十六进制。prepare 和 complete 均必填，且须保持一致",
           "name": "content_md5",
           "options": [
@@ -103,7 +103,7 @@
         },
         {
           "example": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-          "help_en": "The upload identifier returned by prepare. This parameter is required when UploadMode is set to complete",
+          "help_en": "The upload ID returned by prepare. This parameter is required when UploadMode is set to complete",
           "help_zh": "prepare 返回的上传标识。UploadMode 为 complete 时必填",
           "name": "upload_id",
           "options": [
@@ -120,7 +120,7 @@
             "complete"
           ],
           "example": "prepare",
-          "help_en": "The required upload stage. The prepare step issues a public OSS PUT URL without starting a cold session instance. The complete step resumes the session and allows the runtime to download the file",
+          "help_en": "The required upload stage. The prepare step issues a public OSS PUT URL and does not start a cold session instance. The complete step resumes the session and allows the runtime to download the file",
           "help_zh": "必填上传阶段。prepare 签发公网 OSS PUT 地址且不启动冷会话实例；complete 恢复会话后由 runtime 下载文件",
           "name": "upload_mode",
           "options": [
@@ -131,7 +131,7 @@
           "type": "string"
         }
       ],
-      "help_en": "The parameter object for the upload stage. The prepare step issues the upload URL, and the complete step confirms that the file has been written to the target session instance",
+      "help_en": "The parameter object for the upload stage. The prepare step issues an upload URL, and the complete step confirms that the file has been written to the target session instance",
       "help_zh": "上传阶段的参数对象。prepare 签发上传地址，complete 确认文件已写入目标会话实例",
       "location": "formData",
       "name": "params",
@@ -209,7 +209,7 @@
               },
               "Id": {
                 "backendName": "id",
-                "description_en": "The JSON-RPC correlation identifier for the current request, which is passed by the caller and returned as is",
+                "description_en": "The JSON-RPC correlation ID for the current request. It is passed by the caller and returned as is",
                 "description_zh": "本次请求的 JSON-RPC 关联标识，由调用方传入并原样返回",
                 "example": "attachment-rpc-001",
                 "title_en": "本次请求的 JSON-RPC 关联标识，由调用方传入并原样返回。",
@@ -227,13 +227,13 @@
               },
               "Result": {
                 "backendName": "result",
-                "description_en": "Issues the staged upload URL or returns the attachment information after writing to the instance",
+                "description_en": "Issues a staged upload URL or returns the attachment information after the file is written to the instance",
                 "description_zh": "签发暂存上传地址，或返回写入实例后的附件信息",
                 "parseType": "struct",
                 "properties": {
                   "Id": {
                     "backendName": "id",
-                    "description_en": "The attachment identifier",
+                    "description_en": "The attachment ID",
                     "description_zh": "附件标识",
                     "example": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                     "title_en": "附件标识。",
@@ -260,13 +260,13 @@
                   },
                   "Signature": {
                     "backendName": "signature",
-                    "description_en": "The time-limited object storage signature returned by prepare",
+                    "description_en": "The time-limited Object Storage Service (OSS) signature returned by prepare",
                     "description_zh": "prepare 返回的限时对象存储签名",
                     "parseType": "struct",
                     "properties": {
                       "ExpiresAt": {
                         "backendName": "expiresAt",
-                        "description_en": "The expiration time of the current upload signature in ISO 8601 UTC string format. The trailing Z indicates UTC, and fractional seconds may be included. The signature is valid for 5 minutes. Signature expiration does not indicate that the staged object has been deleted",
+                        "description_en": "The expiration time of the current upload signature, represented as an ISO 8601 UTC string. The trailing Z indicates UTC, and fractional seconds may be included. The signature is valid for 5 minutes. Signature expiration does not indicate that the staged object has been deleted",
                         "description_zh": "本次上传签名的到期时间，使用 ISO 8601 UTC 字符串，末尾 Z 表示 UTC，可能包含小数秒。签名有效期为 5 分钟。签名到期不表示暂存对象被删除",
                         "example": "2026-11-12T09:46:33.477365753Z",
                         "title_en": "本次上传签名的到期时间，使用 ISO 8601 UTC 字符串，末尾 Z 表示 UTC，可能包含小数秒。签名有效期为 5 分钟。签名到期不表示暂存对象被删除。",
@@ -292,7 +292,7 @@
                       },
                       "Url": {
                         "backendName": "url",
-                        "description_en": "The complete signed HTTPS PUT URL returned by prepare, which must be used exactly as provided for the upload. The example displayed for this field does not contain a valid signature. The actual request must use the complete signed URL returned by the current prepare call",
+                        "description_en": "The complete signed HTTPS PUT URL returned by prepare. It must be used exactly as provided for the upload. The example displayed for this field does not contain a valid signature. For actual requests, use the value returned in the current call",
                         "description_zh": "prepare 返回的完整 HTTPS PUT 签名地址，必须原样用于上传。此字段的展示示例不含有效签名，实际请求以本次返回值为准",
                         "example": "https://attachments.example.test/signed",
                         "title_en": "prepare 返回的完整 HTTPS PUT 签名地址，必须原样用于上传。此字段的展示示例不含有效签名，实际请求以本次返回值为准。",
@@ -306,7 +306,7 @@
                   },
                   "Size": {
                     "backendName": "size",
-                    "description_en": "The number of file bytes saved in the instance",
+                    "description_en": "The number of bytes of the file saved in the instance",
                     "description_zh": "实例中保存的文件字节数",
                     "example": "6",
                     "format": "int64",
@@ -316,7 +316,7 @@
                   },
                   "UploadId": {
                     "backendName": "uploadId",
-                    "description_en": "The staged upload identifier issued by prepare",
+                    "description_en": "The staged upload ID issued by prepare",
                     "description_zh": "prepare 签发的暂存上传标识",
                     "example": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                     "title_en": "prepare 签发的暂存上传标识。",
@@ -330,7 +330,7 @@
               },
               "Timestamp": {
                 "backendName": "timestamp",
-                "description_en": "The response time as a UNIX timestamp in milliseconds",
+                "description_en": "The response time, represented as a UNIX timestamp in milliseconds",
                 "description_zh": "响应时间，Unix 时间戳，单位为毫秒",
                 "example": "1789549200000",
                 "format": "int64",
