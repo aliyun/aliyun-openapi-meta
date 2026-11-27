@@ -1,11 +1,11 @@
 {
-  "camel_example": "aliyun esa BatchCreateRecords --region cn-hangzhou --SiteId 1234567890123 --RecordList '[{\"RecordName\":\"www.example.com\",\"Type\":\"A/AAAA\",\"Proxied\":true,\"Data\":{\"Usage\":0,\"Fingerprint\":\"abcdef1234567890\",\"Priority\":2,\"Port\":0,\"Flag\":128,\"Algorithm\":0,\"Weight\":0,\"Type\":0,\"MatchingType\":0,\"Value\":\"example.com\",\"KeyTag\":0,\"Tag\":\"issue\",\"Certificate\":\"dGVzdGFkYWxrcw==\",\"Selector\":0},\"Ttl\":60}]'",
+  "camel_example": "aliyun esa BatchCreateRecords --region cn-hangzhou --SiteId 1234567890123 --RecordList '[{\"RecordName\":\"www.example.com\",\"Type\":\"A/AAAA\",\"Data\":{\"Usage\":0,\"Fingerprint\":\"abcdef1234567890\",\"Priority\":2,\"Port\":0,\"TunnelRouteId\":1234567891,\"Flag\":128,\"Algorithm\":0,\"Weight\":0,\"Type\":0,\"MatchingType\":0,\"Value\":\"example.com\",\"KeyTag\":0,\"Tag\":\"issue\",\"Certificate\":\"dGVzdGFkYWxrcw==\",\"Selector\":0},\"Ttl\":60}]'",
   "cmd_full_name": "esa batch-create-records",
   "cmd_name": "batch-create-records",
   "deprecated": false,
-  "description_en": "Adds multiple DNS records in a batch and supports various record types",
+  "description_en": "Creates multiple DNS records in batches and supports various record types",
   "description_zh": "批量添加DNS解析记录，支持多种记录类型",
-  "kebab_example": "aliyun esa batch-create-records --site-id 1234567890123 --record-list '[{\"RecordName\":\"www.example.com\",\"Type\":\"A/AAAA\",\"Proxied\":true,\"Data\":{\"Usage\":0,\"Fingerprint\":\"abcdef1234567890\",\"Priority\":2,\"Port\":0,\"Flag\":128,\"Algorithm\":0,\"Weight\":0,\"Type\":0,\"MatchingType\":0,\"Value\":\"example.com\",\"KeyTag\":0,\"Tag\":\"issue\",\"Certificate\":\"dGVzdGFkYWxrcw==\",\"Selector\":0},\"Ttl\":60}]' --region cn-hangzhou",
+  "kebab_example": "aliyun esa batch-create-records --site-id 1234567890123 --record-list '[{\"RecordName\":\"www.example.com\",\"Type\":\"A/AAAA\",\"Data\":{\"Usage\":0,\"Fingerprint\":\"abcdef1234567890\",\"Priority\":2,\"Port\":0,\"TunnelRouteId\":1234567891,\"Flag\":128,\"Algorithm\":0,\"Weight\":0,\"Type\":0,\"MatchingType\":0,\"Value\":\"example.com\",\"KeyTag\":0,\"Tag\":\"issue\",\"Certificate\":\"dGVzdGFkYWxrcw==\",\"Selector\":0},\"Ttl\":60}]' --region cn-hangzhou",
   "method": "POST",
   "multi_version": false,
   "name": "BatchCreateRecords",
@@ -64,7 +64,7 @@
               },
               {
                 "example": "us-east-1\n",
-                "help_en": "The region to which the origin server belongs. This parameter is required when the origin server type is S3. You can obtain the region of the origin server from the official S3 website",
+                "help_en": "The region to which the origin server belongs. This parameter is required when the origin server type is S3. You can obtain the region from the official website of S3",
                 "help_zh": "源站所属区域，当源站类型为S3时，需要填写此值，源站所属的区域需要在S3的官方网站上获取",
                 "name": "region",
                 "options": [
@@ -88,7 +88,7 @@
               },
               {
                 "example": "v4",
-                "help_en": "The signature algorithm version. This parameter is available when the origin server type is S3 and the origin server authentication type is private read. Valid values:\nv2\nv4\n\nIf this parameter is not specified, the default value is v4",
+                "help_en": "The version of the signature algorithm. This parameter is available when the origin server type is S3 and the origin server authentication type is private read. Valid values:\nv2\nv4\n\nIf this parameter is not specified, the default value is v4",
                 "help_zh": "签名算法版本，当源站类型为S3且源站鉴权类型为私有读时有该参数，支持以下两种：\nv2\nv4\n\n不传时，默认为v4",
                 "name": "version",
                 "options": [
@@ -186,7 +186,7 @@
               },
               {
                 "example": "0",
-                "help_en": "The algorithm policy used to match or verify the certificate for the record. Valid values: 0 to 255. This parameter applies to SMIMEA and TLSA records",
+                "help_en": "The algorithm policy used by the record to match or verify certificates. Valid values: 0 to 255. This parameter applies to SMIMEA and TLSA records",
                 "help_zh": "记录用于匹配或验证证书的算法策略，范围为0~255。适用于SMIMEA和TLSA记录",
                 "name": "matching_type",
                 "options": [
@@ -210,7 +210,7 @@
               },
               {
                 "example": "2",
-                "help_en": "The priority of the record. Valid values: 0 to 65535. A smaller value indicates a higher priority. This parameter is required when you add an MX, SRV, or URI record",
+                "help_en": "The priority of the record. Valid values: 0 to 65535. A smaller value indicates a higher priority. This parameter is required when you add MX, SRV, or URI records",
                 "help_zh": "记录的优先级，范围为0~65535。数值越小，优先级越高。添加MX、SRV、URI记录时，该参数必填",
                 "name": "priority",
                 "options": [
@@ -245,6 +245,18 @@
                 "type": "string"
               },
               {
+                "example": "1234567891",
+                "help_en": "The ID of the referenced tunnel route. This parameter is required when SourceType is set to tunnel_route. In this case, Type must be set to CNAME and Proxied must be set to true",
+                "help_zh": "引用的隧道路由ID。SourceType为tunnel_route时必填，此时Type必须为CNAME、Proxied必须为true",
+                "name": "tunnel_route_id",
+                "options": [
+                  "--tunnel-route-id"
+                ],
+                "raw_name": "TunnelRouteId",
+                "required": false,
+                "type": "int"
+              },
+              {
                 "example": "0",
                 "help_en": "The certificate type for a CERT record or the public key type for an SSHFP record",
                 "help_zh": "记录的证书类型（CERT记录）或公钥类型（SSHFP记录）",
@@ -270,7 +282,7 @@
               },
               {
                 "example": "example.com",
-                "help_en": "The record value or partial content.\nA/AAAA: an IP address.\nCNAME: the destination domain name.\nMX: a valid destination mail server domain name.\nTXT: a valid string of text characters.\nCAA: a valid domain name of a certificate authority.\nSRV: a valid destination host domain name.\nURI: a valid URI string.\n\nIf SourceType is set to tunnel_route, this parameter is not required. The server uses the CNAME of the referenced VPC tunnel for padding",
+                "help_en": "The record value or partial content.\nA/AAAA: an IP address.\nCNAME: the target domain name.\nMX: a valid target mail server domain name.\nTXT: a valid text character string.\nCAA: a valid certification authority domain name to issue certificates.\nSRV: a valid target host domain name.\nURI: a valid URI string.\n\nThis parameter is not required when SourceType is set to tunnel_route. The server uses the CNAME of the referenced VPC tunnel for padding",
                 "help_zh": "记录值或部分内容。\nA/AAAA：IP。\nCNAME：指向的目标域名。\nMX: 有效的目标邮件服务器域名。\nTXT：有效的文本字符串。\nCAA：有效的证书颁发机构域名。\nSRV：有效的目标主机域名。\nURI: 有效的 URI 字符串。\n\nSourceType为tunnel_route时无需填写，服务端会使用所引用VPC隧道的CNAME填充",
                 "name": "value",
                 "options": [
@@ -336,12 +348,12 @@
               "--proxied"
             ],
             "raw_name": "Proxied",
-            "required": true,
+            "required": false,
             "type": "bool"
           },
           {
             "example": "www.example.com",
-            "help_en": "The record name",
+            "help_en": "The name of the record",
             "help_zh": "记录名称",
             "name": "record_name",
             "options": [
@@ -353,7 +365,7 @@
           },
           {
             "example": "OSS",
-            "help_en": "The origin server type for a CNAME record. This parameter is required when you add a CNAME record. Valid values:\n\nOSS: an OSS origin server.\nS3: an S3 origin server.\nLB: a load balancing origin server.\nOP: a source IPAM pool origin server.\nDomain: a regular domain name origin server.\ntunnel_route: a tunnel routing origin server. In this case, Type must be set to CNAME, Proxied must be set to true, and an existing tunnel routing must be specified by using Data.TunnelRouteId.\n\nIf this parameter is not specified or is left empty, the default value is Domain, which indicates a regular domain name origin server",
+            "help_en": "The origin server type for a CNAME record. This parameter is required when you add a CNAME record. Valid values:\n\nOSS: an OSS origin server.\nS3: an S3 origin server.\nLB: a load balancing origin server.\nOP: an origin IPAM pool origin server.\nDomain: a common domain name origin server.\ntunnel_route: a tunnel routing origin server. In this case, Type must be set to CNAME, Proxied must be set to true, and an existing tunnel routing must be specified by using Data.TunnelRouteId.\n\nIf this parameter is not specified or is left empty, the default value is Domain, which indicates a common domain name origin server",
             "help_zh": "CNAME记录的源站类型。添加CNAME记录时，需要填写此参数。取值：\n\nOSS：OSS源站。\nS3：S3源站。\nLB：负载均衡器源站。\nOP：源地址池源站。\nDomain：普通域名源站。\ntunnel_route：隧道路由源站。此时Type必须为CNAME、Proxied必须为true，并通过Data.TunnelRouteId指定已有隧道路由。\n\n该参数不传或传空时，则默认为Domain，即普通域名源站类型",
             "name": "source_type",
             "options": [
@@ -377,7 +389,7 @@
           },
           {
             "example": "A/AAAA",
-            "help_en": "The DNS record type",
+            "help_en": "The DNS type of the record",
             "help_zh": "记录的DNS类型",
             "name": "type",
             "options": [
@@ -419,7 +431,7 @@
             "properties": {
               "Failed": {
                 "backendName": "failed",
-                "description_en": "The list of records that failed to be created. If the tunnel route origin verification fails, the Description element returns VpcTunnel.FeatureNotEnabled, Record.TunnelRouteNotFound, Record.TunnelRouteStatusInvalid, or Record.TunnelRouteRegionUnmapped",
+                "description_en": "The list of records that failed to be created. If the validation of the tunnel route origin server fails, the Description element returns VpcTunnel.FeatureNotEnabled, Record.TunnelRouteNotFound, Record.TunnelRouteStatusInvalid, or Record.TunnelRouteRegionUnmapped",
                 "description_zh": "创建失败的记录列表。隧道路由源站校验失败时，元素的Description返回VpcTunnel.FeatureNotEnabled、Record.TunnelRouteNotFound、Record.TunnelRouteStatusInvalid或Record.TunnelRouteRegionUnmapped",
                 "itemName": "SuccessList",
                 "items": {
@@ -433,7 +445,7 @@
                     },
                     "Data": {
                       "backendName": "data",
-                      "description_en": "The DNS information of the record, including record values and related attributes for various record types",
+                      "description_en": "The DNS information of the record, including the values and related attributes of various record types",
                       "description_zh": "记录的DNS信息，包含各种类型的记录值及其相关属性",
                       "example": "{\"value\":\"2.2.2.2\"}",
                       "properties": {
@@ -461,7 +473,7 @@
                         },
                         "Flag": {
                           "backendName": "flag",
-                          "description_en": "The flag of the record, which indicates its priority and processing method. This parameter applies to CAA records",
+                          "description_en": "The flag of the record. It indicates the priority and processing method, and applies to CAA records",
                           "description_zh": "记录的标志位。指示其优先级和处理方式，使用于CAA记录",
                           "example": "128",
                           "format": "int32",
@@ -477,7 +489,7 @@
                         },
                         "MatchingType": {
                           "backendName": "matchingType",
-                          "description_en": "The algorithm policy used to match or verify the certificate for the record. Valid values: 0 to 255. This parameter applies to SMIMEA and TLSA records",
+                          "description_en": "The algorithm policy used by the record to match or verify certificates. Valid values: 0 to 255. This parameter applies to SMIMEA and TLSA records",
                           "description_zh": "记录用于匹配或验证证书的算法策略，范围为0~255。适用于SMIMEA和TLSA记录",
                           "example": "0",
                           "format": "int32",
@@ -485,7 +497,7 @@
                         },
                         "Port": {
                           "backendName": "port",
-                          "description_en": "The port number associated with the SRV record. This parameter applies only to SRV records",
+                          "description_en": "The port number of the record, which is associated with SRV records. This parameter applies only to SRV records",
                           "description_zh": "记录的端口号，与SRV记录关联。仅适用于SRV记录",
                           "example": "0",
                           "format": "int32",
@@ -514,6 +526,14 @@
                           "example": "issue",
                           "type": "string"
                         },
+                        "TunnelRouteId": {
+                          "backendName": "tunnel_route_id",
+                          "description_en": "The ID of the referenced tunnel route. This parameter is returned only for records whose origin server type is tunnel_route",
+                          "description_zh": "引用的隧道路由ID，仅源站类型为tunnel_route的记录返回",
+                          "example": "1234567891",
+                          "format": "int64",
+                          "type": "integer"
+                        },
                         "Type": {
                           "backendName": "type",
                           "description_en": "The certificate type for a CERT record or the public key type for an SSHFP record",
@@ -532,10 +552,18 @@
                         },
                         "Value": {
                           "backendName": "value",
-                          "description_en": "The record value or partial content. This parameter is included in A/AAAA, CNAME, NS, MX, TXT, CAA, SRV, and URI records. It has different meanings in different record types:\n\nA/AAAA: The IP address. Separate multiple IP addresses with commas (,). At least one IPv4 address is required.\nCNAME: The target domain name.\nNS: The name server of the specified domain name.\nMX: The valid domain name of the target mail server.\nTXT: A valid text character string.\nCAA: The valid domain name of the certificate issue authority.\nSRV: The valid domain name of the target host.\nURI: A valid URI character string",
+                          "description_en": "The record value or partial content. This parameter is included in A/AAAA, CNAME, NS, MX, TXT, CAA, SRV, and URI records. It has different meanings in different record types:\n\nA/AAAA: The target IP address. If multiple IP addresses are specified, separate them with commas (,). At least one IPv4 address is required.\nCNAME: The target domain name.\nNS: The name server of the specified domain name.\nMX: The domain name of the valid target mail server.\nTXT: The valid text character string.\nCAA: The domain name of the valid certificate issuing authority.\nSRV: The domain name of the valid target host.\nURI: The valid URI string",
                           "description_zh": "记录值或部分内容。A/AAAA、CNAME、NS、MX、TXT、CAA、SRV、URI记录中含有该参数。在不同类型的记录中，分别表示不同的含义：\n\nA/AAAA：指向的ip地址。多个ip时，用半角逗号,分隔。至少需要有一个ipv4地址。\nCNAME：指向的目标域名。\nNS：指定域名的名称服务器。\nMX:  有效的目标邮件服务器域名。\nTXT：有效的文本字符串。\nCAA：有效的证书颁发机构域名。\nSRV：有效的目标主机域名。\nURI: 有效的 URI 字符串",
                           "example": "example.com",
                           "type": "string"
+                        },
+                        "VpcTunnelId": {
+                          "backendName": "vpc_tunnel_id",
+                          "description_en": "The ID of the parent VPC tunnel for the referenced tunnel route. This parameter is populated by the server and returned only for records whose origin server type is tunnel_route",
+                          "description_zh": "所引用隧道路由的父VPC隧道ID，由服务端填充，仅源站类型为tunnel_route的记录返回",
+                          "example": "1234567890",
+                          "format": "int64",
+                          "type": "integer"
                         },
                         "Weight": {
                           "backendName": "weight",
@@ -571,7 +599,7 @@
                     },
                     "Proxied": {
                       "backendName": "isProxied",
-                      "description_en": "Specifies whether proxy acceleration is enabled for the record. Only CNAME and A/AAAA records support proxy acceleration. Valid values:\n\ntrue: Enabled.\nfalse: Disabled",
+                      "description_en": "Specifies whether proxy acceleration is enabled for the record. Only CNAME and A/AAAA records support proxy acceleration. Valid values:\n\ntrue: Proxy acceleration is enabled.\nfalse: Proxy acceleration is disabled",
                       "description_zh": "记录是否开启代理加速。只有CNAME记录与A/AAAA记录可以开启代理加速。取值：\n\ntrue：开启代理。\nfalse：关闭代理加速",
                       "example": "true",
                       "type": "boolean"
@@ -586,7 +614,7 @@
                     },
                     "RecordName": {
                       "backendName": "recordName",
-                      "description_en": "The record name",
+                      "description_en": "The name of the record",
                       "description_zh": "记录名称",
                       "example": "a.example.com",
                       "type": "string"
@@ -600,9 +628,11 @@
                     },
                     "SourceType": {
                       "backendName": "recordSourceType",
-                      "description_en": "The origin server type for CNAME records. This field is empty for other record types. Valid values:\nOSS: OSS origin server.\nS3: S3 origin server.\nLB: Load balancing origin server.\nOP: Origin IPAM pool origin server.\nDomain: Regular domain name origin server.\ntunnel_route: Tunnel routing origin server",
+                      "descriptionEn": "The origin type of the record. Supports tunnel_route (tunnel route origin).",
+                      "description_en": "The origin server type for CNAME records. This field is empty for other record types. Valid values:\nOSS: OSS origin server.\nS3: S3 origin server.\nLB: Load balancing origin server.\nOP: Source IPAM pool origin server.\nDomain: Common domain name origin server.\ntunnel_route: Tunnel routing origin server",
                       "description_zh": "CNAME记录的源站类型，其他类型记录此字段为空。源站类型取值：\nOSS：OSS源站。\nS3：S3源站。\nLB：负载均衡器源站。\nOP：源地址池源站。\nDomain：普通域名源站。\ntunnel_route：隧道路由源站",
                       "example": "OSS",
+                      "title_en": "源站类型",
                       "title_zh": "源站类型",
                       "type": "string"
                     },
@@ -617,6 +647,7 @@
                   },
                   "type": "object"
                 },
+                "title_en": "失败记录列表",
                 "title_zh": "失败记录列表",
                 "type": "array"
               },
@@ -664,7 +695,7 @@
                         },
                         "Flag": {
                           "backendName": "flag",
-                          "description_en": "The flag of the record, which indicates its priority and processing method. This parameter applies to CAA records",
+                          "description_en": "The flag of the record. It indicates the priority and processing method, and applies to CAA records",
                           "description_zh": "记录的标志位。指示其优先级和处理方式，使用于CAA记录",
                           "example": "128",
                           "format": "int32",
@@ -680,7 +711,7 @@
                         },
                         "MatchingType": {
                           "backendName": "matchingType",
-                          "description_en": "The algorithm policy used to match or verify the certificate for the record. Valid values: 0 to 255. This parameter applies to SMIMEA and TLSA records",
+                          "description_en": "The algorithm policy used by the record to match or verify certificates. Valid values: 0 to 255. This parameter applies to SMIMEA and TLSA records",
                           "description_zh": "记录用于匹配或验证证书的算法策略，范围为0~255。适用于SMIMEA和TLSA记录",
                           "example": "0",
                           "format": "int32",
@@ -717,6 +748,14 @@
                           "example": "issue",
                           "type": "string"
                         },
+                        "TunnelRouteId": {
+                          "backendName": "tunnel_route_id",
+                          "description_en": "The ID of the referenced tunnel route. This parameter is returned only for records whose origin server type is tunnel_route",
+                          "description_zh": "引用的隧道路由ID，仅源站类型为tunnel_route的记录返回",
+                          "example": "1234567891",
+                          "format": "int64",
+                          "type": "integer"
+                        },
                         "Type": {
                           "backendName": "type",
                           "description_en": "The certificate type for a CERT record or the public key type for an SSHFP record",
@@ -735,10 +774,18 @@
                         },
                         "Value": {
                           "backendName": "value",
-                          "description_en": "The record value or partial content. This parameter is included in A/AAAA, CNAME, NS, MX, TXT, CAA, SRV, and URI records. It has different meanings in different record types:\n\nA/AAAA: The IP address. Separate multiple IP addresses with commas (,). At least one IPv4 address is required.\nCNAME: The target domain name.\nNS: The name server of the specified domain name.\nMX: The valid domain name of the target mail server.\nTXT: A valid text character string.\nCAA: The valid domain name of the certificate issue authority.\nSRV: The valid domain name of the target host.\nURI: A valid URI character string",
+                          "description_en": "The record value or partial content. This parameter is included in A/AAAA, CNAME, NS, MX, TXT, CAA, SRV, and URI records. It has different meanings in different record types:\n\nA/AAAA: The IP address. If multiple IP addresses are specified, separate them with commas (,). At least one IPv4 address is required.\nCNAME: The target domain name.\nNS: The name server of the specified domain name.\nMX: The domain name of the valid target mail server.\nTXT: The valid text character string.\nCAA: The domain name of the valid certificate issuing authority.\nSRV: The domain name of the valid target host.\nURI: The valid URI string",
                           "description_zh": "记录值或部分内容。A/AAAA、CNAME、NS、MX、TXT、CAA、SRV、URI记录中含有该参数。在不同类型的记录中，分别表示不同的含义：\n\nA/AAAA：IP。多个IP时，用\",\"分隔。至少需要有一个ipv4地址。\nCNAME：指向的目标域名。\nNS：指定域名的名称服务器。\nMX:  有效的目标邮件服务器域名。\nTXT：有效的文本字符串。\nCAA：有效的证书颁发机构域名。\nSRV：有效的目标主机域名。\nURI: 有效的 URI 字符串",
                           "example": "example.com",
                           "type": "string"
+                        },
+                        "VpcTunnelId": {
+                          "backendName": "vpc_tunnel_id",
+                          "description_en": "The ID of the parent VPC tunnel for the referenced tunnel route. This parameter is populated by the server and returned only for records whose origin server type is tunnel_route",
+                          "description_zh": "所引用隧道路由的父VPC隧道ID，由服务端填充，仅源站类型为tunnel_route的记录返回",
+                          "example": "1234567890",
+                          "format": "int64",
+                          "type": "integer"
                         },
                         "Weight": {
                           "backendName": "weight",
@@ -789,7 +836,7 @@
                     },
                     "RecordName": {
                       "backendName": "recordName",
-                      "description_en": "The record name",
+                      "description_en": "The name of the record",
                       "description_zh": "记录名称",
                       "example": "www.example.com",
                       "type": "string"
@@ -803,9 +850,11 @@
                     },
                     "SourceType": {
                       "backendName": "recordSourceType",
-                      "description_en": "The origin server type for CNAME records. This field is empty for other record types. Valid values:\nOSS: OSS origin server.\nS3: S3 origin server.\nLB: Load balancing origin server.\nOP: Origin IPAM pool origin server.\nDomain: Regular domain name origin server.\ntunnel_route: Tunnel routing origin server",
+                      "descriptionEn": "The origin type of the record. Supports tunnel_route (tunnel route origin).",
+                      "description_en": "The origin server type for CNAME records. This field is empty for other record types. Valid values:\nOSS: OSS origin server.\nS3: S3 origin server.\nLB: Load balancing origin server.\nOP: Source IPAM pool origin server.\nDomain: Common domain name origin server.\ntunnel_route: Tunnel routing origin server",
                       "description_zh": "CNAME记录的源站类型，其他类型记录此字段为空。源站类型取值：\nOSS：OSS源站。\nS3：S3源站。\nLB：负载均衡器源站。\nOP：源地址池源站。\nDomain：普通域名源站。\ntunnel_route：隧道路由源站",
                       "example": "OSS",
+                      "title_en": "源站类型",
                       "title_zh": "源站类型",
                       "type": "string"
                     },
