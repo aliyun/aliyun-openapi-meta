@@ -3,8 +3,8 @@
   "cmd_full_name": "ndr update-proto-log-delivery-status",
   "cmd_name": "update-proto-log-delivery-status",
   "deprecated": false,
-  "description_en": "Updates the delivery switches for protocol logs and attack logs of specified sites in batches. For each site in StatusList, the system writes both types of switches simultaneously. If either switch is omitted, log delivery for the corresponding type is disabled. To modify only one type of switch, call DescribeProtoLogDeliveryStatus to query the current configuration and pass the current value of the other switch",
-  "description_zh": "批量更新指定站点的协议日志和攻击日志投递开关。对 StatusList 中的每个站点，系统同时写入两类开关。任一开关省略时，对应类型的日志投递会被关闭。只修改一类开关时，请先调用 DescribeProtoLogDeliveryStatus 查询当前配置，并将另一类开关的当前值一并传入",
+  "description_en": "Updates the log delivery switches for protocol logs and attack logs of specified sites in batches. For each site in StatusList, both switches must be explicitly specified, where 0 indicates shutdown and 1 indicates enabled. If either switch is omitted, the API returns InvalidParam and no sites are updated in the current request. To modify only one type of switch, invoke DescribeProtoLogDeliveryStatus to query the current status first, and then pass the current value of the other switch",
+  "description_zh": "批量更新指定站点的协议日志和攻击日志投递开关。StatusList 中的每个站点都须显式传入两类开关，0 表示关闭，1 表示开启。省略任一开关时，接口返回 InvalidParam，本次请求不会更新任何站点。只修改一类开关时，可先调用 DescribeProtoLogDeliveryStatus 查询当前状态，再将另一类开关的当前值一并传入",
   "kebab_example": "aliyun ndr update-proto-log-delivery-status --delivery-type sls --status-list Site=global AttackLogStatus=1 ProtoLogStatus=1 DeliveryType=sls --region cn-hangzhou",
   "method": "GET|POST",
   "multi_version": false,
@@ -25,7 +25,7 @@
         "sls"
       ],
       "example": "sls",
-      "help_en": "The compatibility parameter. Valid value: sls. The current update is based on the DeliveryType of each item in StatusList. Passing only this parameter does not update the switches",
+      "help_en": "The compatibility parameter. Valid value: sls. The current update is subject to the DeliveryType of each item in StatusList. Passing only this parameter does not update the switches",
       "help_zh": "兼容参数，取值为 sls。当前更新以 StatusList 中各项的 DeliveryType 为准，仅传入本参数不会更新开关",
       "location": "query",
       "name": "delivery_type",
@@ -41,8 +41,8 @@
         "fields": [
           {
             "example": "1",
-            "help_en": "The attack log delivery switch. Valid values:\n0: Disabled.\n1: Enabled.\nIf omitted, it is treated as 0, which disables attack log delivery for the site. To retain the current state, explicitly pass the queried current value",
-            "help_zh": "攻击日志投递开关。0 表示关闭，1 表示开启。省略时按 0 处理，会关闭该站点的攻击日志投递。如需保留当前状态，请显式传入查询到的当前值",
+            "help_en": "The log delivery switch for attack logs. This parameter must be explicitly specified. A value of 0 indicates shutdown, and a value of 1 indicates enabled. If this parameter is omitted, the API returns InvalidParam. To retain the current status, pass the current value returned by DescribeProtoLogDeliveryStatus",
+            "help_zh": "攻击日志投递开关，须显式传入。0 表示关闭，1 表示开启。省略时返回 InvalidParam。如需保留当前状态，请传入 DescribeProtoLogDeliveryStatus 返回的当前值",
             "name": "attack_log_status",
             "options": [
               "--attack-log-status"
@@ -68,8 +68,8 @@
           },
           {
             "example": "1",
-            "help_en": "The protocol log delivery switch. Valid values:\n0: Disabled.\n1: Enabled.\nIf omitted, it is treated as 0, which disables protocol log delivery for the site. To retain the current state, explicitly pass the queried current value",
-            "help_zh": "协议日志投递开关。0 表示关闭，1 表示开启。省略时按 0 处理，会关闭该站点的协议日志投递。如需保留当前状态，请显式传入查询到的当前值",
+            "help_en": "The log delivery switch for protocol logs. This parameter must be explicitly specified. A value of 0 indicates shutdown, and a value of 1 indicates enabled. If this parameter is omitted, the API returns InvalidParam. To retain the current status, pass the current value returned by DescribeProtoLogDeliveryStatus",
+            "help_zh": "协议日志投递开关，须显式传入。0 表示关闭，1 表示开启。省略时返回 InvalidParam。如需保留当前状态，请传入 DescribeProtoLogDeliveryStatus 返回的当前值",
             "name": "proto_log_status",
             "options": [
               "--proto-log-status"
@@ -80,7 +80,7 @@
           },
           {
             "example": "global",
-            "help_en": "The identifier of the site to be updated. This parameter cannot be empty. Use the sites returned by DescribeProtoLogDeliveryStatus",
+            "help_en": "The identifier of the site to be updated. This parameter cannot be empty. Use the site returned by DescribeProtoLogDeliveryStatus",
             "help_zh": "待更新的站点标识，不能为空。使用 DescribeProtoLogDeliveryStatus 返回的站点",
             "name": "site",
             "options": [
@@ -93,8 +93,8 @@
         ],
         "type": "object"
       },
-      "help_en": "The list of switch configurations for the sites to be updated. This parameter cannot be empty. Each item must include DeliveryType and Site, and explicitly provide ProtoLogStatus and AttackLogStatus. The system updates only the sites in the list, but writes both switches for each listed site simultaneously. If either switch is omitted, it is treated as 0, and log delivery for that type is disabled",
-      "help_zh": "待更新站点的开关配置列表，不能为空。每项传入 DeliveryType 和 Site，并显式提供 ProtoLogStatus 和 AttackLogStatus。系统仅更新列表中的站点，但对每个列出的站点会同时写入两个开关。任一开关省略时按 0 处理，该类型的日志投递会被关闭",
+      "help_en": "The list of switch configurations for the sites to be updated. This parameter cannot be empty. Each item must include DeliveryType, Site, ProtoLogStatus, and AttackLogStatus. The system updates only the sites in the list and writes both switches for each site simultaneously. If any site is missing either switch, the API returns InvalidParam and no sites are updated in the current request",
+      "help_zh": "待更新站点的开关配置列表，不能为空。每项须传入 DeliveryType、Site、ProtoLogStatus 和 AttackLogStatus。系统只更新列表中的站点，并同时写入每个站点的两个开关。任一站点缺少任一开关时，接口返回 InvalidParam，本次请求不会更新任何站点",
       "location": "query",
       "name": "status_list",
       "options": [
@@ -124,14 +124,14 @@
           },
           "Message": {
             "backendName": "message",
-            "description_en": "The request result message. This parameter describes the cause of the error when the request fails. The example shows a parameter validation failure scenario",
+            "description_en": "The message about the request result. This parameter describes the cause of the error when the request fails. The example shows a parameter validation failure scenario",
             "description_zh": "请求结果信息；失败时用于说明错误原因。示例展示参数校验失败场景",
             "example": "请求参数无效。",
             "type": "string"
           },
           "RequestId": {
             "backendName": "requestId",
-            "description_en": "The request ID, used to locate the request",
+            "description_en": "The ID of the request",
             "description_zh": "请求 ID，用于定位本次请求",
             "example": "D8216F01-0DF2-4F44-98F7-20144BA97AA1",
             "title_en": "Id of the request",
@@ -140,7 +140,7 @@
           },
           "Success": {
             "backendName": "success",
-            "description_en": "Indicates whether the request is successful. Valid values:\ntrue: Successful.\nfalse: Failed",
+            "description_en": "Indicates whether the request is successful. A value of true indicates success, and a value of false indicates failure",
             "description_zh": "请求是否成功。true 表示成功，false 表示失败",
             "type": "boolean"
           }
